@@ -1,5 +1,7 @@
-name: check feeds
+name: feeds
 on:
+  schedule:
+    - cron: '5 * * * *'
   workflow_dispatch:
 jobs:
   fetch:
@@ -9,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - continue-on-error: true
         run: |
-          wget --progress=dot -m -i url.in.txt
+          wget --progress=dot --no-if-modified-since -m -i url.in.txt
           git config --global user.email "fetch"
           git config --global user.name "fetch"
           git add .
