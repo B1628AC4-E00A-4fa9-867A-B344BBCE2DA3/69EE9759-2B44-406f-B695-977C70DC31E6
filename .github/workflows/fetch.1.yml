@@ -5,11 +5,11 @@ jobs:
   fetch:
     name: Fetch
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - run: |
           wget -m -i url.in.txt
-      - run: |
+      - if: failure()
+        run: |
           git add .
           git commit -m "commit by workflow_dispatch"
