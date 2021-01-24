@@ -1,0 +1,887 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>C++ Team Blog</title>
+	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
+	<link>https://devblogs.microsoft.com/cppblog</link>
+	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
+	<lastBuildDate>Fri, 22 Jan 2021 17:44:52 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+
+<image>
+	<url>https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2018/10/Microsoft-Favicon.png</url>
+	<title>C++ Team Blog</title>
+	<link>https://devblogs.microsoft.com/cppblog</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Windows ARM64 support for CMake projects in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Thu, 21 Jan 2021 18:53:11 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27392</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we added support for deploying CMake projects to a remote Windows machine and debugging them with the Visual Studio remote tools. CMake developers targeting ARM64 Windows can now cross-compile (with cl or clang-cl),</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/">Windows ARM64 support for CMake projects in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we added support for deploying CMake projects to a remote Windows machine and debugging them with the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Visual Studio remote tools.</a> CMake developers targeting ARM64 Windows can now cross-compile (with cl or clang-cl), deploy, and debug their projects directly from Visual Studio. You can download and install the latest preview of Visual Studio <a href="https://visualstudio.microsoft.com/vs/preview/">here</a>.</p>
+<p>For step-by-step instructions of this workflow, check out the <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160">Tutorial: Debug a CMake project on a remote Windows machine</a>. This tutorial is specific to ARM64 development, but the steps can be generalized for other Windows architectures. An overview of the new feature set is below.</p>
+<p>Before you get started, you will need to install the ARM64 build tools on your host machine. In this scenario, your host machine is the machine where you are building and where Visual Studio is installed. You will also need to install and configure the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?%2523download-and-install-the-remote-tools=&amp;view=vs-2019#download-and-install-the-remote-tools">remote tools</a> on your target machine. In this scenario, your target machine is the ARM64 Windows machine where you will be running and debugging your program.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png"><img class="aligncenter size-full wp-image-27421" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png" alt="The Visual Studio Installer is open. The individual component &quot;ARM64 build tools (latest)&quot; is selected for installation." width="719" height="304" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png 719w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest-300x127.png 300w" sizes="(max-width: 719px) 100vw, 719px" /></a></p>
+<p>Install the latest version of the ARM64 build tools on your host machine.</p>
+<h4 id="cross-compile-cmake-projects-for-arm64">Cross-compile CMake projects for ARM64</h4>
+<p>You can now <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#configure-for-arm64">add a new CMake configuration</a> of type <strong>arm64-Debug</strong> or <strong>arm64-Release</strong> to the CMake Settings Editor. You can also modify existing CMake configurations to build with the <strong>msvc_arm64_x64, clang_cl_arm64_x64, </strong> <strong>msvc_arm64, </strong>or <strong>clang_cl_arm64</strong> toolset. <strong>arm64_x64</strong> toolsets select 64-bit host tools to cross-compile for ARM64, and <strong>arm64</strong> toolsets select 32-bit host tools to cross-compile for ARM64.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png"><img class="aligncenter wp-image-27394" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png" alt="The dialog to add a new configuration to the CMake Settings Editor in Visual Studio is open. The new template of type &quot;arm64-Debug&quot; is highlighted." width="700" height="444" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png 1156w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-300x190.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-1024x649.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-768x487.png 768w" sizes="(max-width: 700px) 100vw, 700px" /></a></p>
+<h4 id="debug-cmake-projects-on-a-remote-windows-machine">Debug CMake projects on a remote Windows machine</h4>
+<p><a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#add-a-debug-configuration-file">Add a new debug configuration</a> of type <strong>C/C++ Remote Windows Debug </strong>to launch.vs.json to debug your project on a remote Windows machine. You will need to set the value of <strong>remoteMachineName</strong> to the IP address of your remote ARM64 machine that hosts the remote tools. You may also need to update the value of <strong>authenticationType </strong>to match the authentication mode set on your remote machine. For more information and a sample launch.vs.json file, check out the <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#add-a-debug-configuration-file">remote debugging tutorial</a>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png"><img class="aligncenter wp-image-27396" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png" alt="The remote debugging tool options window is open. The authentication mode setting is highlighted and the mode &quot;Windows Authentication&quot; is selected." width="650" height="488" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png 816w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options-300x225.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options-768x577.png 768w" sizes="(max-width: 650px) 100vw, 650px" /></a></p>
+<p>Note: Visual Studio’s support for remote Linux development requires you to add an SSH connection to your remote machine in the <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160&amp;viewFallbackFrom=vs-2019">Connection Manager</a>. Remote Windows deployment does not require you to use the Connection Manager because it communicates over the Windows remote debugger (<strong>msvsmon.exe</strong>) instead of SSH.</p>
+<p>When you run the application, Visual Studio will cross-compile locally on your host system, deploy the application to your remote Windows machine, and start debugging the application on the remote machine. You can set breakpoints and utilize Visual Studio’s debugging features as if you were debugging locally on your host system.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png"><img class="aligncenter wp-image-27398" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png" alt="An executable is running in a Windows terminal. The program output reads &quot;Hello CMake.&quot; " width="800" height="181" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png 1131w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-300x68.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-1024x232.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-768x174.png 768w" sizes="(max-width: 800px) 100vw, 800px" /></a></p>
+<h4 id="give-us-your-feedback">Give us your feedback</h4>
+<p>Download <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 3</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/">Windows ARM64 support for CMake projects in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/#comments</comments>
+		
+		<dc:creator><![CDATA[Helena Gregg]]></dc:creator>
+		<pubDate>Thu, 21 Jan 2021 15:02:59 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27390</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review. </p>
+<p>Address Sanitizer: The IDE integration for ASan-reported exceptions (vcasan.lib) now handles the complete collection of exceptions ASan can report.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/">MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="none">In </span><a href="https://visualstudio.microsoft.com/vs/preview"><span data-contrast="none">Visual Studio 2019</span></a><span data-contrast="none"> version 16.9</span><span data-contrast="none"> </span><span data-contrast="none">Preview 3</span><span data-contrast="none"> we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><b><span data-contrast="none">Address Sanitizer:</span></b><span data-contrast="none"> The IDE integration for ASan-reported exceptions (vcasan.lib) now handles the complete collection of exceptions ASan can report. That vcasan lib is also found automatically, just like the other ASan libraries, when you throw /fsanitize=address. The compiler and linker also additionally will suggest emitting debug information if they detect you&#8217;re building with ASan but not emitting debug information. We&#8217;re excited to be able to share these user-model improvements in this latest preview! More details will be available in the upcoming full ASan documentation as 16.9 approaches the final release. Additional technical improvements include:</span>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Expanded RtlAllocateHeap support, fixed compatibility of RtlCreateHeap and RtlAllocateHeap interceptors with executable memory.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Added ASan interceptor support for GlobalAlloc and LocalAlloc moveable memory.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Updated handling of interception failures, added check for ASAN_WIN_CONTINUE_ON_INTERCEPTION_FAILURE  environment variable to continue after interception failure.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Updated error messages for shadow memory interleaving and interception failure to make problems and resolutions explicit.</span></li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><strong>OpenMP</strong> <strong>targeting the LLVM runtime</strong>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">We’ve added the option to target the LLVM version of the OpenMP runtime. </span><span data-contrast="none">T</span><span data-contrast="none">arget the new runtime</span><span data-contrast="none"> </span><span data-contrast="none">by using</span><span data-contrast="none"> the new CL switch </span><span data-contrast="none">/openmp:llvm instead of /openmp. </span><span data-contrast="none">In addition to all the OpenMP features supported with /openmp, /openmp:llvm </span><span data-contrast="none">adds </span><span data-contrast="none">support</span><span data-contrast="none"> for</span><span data-contrast="none"> </span><span data-contrast="none">the lastprivate clause on #pragma </span><span data-contrast="none">omp </span><span data-contrast="none">section</span><span data-contrast="none">s</span><span data-contrast="none"> and </span><span data-contrast="none">unsigned </span><span data-contrast="none">index variables in parallel for loops. </span><span data-contrast="none">Th</span><span data-contrast="none">e</span><span data-contrast="none"> /openmp:llvm switch</span><span data-contrast="none"> </span><span data-contrast="none">is available</span><span data-contrast="none"> only f</span><span data-contrast="none">or the</span><span data-contrast="none"> amd64</span><span data-contrast="none"> target</span><span data-contrast="none"> and is still experimental</span><span data-contrast="none">.</span></li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Improved coroutine debugging support</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Maintain pre-coloring for arm64 (jump-threading)
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fixed a code generation bug when compiling arm64 functions that return a large object with /O2. (linked customer feedback: <a href="https://developercommunity2.visualstudio.com/t/Incorrect-O2-ARM64-function-call-codegen/1170230">Incorrect /O2 ARM64 function call codegen passing parameter, returning object (visualstudio.com)</a>)</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Swap order of loop fusion and vectorization
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Improved loop optimizer to apply loop fusion in many more cases.</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Remove unnecessary memory loads using the reg-mem variants of commutative x86 instructions</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fix issue with /OPT:REF under LTCG
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fixed an issue where a function referenced only by data (such as a vtable) could be incorrectly removed under /OPT:REF and LTCG in rare cases</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Incremental linking support for C++ Modules linkage</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Support for Intel Keylocker and User Interrupt instructions as well as intrinsic functions added in VC tools such as Compiler, MASM, and MSDIS</li>
+</ul>
+<p>Do you want to experience the new improvements of the C++ backend? <span style="font-size: 1rem;" data-contrast="none">Please download</span> <a href="https://visualstudio.microsoft.com/vs/preview/">the latest Visual Studio 2019</a> and<span style="font-size: 1rem;" data-contrast="none"> give it a try! Any feedback is welcome. We can be reached via the comments </span>below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>), and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/">MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Build Throughput Series: More Efficient Template Metaprogramming</title>
+		<link>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/#respond</comments>
+		
+		<dc:creator><![CDATA[Xiang Fan]]></dc:creator>
+		<pubDate>Tue, 19 Jan 2021 15:00:35 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27337</guid>
+
+					<description><![CDATA[<p>In the previous blog post I shared how template specialization and template instantiation are processed in the MSVC compiler. We will now look at some examples from real-world code bases to show some ways to reduce the number of them.<br />
+Example 1<br />
+This example is extracted from our own MSVC compiler code base.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/">Build Throughput Series: More Efficient Template Metaprogramming</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a> I shared how template specialization and template instantiation are processed in the MSVC compiler. We will now look at some examples from real-world code bases to show some ways to reduce the number of them.</p>
+<h5 id="example-1">Example 1</h5>
+<p>This example is extracted from our own MSVC compiler code base. The code tries to apply several stateless functors on an object. Because the functors are stateless, they are represented by a list of types. Here is the code:</p>
+<pre class="lang:c++ decode:true">// A helper class which represents a list of types.
+template&lt;typename...&gt; struct TypeList;
+
+// The definition of 'Object' is irrelevant and omitted.
+struct Object;
+// The function which applies a stateless functor. Its definition is irrelevant and omitted.
+template &lt;typename Functor&gt; void apply_functor(Object&amp; object);
+
+// We have two functors.
+struct Functor1;
+struct Functor2;
+
+// We want to apply the two functors above.
+void apply(Object&amp; object)
+{
+    using Functors = TypeList&lt;Functor1, Functor2&gt;;
+    apply_all_functors&lt;Functors&gt;(object); // 'apply_all_functors' is not implemented yet.
+}</pre>
+<p>Now let us see the initial implementation of <code>apply_all_functors</code>. We extract the functors from <code>TypeList</code> and apply them one by one:</p>
+<pre class="lang:c++ decode:true">#include &lt;utility&gt;
+
+template &lt;typename Functors&gt;
+struct apply_all_functors_impl {
+    template &lt;size_t I&gt;
+    static void apply(Object&amp; object) {
+        using Functor = TypeListAt&lt;I, Functors&gt;; // 'TypeListAt' is not implemented yet.
+
+        apply_functor&lt;Functor&gt;(object);
+    }
+
+    template &lt;size_t... I&gt;
+    static void apply_all(Object&amp; object, std::index_sequence&lt;I...&gt;) {
+        (apply&lt;I&gt;(object), ...);
+    }
+
+    void operator()(Object&amp; object) const
+    {
+        apply_all(object, std::make_index_sequence&lt;TypeListSize&lt;Functors&gt;&gt;{}); // 'TypeListSize' is not implemented yet.
+    }
+};
+
+template &lt;typename Functors&gt;
+constexpr apply_all_functors_impl&lt;Functors&gt; apply_all_functors{};</pre>
+<p>To extract the functor from the list, we need a sequence of indices. This is obtained using <code>std::make_index_sequence</code>. We then use a fold expression to efficiently iterate through the sequence and call <code>apply</code> to extract and apply the functor one by one.</p>
+<p>The code above uses a class template so that the template arguments are shared across all its member functions. You can also use global function templates instead.</p>
+<p>There are several ways to implement <code>TypeListAt</code> and <code>TypeListSize</code>. Here is one solution:</p>
+<pre class="lang:c++ decode:true">// Implementation of TypeListSize.
+template&lt;typename&gt; struct TypeListSizeImpl;
+template&lt;typename... Types&gt; struct TypeListSizeImpl&lt;TypeList&lt;Types...&gt;&gt;
+{
+    static constexpr size_t value = sizeof...(Types);
+};
+template&lt;typename Types&gt; constexpr size_t TypeListSize = TypeListSizeImpl&lt;Types&gt;::value;
+
+// Implementation of TypeListAt.
+template&lt;size_t, typename&gt; struct TypeListAtImpl;
+template&lt;size_t I, typename Type, typename... Types&gt; struct TypeListAtImpl&lt;I, TypeList&lt;Type, Types...&gt;&gt;
+{
+    using type = typename TypeListAtImpl&lt;I - 1, TypeList&lt;Types...&gt;&gt;::type;
+};
+template&lt;typename Type, typename... Types&gt; struct TypeListAtImpl&lt;0, TypeList&lt;Type, Types...&gt;&gt;
+{
+    using type = Type;
+};
+
+template&lt;size_t I, typename Types&gt; using TypeListAt = typename TypeListAtImpl&lt;I, Types&gt;::type;</pre>
+<p>Now let us examine the number of template instantiations in the initial implementation (assume we have <code>N</code> functors):</p>
+<ol>
+<li>We iterate through an integer sequence of <code>N</code> elements (with value <code>0, ..., N - 1</code>).</li>
+<li>Each iteration specializes one <code>TypeListAt</code> which instantiates <code>O(I)</code> <code>TypeListAtImpl</code> specializations (<code>I</code> is the element in the integer sequence).</li>
+</ol>
+<p>For example, when <code>TypeListAt&lt;2, TypeList&lt;T1, T2, T3&gt;&gt;</code> (I = 2, N = 3) is used, it goes through the following:</p>
+<pre>TypeListAt&lt;2, TypeList&lt;T1, T2, T3&gt;&gt; =&gt;
+TypeListAtImpl&lt;2, TypeList&lt;T1, T2, T3&gt;&gt;::type =&gt;
+TypeListAtImpl&lt;1, TypeList&lt;T2, T3&gt;&gt;::type =&gt;
+TypeListAtImpl&lt;0, TypeList&lt;T3&gt;&gt;::type =&gt;
+T3</pre>
+<p>So, <code>apply_all_functors_impl&lt;TypeList&lt;T1, ..., TN&gt;&gt;::operator()</code> instantiates <code>O(N^2)</code> template specializations.</p>
+<p>How can we reduce the number? The core logic is to extract types from the helper class <code>TypeList</code>.</p>
+<p>To reduce the number of template instantiations, we can extract directly without using <code>std::integer_sequence</code>. This takes advantage of function template argument deduction which can deduce the template arguments of a class template specialization used as the type of the function parameter.</p>
+<p>Here is the more efficient version:</p>
+<pre class="lang:c++ decode:true">// Function template argument deduction can deduce the functors from the helper class.
+template &lt;typename... Functors&gt;
+void apply_all_functors_impl (Object&amp; object, TypeList&lt;Functors...&gt;*)
+{
+    ((apply_functor&lt;Functors&gt;(object)), ...);
+}
+
+template &lt;typename Functors&gt;
+void apply_all_functors (Object&amp; object)
+{
+    apply_all_functors_impl(object, static_cast&lt;Functors*&gt;(nullptr));
+}</pre>
+<p>Now it only instantiates <code>O(N)</code> template specializations.</p>
+<p>Note: I intentionally leave <code>TypeList</code> as undefined. The definition is not even needed for the <code>static_cast</code> as I mentioned in <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a>. This can avoid all the overheads associated with defining a class (like declaring lots of compiler generated special member functions, generating debug information, etc.) which can happen accidentally (see the next example for more details).</p>
+<p>We apply this trick in the compiler code base and it cuts the memory usage to compile one expensive file by half. We also see noticeable compile time improvement.</p>
+<h5 id="example-2">Example 2</h5>
+<p>This example is extracted from the code base of an internal game studio. To my surprise, game developers love template metaprogramming <img src="https://s.w.org/images/core/emoji/13.0.0/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />.</p>
+<p>The code tries to obtain a list of trait classes from a type map.</p>
+<pre class="lang:c++ decode:true">#include &lt;tuple&gt;
+#include &lt;utility&gt;
+
+// This class contains some useful information of a type.
+template &lt;typename&gt;
+class trait {};
+
+// TypeMap is a helper template which maps an index to a type.
+template &lt;template &lt;int&gt; class TypeMap, int N&gt;
+struct get_type_traits;
+
+template&lt;int&gt; struct type_map;
+template&lt;&gt; struct type_map&lt;0&gt; { using type = int; };
+template&lt;&gt; struct type_map&lt;1&gt; { using type = float; };
+
+// we want to get back 'std::tuple&lt;trait&lt;int&gt;, trait&lt;float&gt;&gt;'.
+using type_traits = get_type_traits&lt;type_map, 2&gt;::type; // 'get_type_traits' is not implemented yet.</pre>
+<p>Here is the initial implementation:</p>
+<pre class="lang:c++ decode:true">template &lt;template &lt;int&gt; class TypeMap, int N&gt;
+struct get_type_traits
+{
+private:
+    template &lt;int... I&gt;
+    static auto impl(std::integer_sequence&lt;int, I...&gt;)
+    {
+        return std::make_tuple(trait&lt;typename TypeMap&lt;I&gt;::type&gt;{}...);
+    }
+public:
+    using type = decltype(impl(std::make_integer_sequence&lt;int, N&gt;{}));
+};</pre>
+<p>It also uses the same <code>make_integer_sequence</code> trick in example 1.</p>
+<p><code>get_type_traits</code> itself doesn’t have the <code>O(N^2)</code> specializations issue. But unfortunately, the current <code>std::tuple</code> implementation in MSVC has O(n^2) behavior to instantiate where <code>n</code> is the number of its template arguments.</p>
+<p>This overhead can be completely avoided because the class only needs to get back a type which does not necessarily require instantiation.</p>
+<p>However, the initial implementation forces the instantiation of <code>std::tuple</code> due to the definition of <code>impl</code>. As mentioned in <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a>, having a template specialization as the return type does not require instantiation if there is no function definition.</p>
+<p>The solution is to specify the return type of <code>impl</code> explicitly and remove the definition. This trick is not always possible when the return type is complicated. But in this case, we can specify it as:</p>
+<pre class="lang:c++ decode:true">template &lt;int... I&gt;
+static std::tuple&lt;trait&lt;typename TypeMap&lt;I&gt;::type&gt;...&gt; impl(std::integer_sequence&lt;int, I...&gt;);</pre>
+<p>This change reduces the compile time by 0.9s where an <code>std::tuple</code> of 85 template arguments is used. We have seen such <code>std::tuple</code> (with lots of template arguments) usages in quite a few code bases.</p>
+<h5 id="summary">Summary</h5>
+<p>Here is a list of simple tips which can help reduce the number and overhead of template specialization/instantiation:</p>
+<ol>
+<li>Avoid instantiating a non-linear number of template specializations.
+Be aware of type traits which require a non-trivial number of specializations (e.g., those using recursion).</li>
+<li>Leave class template as undefined if possible (e.g., help class which carries all the information in its template arguments).</li>
+<li>Prefer variable templates to class templates for values (<code>variable_template&lt;T&gt;</code> is much cheaper than <code>class_template&lt;T&gt;::value</code> and <code>class_template&lt;T&gt;()</code> is the worst <img src="https://s.w.org/images/core/emoji/13.0.0/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />)</li>
+<li>Be aware of expensive template (like <code>std::tuple</code> with lots of template arguments) and switch to a simpler type if you use the template for a different purpose than what it is designed for (e.g., using <code>std::tuple</code> as a type list).</li>
+</ol>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/">Build Throughput Series: More Efficient Template Metaprogramming</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>C++ with Visual Studio and WSL2</title>
+		<link>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/#comments</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Thu, 14 Jan 2021 18:37:02 +0000</pubDate>
+				<category><![CDATA[CMake]]></category>
+		<category><![CDATA[Linux]]></category>
+		<category><![CDATA[Survey]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27363</guid>
+
+					<description><![CDATA[<p>Our team released native support for C++ with the Windows Subsystem for Linux (WSL) in Visual Studio in 2019. “Native support” means that all commands are executed locally instead of over a SSH connection. Since then, WSL2 has been announced and we’ve received questions about our support for WSL2 in Visual Studio.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/">C++ with Visual Studio and WSL2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Our team released <a href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-2019-and-windows-subsystem-for-linux-wsl/">native support for C++ with the Windows Subsystem for Linux (WSL) in Visual Studio</a> in 2019. “Native support” means that all commands are executed locally instead of over a SSH connection. Since then, <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions">WSL2</a> has been announced and we’ve received questions about our support for WSL2 in Visual Studio. The purpose of this blog post is to:</p>
+<ul>
+<li>Clarify our existing support for WSL1 and WSL2,</li>
+<li>Introduce our plans to add native support for WSL2,</li>
+<li>Gather feedback from customers who have used our native support for WSL1 in Visual Studio through this <a href="https://www.surveymonkey.com/r/L98VDF2">two-question survey</a>. <strong>Update 1/22/2021: This survey is now closed.</strong></li>
+</ul>
+<h4 id="current-support-for-wsl1-and-wsl2">Current support for WSL1 and WSL2</h4>
+<p>Our native support for WSL currently works best with WSL1. Our support executes all commands locally through wsl.exe and relies on Windows drives mounted under the /mnt folder (e.g. /mnt/c/Users…) to access local source files from WSL. These commands are slower with WSL2 because file performance across the Windows and Linux operating systems is faster with WSL1 than WSL2. You can learn more about the differences between WSL1 and WSL2 <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions#exceptions-for-using-wsl-1-rather-than-wsl-2">here</a>.</p>
+<p>To avoid these slowdowns, you can install and run SSH on your local WSL2 installation and <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160&amp;viewFallbackFrom=vs-2019">add a new SSH connection</a> to WSL2 in the Visual Studio Connection Manager. Learn how to install and configure SSH on your WSL installation <a href="https://devblogs.microsoft.com/cppblog/targeting-windows-subsystem-for-linux-from-visual-studio/#install-configure-ssh">here</a>.</p>
+<h4 id="native-support-for-wsl2">Native support for WSL2</h4>
+<p>We are working to add native support for WSL2 in Visual Studio. This will allow you to seamlessly build and debug on WSL2 without adding a SSH connection or observing the slowdowns described above.</p>
+<h5 id="how-it-will-work"><span style="font-size: 14pt;">How it will work</span></h5>
+<p>Behind the scenes, Visual Studio will execute a local rsync copy to copy files from the Windows file system to the WSL2 file system. We’re not able to continue accessing the mounted Windows drives from WSL (as we do with WSL1) because file performance across the Windows and Linux operating systems is slower in WSL2. This local rsync copy will occur automatically when Visual Studio detects that you are using WSL2 and will require no user intervention. You will no longer need to establish a SSH connection to avoid the slowdowns described above, and there will be no change in your ability to build and debug locally on WSL2.</p>
+<h4 id="provide-feedback-on-our-support-for-wsl2">Provide feedback on our support for WSL2</h4>
+<p>If you have used our native support for WSL1 in Visual Studio, then we would love your feedback on our plans for WSL2. Please submit this short, <a href="https://www.surveymonkey.com/r/L98VDF2">two-question survey</a> to help us build the best features for your C++ development needs. <strong>Update 1/22/2021: This survey is now closed.</strong></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/">C++ with Visual Studio and WSL2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Build Throughput Series: Template Metaprogramming Fundamentals</title>
+		<link>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/#comments</comments>
+		
+		<dc:creator><![CDATA[Xiang Fan]]></dc:creator>
+		<pubDate>Thu, 14 Jan 2021 15:00:40 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27328</guid>
+
+					<description><![CDATA[<p>Template metaprogramming is popular and seen in many code bases. However, it often contributes to long compile times. When investigating build throughput improvement opportunities in large codebases, our finding is that more than one million template specializations and template instantiations is quite common and often provides optimization opportunities for significant improvement.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/">Build Throughput Series: Template Metaprogramming Fundamentals</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Template metaprogramming is popular and seen in many code bases. However, it often contributes to long compile times. When investigating build throughput improvement opportunities in large codebases, our finding is that more than one million template specializations and template instantiations is quite common and often provides optimization opportunities for significant improvement.</p>
+<p>In this blog post, I will walk through the differences between template specialization and template instantiation and how they are processed in the MSVC compiler.  I will cover how to find these bottlenecks related to too many template specializations and instantiations in a different blog post (or you can read <a href="https://devblogs.microsoft.com/cppblog/profiling-template-metaprograms-with-cpp-build-insights/">this blog post</a> as a starting point).</p>
+<p>Before we start, let us clarify some terms widely used in template metaprogramming.</p>
+<ul>
+<li>Primary template
+<ul>
+<li>Partial specialization</li>
+</ul>
+</li>
+<li>Template specialization
+<ul>
+<li>Explicit specialization</li>
+</ul>
+</li>
+<li>Template instantiation
+<ul>
+<li>Implicit template instantiation</li>
+<li>Explicit template instantiation</li>
+</ul>
+</li>
+</ul>
+<p>They are better explained by an example:</p>
+<pre class="lang:c++ decode:true">// Primary template.
+template&lt;typename T&gt; struct Trait {};
+// Partial specialization.
+template&lt;typename T&gt; struct Trait&lt;T*&gt; {};
+// Explicit specialization.
+template&lt;&gt; struct Trait&lt;int&gt; {};
+ 
+// Implicit template instantiation of template specialization 'Trait&lt;void&gt;' from the primary template.
+Trait&lt;void&gt; trait1;
+// Implicit template instantiation of template specialization 'Trait&lt;void*&gt;' from the partial specialization.
+Trait&lt;void*&gt; trait2;
+// No template instantiation for explicit specialization.
+Trait&lt;int&gt; trait3;
+// Explicit template instantiation of template specialization 'Trait&lt;char&gt;' from the primary template.
+template struct Trait&lt;char&gt;;
+// Explicit template instantiation of template specialization 'Trait&lt;char*&gt;' from the partial specialization.
+template struct Trait&lt;char*&gt;;</pre>
+<p>Template specialization and template instantiation are often used interchangeably. However, the distinction is important when evaluating build throughput.</p>
+<p>Let us look at an example:</p>
+<pre class="lang:c++ decode:true">template&lt;typename T&gt; struct Vector
+{
+    void sort() { /**/ }
+    void clear() { /**/ }
+};
+
+Vector&lt;int&gt; get_vector();
+
+template&lt;typename V&gt; void sort_vector(V&amp; v) { v.sort(); }
+
+void test(Vector&lt;long&gt;&amp; v)
+{
+    ::sort_vector(v); // I will explain why we use '::' here later.
+}</pre>
+<p>In the example above, the MSVC compiler does the following:</p>
+<pre>Start processing user code
+    Process class template 'Vector'
+    Process function 'get_vector'
+        Specialize 'Vector&lt;int&gt;'
+    Process function template 'sort_vector'
+    Process function 'test'
+        Specialize 'Vector&lt;long&gt;'
+        Specialize 'sort_vector&lt;Vector&lt;long&gt;&gt;'
+        Instantiate 'sort_vector&lt;Vector&lt;long&gt;&gt;' (delayed)
+            Add 'sort_vector&lt;Vector&lt;long&gt;&gt;' to the pending list
+End processing user code
+Start processing the pending list for delayed instantiation
+    Iteration 1
+        Instantiate 'sort_vector&lt;Vector&lt;long&gt;&gt;'
+        Instantiate 'Vector&lt;long&gt;'
+        Instantiate 'Vector&lt;long&gt;::sort' (delayed)
+            Add 'Vector&lt;long&gt;::sort' to the pending list
+    Iteration 2
+        Instantiate 'Vector&lt;long&gt;::sort'
+End processing the pending list
+</pre>
+<p>You can see that template specialization occurs at an earlier step in processing than template instantiation and is often cheaper.</p>
+<p>When you specialize a function template (like <code>sort_vector&lt;Vector&lt;long&gt;&gt; </code>in the example), the compiler only processes its declaration and its definition is not processed.  The compiler will create an internal representation for the specialization and add that to a map.  If the same specialization is specialized again later, the compiler will find the internal representation from the map and reuse it to avoid duplicated work (known as <em>memoization</em>). The definition is processed when the specialization is instantiated.</p>
+<p>Similarly, when you specialize a class template its definition is also not processed. Instantiation of class template specialization is a bit more complicated. By default, the member of the class template specialization is not instantiated when the specialization itself is instantiated (like <code>Vector&lt;long&gt;::clear</code>). The member is instantiated when it is used (like <code>Vector&lt;long&gt;::sort</code>) and MSVC will delay the instantiation if possible.</p>
+<p>You may wonder what if I use <code>sort_vector</code> in <code>test</code>. It will change the processing order.</p>
+<ul>
+<li>When qualified name <code>::sort_vector</code> is used, it suppresses <a href="https://en.cppreference.com/w/cpp/language/adl">argument dependent lookup (ADL)</a>.</li>
+<li>When unqualified name <code>sort_vector</code> is used instead, ADL will compute the associated set of <code>v</code> and this forces the instantiation of <code>Vector&lt;long&gt;</code>. So, the instantiation is no longer delayed to the phase which processes the pending list.</li>
+</ul>
+<p>With this information in mind, let us check some common patterns and see which requires template instantiation.</p>
+<pre class="lang:c++ decode:true">template&lt;int N&gt; struct Array { static_assert(N &gt; 0, ""); };
+
+struct Data
+{
+    Array&lt;1&gt; arr; // Array&lt;1&gt; is instantiated.
+};
+
+Array&lt;2&gt; transform(Array&lt;3&gt; *); // Neither Array&lt;2&gt; nor Array&lt;3&gt; is instantiated.
+
+void test()
+{
+    transform(nullptr); // Array&lt;2&gt; is instantiated, Array&lt;3&gt; is not instantiated.
+}</pre>
+<p>The <code>Array&lt;1&gt; </code>case: When it is used as the type of a member, the compiler needs to instantiate the specialization to know its information like the size. This is one of the most common reasons why a template specialization is instantiated in a header and is often hard to avoid.</p>
+<p>The <code>Array&lt;2&gt;</code> case: Using a template specialization as the function return type does not require it to be instantiated (if there is no function definition). The same is true if it is used as the type of a function parameter. However, providing the function definition or calling the function will force the instantiation of the return type.</p>
+<p>The <code>Array&lt;3&gt;</code> case: passing <code>nullptr</code> as the function argument does not require the instantiation because <code>nullptr</code> is always convertible to any pointer type. The same is true if you cast <code>nullptr</code> to <code>Array&lt;3&gt; *</code>. However, if the function argument is a pointer to a class, the compiler must instantiate <code>Array&lt;3&gt;</code> to see whether the conversion is valid.</p>
+<p>In the next blog post, we will use some examples from the real-world code bases and find ways to reduce the number of template specializations and template instantiations.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/">Build Throughput Series: Template Metaprogramming Fundamentals</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/feed/</wfw:commentRss>
+			<slash:comments>5</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Faster C++ Iteration Builds</title>
+		<link>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/#comments</comments>
+		
+		<dc:creator><![CDATA[Russ Keldorph]]></dc:creator>
+		<pubDate>Wed, 06 Jan 2021 15:00:26 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27076</guid>
+
+					<description><![CDATA[<p>We made improvements to C++ link time earlier in Visual Studio 2019, and we have more improvements to tell you about. As of version 16.7, we measure up to 5X improvement in some incremental linking and debugging scenarios and up to a 1.5X speedup in full linking.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/">Faster C++ Iteration Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We made improvements to C++ link time earlier in Visual Studio 2019, and we have more improvements to tell you about. As of version 16.7, we measure up to 5X improvement in some incremental linking and debugging scenarios and up to a 1.5X speedup in full linking. These represent some of the improvements <a href="https://devblogs.microsoft.com/cppblog/the-coalition-sees-27-9x-iteration-build-improvement-with-visual-studio-2019/">The Coalition saw in their recent experiment</a>. Keep reading to find out the details.</p>
+<p>After the link time improvements in versions <a href="https://devblogs.microsoft.com/cppblog/game-performance-and-compilation-time-improvements-in-visual-studio-2019/">16.0</a> and <a href="https://devblogs.microsoft.com/cppblog/improved-linker-fundamentals-in-visual-studio-2019/">16.2</a>, we took a step back and re-evaluated the complete edit-build-debug (“inner loop”) experience of C++ developers. We were still looking at large projects like AAA games and Chrome because large projects are most likely to suffer from longer iteration times. We found a couple of opportunities that looked promising and went after them. The first, in Visual Studio 2019 version 16.6, is an improvement to some of the algorithms inside the Program Database (PDB) and Debug Interface Access (DIA) components, which are the libraries that enable writing and reading debug information respectively. The second, in Visual Studio 2019 version 16.7, is an optimization to speed up the worst case Incremental Linking time, which can be as bad as or worse than a full link.</p>
+<h2 id="faster-debug-information">Faster Debug Information</h2>
+<p>Program Database (PDB) creation is often the bottleneck when linking binaries, and for large, monolithic codebases, linking ends up being a <em>very</em> long pole at the end of the critical path. Furthermore, PDB reading is a significant contributor to delays when debugging large projects. It features prominently in profiles when hitting breakpoints and single-stepping—particularly when the developer has multiple debug windows like the Call Stack and Watch windows open in Visual Studio.</p>
+<p>In our private benchmarks, these improvements showed some big gains in AAA Games and other large scenarios. The following chart has some examples of the improvements we saw.</p>
+<p><img width="1172" height="706" class="wp-image-27267" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common.png" alt="Chart showing sample improvements for some common iteration build operations between version 16.5 and 16.6: link time (5 sec -&gt; 2.5 sec), time to switch callstack frame (0.9 sec -&gt; 0.2 sec), and initial PDB load time (53 sec -&gt; 32 sec)." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common.png 1172w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-300x181.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-1024x617.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-768x463.png 768w" sizes="(max-width: 1172px) 100vw, 1172px" /></p>
+<p>Note that the absolute time deltas in the chart are examples taken from different projects. However, all are indicative of the type of speedup we saw across multiple projects. That is, they are not cherry-picked outliers. To summarize, we often saw:</p>
+<ul>
+<li>Up to 1.5X speedup for full linking</li>
+<li>Up to 4X speedup in switching active function on call stack with many variables</li>
+<li>2X speedup of initial PDB load</li>
+</ul>
+<p>Perhaps more compelling, though, is that since version 16.6 was released, the time to enter break state after a single step is faster by about 2X on average. The actual benefit depends on the size of your project and the number of debugger windows (watch, callstack, etc.) you have open, but the good news is that users who encountered stepping delays in the past are likely to notice improvements in version 16.6.</p>
+<h3 id="what-we-did">What We Did</h3>
+<p>For version 16.6, we profiled some common developer scenarios and found several opportunities to improve the code that both reads and writes debug information. Below are some examples of the types of algorithmic improvements we made.</p>
+<ol>
+<li>Avoid search by Relative Virtual Address (RVA) by caching the result of the previous request, which in 99% of cases uses the same RVA</li>
+<li>Compute older CRC-32 hash for type records on-demand (gives the most speedup in /Zi full link)</li>
+<li>Create fast-path for the VS debugger’s query pattern</li>
+<li>Improve memory-mapped file reading by using AVX-based memcpy tuned for multiples of the page size</li>
+<li>Use C++ std::sort instead of qsort</li>
+<li>Use integer division by a constant (e.g. page size) rather than division by a variable</li>
+<li>Re<em>use</em> rather than re<em>build</em> hash tables</li>
+<li>Avoid virtual function calls and manually inline code for the two most common symbol lookups</li>
+<li>Prefetch PDB data in some cases</li>
+</ol>
+<p>Note that the first item, caching the previous request’s result, was responsible for the vast majority of the PDB reading wins.</p>
+<h2 id="better-worst-case-incremental-linking">Better Worst-case Incremental Linking</h2>
+<p>Incremental linking is one of the most time-saving features of our toolset. It allows developers to iterate quickly when making common source changes in large projects by reusing most of the results of earlier links and strategically applying the differences made in the last source edit. However, it can’t accommodate all source changes and will sometimes be forced to fall back on full linking, which means the overall incremental link time can actually be worse than a full link, since incremental linking will spend time figuring out it can’t proceed before starting over from scratch. It makes sense that high-impact edits, like changing compiler or linker options or touching a widely-included header file require a rebuild, but simply adding a new object (.obj) file will also trigger a full re-link. For many developers, this isn’t a big deal since they rarely add new object files and/or full linking isn’t terribly long anyway. However, if you work on large binaries or you use a coding style or project system (like some variants of a <a href="https://en.wikipedia.org/wiki/Unity_build">Unity build</a>) that commonly results in object files being added or removed, the hit to incremental link time can be tens of seconds or more. Unfortunately, these limitations are fundamental to the design of incremental linking and removing them would mean slowing down the most common case that incremental linking is optimized for: simple source edits to small numbers of existing translation units.</p>
+<h3 id="type-merge-cache">Type Merge Cache</h3>
+<p>In version 16.7, though we couldn’t reasonably make incremental linking work in more cases, we realized that we <em>could</em> improve how long it takes to link when we must fall back on full linking. The key insights were:</p>
+<ol>
+<li>Most of the time for a full link is spent generating debug information, and</li>
+<li>Generating correct debug information is much more forgiving than correctly linking an executable binary.</li>
+</ol>
+<p>Conceptually similar to how incremental linking works, we added the ability to cache the results of earlier debug information generation (specifically, the result of <em>type merging</em>) and reuse that during subsequent links. This technique can mean drastic speedups (2X-5X) in link time when incremental linking falls back on full linking. The following chart has some examples of the impact on three AAA Game projects and Chrome.</p>
+<p><img width="1174" height="707" class="wp-image-27268" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif.png" alt="Chart showing worst-case incremental link time difference between versions 16.6 and 16.7 for three AAA games and Chrome. Speedups range from 1.5X to 5.5X." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif.png 1174w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-300x181.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-1024x617.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-768x463.png 768w" sizes="(max-width: 1174px) 100vw, 1174px" /></p>
+<p>This caching does have some downsides, though:</p>
+<ol>
+<li>The cached data is stored in the PDB file, which is therefore larger, and</li>
+<li>The first (clean) link of an incremental build takes slightly longer since the cache must be built up.</li>
+</ol>
+<p>The following table captures the benefits as well as downsides for the above projects.</p>
+<table>
+<tbody>
+<tr>
+<td></td>
+<td><strong>Initial link time </strong></td>
+<td><strong>PDB size</strong></td>
+<td><strong>Subsequent full link time</strong></td>
+</tr>
+<tr>
+<td>Game X</td>
+<td>10%</td>
+<td>35.1%</td>
+<td>-48.8%</td>
+</tr>
+<tr>
+<td>Game Y</td>
+<td>1.4%</td>
+<td>31.8%</td>
+<td>-81.1%</td>
+</tr>
+<tr>
+<td>Game Z</td>
+<td>3.4%</td>
+<td>27.9%</td>
+<td>-64.2%</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>10.9%</td>
+<td>10.1%</td>
+<td>-29.4%</td>
+</tr>
+</tbody>
+</table>
+<p>The “Subsequent full link time” column corresponds to a scenario where incremental linking is enabled (<code>/INCREMENTAL</code>) but had to fall back on full linking, such as when a new object file is introduced. As you can see, the impact of this new cache can be substantial when the full link time is measured in tens of seconds or minutes.</p>
+<p>It&#8217;s interesting to note that the cache could be used for any full linking scenarios, not just the case when incremental linking must fall back to a full link. However, because of the drawbacks, it’s only on-by-default when incremental linking is used. Release builds and builds where incremental linking is disabled (<code>/INCREMENTAL:NO</code>) won’t see an impact unless the new <code>/PDBTMCACHE </code>linker switch is specified. Similarly, the <code>/PDBTMCACHE:NO</code> switch can be used to disable the cache creation and return to version 16.6 behavior if desired. Note that the linker does not rely on the presence of the cache. If the cache is present and passes validation, the linker will use it to accelerate linking, but a missing cache or a cache that has been invalidated is silently ignored.</p>
+<h3 id="future-work">Future work</h3>
+<p>We know there are at least a few people for whom the PDB size impact of the Type Merge Cache will be a concern, so, in the future, we might consider placing the cache in a separate file. We didn’t put it in the incremental link file (.ilk) because the feature isn’t fundamentally tied to incremental linking—that’s why there is a switch to control it independently.</p>
+<p>In a future blog post, we’ll share the details of further link time improvements in version 16.8!</p>
+<h2 id="upgrade-today-and-let-us-know-about-the-difference-you-see">Upgrade today and let us know about the difference you see</h2>
+<p>We profiled developer inner loops in several scenarios that we track, and we tamped down a couple of hot spots that stood out in PDB reading and writing and incremental link fall-back. Did you notice a difference when upgrading from version 16.5 or earlier to 16.6 and/or 16.7? If so, we’d love to hear about them in the comments below or via email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>). If you’ve got a problem or would like to share other feedback, please use Help &gt; Send Feedback &gt; Report A Problem / Provide A Suggestion in Visual Studio or go to <a href="http://developercommunity.visualstudio.com/">Developer Community</a>. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>)). And, of course, if you haven’t tried Visual Studio 2019 yet, we’d love for you to <a href="https://visualstudio.microsoft.com/vs/preview/">download it and give it a try</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/">Faster C++ Iteration Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/feed/</wfw:commentRss>
+			<slash:comments>8</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</title>
+		<link>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/#comments</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Tue, 08 Dec 2020 19:17:29 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27214</guid>
+
+					<description><![CDATA[<p>Visual Studio can now configure IntelliSense in CMake projects based on the value of CMake variables set by CMake toolchain files. These improvements provide automatic IntelliSense configuration when a CMake toolchain file is used for configuration and build. For example, Visual Studio can now provide IntelliSense for CMake projects using an Android toolchain file.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/">Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio can now configure IntelliSense in CMake projects based on the value of CMake variables set by CMake toolchain files. These improvements provide automatic IntelliSense configuration when a <a href="https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html">CMake toolchain file</a> is used for configuration and build. For example, Visual Studio can now provide IntelliSense for CMake projects using an Android toolchain file. These changes will also improve IntelliSense for embedded developers using Visual Studio’s IoT (cross-compiler) configuration. More information on these changes is provided below. This support builds on Visual Studio’s <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160&amp;viewFallbackFrom=vs-2019">native support for CMake</a> and is available in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 2</a>.</p>
+<p>The following changes have been made to handle CMake toolchain files when using GCC or Clang. Make sure that the IntelliSense mode is set to any Clang or GCC option in the CMake Settings Editor (&#8220;Show advanced settings&#8221; at the bottom of the editor &gt; &#8220;IntelliSense mode&#8221;). These changes apply to local Windows configurations and configurations targeting a <a href="https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=msvc-160">remote Linux system or WSL</a>. Visual Studio will introspect the following variables for extra IntelliSense information.</p>
+<ol>
+<li>If a CMake toolchain file defines CMAKE_CXX_COMPILER and CMAKE_C_COMPILER and writes the value to the CMake cache, then Visual Studio will query these compilers for the list of predefined DEFINES and the list of include search locations.</li>
+<li>If a CMake toolchain file defines CMAKE_SYSROOT and writes the value to the CMake cache, then Visual Studio will pass the value (−−sysroot=&lt;value&gt;) when determining the compilers defines and headers. If this variable is not found in the CMake cache, then Visual Studio next checks if the sysroot environment variable is defined and uses it instead.</li>
+<li>If a CMake toolchain file defines CMAKE_C_COMPILER_TARGET and CMAKE_CXX_COMPILER_TARGET and writes the value to the CMake cache, then Visual Studio will also pass these to the compiler (−−target=&lt;value&gt;).</li>
+</ol>
+<p>Note that CMake scripts can write a variable to the CMake cache by appending <a href="https://cmake.org/cmake/help/latest/command/set.html#set-cache-entry">CACHE &lt;type&gt; &lt;docstring&gt;</a> to the set command.</p>
+<p>Additionally, the following options have been added to CMakeSettings.json to enable further IntelliSense configuration. These options can be set per configuration.</p>
+<pre class="prettyprint">"intellisenseOptions": {
+
+        "additionalCompilerArgs": "&lt;any-args&gt;",
+
+        "useCompilerDefaults": false
+
+      }</pre>
+<p><strong>additionalCompilerArgs</strong> can be used to explicitly add arguments to be used when Visual Studio queries the compiler for IntelliSense. <strong>useCompilerDefaults</strong> can be used to disable the use of the GCC/Clang compiler for IntelliSense configuration (defaults to true). These options apply to Windows, Linux, and WSL configurations.</p>
+<h4 id="give-us-your-feedback">Give us your feedback</h4>
+<p>Download <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 2</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/">Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Visual Studio Code C++ Extension: ARM and ARM64 support</title>
+		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/#respond</comments>
+		
+		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
+		<pubDate>Tue, 08 Dec 2020 14:00:03 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27195</guid>
+
+					<description><![CDATA[<p>The latest release of the Visual Studio Code C++ extension brings C++ IntelliSense and build support for Windows ARM64, Linux ARM and Linux ARM64 architectures. What’s more, you can download VS Code builds for ARM and ARM64 architectures, meaning you can officially use VS Code and the C++ extension on a Raspberry Pi,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/">Visual Studio Code C++ Extension: ARM and ARM64 support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The latest release of the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Visual Studio Code C++ extension</a> brings C++ IntelliSense and build support for Windows ARM64, Linux ARM and Linux ARM64 architectures. What’s more, you can <a href="https://code.visualstudio.com/#alt-downloads">download VS Code builds for ARM and ARM64 architectures</a>, meaning you can officially use VS Code and the C++ extension on a Raspberry Pi, Chromebook, Surface Pro X, and other ARM-based devices! To find out more about all the enhancements in the November 2020 update, check out our <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.1.0">release notes on GitHub.</a></p>
+<h2 id="windows-arm64-support"><strong>Windows ARM64 support</strong></h2>
+<p>If you’re using a Surface Pro X, you now have access to the C++ extension’s rich feature set. This includes IntelliSense (things like quick info, autocomplete, and signature help), code navigation (find all references, go to definition/declaration), and refactoring (rename symbol). Along with code editing features, the latest release supports building C++ projects on Windows ARM64!</p>
+<h2 id="linux-arm-and-arm64-support"><strong>Linux ARM and ARM64 support</strong></h2>
+<p>The September 2020 1.0 release of the C++ extension enabled building and debugging on Linux ARM and ARM64 through remote-SSH with your compiler and debugger of choice. Since then, <a href="https://code.visualstudio.com/updates/v1_50#_linux-arm-builds">VS Code has released official builds for Linux ARM and ARM64</a>, which means you can now build and debug C++ projects in VS Code directly on your Raspberry Pi! Check out this quick demo to learn more:</p>
+<p><div style="width: 640px;" class="wp-video"><!--[if lt IE 9]><script>document.createElement('video');</script><![endif]-->
+<video class="wp-video-shortcode" id="video-27195-1" width="640" height="360" preload="metadata" controls="controls"><source type="video/mp4" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4?_=1" /><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4">https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4</a></video></div></p>
+<h2 id="what-do-you-think"><strong>What do you think?</strong></h2>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>. You can also join our Insiders program and get access to early builds of our release by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and under <strong>Extensions</strong> &gt; <strong>C/C++,</strong> change the “<strong>C_Cpp: Update Channel</strong>” to “<strong>Insiders</strong>”.</p>
+<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/">Visual Studio Code C++ Extension: ARM and ARM64 support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		<enclosure url="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4" length="8800912" type="video/mp4" />
+
+			</item>
+		<item>
+		<title>Conditionally Trivial Special Member Functions</title>
+		<link>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/#comments</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Fri, 20 Nov 2020 15:49:10 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27135</guid>
+
+					<description><![CDATA[<p>The C++ standards committee is currently focusing on adding features to the language which can simplify code. One small example of this in C++20 is conditionally trivial special member functions, which we added support for in Visual Studio 2019 version 16.8.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/">Conditionally Trivial Special Member Functions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ standards committee is currently focusing on adding features to the language which can simplify code. One small example of this in C++20 is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0848r3.html">conditionally trivial special member functions</a>, which we added support for in <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">Visual Studio 2019 version 16.8</a>. Its benefit isn’t immediately obvious unless you’ve been deep down the rabbit hole of high-performance library authoring, so I’ve written this post to show you how it can make certain generic types more efficient without requiring huge amounts of template magic.</p>
+<h1 id="the-problem">The Problem</h1>
+<p>Types which wrap other types are common in the C++ world: pairs, tuples, optionals, adapters, etc. For some of these your implementation can’t use the default special member functions (default constructor, copy/move constructor, copy/move assignment, destructor) because there’s some additional work that needs to be done. Take for example this <code>std::optional</code>-like type:<code></code></p>
+<pre class="prettyprint">template &lt;typename T&gt;
+struct optional {
+   bool has_value_;
+   union {
+      T value_;
+      char empty_; //dummy member
+   };
+};</pre>
+<p>It has a <code>bool</code> member to say whether it is currently storing a value, and a union member which either stores a value or stores a dummy member when the <code>optional</code> is empty.</p>
+<p>The default special members won’t work here: when the union member has non-trivial constructors and destructors, we need to explicitly handle these in our <code>optional</code> type. Focusing on the copy constructor, here’s a potential implementation:</p>
+<pre class="prettyprint">   optional(optional const&amp; rhs)
+      : has_value_(rhs.has_value_), empty_()
+   {
+      if (has_value_) {
+         new (&amp;value_) T(rhs.value_);
+      }
+   }</pre>
+<p>We check if the <code>rhs</code> has a value, and if it does, we use it to copy-construct our own value.</p>
+<p>But there’s a performance issue here. Say we make a copy of an <code>optional&lt;int&gt;</code>, like this:</p>
+<pre class="prettyprint">optional&lt;int&gt; make_copy(optional&lt;int&gt; const&amp; o) {
+  return o;
+}</pre>
+<p>Since <code>int</code>s are <a href="https://en.cppreference.com/w/cpp/language/copy_constructor#Trivial_copy_constructor">trivially copy constructible</a> (i.e. one can copy them by copying their memory rather than having to use any constructors), copying the <code>optional&lt;int&gt;</code> <em>should</em> only require copying its byte representation. But this is the code which the compiler generates for <code>make_copy</code>:</p>
+<pre class="prettyprint">      movzx eax, BYTE PTR [rdx]   #load o
+      mov BYTE PTR [rcx], al      #copy.has_value_ = rhs.has_value_
+      test al, al                 #test rhs.has_value_
+      je SHORT $EMPTY             #if it’s empty, jump to the end
+      mov eax, DWORD PTR [rdx+4]  #load rhs.value_
+      mov DWORD PTR [rcx+4], eax  #store to copy.value_
+$EMPTY:
+      mov rax, rcx                #return copy
+      ret 0</pre>
+<p>What we really want is a way to use the default special member if the corresponding one in <code>T</code> is trivial, and otherwise use our custom one.</p>
+<h1 id="c17-approaches">C++17 Approaches</h1>
+<p>One approach which at first seems possible is using <code><a href="https://en.cppreference.com/w/cpp/types/enable_if">std::enable_if</a> </code>to select between the default and custom copy constructor implementations depending on the properties of <code>T</code>:</p>
+<pre class="prettyprint">template &lt;class U = T, 
+          std::enable_if_t&lt;std::is_copy_constructible_v&lt;U&gt; &amp;&amp; 
+                           std::is_trivially_copy_constructible_v&lt;U&gt;&gt;* = nullptr&gt;
+optional(optional const&amp; rhs) = default;
+
+template &lt;class U = T, 
+          std::enable_if_t&lt;std::is_copy_constructible_v&lt;U&gt; &amp;&amp;
+                           !std::is_trivially_copy_constructible_v&lt;U&gt;&gt;* = nullptr&gt;
+optional(optional const&amp; rhs)
+      : has_value_(rhs.has_value_), empty_()
+{
+   if (has_value_) {
+   new (&amp;value_) T(rhs.value_);
+  }
+}</pre>
+<p>Unfortunately, special members other than the default constructor cannot be templates, so this doesn’t work.</p>
+<p>The common solution which <em>does</em> work is to rip the storage and special members of the template into base classes and select which to inherit from by checking the relevant type traits. The implementation of this is fairly hairy, so I’ve explained it down at the bottom of this post for those who want to see it.</p>
+<p>If we make this change, then the assembly for <code>make_copy</code> becomes this:</p>
+<pre class="prettyprint">      mov rax, QWORD PTR [rdx]   #load o
+      mov QWORD PTR [rcx], rax   #copy memory
+      mov rax, rcx               #return copy
+      ret 0</pre>
+<p>Now we have more efficient code generated, but a whole load of tricky C++ which is hard to write, to maintain, and for the compiler to build efficiently. C++20 lets us keep the efficient assembly, and vastly simplifies the C++.</p>
+<h1 id="c20-solution">C++20 Solution</h1>
+<p>Although our<code> std::enable_if</code> solution from above wouldn’t work because those functions can’t be templates, you <em>can</em> constrain non-template functions using C++20 concepts:</p>
+<pre class="prettyprint">optional(optional const&amp;) = default;
+
+optional(optional const&amp; rhs)
+requires std::copy_constructible&lt;T&gt; &amp;&amp; !std::is_trivially_copy_constructible_v&lt;T&gt;
+    : has_value_(rhs.has_value_), empty_()
+{
+   if (has_value_) {
+   new (&amp;value_) T(rhs.value_);
+  }
+}</pre>
+<p>Now <code>optional&lt;T&gt;</code> is trivially copy constructible if and only if <code>T</code> is, with minimal template magic. We’ve got both efficient code generation and C++ which can be understood and maintained a lot easier than before.</p>
+<h1 id="the-hairy-c17-implementation">The Hairy C++17 Implementation</h1>
+<p>As promised, here’s how you’d do this in C++17.</p>
+<p>We start off by tearing the storage out into its own base class:</p>
+<pre class="prettyprint">template &lt;class T&gt;
+struct optional_storage_base {
+   optional_storage_base() :
+     has_value_(false), empty_()
+   {}
+   bool has_value_;
+   union {
+      T value_;
+      char empty_;
+   };
+};</pre>
+<p>We then have a base class for the copy constructor for when <code>T</code> is trivially copy constructible, and we introduce a default template parameter which we’ll specialize later.</p>
+<pre class="prettyprint">template &lt;class T, bool = std::is_trivially_copy_constructible_v&lt;T&gt;&gt;
+struct optional_copy_base : optional_storage_base&lt;T&gt; {
+  //default copy ctor
+   optional_copy_base(optional_copy_base const&amp;) = default;
+
+  //have to default other special members
+   ~optional_copy_base() = default;
+   optional_copy_base() = default;
+   optional_copy_base(optional_copy_base&amp;&amp;) = default;
+   optional_copy_base&amp; operator=(optional_copy_base const&amp;) = default;
+   optional_copy_base&amp; operator=(optional_copy_base &amp;&amp;) = default;
+};</pre>
+<p>Then we specialize this template for when <code>T</code> is <em>not</em> trivially copy constructible:</p>
+<pre class="prettyprint">template &lt;class T&gt;
+struct optional_copy_base&lt;T, false&gt; : optional_storage_base&lt;T&gt; {
+   optional_copy_base(optional_copy_base const&amp; rhs)
+   {
+      if (rhs.has_value_) {
+         this-&gt;has_value_ = true;
+         new (&amp;this-&gt;value_) T(rhs.value_);
+      }
+   }
+
+   //have to default other special members
+   ~optional_copy_base() = default;
+   optional_copy_base() = default;
+   optional_copy_base(optional_copy_base&amp;&amp;) = default;
+   optional_copy_base&amp; operator=(optional_copy_base const&amp;) = default;
+   optional_copy_base&amp; operator=(optional_copy_base &amp;&amp;) = default;
+};</pre>
+<p>Then we make optional inherit from<code> optional_copy_base&lt;T&gt;</code>:</p>
+<pre class="prettyprint">template &lt;typename T&gt;
+struct optional : optional_copy_base&lt;T&gt; {
+   //other members
+};</pre>
+<p>Then we do this all over again for the move constructor, destructor, copy assignment, and move assignment operators. This is exactly what <a href="https://github.com/microsoft/STL/blob/master/stl/inc/optional">standard library implementors have to go through</a> to get the best codegen possible at the expense of implementation and maintenance burden. It’s not fun, trust me.</p>
+<h1 id="give-us-your-feedback">Give us your feedback</h1>
+<p>Download <a href="https://visualstudio.microsoft.com/vs/" target="_blank" rel="noopener noreferrer">Visual Studio 2019 version 16.8 </a>today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html" target="_blank" rel="noopener noreferrer">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener noreferrer">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/">Conditionally Trivial Special Member Functions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</title>
+		<link>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/#comments</comments>
+		
+		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
+		<pubDate>Thu, 19 Nov 2020 00:07:07 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27117</guid>
+
+					<description><![CDATA[<p>What’s New<br />
+We have continued our efforts to implement C++20 in the MSVC toolset, with noteworthy progress being made in VS (Visual Studio) 2019 v16.7 and VS 2019 v16.8. This blog post lists the features implemented since the C++20 Features and Fixes in VS 2019 16.1 through 16.6 blog post.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/">C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2 aria-level="1" aria-level="1" id="whats-new"><span data-contrast="none">What’s </span><span data-contrast="none">New</span></h2>
+<p><span data-contrast="auto">We have</span><span data-contrast="auto"> continued our efforts to implement C++20 in the MSVC toolset, with </span><span data-contrast="auto">noteworthy progress</span><span data-contrast="auto"> being made in</span><span data-contrast="auto"> </span><span data-contrast="auto">VS (Visual Studio)</span><span data-contrast="auto"> 2019 v16.7 and VS 2019 v16.8. This blog post lists the features implemented </span><span data-contrast="auto">since</span> <span data-contrast="auto">the</span><span data-contrast="auto"> </span><a href="https://devblogs.microsoft.com/cppblog/c20-features-and-fixes-in-vs-2019-16-1-through-16-6/"><span data-contrast="auto">C++20 Features and Fixes in VS 2019 16.1 through 16.6</span></a><span data-contrast="auto"> blog post.</span></p>
+<p><span data-contrast="auto">This blog post will specifically focus on language features implemented in the </span><span data-contrast="auto">MSVC </span><span data-contrast="auto">compiler</span><span data-contrast="auto"> (cl.exe)</span><span data-contrast="auto">. The changelog for conformance progress for the STL is tracked in the </span><a href="https://github.com/microsoft/STL/wiki/Changelog"><span data-contrast="auto">Standard Library changelog</span></a><span data-contrast="auto"> in the </span><a href="https://github.com/microsoft/stl"><span data-contrast="auto">Microsoft STL GitHub</span></a><span data-contrast="auto"> repo</span><span data-contrast="auto">.</span></p>
+<p><span data-contrast="auto">Some of the features covered </span><span data-contrast="auto">were already highlighted in the</span><span data-contrast="auto"> announcements made </span><span data-contrast="auto">a</span><span data-contrast="auto">t</span><span data-contrast="auto"> </span><span data-contrast="auto">CppCon</span><span data-contrast="auto"> 2020</span><span data-contrast="auto"> in September related to the VS 2019 v16.8 Preview 3 release</span><span data-contrast="auto">.</span></p>
+<p><span data-contrast="auto">As a reminder, the </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=vs-2019"><span data-contrast="auto">/</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++17 and /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest</span></a><span data-contrast="auto"> compiler options are necessary to use C++17 and C++20 features</span><span data-contrast="auto">, respectively</span><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p>&nbsp;</p>
+<h2 aria-level="1" aria-level="1" id="vs-2019-v16-7"><span data-contrast="none">VS 2019 v16.7</span></h2>
+<h3 aria-level="2" aria-level="2" id="c20-language-feature-support"><span data-contrast="none">C++20 Language Feature Support</span></h3>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1009R2"><span data-contrast="none">P1009R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Array size deduction in new-expressions</span><span data-contrast="none"> </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0722R3"><span data-contrast="none">P0722R3</span></a><span data-contrast="none"> </span><span data-contrast="none">Efficient</span><span data-contrast="none"> sized </span><span data-contrast="none">delete</span><span data-contrast="none"> for variable sized classes</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1094R2"><span data-contrast="none">P1094R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Nested inline namespaces</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1331R2"><span data-contrast="none">P1331R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Permitting trivial default initialization in constexpr contexts</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1816R0"><span data-contrast="none">P1816R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CTAD for aggregates</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0388R4"><span data-contrast="none">P0388R4</span></a><span data-contrast="none"> </span><span data-contrast="none">Permit conversions to arrays of unknown bound</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1452R2"><span data-contrast="none">P1452R2</span></a><span data-contrast="none"> </span><span data-contrast="none">On the non-uniform semantics of return-type-requirements</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1152R4"><span data-contrast="none">P1152R4</span></a><span data-contrast="none"> </span><span data-contrast="none">Deprecating volatile</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1814R0"><span data-contrast="none">P1814R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CTAD for alias templates</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1972R0"><span data-contrast="none">P1972R0</span></a><span data-contrast="none"> </span><span data-contrast="none">US105 Check satisfaction of constraints for non-templates…</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1980R0"><span data-contrast="none">P1980R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CA096: Declaration matching for non-dependent requires-clauses</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p0528r3"><span data-contrast="none">P0528R3</span></a><span data-contrast="none"> A</span><span data-contrast="none">tomic compare-and-exchange with </span><span data-contrast="none">padding</span><span data-contrast="none"> </span><span data-contrast="none">bits</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p1358r0"><span data-contrast="none">P1358R0</span></a><span data-contrast="none"> T</span><span data-contrast="none">ype completeness and derived-to-base pointer </span><span data-contrast="none">conversions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p0466r5"><span data-contrast="none">P0466R5</span></a><span data-contrast="none"> </span><span data-contrast="none">L</span><span data-contrast="none">ayout-Compatibility</span><span data-contrast="none"> and Pointer-Interconvertibility Traits</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2107r0"><span data-contrast="none">P2107R0</span></a><span data-contrast="none"> </span><span data-contrast="none">US064 Copy semantics of coroutine </span><span data-contrast="none">parameters</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Implemented</span><span data-contrast="auto"> </span><a href="https://wg21.link/p2107r0"><span data-contrast="none">P2107R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">US052 </span><span data-contrast="auto">Non-executed return statements in </span><span data-contrast="auto">coroutines</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2103r0"><span data-contrast="none">P2103R0</span></a><span data-contrast="none"> </span><span data-contrast="none">Allow &#8220;import&#8221; inside linkage-specifications [</span><span data-contrast="none">dcl.link</span><span data-contrast="none">]</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2085R0"><span data-contrast="none">P2085R0</span></a><span data-contrast="none"> </span><span data-contrast="none">Consistent </span><span data-contrast="none">defaulted</span><span data-contrast="none"> comparisons</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2280 Matching a usual deallocation function with placement </span><span data-contrast="auto">new</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2382 Array allocation overhead for non-allocating placement </span><span data-contrast="auto">new</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Implemented </span><span data-contrast="auto">CWG</span><span data-contrast="auto"> 2441 Inline function </span><span data-contrast="auto">parameters</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2282</span><span data-contrast="none"> Consistency with mismatched aligned/non-over-aligned allocation/deallocation functions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="auto">Implemented US212 Converting from T* to bool should be considered </span><span data-contrast="auto">narrowing</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h2 aria-level="1" aria-level="1" id="vs-2019-v16-8"><span data-contrast="none">VS 2019 v</span><span data-contrast="none">16.8</span></h2>
+<h3 aria-level="2" aria-level="2" id="c20-language-feature-support"><span data-contrast="none">C++20 Language Feature Support</span></h3>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1103R3"><span data-contrast="none">P1103R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Modules</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0912R5"><span data-contrast="none">P0912R5</span></a><span data-contrast="none"> </span><span data-contrast="auto">Coroutines</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1286R2"><span data-contrast="none">P1286R2</span></a><span data-contrast="none"> </span><span data-contrast="auto">Contra CWG DR1778</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0315R4"><span data-contrast="none">P0315R4</span></a><span data-contrast="none"> </span><span data-contrast="auto">Allowing lambdas in unevaluated contexts</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0960R3"><span data-contrast="none">P0960R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Allow initializing aggregates from a parenthesized list of values</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0848R3"><span data-contrast="none">P0848R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Conditionally trivial special member functions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1811R0"><span data-contrast="none">P1811R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">Relaxing redefinition restrictions for re-exportation robustness</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1766R1"><span data-contrast="none">P1766R1</span></a><span data-contrast="none"> </span><span data-contrast="auto">Mitigating minor modules maladies</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1975R0"><span data-contrast="none">P1975R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">Fixing the wording of parenthesized aggregate-initialization</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1874R1"><span data-contrast="none">P1874R1</span></a><span data-contrast="none"> </span><span data-contrast="auto">Dynamic Initialization Order of Non-Local Variables in Modules</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
+</ul>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">Two of the major features of C++20, </span><a href="https://devblogs.microsoft.com/cppblog/standard-c20-modules-support-with-msvc-in-visual-studio-2019-version-16-8/"><span data-contrast="none">Modules</span></a><span data-contrast="auto"> and </span><a href="https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/"><span data-contrast="none">Coroutines</span></a><span data-contrast="auto">, are now feature-complete in the MSVC toolset and are now implied by the /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest compiler switch. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h3 aria-level="2" aria-level="2" id="strict-conformance-mode-permissive-and-stdclatest"><span data-contrast="none">Strict conformance mode (/permissive-) and /</span><span data-contrast="none">std:c</span><span data-contrast="none">++latest</span></h3>
+<p><span data-contrast="auto">As a prerequisite for Modules support, `/permissive-` is now enabled when /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest is specified</span><span data-contrast="auto">. </span><span data-contrast="auto">See</span><span data-contrast="auto"> </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=vs-2019"><span data-contrast="none">/permissive- </span><span data-contrast="none">documentation</span></a><span data-contrast="auto"> </span><span data-contrast="auto">regarding</span><span data-contrast="auto"> compiling code under `/permissive-`.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">For code that previously compiled under /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest and requires non-conformant compiler behaviors, `/permissive` may be specified to turn off strict conformance mode in the compiler and must appear after /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest in the command line argument list. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">However, specifying `/permissive` will result in an error if Modules usage is </span><span data-contrast="auto">encountered</span><span data-contrast="auto">:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p>error C1214: Modules conflict with non-standard behavior requested via &#8216;[option]&#8217;</p>
+<p><span data-contrast="auto">Where the most common values for [</span><span data-contrast="auto">option</span><span data-contrast="auto">] are:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">`</span><span data-contrast="auto"> </span><span data-contrast="auto">:</span><span data-contrast="auto"> Two Phase name lookup (`/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto">`) is </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 Modules and implied by `/permissive-`</span><span data-contrast="auto">. </span><span data-contrast="auto">See also [/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto"> </span><span data-contrast="auto">documentation](</span><span data-contrast="auto">https://docs.microsoft.com/en-us/cpp/build/reference/zc-twophase?view=vs-2019). </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:hiddenFriend</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">` :</span><span data-contrast="auto"> </span><span data-contrast="auto">S</span><span data-contrast="auto">tandard hidden friend name lookup rules </span><span data-contrast="auto">are</span><span data-contrast="auto"> </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 Modules and implied by `/permissive-`. </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">` :</span><span data-contrast="auto"> Use of the conformant preprocessor (/</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto">) is </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 header unit usage and creation only</span><span data-contrast="auto">. </span><span data-contrast="auto">Named Modules do not require this </span><span data-contrast="auto">option</span><span data-contrast="auto">. See also /</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto"> documentation](</span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=vs-2019"><span data-contrast="none">https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=vs-2019</span></a><span data-contrast="auto">) </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<h2 aria-level="1" aria-level="1" id="more-information"><span data-contrast="none">More Information</span></h2>
+<p>For Visual Studio changes (beyond the C++ toolset) and download links, see the <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">VS Release Notes</a> and <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-preview">VS Preview Release Notes</a>. You can report bugs through <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Developer Community</a>, and you can also report STL bugs via <a href="https://github.com/microsoft/STL/issues">microsoft/STL GitHub issues</a>.</p>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/">C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/feed/</wfw:commentRss>
+			<slash:comments>13</slash:comments>
+		
+		
+			</item>
+	</channel>
+</rss>
