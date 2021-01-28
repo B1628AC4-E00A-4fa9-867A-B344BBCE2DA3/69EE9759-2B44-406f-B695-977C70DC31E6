@@ -7,13 +7,16 @@ jobs:
   fetch:
     name: Fetch
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v2
       - continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          wget --progress=dot --no-if-modified-since -m -i url.in.txt
           git config --global user.email "fetch"
           git config --global user.name "fetch"
+          git clone --depth 1 https://x:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY
+          wget --progress=dot --no-if-modified-since -m -i url.in.txt 2>wget.2.out
           git add .
           git commit -m "commit by fetch"
           git push origin main
