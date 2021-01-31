@@ -6,7 +6,7 @@ BEGIN {
 	print "<channel><title>https://dengekionline.com/</title><dc:rights>portions by (c) KADOKAWA Game Linkage Inc.</dc:rights></channel>";
 }
 
-/<ul class="listlevel">/ {listlevel++;}
+/<ul class="gNews_list">/ {listlevel++;}
 /<ul class="gNews_catList">/ {listlevel++;}
 listlevel && match($0,/<a href="(.+)">/,re) { id=re[1]; print "<item rdf:about=\"" id "\">" }
 listlevel && match($0,/<p class="gNews_text">(.+)<\/p>/,re) { print "<description>" re[1] "</description>" }
