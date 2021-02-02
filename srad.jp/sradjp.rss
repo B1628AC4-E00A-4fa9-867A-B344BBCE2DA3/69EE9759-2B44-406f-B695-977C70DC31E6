@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2021-02-02T06:27:14+00:00</dc:date>
+<dc:date>2021-02-02T08:31:14+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,8 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://opensource.srad.jp/story/21/02/01/1832255/" />
+  <rdf:li rdf:resource="https://mobile.srad.jp/story/21/02/01/2050239/" />
   <rdf:li rdf:resource="https://security.srad.jp/story/21/02/01/201206/" />
   <rdf:li rdf:resource="https://mobile.srad.jp/story/21/02/01/1935255/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/21/02/01/1822259/" />
@@ -36,8 +38,6 @@
   <rdf:li rdf:resource="https://developers.srad.jp/story/21/02/01/1733234/" />
   <rdf:li rdf:resource="https://srad.jp/story/21/01/31/1832259/" />
   <rdf:li rdf:resource="https://srad.jp/story/21/02/01/0336212/" />
-  <rdf:li rdf:resource="https://srad.jp/story/21/01/31/2022238/" />
-  <rdf:li rdf:resource="https://yro.srad.jp/story/21/01/31/1558226/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,129 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://opensource.srad.jp/story/21/02/01/1832255/">
+<title>リリース直後に深刻な脆弱性が見つかったLibgcrypt 1.9.0、バージョン1.9.1への更新が呼び掛けられる</title>
+<link>https://opensource.srad.jp/story/21/02/01/1832255/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/encryption_64.png"&gt;headless 曰く、1月19日にリリースされたオープンソースの暗号ライブラリLibgcrypt 1.9.0で深刻なヒープバッファーオーバーフロー脆弱性(CVE-2021-3345)が見つかり、29日に修正版のバージョン1.9.1がリリースされた(アナウンス、 Project Zero - Issue 2145、 The Registerの記事)。
+
+GoogleのProject Zeroが発見した脆弱性は汎用ブロックバッファー抽象化コードに含まれており、ブロックバッファー内で占有されたスペースがアルゴリズムのブロックサイズを超えることがないという誤った前提が原因で、データを復号する際に発生する。オーバーフローするバッファーは直後に呼び出される関数のポインターと隣接しているため、容易に悪用が可能だという。
+
+Project Zeroから1月28日に連絡を受けたGnuPG Projectは翌29日に使用中止の呼び掛けを行い、数時間後にバージョン1.9.1をリリースしている。バージョン1.9.0がリリースされたのは1月19日だが、脆弱性は1.9の開発段階でおよそ2年前に導入されていたそうだ。そのため、1.8 LTSブランチは影響を受けないが、GnuPG Projectでは少なくともバージョン1.8.5以降を使用するよう求めている。
+
+リリース直後ということもあって影響範囲は広くないが、既にバージョン1.9.0を使用していたGentooや、macOS用パッケージマネージャーのHomebrewでは対策が行われている。Fedora 34にもバージョン1.9.0が含まれていたが、正式リリース前だったため影響は小さかったとのこと。ただし、バージョン1.9.1では脆弱性修正と無関係な変更も行われており(リリースノート)、Intel CPUでコンパイルエラーが発生するという問題も確認されているとのことだ。&lt;p&gt; &lt;a href="https://opensource.srad.jp/story/21/02/01/1832255/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://opensource.srad.jp/"&gt;オープンソースセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/encryption"&gt;暗号&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://opensource.srad.jp/story/21/02/01/1832255/&amp;amp;text=%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E7%9B%B4%E5%BE%8C%E3%81%AB%E6%B7%B1%E5%88%BB%E3%81%AA%E8%84%86%E5%BC%B1%E6%80%A7%E3%81%8C%E8%A6%8B%E3%81%A4%E3%81%8B%E3%81%A3%E3%81%9FLibgcrypt%201.9.0%E3%80%81%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B31.9.1%E3%81%B8%E3%81%AE%E6%9B%B4%E6%96%B0%E3%81%8C%E5%91%BC%E3%81%B3%E6%8E%9B%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://opensource.srad.jp/story/21/02/01/1832255/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://opensource.srad.jp/story/21/02/01/1832255/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://opensource.srad.jp/story/21/02/01/1832255/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/20/11/12/1814211"&gt;Microsoft、SMSや音声通話による多要素認証をやめてアプリベースの多要素認証への移行を推奨&lt;/a&gt; &lt;small&gt;2020年11月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/12/0424237"&gt;Web会議サービスZoom、虚偽のセキュリティを主張した問題等でFTCと和解&lt;/a&gt; &lt;small&gt;2020年11月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/01/0317226"&gt;GoogleのProject Zero、Windowsカーネルのゼロデイ脆弱性を公表&lt;/a&gt; &lt;small&gt;2020年11月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/23/1652203"&gt;オーストラリア政府、パプアニューギニア設置のデータセンター脆弱性でファーウェイを非難。意図的な不具合か&lt;/a&gt; &lt;small&gt;2020年08月24日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/11/1652234"&gt;QualcommやMediatekのWi-Fiチップでも「KrØØk」に似た脆弱性が発見される&lt;/a&gt; &lt;small&gt;2020年08月12日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/06/15/0412249"&gt;延期されていたTLS 1.0/1.1のデフォルト無効化、6月から順次実施&lt;/a&gt; &lt;small&gt;2020年06月15日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2021-02-02T08:07:00+00:00</dc:date>
+<dc:subject>encryption</dc:subject>
+<slash:department>脆弱性</slash:department>
+<slash:section>opensource</slash:section>
+<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/encryption_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;1月19日にリリースされたオープンソースの暗号ライブラリ&lt;a href="https://lists.gnupg.org/pipermail/gnupg-announce/2021q1/000453.html"&gt;Libgcrypt 1.9.0&lt;/a&gt;で深刻なヒープバッファーオーバーフロー脆弱性(&lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3345"&gt;CVE-2021-3345&lt;/a&gt;)が見つかり、29日に修正版のバージョン1.9.1がリリースされた(&lt;a href="https://lists.gnupg.org/pipermail/gnupg-announce/2021q1/000456.html"&gt;アナウンス&lt;/a&gt;、 &lt;a href="https://bugs.chromium.org/p/project-zero/issues/detail?id=2145"&gt;Project Zero - Issue 2145&lt;/a&gt;、 &lt;a href="https://www.theregister.com/2021/01/29/severe_libgcrypt_bug/"&gt;The Registerの記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+GoogleのProject Zeroが発見した脆弱性は汎用ブロックバッファー抽象化コードに含まれており、ブロックバッファー内で占有されたスペースがアルゴリズムのブロックサイズを超えることがないという誤った前提が原因で、データを復号する際に発生する。オーバーフローするバッファーは直後に呼び出される関数のポインターと隣接しているため、容易に悪用が可能だという。&lt;br&gt;
+&lt;br&gt;
+Project Zeroから1月28日に連絡を受けたGnuPG Projectは翌29日に&lt;a href="https://lists.gnupg.org/pipermail/gnupg-announce/2021q1/000455.html"&gt;使用中止の呼び掛け&lt;/a&gt;を行い、数時間後にバージョン1.9.1をリリースしている。バージョン1.9.0がリリースされたのは1月19日だが、脆弱性は1.9の開発段階でおよそ2年前に導入されていたそうだ。そのため、1.8 LTSブランチは影響を受けないが、GnuPG Projectでは少なくともバージョン1.8.5以降を使用するよう求めている。&lt;br&gt;
+&lt;br&gt;
+リリース直後ということもあって影響範囲は広くないが、&lt;a href="https://bugs.gentoo.org/767814"&gt;既にバージョン1.9.0を使用していたGentoo&lt;/a&gt;や、&lt;a href="https://github.com/Homebrew/homebrew-core/pull/69980"&gt;macOS用パッケージマネージャーのHomebrewでは対策&lt;/a&gt;が行われている。Fedora 34にもバージョン1.9.0が含まれていたが、正式リリース前だったため影響は小さかったとのこと。ただし、バージョン1.9.1では脆弱性修正と無関係な変更も行われており(&lt;a href="https://dev.gnupg.org/T5259"&gt;リリースノート&lt;/a&gt;)、Intel CPUでコンパイルエラーが発生するという問題も確認されているとのことだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+	&lt;a href="https://opensource.srad.jp/story/21/02/01/1832255/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://opensource.srad.jp/"&gt;オープンソースセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/encryption"&gt;暗号&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://opensource.srad.jp/story/21/02/01/1832255/&amp;amp;text=%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E7%9B%B4%E5%BE%8C%E3%81%AB%E6%B7%B1%E5%88%BB%E3%81%AA%E8%84%86%E5%BC%B1%E6%80%A7%E3%81%8C%E8%A6%8B%E3%81%A4%E3%81%8B%E3%81%A3%E3%81%9FLibgcrypt%201.9.0%E3%80%81%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B31.9.1%E3%81%B8%E3%81%AE%E6%9B%B4%E6%96%B0%E3%81%8C%E5%91%BC%E3%81%B3%E6%8E%9B%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://opensource.srad.jp/story/21/02/01/1832255/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://opensource.srad.jp/story/21/02/01/1832255/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://opensource.srad.jp/story/21/02/01/1832255/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/20/11/12/1814211"&gt;Microsoft、SMSや音声通話による多要素認証をやめてアプリベースの多要素認証への移行を推奨&lt;/a&gt;
+			&lt;small&gt;2020年11月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/12/0424237"&gt;Web会議サービスZoom、虚偽のセキュリティを主張した問題等でFTCと和解&lt;/a&gt;
+			&lt;small&gt;2020年11月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/01/0317226"&gt;GoogleのProject Zero、Windowsカーネルのゼロデイ脆弱性を公表&lt;/a&gt;
+			&lt;small&gt;2020年11月01日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/23/1652203"&gt;オーストラリア政府、パプアニューギニア設置のデータセンター脆弱性でファーウェイを非難。意図的な不具合か&lt;/a&gt;
+			&lt;small&gt;2020年08月24日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/11/1652234"&gt;QualcommやMediatekのWi-Fiチップでも「KrØØk」に似た脆弱性が発見される&lt;/a&gt;
+			&lt;small&gt;2020年08月12日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/06/15/0412249"&gt;延期されていたTLS 1.0/1.1のデフォルト無効化、6月から順次実施&lt;/a&gt;
+			&lt;small&gt;2020年06月15日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
+<item rdf:about="https://mobile.srad.jp/story/21/02/01/2050239/">
+<title>世界的にもChromebookの出荷が増加。コロナ禍による教育市場への需要増で</title>
+<link>https://mobile.srad.jp/story/21/02/01/2050239/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/business_64.png"&gt;先日、IDCによるPC出荷台数推計値が発表されているが、その中でも世界的にChromebookの需要が高まっているそうだ。調査会社Canalysが1月28日に行った2020年10~12月のPC市場調査報告によると、Chromebookの出荷台数は、前年同期比287％増だっという。年間ベースでも2019年が1470万台だったのに対して、2020年の出荷台数は3060万台とほぼ倍増している（Canalys、Engadget、ITmedia）。 メーカー別ではHPが350万台とトップ。昨年比では235％増となっている。次はLenovoでこちらの出荷台数は驚異的な1766％増の280万台。3位はAcerとDellがほぼ同等の150万台。5位はSamsung。Samsungは630％増という伸びを示している。6位ASUSであったとしている。日本でもGIGAスクール構想の影響でChromebook市場が伸びると予測されているが、Canalysによると世界的にも同様の傾向であるという。コロナ禍の影響で遠隔学習が増加し、多くの国で生徒一人一人に端末を与える傾向が強まっていることから、教育市場向けのChromebookの伸びが著しいとしている。また教育以外の商用分野などでもChromebookへの引き合いが強まっている模様。&lt;p&gt; &lt;a href="https://mobile.srad.jp/story/21/02/01/2050239/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://mobile.srad.jp/"&gt;モバイルセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/mobile"&gt;モバイル&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/stats"&gt;統計&lt;/a&gt; | &lt;a href="https://srad.jp/stories/medicine"&gt;医療&lt;/a&gt; | &lt;a href="https://srad.jp/stories/ed"&gt;教育&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://mobile.srad.jp/story/21/02/01/2050239/&amp;amp;text=%E4%B8%96%E7%95%8C%E7%9A%84%E3%81%AB%E3%82%82Chromebook%E3%81%AE%E5%87%BA%E8%8D%B7%E3%81%8C%E5%A2%97%E5%8A%A0%E3%80%82%E3%82%B3%E3%83%AD%E3%83%8A%E7%A6%8D%E3%81%AB%E3%82%88%E3%82%8B%E6%95%99%E8%82%B2%E5%B8%82%E5%A0%B4%E3%81%B8%E3%81%AE%E9%9C%80%E8%A6%81%E5%A2%97%E3%81%A7" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://mobile.srad.jp/story/21/02/01/2050239/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://mobile.srad.jp/story/21/02/01/2050239/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://mobile.srad.jp/story/21/02/01/2050239/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/21/01/13/1733204"&gt;2020年のPC出荷台数は3億261万台、10年ぶりの大幅増に&lt;/a&gt; &lt;small&gt;2021年01月14日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/12/17/205202"&gt;Google、CloudreadyのNeverware社を買収。古いPCをChromebook化&lt;/a&gt; &lt;small&gt;2020年12月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/11/19/155248"&gt;GIGAスクール構想で配付された端末、各地で様々な機能制限が報告される&lt;/a&gt; &lt;small&gt;2020年11月21日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/11/05/1715245"&gt;MM総研、2021年にChromebookが国内シェアの24％を占めると予測。GIGAスクール構想の影響で&lt;/a&gt; &lt;small&gt;2020年11月06日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/20/10/14/1625233"&gt;2020年第3四半期PC出荷台数、IDCは14.6％増、Gartnerは3.6%増と推計&lt;/a&gt; &lt;small&gt;2020年10月15日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/09/23/0324222"&gt;グーグルと共同設計してChrome OSのパフォーマンスが向上したAMD製プロセッサ&lt;/a&gt; &lt;small&gt;2020年09月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/08/03/181257"&gt;GIGAスクール構想における教育向けPC市場、Chromebook採用が増える見込み&lt;/a&gt; &lt;small&gt;2020年08月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/25/055249"&gt;「Microsoft版のChromebook」は実現するのか&lt;/a&gt; &lt;small&gt;2020年06月26日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2021-02-02T07:04:00+00:00</dc:date>
+<dc:subject>business</dc:subject>
+<slash:department>アプリ市場が急速に成立しつつあるような</slash:department>
+<slash:section>mobile</slash:section>
+<slash:comments>13</slash:comments>
+<slash:hit_parade>13,13,1,1,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/business_64.png"&gt;先日、&lt;a href="https://mobile.srad.jp/story/21/01/13/1733204/"&gt;IDCによるPC出荷台数推計値&lt;/a&gt;が発表されているが、その中でも世界的にChromebookの需要が高まっているそうだ。調査会社Canalysが1月28日に行った2020年10~12月のPC市場調査報告によると、Chromebookの出荷台数は、前年同期比287％増だっという。年間ベースでも2019年が1470万台だったのに対して、2020年の出荷台数は3060万台とほぼ倍増している（&lt;a href="https://www.canalys.com/newsroom/tablets-chromebooks-q4-2020"&gt;Canalys&lt;/a&gt;、&lt;a href="https://japanese.engadget.com/chromebook-shipments-double-due-033031495.html"&gt;Engadget&lt;/a&gt;、&lt;a href="https://www.itmedia.co.jp/news/articles/2102/01/news125.html"&gt;ITmedia&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;メーカー別ではHPが350万台とトップ。昨年比では235％増となっている。次はLenovoでこちらの出荷台数は驚異的な1766％増の280万台。3位はAcerとDellがほぼ同等の150万台。5位はSamsung。Samsungは630％増という伸びを示している。6位ASUSであったとしている。日本でもGIGAスクール構想の影響で&lt;a href="https://it.srad.jp/story/20/11/05/1715245/"&gt;Chromebook市場が伸びると予測&lt;/a&gt;されているが、Canalysによると世界的にも同様の傾向であるという。コロナ禍の影響で遠隔学習が増加し、多くの国で生徒一人一人に端末を与える傾向が強まっていることから、教育市場向けのChromebookの伸びが著しいとしている。また教育以外の商用分野などでもChromebookへの引き合いが強まっている模様。&lt;p&gt;
+	&lt;a href="https://mobile.srad.jp/story/21/02/01/2050239/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://mobile.srad.jp/"&gt;モバイルセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/mobile"&gt;モバイル&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/stats"&gt;統計&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/medicine"&gt;医療&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/ed"&gt;教育&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://mobile.srad.jp/story/21/02/01/2050239/&amp;amp;text=%E4%B8%96%E7%95%8C%E7%9A%84%E3%81%AB%E3%82%82Chromebook%E3%81%AE%E5%87%BA%E8%8D%B7%E3%81%8C%E5%A2%97%E5%8A%A0%E3%80%82%E3%82%B3%E3%83%AD%E3%83%8A%E7%A6%8D%E3%81%AB%E3%82%88%E3%82%8B%E6%95%99%E8%82%B2%E5%B8%82%E5%A0%B4%E3%81%B8%E3%81%AE%E9%9C%80%E8%A6%81%E5%A2%97%E3%81%A7" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://mobile.srad.jp/story/21/02/01/2050239/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://mobile.srad.jp/story/21/02/01/2050239/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://mobile.srad.jp/story/21/02/01/2050239/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/21/01/13/1733204"&gt;2020年のPC出荷台数は3億261万台、10年ぶりの大幅増に&lt;/a&gt;
+			&lt;small&gt;2021年01月14日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/12/17/205202"&gt;Google、CloudreadyのNeverware社を買収。古いPCをChromebook化&lt;/a&gt;
+			&lt;small&gt;2020年12月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/11/19/155248"&gt;GIGAスクール構想で配付された端末、各地で様々な機能制限が報告される&lt;/a&gt;
+			&lt;small&gt;2020年11月21日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/11/05/1715245"&gt;MM総研、2021年にChromebookが国内シェアの24％を占めると予測。GIGAスクール構想の影響で&lt;/a&gt;
+			&lt;small&gt;2020年11月06日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/20/10/14/1625233"&gt;2020年第3四半期PC出荷台数、IDCは14.6％増、Gartnerは3.6%増と推計&lt;/a&gt;
+			&lt;small&gt;2020年10月15日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/09/23/0324222"&gt;グーグルと共同設計してChrome OSのパフォーマンスが向上したAMD製プロセッサ&lt;/a&gt;
+			&lt;small&gt;2020年09月23日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/08/03/181257"&gt;GIGAスクール構想における教育向けPC市場、Chromebook採用が増える見込み&lt;/a&gt;
+			&lt;small&gt;2020年08月04日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/25/055249"&gt;「Microsoft版のChromebook」は実現するのか&lt;/a&gt;
+			&lt;small&gt;2020年06月26日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://security.srad.jp/story/21/02/01/201206/">
 <title>スマート貞操帯がハッキングされ身代金を要求される。支払うも解除されず</title>
 <link>https://security.srad.jp/story/21/02/01/201206/</link>
@@ -57,8 +180,8 @@
 <dc:subject>slashback</dc:subject>
 <slash:department>ギャーとしかいいようがない</slash:department>
 <slash:section>security</slash:section>
-<slash:comments>4</slash:comments>
-<slash:hit_parade>4,4,1,1,0,0,0</slash:hit_parade>
+<slash:comments>16</slash:comments>
+<slash:hit_parade>16,16,6,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/slashback_64.png"&gt;nagazou 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;ネット操作できるスマート貞操帯を装着していた人物がハッキング被害に合い、貞操帯の操作権をハッカーに奪われたというトラブルがあったそうだ。このトラブルに巻き込まれたのはサム・サマーズ（男性）さん。ハッカーはサマーズさんに対して、スマート貞操帯を解放してほしければビットコインでおよそ1,000ドルを支払うよう要求してきたという（&lt;a href="https://www.vice.com/en/article/4ad5xp/we-spoke-to-a-guy-who-got-his-dick-locked-in-a-cage-by-a-hacker"&gt;Vice&lt;/a&gt;、&lt;a href="https://gigazine.net/news/20210201-locked-cage-hacker/"&gt;GIGAZINE&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;サマーズさんは当初、パートナーによるいたずらだと思っていた。しかし、彼女に問い合わせたところ自分ではないと否定されたという。そして本当に貞操帯がハッキングされてしまったことに気がついたようだ。彼の下半身は檻の中に閉じ込められ、逃げる手段を失ってしまったという。サマーズさんは犯人に手持ちのビットコインを支払ったが、犯人たちはさらに高額な身代金を要求してきたという。&lt;br&gt; &lt;br&gt;サマーズさんは諦め、最終手段としてボルトカッターを購入、出血しつつもスマート貞操帯を破壊したとのこと。なおハッキングされたスマート貞操帯は中国Qiui社製の「&lt;a href="https://www.qiui.store/product-page/cellmate-chastity-cage"&gt;Cellmate Chastity Cage&lt;/a&gt;」という製品だったそうだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
 	&lt;a href="https://security.srad.jp/story/21/02/01/201206/"&gt;すべて読む&lt;/a&gt;
 	
@@ -112,8 +235,8 @@
 <dc:subject>portables</dc:subject>
 <slash:department>他の国への攻撃割合はどうなんでしょうね</slash:department>
 <slash:section>mobile</slash:section>
-<slash:comments>2</slash:comments>
-<slash:hit_parade>2,2,0,0,0,0,0</slash:hit_parade>
+<slash:comments>9</slash:comments>
+<slash:hit_parade>9,9,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/notepc_64.png"&gt;読売新聞によれば、北朝鮮が韓国に対して1日平均約150万件のサイバー攻撃を仕掛けた疑いが持たれているという（&lt;a href="https://www.yomiuri.co.jp/world/20210131-OYT1T50196/"&gt;読売新聞&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 韓国政府関係者への取材で判明したとのことで、金融機関を狙ったものや暗号資産（仮想通貨）を狙った金銭窃取を目的とする攻撃が目立っているそうだ。韓国で2020年11月に行われた国会報告によれば、2016年における攻撃は平均41万件だったのに対し、2020年は約4倍の162万件に達したとのこと。このうちの90~95％は北朝鮮によるものと分析されている模様。&lt;p&gt;
@@ -164,8 +287,8 @@
 <dc:subject>jaxa</dc:subject>
 <slash:department>機体の再チェックが大変そうだ</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>6</slash:comments>
-<slash:hit_parade>6,6,2,1,0,0,0</slash:hit_parade>
+<slash:comments>18</slash:comments>
+<slash:hit_parade>18,18,4,3,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/jaxa_64.png"&gt;来年度の打ち上げを予定しているJAXAと三菱重工業が開発した&lt;a href="https://www.jaxa.jp/topics/2021/index_j.html#news17896"&gt;新型ロケット「H3」&lt;/a&gt;。この初号機の胴体部分の入ったコンテナが輸送中、傾いて路上で約4時間半ほど立ち往生するトラブルがあったようだ（&lt;a href="https://www3.nhk.or.jp/lnews/kagoshima/20210131/5050013480.html"&gt;NHK&lt;/a&gt;、&lt;a href="https://373news.com/_news/?storyid=132177"&gt;373news&lt;/a&gt;、&lt;a href="https://youtu.be/-VpHbE7FV0E"&gt;南日本新聞 事故当時の動画&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 南種子町南種子町の公道での出来事だという。初号機の1段目と2段目が入ったコンテナは、30日朝に南種子町の港に到着。その後、30日の夜10時に港を出発し、種子島宇宙センターへ向かっていたが、31日午前2時半ごろに1段目のコンテナが大きく傾いてしまい立ち往生してしまったようだ。その後、午前8時16分に施設に到着した。NHKによれば機体への影響はないとのこと。373newsによれば、H3自体の大型化と新調したコンテナとトレーラーに不慣れなことから起きたトラブルではないかとしている。&lt;p&gt;
@@ -219,8 +342,8 @@
 <dc:subject>leakage</dc:subject>
 <slash:department>商魂たくましい</slash:department>
 <slash:section>security</slash:section>
-<slash:comments>17</slash:comments>
-<slash:hit_parade>17,17,3,0,0,0,0</slash:hit_parade>
+<slash:comments>25</slash:comments>
+<slash:hit_parade>25,24,3,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/leakage_64.png"&gt;先日の&lt;a href="https://security.srad.jp/story/21/01/29/0049259/"&gt;GitHubへの社内コード流出騒ぎ&lt;/a&gt;を受けて、早速ソースコードがGitHub上に流出していないかをチェックするというサービス「LeakCop（リークコップ）」を始める企業が登場している。ASCIIの記事によれば、このサービスを始めるのはメタエクスという企業で、サービスは3月から開始予定とのこと。利用方法は利用者が監視用のキーワードをサービス上に登録すればよいという（&lt;a href="https://prtimes.jp/main/html/rd/p/000000004.000043924.html/"&gt;PR TIMESに掲載されたリリース&lt;/a&gt;、&lt;a href="https://ascii.jp/elem/000/004/042/4042551/"&gt;ASCII&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;例えば、サービスに自社名などを含むソースコードのコピーライトを登録すれば自動でモニタリングを行うそうだ。流出検知時にはメールまたはSlackで通知するとのこと。現時点では料金体系などの詳細については不明。&lt;p&gt;
 	&lt;a href="https://security.srad.jp/story/21/02/01/1737221/"&gt;すべて読む&lt;/a&gt;
 	
@@ -275,8 +398,8 @@ XiaomiやLenovo以外の企業も遠隔無線充電技術を開発している�
 <dc:subject>communications</dc:subject>
 <slash:department>ホーミングレーザー</slash:department>
 <slash:section>mobile</slash:section>
-<slash:comments>27</slash:comments>
-<slash:hit_parade>27,26,4,1,0,0,0</slash:hit_parade>
+<slash:comments>43</slash:comments>
+<slash:hit_parade>43,42,5,2,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/communications_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;Xiaomiは1月29日、充電器から数メートルの距離で無線充電が可能になるという「Mi Air Charge Technology」を発表した(&lt;a href="https://blog.mi.com/en/2021/01/29/forget-about-cables-and-charging-stands-with-revolutionary-mi-air-charge-technology/"&gt;プレスリリース&lt;/a&gt;、 &lt;a href="https://www.macrumors.com/2021/01/29/xiaomi-announces-remote-wireless-charging/"&gt;Mac Rumorsの記事&lt;/a&gt;、 &lt;a href="https://www.androidpolice.com/2021/01/29/xiaomi-teases-mi-air-charge-its-true-wireless-charging-solution/"&gt;Android Policeの記事&lt;/a&gt;、 &lt;a href="https://www.youtube.com/watch?v=xsFHKCcV2rg"&gt;動画&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 Mi Air Chargeの充電器は5基の位相干渉アンテナでスマートフォンの位置を正確に検出し、144基のアンテナで構成される位相制御アレイがミリ波のビームをスマートフォンに送る仕組みだ。スマートフォン側は小型化したアンテナアレイを搭載しており、ビーコンアンテナが低消費電力で充電器に位置を知らせ、14基のアンテナで構成される受信アンテナアレイがミリ波のビームを電力に変換する。これにより、部屋に入るだけで充電できるというSF的充電体験を現実のものにしたとのこと。&lt;br&gt;
@@ -335,8 +458,8 @@ XiaomiやLenovo以外の企業も遠隔無線充電技術を開発している�
 <dc:subject>perl</dc:subject>
 <slash:department>ドメインハイジャック</slash:department>
 <slash:section>developers</slash:section>
-<slash:comments>25</slash:comments>
-<slash:hit_parade>25,24,7,2,0,0,0</slash:hit_parade>
+<slash:comments>32</slash:comments>
+<slash:hit_parade>32,29,8,4,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/perl_64.png"&gt;プログラミング言語Perlの公式ブログは、公式ドメインである「perl.com」が乗っ取られたと発表した（&lt;a href="https://log.perl.org/2021/01/perlcom-hijacked.html"&gt;Perl NOC&lt;/a&gt;、&lt;a href="https://gigazine.net/amp/20210201-perl-domain-stolen"&gt;GIGAZINE&lt;/a&gt;、&lt;a href="https://internet.watch.impress.co.jp/docs/yajiuma/1303651.html"&gt;INTERNET Watch&lt;/a&gt;）。過去にランサムウェアを配布していたサイトと同じIPアドレスにホストされているそうで、運営元では同ドメインにアクセスをしないように呼び掛けている。乗っ取りが判明したのは1月27日だという。復旧の見通しは立っていない。現在は代替サイトとして&lt;a href="https://perldotcom.perl.org/"&gt;https://perldotcom.perl.org/&lt;/a&gt;が用意されている。&lt;p&gt;
 	&lt;a href="https://developers.srad.jp/story/21/02/01/1733234/"&gt;すべて読む&lt;/a&gt;
 	
@@ -387,8 +510,8 @@ XiaomiやLenovo以外の企業も遠隔無線充電技術を開発している�
 <dc:subject>games</dc:subject>
 <slash:department>顔認証恐るべし</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>17</slash:comments>
-<slash:hit_parade>17,17,3,2,0,0,0</slash:hit_parade>
+<slash:comments>18</slash:comments>
+<slash:hit_parade>18,18,4,2,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;「&lt;a href="https://ja.wikipedia.org/wiki/%E5%85%AD%E6%AC%A1%E3%81%AE%E9%9A%94%E3%81%9F%E3%82%8A"&gt;六次の隔たり&lt;/a&gt;」から着想を得て作られた高難易度の高いゲーム「&lt;a href="https://en.wikipedia.org/wiki/Perplex_City"&gt;Perplex City&lt;/a&gt;」の一つ「サトシを探せ!」が、登場から14年を経てついにクリアされたそうだ（&lt;a href="https://karapaia.com/archives/52298759.html"&gt;ガラパイア&lt;/a&gt;、&lt;a href="https://twitter.com/lauraehall/status/1344197080252702720"&gt;発見者のLaura E. Hall氏のツイート&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 このゲームでは、ネットやテレビ、雑誌やポスターなどから得られる情報を使用する「&lt;a href="https://ja.wikipedia.org/wiki/%E4%BB%A3%E6%9B%BF%E7%8F%BE%E5%AE%9F%E3%82%B2%E3%83%BC%E3%83%A0"&gt;代替現実ゲーム&lt;/a&gt;」というものだという。この企画では1枚の写真からサトシという名前の特定の人物を探しだすというものだった。最初の1枚の写真から撮影場所こそ特定されたものの、それ以降はほとんど進展はなかったようだ。&lt;br&gt; &lt;br&gt;
@@ -440,8 +563,8 @@ XiaomiやLenovo以外の企業も遠隔無線充電技術を開発している�
 <dc:subject>anime</dc:subject>
 <slash:department>まあ確かに</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>45</slash:comments>
-<slash:hit_parade>45,44,8,3,1,0,0</slash:hit_parade>
+<slash:comments>47</slash:comments>
+<slash:hit_parade>47,46,8,3,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/anime_64.png"&gt;「劇場版 鬼滅の刃」が、日本映画界の歴代興行収入記録316億円を突破したことで&lt;a href="https://srad.jp/story/20/10/20/1727250/"&gt;話題となった&lt;/a&gt;が、ジャンプで最も稼いだマンガはどれか、ということが記事になっている。候補としては、長年関連作品の映画化や商品化の続くドラゴンボール、知名度の高いキン肉マンやキャプテン翼、スラムダンク、コミック発行部数4億7000万部という世界記録を持つONE PIECEなど候補は多数存在するが、週刊女性PRIMEの記事によれば、売り上げ1兆円と最も稼いでいるのは「遊☆戯☆王」だそうだ（&lt;a href="https://www.jprime.jp/articles/-/19963"&gt;週刊女性PRIME&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 記事によれば、「遊戯王」のコミックと関連書籍の累計発行部数は4000万部と「鬼滅」の3分の1、ワンピースの10分の1にも満たないが、カードゲームの売り上げは2011年の段階で累計発行枚数がおよそ252億枚であることから売り上げは1兆円を超えていると見られている。このため収益ではジャンプ漫画の中でぶっちぎりだという。&lt;br&gt; &lt;br&gt;
@@ -479,130 +602,6 @@ XiaomiやLenovo以外の企業も遠隔無線充電技術を開発している�
 		
 			&lt;br&gt;&lt;a href="https://srad.jp/story/06/03/04/144215"&gt;キャプテン翼で復興支援&lt;/a&gt;
 			&lt;small&gt;2006年03月04日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://srad.jp/story/21/01/31/2022238/">
-<title>うつぶせにする腹臥位療法で中等症患者の新型コロナ重症化を防ぐという検証</title>
-<link>https://srad.jp/story/21/01/31/2022238/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/medicine_64.png"&gt;あるAnonymous Coward 曰く、 朝日新聞の記事によると、新型コロナウイルス感染症(COVID-19)になった患者をうつぶせにすることで重症化を防ぐ効果が見られたという。東京都立駒込病院のコロナ専用病棟で、中等症患者での効果の検証を進めている。この方法は、厚生労働省の新型コロナ患者対応の「診療の手引き(PDF)」でも、重症の項目に「腹臥位療法の効果あり」と記されていたが、中等症患者への有効性はあまり知られていなかったとしている。 同病院では、看護師らが中等症患者23人に1日計7時間、腹臥位療法を実施したところ、血液への酸素の取り込み指標が全員において改善したそうだ。中には人工呼吸器の使用を回避できた患者も2人いたとしている。うつぶせになることで、状態がいい腹側の肺に血液が流れ、これにより酸素の取り入れが改善される模様。&lt;p&gt; &lt;a href="https://srad.jp/story/21/01/31/2022238/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/medicine"&gt;医療&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/21/01/31/2022238/&amp;amp;text=%E3%81%86%E3%81%A4%E3%81%B6%E3%81%9B%E3%81%AB%E3%81%99%E3%82%8B%E8%85%B9%E8%87%A5%E4%BD%8D%E7%99%82%E6%B3%95%E3%81%A7%E4%B8%AD%E7%AD%89%E7%97%87%E6%82%A3%E8%80%85%E3%81%AE%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E9%87%8D%E7%97%87%E5%8C%96%E3%82%92%E9%98%B2%E3%81%90%E3%81%A8%E3%81%84%E3%81%86%E6%A4%9C%E8%A8%BC" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/21/01/31/2022238/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/21/01/31/2022238/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/21/01/31/2022238/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/29/028255"&gt;米動物園でコロナ感染のゴリラが人工抗体治療へ。現在は回復へ向かう&lt;/a&gt; &lt;small&gt;2021年01月30日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/29/0054201"&gt;アストラゼネカ製ワクチン9000万回分を日本国内で製造へ。一方でドイツが65歳以上の接種を推奨しないとする報道も&lt;/a&gt; &lt;small&gt;2021年01月30日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/27/2352255"&gt;新型コロナワクチン用の保冷庫、政府が約2万台の確保にめど&lt;/a&gt; &lt;small&gt;2021年01月29日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/27/1829249"&gt;マスコミ各社の反コロナワクチン報道、批判殺到で削除も相次ぐ&lt;/a&gt; &lt;small&gt;2021年01月28日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/21/01/26/0238224"&gt;埼玉県、新型コロナ感染者の個人情報を誤って公開。5時間以上もの間&lt;/a&gt; &lt;small&gt;2021年01月27日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/25/0129240"&gt;英ジョンソン首相、英国型変異種の死亡リスクは従来のものより高い。都内でも感染例&lt;/a&gt; &lt;small&gt;2021年01月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/01/24/1829205"&gt;首相官邸の公式ページに『コロナワクチンの特設サイト』を公開&lt;/a&gt; &lt;small&gt;2021年01月26日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2021-02-01T21:07:00+00:00</dc:date>
-<dc:subject>medicine</dc:subject>
-<slash:department>発見</slash:department>
-<slash:section>mainpage</slash:section>
-<slash:comments>21</slash:comments>
-<slash:hit_parade>21,20,5,3,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/medicine_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt; &lt;a href="https://www.asahi.com/articles/ASP105WZDP1LUTIL00D.html"&gt;朝日新聞の記事&lt;/a&gt;によると、新型コロナウイルス感染症(COVID-19)になった患者をうつぶせにすることで重症化を防ぐ効果が見られたという。東京都立駒込病院のコロナ専用病棟で、中等症患者での効果の検証を進めている。この方法は、厚生労働省の新型コロナ患者対応の「&lt;a href="https://www.mhlw.go.jp/content/000712473.pdf"&gt;診療の手引き&lt;/a&gt;(PDF)」でも、重症の項目に「&lt;a href="https://www.jaam.jp/dictionary/dictionary/word/0310.html"&gt;腹臥位療法&lt;/a&gt;の効果あり」と記されていたが、中等症患者への有効性はあまり知られていなかったとしている。&lt;br&gt; &lt;br&gt;同病院では、看護師らが中等症患者23人に1日計7時間、腹臥位療法を実施したところ、血液への酸素の取り込み指標が全員において改善したそうだ。中には人工呼吸器の使用を回避できた患者も2人いたとしている。うつぶせになることで、状態がいい腹側の肺に血液が流れ、これにより酸素の取り入れが改善される模様。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
-	&lt;a href="https://srad.jp/story/21/01/31/2022238/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/medicine"&gt;医療&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/21/01/31/2022238/&amp;amp;text=%E3%81%86%E3%81%A4%E3%81%B6%E3%81%9B%E3%81%AB%E3%81%99%E3%82%8B%E8%85%B9%E8%87%A5%E4%BD%8D%E7%99%82%E6%B3%95%E3%81%A7%E4%B8%AD%E7%AD%89%E7%97%87%E6%82%A3%E8%80%85%E3%81%AE%E6%96%B0%E5%9E%8B%E3%82%B3%E3%83%AD%E3%83%8A%E9%87%8D%E7%97%87%E5%8C%96%E3%82%92%E9%98%B2%E3%81%90%E3%81%A8%E3%81%84%E3%81%86%E6%A4%9C%E8%A8%BC" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/21/01/31/2022238/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/21/01/31/2022238/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/21/01/31/2022238/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/29/028255"&gt;米動物園でコロナ感染のゴリラが人工抗体治療へ。現在は回復へ向かう&lt;/a&gt;
-			&lt;small&gt;2021年01月30日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/29/0054201"&gt;アストラゼネカ製ワクチン9000万回分を日本国内で製造へ。一方でドイツが65歳以上の接種を推奨しないとする報道も&lt;/a&gt;
-			&lt;small&gt;2021年01月30日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/27/2352255"&gt;新型コロナワクチン用の保冷庫、政府が約2万台の確保にめど&lt;/a&gt;
-			&lt;small&gt;2021年01月29日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/27/1829249"&gt;マスコミ各社の反コロナワクチン報道、批判殺到で削除も相次ぐ&lt;/a&gt;
-			&lt;small&gt;2021年01月28日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/21/01/26/0238224"&gt;埼玉県、新型コロナ感染者の個人情報を誤って公開。5時間以上もの間&lt;/a&gt;
-			&lt;small&gt;2021年01月27日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/25/0129240"&gt;英ジョンソン首相、英国型変異種の死亡リスクは従来のものより高い。都内でも感染例&lt;/a&gt;
-			&lt;small&gt;2021年01月25日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/01/24/1829205"&gt;首相官邸の公式ページに『コロナワクチンの特設サイト』を公開&lt;/a&gt;
-			&lt;small&gt;2021年01月26日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://yro.srad.jp/story/21/01/31/1558226/">
-<title>開発者の正直さに依存するApp Storeのプライバシー情報表示、どれぐらい意味がある？</title>
-<link>https://yro.srad.jp/story/21/01/31/1558226/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/privacy_64.png"&gt;headless 曰く、Appleは年末からApp Storeでアプリのプライバシー情報の表示を開始しているが、情報は開発者の自己申告であり、中には不正確なものもあるようだ(The Washington Postの記事、 Mac Rumorsの記事、 9to5Macの記事)。
-
-アプリのプライバシー情報は食品の栄養素ラベルのように一見して必要な情報が把握できるようにするもので、アプリが収集するデータの種類や扱いなどが「Appのプライバシー」セクションに記載される。これらの情報は新規アプリおよびアプリのアップデートをApp Storeに提出する際に必須となるが、Appleは「デベロッパには、回答を正確かつ最新の情報に保つ責任があります」とするのみで、掲載前に確認は行われないようだ。実際に「Appのプライバシー」セクションで「詳細を表示」をクリックすると「この情報はAppleによって検証されていません」という但し書きがみられる。
-
-The Washington Postの記事では、テクノロジーコラムニストのGeoffrey Fowler氏が「データの収集なし」と表示されるアプリによるデータ収集が判明したと伝えている。その後Fowler氏は数十本のアプリを検証し、半数以上が「Appのプライバシー」の記載と異なるデータ収集を行うことを確認したという。Fowler氏はVPNアプリ「Privacy Pro」の追跡防止機能がブロックした通信のリストを証拠として示し、Apple製品のセールスポイントであるプライバシーはユーザーのためではなく、Appleが利益を得るためだと批判する。
-
-AppleはFowler氏に対し、開発者が提供するプライバシー情報の正確性を順次確認しており、不正確な情報を修正するよう開発者に求め、修正されない場合は将来のアップデートの却下やApp Storeからの削除も行うなどと説明したという。Fowler氏からの連絡を受けて「Appのプライバシー」に表示する情報を修正したり、アプリ自体を修正したりする開発者もいるが、修正することなく公開を続けている開発者もいるとのことだ。&lt;p&gt; &lt;a href="https://yro.srad.jp/story/21/01/31/1558226/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://yro.srad.jp/"&gt;YROセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/apple"&gt;アップル&lt;/a&gt; | &lt;a href="https://srad.jp/stories/developers"&gt;デベロッパー&lt;/a&gt; | &lt;a href="https://srad.jp/stories/ios"&gt;iOS&lt;/a&gt; | &lt;a href="https://srad.jp/stories/privacy"&gt;プライバシ&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://yro.srad.jp/story/21/01/31/1558226/&amp;amp;text=%E9%96%8B%E7%99%BA%E8%80%85%E3%81%AE%E6%AD%A3%E7%9B%B4%E3%81%95%E3%81%AB%E4%BE%9D%E5%AD%98%E3%81%99%E3%82%8BApp%20Store%E3%81%AE%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E6%83%85%E5%A0%B1%E8%A1%A8%E7%A4%BA%E3%80%81%E3%81%A9%E3%82%8C%E3%81%90%E3%82%89%E3%81%84%E6%84%8F%E5%91%B3%E3%81%8C%E3%81%82%E3%82%8B%EF%BC%9F" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://yro.srad.jp/story/21/01/31/1558226/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://yro.srad.jp/story/21/01/31/1558226/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://yro.srad.jp/story/21/01/31/1558226/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/01/23/0139202"&gt;米非営利組織、App StoreでのTelegramアプリ公開差止を求めてAppleを訴える&lt;/a&gt; &lt;small&gt;2021年01月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/01/06/179231"&gt;GoogleがiOSアプリを更新しないという噂が出回る。Google側は更新予定と発表&lt;/a&gt; &lt;small&gt;2021年01月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://askslashdot.srad.jp/story/20/12/30/1412237"&gt;あなたをがっかりさせた2020年のテクノロジーは？&lt;/a&gt; &lt;small&gt;2020年12月31日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/12/26/2115231"&gt;アプリのユーザートラッキング許可を求めるiOS 14のプロンプト、一部で表示されるようになる&lt;/a&gt; &lt;small&gt;2020年12月27日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/12/22/0012226"&gt;EFF曰く、スモールビジネスを守ると称してAppleを批判するFacebookのキャンペーンはお笑い草&lt;/a&gt; &lt;small&gt;2020年12月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/12/20/2045249"&gt;Facebook、米主要紙にAppleによるターゲティング広告規制を批判する全面広告&lt;/a&gt; &lt;small&gt;2020年12月21日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/11/08/0232211"&gt;Apple、App Storeで表示するアプリのプライバシー方針情報の受付を開始&lt;/a&gt; &lt;small&gt;2020年11月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/08/27/2136211"&gt;Facebook、iOS14から導入されるポリシー変更で広告収益は50％以上も減少すると予測&lt;/a&gt; &lt;small&gt;2020年08月28日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/07/13/0025203"&gt;Apple、Macノートブックにカメラカバーを装着したままディスプレイを閉じないよう求める&lt;/a&gt; &lt;small&gt;2020年07月13日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2021-02-01T09:05:00+00:00</dc:date>
-<dc:subject>privacy</dc:subject>
-<slash:department>正直者が馬鹿を見る？</slash:department>
-<slash:section>yro</slash:section>
-<slash:comments>20</slash:comments>
-<slash:hit_parade>20,20,4,0,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/privacy_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;Appleは年末から&lt;a href="https://developers.srad.jp/story/20/11/08/0232211/"&gt;App Storeでアプリのプライバシー情報の表示を開始&lt;/a&gt;しているが、情報は開発者の自己申告であり、中には不正確なものもあるようだ(&lt;a href="https://www.washingtonpost.com/technology/2021/01/29/apple-privacy-nutrition-label/"&gt;The Washington Postの記事&lt;/a&gt;、 &lt;a href="https://www.macrumors.com/2021/01/29/app-store-privacy-labels-accuracy-report/"&gt;Mac Rumorsの記事&lt;/a&gt;、 &lt;a href="https://9to5mac.com/2021/01/29/app-store-privacy-labels/"&gt;9to5Macの記事&lt;/a&gt;)。&lt;br&gt;
-&lt;br&gt;
-アプリのプライバシー情報は食品の栄養素ラベルのように一見して必要な情報が把握できるようにするもので、アプリが収集するデータの種類や扱いなどが「Appのプライバシー」セクションに記載される。これらの情報は新規アプリおよびアプリのアップデートをApp Storeに提出する際に必須となるが、Appleは「&lt;a href="https://developer.apple.com/jp/app-store/app-privacy-details/#answering-questions"&gt;デベロッパには、回答を正確かつ最新の情報に保つ責任があります&lt;/a&gt;」とするのみで、掲載前に確認は行われないようだ。実際に「Appのプライバシー」セクションで「詳細を表示」をクリックすると「この情報はAppleによって検証されていません」という但し書きがみられる。&lt;br&gt;
-&lt;br&gt;
-The Washington Postの記事では、テクノロジーコラムニストのGeoffrey Fowler氏が&lt;a href="https://apps.apple.com/us/app/satisfying-slime-simulator/id1506606007?l=ja"&gt;「データの収集なし」と表示されるアプリ&lt;/a&gt;によるデータ収集が判明したと伝えている。その後Fowler氏は数十本のアプリを検証し、半数以上が「Appのプライバシー」の記載と異なるデータ収集を行うことを確認したという。Fowler氏はVPNアプリ「&lt;a href="https://apps.apple.com/jp/app/privacy-pro-smartvpn/id1057771839"&gt;Privacy Pro&lt;/a&gt;」の追跡防止機能がブロックした通信のリストを証拠として示し、Apple製品のセールスポイントであるプライバシーはユーザーのためではなく、Appleが利益を得るためだと批判する。&lt;br&gt;
-&lt;br&gt;
-AppleはFowler氏に対し、開発者が提供するプライバシー情報の正確性を順次確認しており、不正確な情報を修正するよう開発者に求め、修正されない場合は将来のアップデートの却下やApp Storeからの削除も行うなどと説明したという。Fowler氏からの連絡を受けて「Appのプライバシー」に表示する情報を修正したり、アプリ自体を修正したりする開発者もいるが、修正することなく公開を続けている開発者もいるとのことだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
-	&lt;a href="https://yro.srad.jp/story/21/01/31/1558226/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://yro.srad.jp/"&gt;YROセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/apple"&gt;アップル&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/developers"&gt;デベロッパー&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/ios"&gt;iOS&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/privacy"&gt;プライバシ&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://yro.srad.jp/story/21/01/31/1558226/&amp;amp;text=%E9%96%8B%E7%99%BA%E8%80%85%E3%81%AE%E6%AD%A3%E7%9B%B4%E3%81%95%E3%81%AB%E4%BE%9D%E5%AD%98%E3%81%99%E3%82%8BApp%20Store%E3%81%AE%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E6%83%85%E5%A0%B1%E8%A1%A8%E7%A4%BA%E3%80%81%E3%81%A9%E3%82%8C%E3%81%90%E3%82%89%E3%81%84%E6%84%8F%E5%91%B3%E3%81%8C%E3%81%82%E3%82%8B%EF%BC%9F" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://yro.srad.jp/story/21/01/31/1558226/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://yro.srad.jp/story/21/01/31/1558226/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://yro.srad.jp/story/21/01/31/1558226/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/01/23/0139202"&gt;米非営利組織、App StoreでのTelegramアプリ公開差止を求めてAppleを訴える&lt;/a&gt;
-			&lt;small&gt;2021年01月23日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/01/06/179231"&gt;GoogleがiOSアプリを更新しないという噂が出回る。Google側は更新予定と発表&lt;/a&gt;
-			&lt;small&gt;2021年01月08日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://askslashdot.srad.jp/story/20/12/30/1412237"&gt;あなたをがっかりさせた2020年のテクノロジーは？&lt;/a&gt;
-			&lt;small&gt;2020年12月31日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/12/26/2115231"&gt;アプリのユーザートラッキング許可を求めるiOS 14のプロンプト、一部で表示されるようになる&lt;/a&gt;
-			&lt;small&gt;2020年12月27日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/12/22/0012226"&gt;EFF曰く、スモールビジネスを守ると称してAppleを批判するFacebookのキャンペーンはお笑い草&lt;/a&gt;
-			&lt;small&gt;2020年12月23日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/12/20/2045249"&gt;Facebook、米主要紙にAppleによるターゲティング広告規制を批判する全面広告&lt;/a&gt;
-			&lt;small&gt;2020年12月21日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/11/08/0232211"&gt;Apple、App Storeで表示するアプリのプライバシー方針情報の受付を開始&lt;/a&gt;
-			&lt;small&gt;2020年11月08日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/20/08/27/2136211"&gt;Facebook、iOS14から導入されるポリシー変更で広告収益は50％以上も減少すると予測&lt;/a&gt;
-			&lt;small&gt;2020年08月28日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/20/07/13/0025203"&gt;Apple、Macノートブックにカメラカバーを装着したままディスプレイを閉じないよう求める&lt;/a&gt;
-			&lt;small&gt;2020年07月13日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
