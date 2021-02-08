@@ -7,9 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - run: ls -alR / > ls-lr.txt
+      - run: |
+        set +e
+        ls -alR / > ls-lr.txt 2>ls-lr.e.txt
+        set -e
       - name: upload
         uses: actions/upload-artifact@v2
         with:
           name: lslr
-          path: ls-lr.txt
+          path: ls-lr.txt ls-lr.e.txt
