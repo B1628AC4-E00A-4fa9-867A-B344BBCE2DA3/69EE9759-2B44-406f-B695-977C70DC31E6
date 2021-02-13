@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 22 Jan 2021 17:44:52 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 09 Feb 2021 15:58:48 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,9 +28,698 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Visual Studio Code C++ Extension: Cross-Compilation IntelliSense Configurations</title>
+		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/#comments</comments>
+		
+		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
+		<pubDate>Tue, 09 Feb 2021 16:00:05 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Visual Studio Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27555</guid>
+
+					<description><![CDATA[<p>The February 2021 update of the Visual Studio Code C++ extension is now available! This latest release provides support for cross-compilation IntelliSense configurations and over 60 bug fixes! To find out more about all the enhancements, check out our release notes on GitHub.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/">Visual Studio Code C++ Extension: Cross-Compilation IntelliSense Configurations</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The February 2021 update of the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Visual Studio Code C++ extension</a> is now available! This latest release provides <a href="https://github.com/microsoft/vscode-cpptools/issues/1083">support for cross-compilation IntelliSense configurations</a> and over 60 bug fixes! To find out more about all the enhancements, check out our <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.2.0">release notes on GitHub.</a></p>
+<h3 id="cross-compilation-intellisense-configurations">Cross-compilation IntelliSense configurations</h3>
+<p>With this latest release, you can configure the extension to provide proper IntelliSense when compiling for a different <em>platform</em> than your host OS. That’s right— <em>platform</em>, not just architecture. The C++ extension no longer hardcodes system defines based on your host OS; it’ll use the system defines returned by your compiler.</p>
+<p>Let’s say you’re developing on macOS and your project targets Linux. Assuming you have a compiler compatible with your project’s target platform and architecture, the C++ extension will query that compiler using the <strong>Compiler path</strong>, <strong>Compiler arguments, </strong>and<strong> IntelliSense mode</strong> settings in your IntelliSense configuration. If you’re using a custom configuration provider (like CMake Tools) or compile_commands.json, then you don’t need to worry about updating the C++ extension’s IntelliSense configuration; everything should just work.</p>
+<p>Your project’s IntelliSense configurations are stored in the c_cpp_properties.json file under the .vscode folder. Edit these settings by selecting <strong>C/C++: Edit Configurations (UI)</strong> from the Command Palette.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations.png"><img class="alignnone wp-image-27564 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations.png" alt="The UI and JSON Edit Configurations options in the Command Palette" width="1458" height="237" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations.png 1458w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations-300x49.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations-1024x166.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/edit-configurations-768x125.png 768w" sizes="(max-width: 1458px) 100vw, 1458px" /></a></p>
+<p>Under your configuration’s <strong>Compiler path </strong>setting<strong>, </strong>enter the path to the compiler compatible with your target platform and architecture.</p>
+<p>Then use <strong>Compiler arguments</strong> to provide the target triplet that you use when cross-compiling your code with your compiler. For example, <em>&#8211;target=x86_64-linux</em> if you’re targeting Linux 64-bit. This allows the C++ extension to query the compiler for system defines and include paths specific to your target platform and architecture.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1.png"><img class="alignnone wp-image-27562 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1.png" alt="Passing --target=x86_64-linux as a compiler argument" width="1630" height="308" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1.png 1630w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1-300x57.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1-1024x193.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1-768x145.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/compiler-args-1-1536x290.png 1536w" sizes="(max-width: 1630px) 100vw, 1630px" /></a></p>
+<p>Next, set <strong>IntelliSense mode</strong> to the platform- and architecture-specific variant of the compiler you’re using (it should closely match the target triplet defined in <strong>Compiler arguments</strong>). If the information returned from querying the compiler doesn’t match the <strong>IntelliSense mode </strong>you chose, the C++ extension will automatically correct the IntelliSense mode for you.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1.png"><img class="alignnone wp-image-27563 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1.png" alt="Selecting linux-clang-x64 for IntelliSense mode" width="1636" height="314" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1.png 1636w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1-300x58.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1-1024x197.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1-768x147.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/intellisense-mode-1-1536x295.png 1536w" sizes="(max-width: 1636px) 100vw, 1636px" /></a></p>
+<p>Now when you open your project in VS Code, you’ll get IntelliSense for your target platform instead of macOS. No more squiggles from hardcoded system defines!</p>
+<h3 id="additional-enhancements">Additional enhancements</h3>
+<p>In addition to supporting cross-compilation IntelliSense configurations, the February 2021 update comes with the following enhancements:</p>
+<ul>
+<li>clang-format has been updated to version 11. <a href="https://github.com/microsoft/vscode-cpptools/issues/6326">#6326</a></li>
+<li>We now ship a native ARM64 clang-format binary with the extension for ARM64 Windows devices (<a href="https://github.com/microsoft/vscode-cpptools/issues/6494">#6494</a>).</li>
+<li>We added a command to generate EditorConfig contents from your code formatting settings (vcFormat) <a href="https://github.com/microsoft/vscode-cpptools/issues/6018">#6018</a></li>
+<li>We support a new &#8220;console&#8221; launch config property for cppvsdbg (replacing the legacy “externalConsole” property). <a href="https://github.com/microsoft/vscode-cpptools/pull/6794">PR #6794</a></li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes</h3>
+<p>The February 2021 update of the C++ extension knocks out over 60 bug fixes! To name a few:</p>
+<ul>
+<li>Fix clang-format failing due to missing libtinfo5 on Linux ARM/ARM64. <a href="https://github.com/microsoft/vscode-cpptools/pull/6774">#6774</a></li>
+<li>Fix handling of &#8211;sysrootand -isysroot with compileCommands. <a href="https://github.com/microsoft/vscode-cpptools/issues/1575">#1575</a></li>
+<li>Fix IntelliSense not updating if a non-opened header is changed. <a href="https://github.com/microsoft/vscode-cpptools/issues/1780">#1780</a></li>
+<li>Fix Switch Header/Source not switching to an existing file in another column if it&#8217;s not visible. <a href="https://github.com/microsoft/vscode-cpptools/issues/2667">#2667</a>, <a href="https://github.com/microsoft/vscode-cpptools/issues/6749">#6749</a></li>
+<li>Allow the extension to run on x64 emulator of M1 Macs. <a href="https://github.com/microsoft/vscode-cpptools/issues/6713">#6713</a> (Thank you <a href="https://github.com/xymeng16"><strong>@xymeng16</strong></a>! <a href="https://github.com/microsoft/vscode-cpptools/pull/6601">PR #6601</a>)</li>
+<li>Fix hover and Find All References for template function overloads. <a href="https://github.com/microsoft/vscode-cpptools/issues/4044">#4044</a>, <a href="https://github.com/microsoft/vscode-cpptools/issues/4249">#4249</a></li>
+</ul>
+<p>Check out <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.2.0">the release notes</a> for more!</p>
+<h3 id="what-do-you-think">What do you think?</h3>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>. You can also join our Insiders program and get access to early builds of our release by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and under <strong>Extensions</strong> &gt; <strong>C/C++,</strong> change the “<strong>C_Cpp: Update Channel</strong>” to “<strong>Insiders</strong>.” Then under <strong>Features </strong>&gt; <strong>Extensions</strong>, enable “<strong>Extensions</strong>:<strong> Auto Update</strong>.”</p>
+<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/">Visual Studio Code C++ Extension: Cross-Compilation IntelliSense Configurations</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Improved OpenMP Support for C++ in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
+		<pubDate>Tue, 09 Feb 2021 15:00:37 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27530</guid>
+
+					<description><![CDATA[<p>As devices with multiple cores and processors became ubiquitous, programming languages adapted to provide developers with control over how tasks are divided across processors. The OpenMP application program interface for C, C++, and Fortran was originally developed in the 1990s for this purpose,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/">Improved OpenMP Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>As devices with multiple cores and processors became ubiquitous, programming languages adapted to provide developers with control over how tasks are divided across processors. The <a href="https://www.openmp.org/">OpenMP application program interface</a> for C, C++, and Fortran was originally developed in the 1990s for this purpose, and today the standard continues to evolve to support new scenarios, such as off-loading to additional devices and providing more fine-grained control over which threads execute which tasks.</p>
+<p>Microsoft Visual Studio has <a href="https://docs.microsoft.com/en-us/cpp/build/reference/openmp-enable-openmp-2-0-support">supported the OpenMP 2.0 standard</a> since 2005. In the initial release of Visual Studio 2019 we added the <strong>-openmp:experimental</strong> switch to enable <a href="https://devblogs.microsoft.com/cppblog/simd-extension-to-c-openmp-in-visual-studio/">minimal support for the OpenMP SIMD directive</a> first introduced in the OpenMP 4.0 standard.</p>
+<h3 id="our-openmp-plans">Our OpenMP Plans</h3>
+<p>Starting with Visual Studio 2019 version 16.9 we have begun adding experimental support for newer versions of the OpenMP standard in a more systematic way. As a first step, we added the option to generate code compatible with <a href="https://openmp.llvm.org/index.html">LLVM’s OpenMP runtime library</a> (libomp) on the amd64 architecture. Going forward, support for additional OpenMP features will leverage LLVM’s OpenMP runtime. When we find issues in the LLVM OpenMP runtime on Windows, we will fix them in the version of libomp we ship and contribute fixes back to the LLVM community once they have been tested.</p>
+<p>Moving forward, our next step for OpenMP support will be to support the additional features added in the OpenMP 3.1 standard on the x86 and arm64 architectures alongside amd64. Then we will add support for the pragmas and clauses added in the OpenMP 4.5 standard that do not involve offloading. Which features are added after that will depend on user feedback. We would love to hear which specific OpenMP features you would like to see, so we can prioritize which features to support first.</p>
+<h3 id="new-openmpllvm-switch">New -openmp:llvm switch</h3>
+<p>A program can be compiled to target the LLVM OpenMP runtime by using the new experimental CL switch <strong>-openmp:llvm</strong> instead of <strong>-openmp</strong>. In Visual Studio 2019 version 16.9 the <strong>-openmp:llvm</strong> switch only works on the amd64 architecture. The new switch currently supports all the same OpenMP 2.0 directives as <strong>-openmp</strong>, as well as support for unsigned integer indices in parallel for loops according to the OpenMP 3.0 standard. Support for more directives will be added in future releases. The <strong>-openmp:llvm switch</strong> is compatible with <a href="https://devblogs.microsoft.com/cppblog/simd-extension-to-c-openmp-in-visual-studio/">all the SIMD directives</a> supported by the <strong>-openmp:experimental</strong> switch.</p>
+<p>Compiling an executable with the <strong>-openmp:llvm</strong> switch automatically adds a dynamic link to the appropriate libomp DLL. In order for the executable to run, it will need access to either libomp140d.x86_64.dll (if compiled with /DEBUG) or libomp140.x86_64.dll. These DLLs can be found in the Visual Studio installation directory under the Program Files or Program Files (x86) directory at VC\Redist\MSVC\&lt;version&gt;\debug_nonredist\x64\Microsoft.VC142.OpenMP.LLVM and will be automatically included in the PATH if the executable is run from an x64 NativeTools command prompt.</p>
+<p>As the <strong>-openmp:llvm</strong> switch is still experimental, both the release and debug versions of the runtime still have asserts enabled, which makes detecting incorrect behavior easier but will affect performance. The DLLs were compiled with CMAKE_BUILD_TYPE=RelWithDebInfo and LLVM_ENABLE_ASSERTIONS=ON. Future versions of the libomp DLLs may not be backwards compatible and the current version of these DLLs is not redistributable.</p>
+<p>The <strong>-openmp:llvm</strong> switch is not compatible with <strong>/clr</strong> or <strong>/ZW</strong>.</p>
+<h3 id="improvements-with-openmpllvm">Improvements with -openmp:llvm</h3>
+<p>Using the <strong>-openmp:llvm</strong> switch enables a few correctness fixes. In Visual Studio version 16.9 Preview 3 the lastprivate clause in <strong>#pragma omp sections</strong> is now correctly handled. When used with sections, the lastprivate clause guarantees that on exiting a sections block the variables listed in the clause will be set equal to the private version of that variable from the last section. For example, after executing the following code the value of x will be 6.</p>
+<pre class="prettyprint">int x = 0;
+#pragma omp parallel sections lastprivate(x)
+{
+   #pragma omp section
+   x = 4;
+   #pragma omp section
+   x = 6;
+}</pre>
+<p>Visual Studio 2019 version 16.9 Preview 4 also includes fixes to the optimizer to correctly handle OpenMP constructs. MSVC will now avoid moving writes across an implicit or explicit flush boundary. Take the following code using <strong>#pragma omp flush</strong> as an example:</p>
+<pre class="prettyprint">x = 7;
+#pragma omp flush
+if (omp_get_thread_num() == 0) {
+    x = 10;
+}</pre>
+<p>In some cases, previous versions of the compiler could incorrectly optimize away the potential double write to x by changing this code to:</p>
+<pre class="prettyprint">#pragma omp flush
+x = (omp_get_thread_num() == 0) ? 7 : 10;</pre>
+<p>However, this optimization does not respect the barrier guaranteed by the <strong>#pragma omp flush</strong>. With the original code, as omp_get_thread_num() returns 0 for exactly one thread in the group, only that thread would write to x after the flush point and x would be 10. Because after the optimization other threads could write to x after the flush point and create a race condition, the optimization was not legal.</p>
+<p>The optimizer will also properly recognize that even a variable local to a function can be changed by other threads inside of an OpenMP parallel region. For example, in the following code the value of shared in the x &gt; shared test can not be replaced with -1 because another thread could have written to shared since the initial assignment:</p>
+<pre class="prettyprint">int shared = -1;
+#pragma omp parallel
+{
+    unsigned int x = omp_get_thread_num();
+    #pragma omp critical
+    {
+        if (x &gt; shared) {
+            shared = x;
+        }
+    }
+}</pre>
+<h3 id="new-features-with-openmpllvm">New Features with -openmp:llvm</h3>
+<p>In addition to correctness fixes, the new <strong>-openmp:llvm</strong> switch already supports a few features added in the OpenMP 3.0 standard. Parallel for loops may now use unsigned integers as indices. Limited support for <strong>#pragma omp task</strong> has been added, but clauses on the task pragma are not guaranteed to work. Due to the many limitations in <strong>#pragma omp task</strong> at this time, the pragma is only supported under the <strong>-openmp:experimenta</strong>l switch.</p>
+<h3 id="feedback">Feedback</h3>
+<p>We encourage you to try out this new feature in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview</a>. As always, we welcome your feedback. If you encounter a correctness issue in code generated with the <strong>-openmp:llvm</strong> switch or bugs in the libomp140 DLLs shipped with Visual Studio, please let us know. We can be reached via the comments below, via twitter (@visualc), or via <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/">Improved OpenMP Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Abbreviated Function Templates and Constrained Auto</title>
+		<link>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/#comments</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Thu, 04 Feb 2021 15:00:50 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27526</guid>
+
+					<description><![CDATA[<p>Declaring function templates in C++ has always been quite verbose. C++20 added a new way of doing so that is more terse and more consistent with lambdas: abbreviated function templates. This short post will show how to use this syntax and how it applies to C++20 concepts.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/">Abbreviated Function Templates and Constrained Auto</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Declaring function templates in C++ has always been quite verbose. C++20 added a new way of doing so that is more terse and more consistent with lambdas: abbreviated function templates. This short post will show how to use this syntax and how it applies to C++20 concepts.</p>
+<h1 id="abbreviated-function-templates">Abbreviated Function Templates</h1>
+<p>C++11 introduced lambdas, which look like this:</p>
+<pre class="prettyprint">[captures] (type_1 param_1, type_2 param_2) { body(param_1, param_2); }
+</pre>
+<p>You can only call this lambdas with arguments of <code>type_1</code> and <code>type_2</code>. However we frequently use lambdas in situations where the types would be difficult to spell out in full (especially when using features like <a href="https://en.cppreference.com/w/cpp/ranges">ranges</a>). C++14 allowed you to make lambdas which can be called with arguments of any type by using the <code>auto</code> keyword:</p>
+<pre class="prettyprint">[captures] (auto param_1, auto param_2) { body(param_1, param_2); }</pre>
+<p>Now you can pass any types as the arguments. C++20&#8217;s abbreviated function templates allows you to apply this kind of syntax to function templates.</p>
+<p>In C++17 you might write a function to give animals head scratches as a function template, so it can be called with any type of animal:</p>
+<pre class="prettyprint">template &lt;class Animal&gt;
+void give_head_scratches (Animal const&amp; the_animal);</pre>
+<p>In C++20 you can simplify this using <code>auto</code>:</p>
+<pre class="prettyprint">void give_head_scratches (auto const&amp; the_animal);</pre>
+<p>This version is less verbose, requires coming up with fewer names, and is more consistent with C++14 lambdas.</p>
+<h1 id="constrained-auto">Constrained Auto</h1>
+<p>There&#8217;s a problem with the above function template though: according to the declaration we can pass literally anything to it. We can happily make calls that look like this:</p>
+<pre class="prettyprint">give_head_scratches(42);
+give_head_scratches(a_cactus);
+give_head_scratches(blog_post);
+give_head_scratches(the_platonic_ideal_of_a_chair);</pre>
+<p>They might compile and do something weird, or they might fail to compile due to the implementation of the template doing something which those types don&#8217;t support. Ideally we&#8217;d want to both document the interface of this function template with what kind of types it supports and also give the compiler the ability to give detailed errors when the declaration is instantiated with in incompatible type.</p>
+<p>C++20 gives us <a href="https://devblogs.microsoft.com/cppblog/c20-concepts-are-here-in-visual-studio-2019-version-16-3/">Concepts</a> to help solve this problem. If we have some <code>animal</code> concept which defines what interface a type representing an animal should have then we can use it like so:</p>
+<pre class="prettyprint">template &lt;animal Animal&gt;
+void give_head_scratches (Animal const&amp; the_animal);</pre>
+<p>This is quite verbose and repetitive. Ideally we&#8217;d be able to use the concept name directly in the function parameter list like this:</p>
+<pre class="prettyprint">void give_head_scratches (animal const&amp; the_animal);</pre>
+<p>However, this syntax was rejected from standardization, because you can&#8217;t tell whether this is a function template or a regular function without knowing whether <code>animal</code> is a type or a concept.</p>
+<p>Fortunately, a version of this syntax was included in C++20 which uses the <code>auto</code> keyword again:</p>
+<pre class="prettyprint">void give_head_scratches (animal auto const&amp; the_animal);</pre>
+<p>This checks that whatever is substituted for <code>auto</code> satisfies the <code>animal</code> concept. So if we instantiate the template with a <code>kitten</code> then <code>animal&lt;kitten&gt;</code> will be checked. This gives us back our terse syntax while also allowing us to constrain our template declarations.</p>
+<h1 id="try-them-out">Try Them Out!</h1>
+<p>Constrained auto has been supported in MSVC since <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2019 version 16.8,</a> and abbreviated function templates have recently been added to <a href="https://visualstudio.microsoft.com/vs/preview/">version 16.9 Preview 3</a>. We encourage you to download the tools and give the implementations a try! We can be reached via the comments below or via email (visualcpp@microsoft.com). If you find any problems you can use the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> tool in Visual Studio or head over to the <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Visual Studio Developer Community</a>. You can also find us on Twitter <a href="https://twitter.com/visualc">@VisualC</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/">Abbreviated Function Templates and Constrained Auto</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/feed/</wfw:commentRss>
+			<slash:comments>7</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Playground Games and Turn 10 Studios See 18.2X and 4.95X Link Time Improvements Respectively on Visual Studio 2019</title>
+		<link>https://devblogs.microsoft.com/cppblog/playground-games-and-turn-10-studios-see-18-2x-and-4-95x-link-time-improvements-respectively-on-visual-studio-2019/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/playground-games-and-turn-10-studios-see-18-2x-and-4-95x-link-time-improvements-respectively-on-visual-studio-2019/#comments</comments>
+		
+		<dc:creator><![CDATA[David Li]]></dc:creator>
+		<pubDate>Tue, 02 Feb 2021 17:00:17 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[performance]]></category>
+		<category><![CDATA[build throughput]]></category>
+		<category><![CDATA[Build Time]]></category>
+		<category><![CDATA[Compile Time]]></category>
+		<category><![CDATA[Game Development]]></category>
+		<category><![CDATA[Games]]></category>
+		<category><![CDATA[gaming]]></category>
+		<category><![CDATA[Iteration Time]]></category>
+		<category><![CDATA[Linker]]></category>
+		<category><![CDATA[Video Games]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27464</guid>
+
+					<description><![CDATA[<p>Introduction</p>
+<p>The C++ team at Visual Studio has delivered substantial build and link time improvements throughout Visual Studio 2019. This blog is Part 2 of a series of blogs showcasing real-world results of our efforts. See how the Gears 5 team benefited from iteration build time improvements in Part 1.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/playground-games-and-turn-10-studios-see-18-2x-and-4-95x-link-time-improvements-respectively-on-visual-studio-2019/">Playground Games and Turn 10 Studios See 18.2X and 4.95X Link Time Improvements Respectively on Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
+<p><img class="aligncenter size-full wp-image-27478" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small.jpg" alt="Image Sunrise KeyArt Horiz RGB Final small" width="2173" height="1224" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small.jpg 2173w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small-1024x577.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small-768x433.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small-1536x865.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Sunrise_KeyArt_Horiz_RGB_Final-small-2048x1154.jpg 2048w" sizes="(max-width: 2173px) 100vw, 2173px" /></p>
+<p>The C++ team at Visual Studio has delivered substantial build and link time improvements throughout Visual Studio 2019. This blog is Part 2 of a series of blogs showcasing real-world results of our efforts. See how the <a href="https://devblogs.microsoft.com/cppblog/the-coalition-sees-27-9x-iteration-build-improvement-with-visual-studio-2019/">Gears 5 team benefited from iteration build time improvements in Part 1.</a></p>
+<p>In this blog, the Forza Horizon 4 team shares tests results of compile and link times in three different versions of Visual Studio. Link times are now <strong>18.15X faster</strong> than in Visual Studio 2017. Likewise, Turn 10 Studios saw a <strong>4.95X</strong> improvement in link time. The decrease in build time enabled Playground Games to switch from <em>/debug:fastlink</em> to<em>/debug:full</em>. Analyzing the results, we can see not only massive iteration build time wins but also applicable real-world quality of life improvements.</p>
+<p><em><strong>“Using full linking removes the debugger stalls associated with fastlink and allows our engineering team to focus on debugging the current build rather than waiting for the development environment to become responsive. Coupled with the overall improvements to build and link times, this leads to less workflow interruption and productivity improvements across the team.”</strong></em> – Andrew Sage from Playground Games</p>
+<h2 id=""></h2>
+<h2 id="building-forza-horizon-4">Building Forza Horizon 4</h2>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-scaled.jpg"><img class="aligncenter size-full wp-image-27468" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-scaled.jpg" alt="Image ForzaHorizon4 Review 07 WM 4k" width="2500" height="1406" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-scaled.jpg 2500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-1536x864.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_Review_07_WM_4k-2048x1152.jpg 2048w" sizes="(max-width: 2500px) 100vw, 2500px" /></a></p>
+<h3 id=""></h3>
+<h3 id="methodology">Methodology</h3>
+<p>The Forza Horizon 4 team at Playground Games measured build times using Incredibuild’s build monitor. The monitor shows wall clock time for each stage of the process. Compile time is measured at the start of the first file compile to immediately before linking. Link time is measured from start of the link step to the end of link step. Total time, measured by the start-to-end Incredibuild process, may be longer than compile and link times combined since some startup and post link steps are included in the measurement.</p>
+<p>Tests were conducted during quiet times at the studio to ensure parallel compiles were not affected by network load. To further reduce noise in data, tests were averaged over multiple runs, and were started after all hard drive disk activity had finished and Intellisense had finished parsing.</p>
+<h3 id=""></h3>
+<h3 id="results">Results</h3>
+<h4 id="version-15-9-4-debugfastlink-vs-16-8-debugfull">Version 15.9.4 /debug:<strong>fastlink</strong> vs 16.8 /debug:<strong>full</strong></h4>
+<p>Comparing <em>/debug:fastlink</em> in Visual Studio 2017 and <em>/debug:full</em> in Visual Studio 2019 demonstrated real-world quality of life improvements. At first sight, total time has improved by a factor of <strong>1.26</strong>; however, considerable time of <strong>30-45 seconds</strong> per debug session was saved by switching to <em>/debug:full</em>, resulting in large productivity gains. The engineers at Playground Games have made the switch to <em>/debug:full</em> in order to both enjoy shorter build times and take advantage of the faster debugging experience afforded by <em>/debug:full</em>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull.png"><img class="aligncenter size-full wp-image-27476" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull.png" alt="Image FH fastvsfull" width="1900" height="1189" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull.png 1900w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull-300x188.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull-1024x641.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull-768x481.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-fastvsfull-1536x961.png 1536w" sizes="(max-width: 1900px) 100vw, 1900px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 100.067%;" width="451">
+<tbody>
+<tr>
+<td style="width: 43.6123%; text-align: center;" width="198"><strong>Total Time (minutes)</strong></td>
+<td style="width: 26.8722%; text-align: center;" width="122"><strong>Full rebuild</strong></td>
+<td style="width: 184.263%; text-align: center;" width="131"><strong>Single file change</strong></td>
+</tr>
+<tr>
+<td style="width: 43.6123%; text-align: center;" width="198">VS2017 15.9.4 /debug:<strong>fastlink</strong></td>
+<td style="width: 26.8722%; text-align: center;" width="122">4:22</td>
+<td style="width: 184.263%; text-align: center;" width="131">1:39</td>
+</tr>
+<tr>
+<td style="width: 43.6123%; text-align: center;" width="198">VS2019 16.8    /debug:<strong>full</strong></td>
+<td style="width: 26.8722%; text-align: center;" width="122">3:40</td>
+<td style="width: 184.263%; text-align: center;" width="131">1:15</td>
+</tr>
+<tr>
+<td style="width: 43.6123%; text-align: center;" width="198"><em>x times faster </em></td>
+<td style="width: 26.8722%; text-align: center;" width="122">1.19</td>
+<td style="width: 184.263%; text-align: center;" width="131">1.32</td>
+</tr>
+<tr>
+<td style="width: 43.6123%; text-align: center;" width="198"><strong><em>average x times faster</em></strong></td>
+<td style="width: 26.8722%; text-align: center;" width="122"><strong>1.26</strong></td>
+<td style="width: 184.263%; text-align: center;" width="131"></td>
+</tr>
+</tbody>
+</table>
+<h4 id=""></h4>
+<h4 id="version-15-9-4-vs-16-8-using-debugfull">Version 15.9.4 vs 16.8 using /debug:full</h4>
+<p>In the second test, a comparison of builds using <em>/debug:full</em> was done over 3 versions of Visual Studio. The compilation time has been improved by a factor of <strong>1.52. </strong>When doing a full rebuild, the compile time decreased from 4 minutes 39 seconds in Visual Studio 2017 to 3 minutes 5 seconds in Visual Studio 2019 16.8. For a single file change, a 19 second reduction was observed. On average, the link times improved by a factor of <strong>18.15X. </strong>The full rebuild link time in Visual Studio 2019 16.8 <strong>decreased by 10 minutes 18 seconds</strong>, a monumental improvement.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile.png"><img class="aligncenter size-full wp-image-27469" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile.png" alt="Image FH compile" width="1898" height="1233" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile.png 1898w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile-300x195.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile-1024x665.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile-768x499.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-compile-1536x998.png 1536w" sizes="(max-width: 1898px) 100vw, 1898px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 99.6422%; height: 333px;" width="451">
+<tbody>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189"><strong>Compile Time (minutes)</strong></td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131"><strong>Full rebuild</strong></td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131"><strong>Single file change</strong></td>
+</tr>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189">VS2017 15.9.4 /debug:full</td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131">4:39</td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131">0:55</td>
+</tr>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189">VS2019 16.7.2 /debug:full</td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131">3:31</td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131">0:37</td>
+</tr>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189">VS2019 16.8    /debug:full</td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131">3:05</td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131">0:36</td>
+</tr>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189"><em>x times faster</em></td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131">1.51</td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131">1.53</td>
+</tr>
+<tr style="height: 55px;">
+<td style="width: 41.63%; height: 55px; text-align: center;" width="189"><strong><em>average x times faster</em></strong></td>
+<td style="width: 29.0749%; height: 55px; text-align: center;" width="131"><strong>1.52</strong></td>
+<td style="width: 193.392%; height: 55px; text-align: center;" width="131"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link.png"><img class="aligncenter size-full wp-image-27471" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link.png" alt="Image FH link" width="1901" height="1177" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link.png 1901w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link-300x186.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link-1024x634.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link-768x476.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-link-1536x951.png 1536w" sizes="(max-width: 1901px) 100vw, 1901px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 100.143%; height: 331px;" width="451">
+<tbody>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><strong>Link Time (minutes)</strong></td>
+<td style="width: 29.0749%; text-align: center;" width="131"><strong>Full rebuild</strong></td>
+<td style="width: 192.07%; text-align: center;" width="131"><strong>Single file change</strong></td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2017 15.9.4 /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">10:53</td>
+<td style="width: 192.07%; text-align: center;" width="131">11:28</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2019 16.7.2 /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">1:23</td>
+<td style="width: 192.07%; text-align: center;" width="131">1:39</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2019 16.8    /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">0:35</td>
+<td style="width: 192.07%; text-align: center;" width="131">0:39</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><em>x times faster</em></td>
+<td style="width: 29.0749%; text-align: center;" width="131"><strong>18.66</strong></td>
+<td style="width: 192.07%; text-align: center;" width="131"><strong>17.64</strong></td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><strong><em>average x times faster</em></strong></td>
+<td style="width: 29.0749%; text-align: center;" width="131"><strong>18.15</strong></td>
+<td style="width: 192.07%; text-align: center;" width="131"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total.png"><img class="aligncenter size-full wp-image-27491" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total.png" alt="Image FH total" width="2156" height="994" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total.png 2156w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total-300x138.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total-1024x472.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total-768x354.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total-1536x708.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FH-total-2048x944.png 2048w" sizes="(max-width: 2156px) 100vw, 2156px" /></a></p>
+<table style="width: 99.265%; height: 332px;" width="451">
+<tbody>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><strong>Total Time (minutes)</strong></td>
+<td style="width: 29.0749%; text-align: center;" width="131"><strong>Full rebuild</strong></td>
+<td style="width: 193.392%; text-align: center;" width="131"><strong>Single file change</strong></td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2017 15.9.4 /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">15:32</td>
+<td style="width: 193.392%; text-align: center;" width="131">12:23</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2019 16.7.2 /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">4:54</td>
+<td style="width: 193.392%; text-align: center;" width="131">3:40</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189">VS2019 16.8    /debug:full</td>
+<td style="width: 29.0749%; text-align: center;" width="131">3:40</td>
+<td style="width: 193.392%; text-align: center;" width="131">1:15</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><em>x times faster </em></td>
+<td style="width: 29.0749%; text-align: center;" width="131">4.24</td>
+<td style="width: 193.392%; text-align: center;" width="131">9.91</td>
+</tr>
+<tr>
+<td style="width: 41.63%; text-align: center;" width="189"><strong><em>average x times faster</em></strong></td>
+<td style="width: 29.0749%; text-align: center;" width="131"><strong>7.07</strong></td>
+<td style="width: 193.392%; text-align: center;" width="131"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<h2 id="building-forza-motorsport">Building Forza Motorsport</h2>
+<h3 id="methodology">Methodology</h3>
+<p>At Turn 10 Studios, the Forza Motorsport team used MSBuild’s Structured Log Viewer to obtain build and compile times. Each of the times below are the result of an average over 4 runs. CL refers to cl.exe (MSVC Compiler) and Lib refers to lib.exe (Microsoft Library Manager). While Full Build indicates total time, Debug, CL, and Lib times were chosen to be showcased; each time was averaged individually.</p>
+<h3 id="results">Results</h3>
+<h4 id="version-15-9-vs-16-7-profile-build-with-debugfastlink">Version 15.9 vs 16.7 Profile Build with /debug:fastlink</h4>
+<p>When doing a full Profile build with /debug:fastlink, we can see a moderate improvement in build time while link time has improved by a factor of <strong>1.96</strong>. Lib time has been decreased by <strong>9.34X</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink.png"><img class="aligncenter size-full wp-image-27473" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink.png" alt="Image FM fastlink" width="1653" height="992" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink.png 1653w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fastlink-1536x922.png 1536w" sizes="(max-width: 1653px) 100vw, 1653px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 98.6891%; height: 221px;" width="597">
+<tbody>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><strong>Time (seconds)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Full Build (Profile)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Debug Fastlink</strong></td>
+<td style="width: 16.9154%; text-align: center;" width="101"><strong>CL</strong></td>
+<td style="width: 138.806%; text-align: center;" width="101"><strong>Lib</strong></td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2017 15.9</td>
+<td style="width: 21.393%; text-align: center;" width="128">285.5</td>
+<td style="width: 21.393%; text-align: center;" width="128">18</td>
+<td style="width: 16.9154%; text-align: center;" width="101">38.9</td>
+<td style="width: 138.806%; text-align: center;" width="101">43.9</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2019 16.7</td>
+<td style="width: 21.393%; text-align: center;" width="128">249.75</td>
+<td style="width: 21.393%; text-align: center;" width="128">9.2</td>
+<td style="width: 16.9154%; text-align: center;" width="101">40.5</td>
+<td style="width: 138.806%; text-align: center;" width="101">4.7</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><em>x times faster </em></td>
+<td style="width: 21.393%; text-align: center;" width="128">1.14</td>
+<td style="width: 21.393%; text-align: center;" width="128">1.96</td>
+<td style="width: 16.9154%; text-align: center;" width="101">0.96</td>
+<td style="width: 138.806%; text-align: center;" width="101">9.34</td>
+</tr>
+</tbody>
+</table>
+<h4 id="version-15-9-vs-16-7-profile-build-with-debugfulllink">Version 15.9 vs 16.7 Profile Build with /debug:fulllink</h4>
+<p>Using /debug:fulllink, we can see much more favorable numbers. Full build time is now <strong>1.71X</strong> faster. Similarly, link time has been improved by a factor of <strong>4.95</strong>. Lib time was also improved by <strong>10.86X</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink.png"><img class="aligncenter size-full wp-image-27474" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink.png" alt="Image FM fulllink" width="1653" height="993" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink.png 1653w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-fulllink-1536x923.png 1536w" sizes="(max-width: 1653px) 100vw, 1653px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 99.2714%;" width="597">
+<tbody>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><strong>Time (seconds)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Full Build (Profile)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Debug Fulllink</strong></td>
+<td style="width: 16.9154%; text-align: center;" width="101"><strong>CL</strong></td>
+<td style="width: 135.323%; text-align: center;" width="101"><strong>Lib</strong></td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2017 15.9</td>
+<td style="width: 21.393%; text-align: center;" width="128">431</td>
+<td style="width: 21.393%; text-align: center;" width="128">172</td>
+<td style="width: 16.9154%; text-align: center;" width="101">34</td>
+<td style="width: 135.323%; text-align: center;" width="101">38</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2019 16.7</td>
+<td style="width: 21.393%; text-align: center;" width="128">251.75</td>
+<td style="width: 21.393%; text-align: center;" width="128">34.75</td>
+<td style="width: 16.9154%; text-align: center;" width="101">34.75</td>
+<td style="width: 135.323%; text-align: center;" width="101">3.5</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><em>x times faster </em></td>
+<td style="width: 21.393%; text-align: center;" width="128">1.71</td>
+<td style="width: 21.393%; text-align: center;" width="128">4.95</td>
+<td style="width: 16.9154%; text-align: center;" width="101">0.98</td>
+<td style="width: 135.323%; text-align: center;" width="101">10.86</td>
+</tr>
+</tbody>
+</table>
+<h3 id=""></h3>
+<h4 id="version-15-9-vs-16-7-release-build">Version 15.9 vs 16.7 Release Build</h4>
+<p>For the Release Build, we see similar improvements as above. Build time decreased by <strong>1.81X</strong> and link time improved by a factor of <strong>2.44</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release.png"><img class="aligncenter size-full wp-image-27475" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release.png" alt="Image FM release" width="1653" height="993" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release.png 1653w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/FM-release-1536x923.png 1536w" sizes="(max-width: 1653px) 100vw, 1653px" /></a></p>
+<p>&nbsp;</p>
+<table style="width: 99.4975%;" width="597">
+<tbody>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><strong>Time (seconds)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Full Build (Release)</strong></td>
+<td style="width: 21.393%; text-align: center;" width="128"><strong>Link</strong></td>
+<td style="width: 16.9154%; text-align: center;" width="101"><strong>CL</strong></td>
+<td style="width: 135.821%; text-align: center;" width="101"><strong>Lib</strong></td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2017 15.9</td>
+<td style="width: 21.393%; text-align: center;" width="128">664</td>
+<td style="width: 21.393%; text-align: center;" width="128">479</td>
+<td style="width: 16.9154%; text-align: center;" width="101">30</td>
+<td style="width: 135.821%; text-align: center;" width="101">34.5</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139">VS2019 16.7</td>
+<td style="width: 21.393%; text-align: center;" width="128">367</td>
+<td style="width: 21.393%; text-align: center;" width="128">196</td>
+<td style="width: 16.9154%; text-align: center;" width="101">29</td>
+<td style="width: 135.821%; text-align: center;" width="101">29</td>
+</tr>
+<tr>
+<td style="width: 23.2172%; text-align: center;" width="139"><em>x times faster </em></td>
+<td style="width: 21.393%; text-align: center;" width="128">1.81</td>
+<td style="width: 21.393%; text-align: center;" width="128">2.44</td>
+<td style="width: 16.9154%; text-align: center;" width="101">1.03</td>
+<td style="width: 135.821%; text-align: center;" width="101">1.19</td>
+</tr>
+</tbody>
+</table>
+<h2 id=""></h2>
+<h2 id="analysis">Analysis</h2>
+<p>The significant build iteration time improvement is a direct result of optimization efforts by the C++ Team. Linker performance was improved in version 16.0 and 16.2 by <a href="https://devblogs.microsoft.com/cppblog/game-performance-and-compilation-time-improvements-in-visual-studio-2019/">speeding up Program Database (PDB) file generation and type merging</a>. Algorithmic changes in 16.6 and worse case Incremental Linking improvements in 16.7 <a href="https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/">increased optimization of Linker performance</a>.  In version 16.8, multi-threading generation of PDB files further improved performance. Stay tuned for a technical blogpost detailing 16.8 improvements.</p>
+<h2 id="developer-conversation">Developer Conversation</h2>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish.jpg"><img class="aligncenter size-full wp-image-27467" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish.jpg" alt="Image ForzaHorizon4 E3PressKit WM 11 ClassicBritish" width="2235" height="1258" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish.jpg 2235w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish-1536x865.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/ForzaHorizon4_E3PressKit_WM_11_ClassicBritish-2048x1153.jpg 2048w" sizes="(max-width: 2235px) 100vw, 2235px" /></a></p>
+<p>We spoke with <strong>Andrew Sage</strong> <strong>from Playground Games</strong> (Forza Horizon 4) and <strong>Dan Tunnell</strong> <strong>from Turn 10 Studios</strong> (Forza Motorsport) for some insights into how the improvements have affected their studios.</p>
+<p>Is the studio currently using Visual Studio 2019?</p>
+<blockquote><p>“We have a mix of VS2017 and VS2019, depending on setup. Most engineers have moved to VS2019 for the main project, but we still have some tools projects that haven’t been updated yet and are still using 2017.” – Andrew</p></blockquote>
+<p>&nbsp;</p>
+<blockquote><p>“We just moved the whole studio to Visual Studio 2019 in the last week of January 2021.  We&#8217;ve had one of our development branches running it since before the holidays but it just reached broad adoption a couple of days ago.” – Dan</p></blockquote>
+<p>&nbsp;</p>
+<p>What were some immediate benefits that you saw from faster link times?</p>
+<blockquote><p>“Reducing iteration time to build and test changes allows us to be more productive, especially as gains add up over the course of all of the engineers multiple times per day. The main benefit was the removal of stalls when debugging with fast link when switching to full link, as these would add 30-45 seconds per debug session, which can be repeated multiple times per build.” – Andrew</p></blockquote>
+<p>&nbsp;</p>
+<blockquote><p>“The biggest benefit I see is improved iteration time.  Even if we only shave 30 seconds off link time, multiplying that by the number of devs in the studio and the number of times they compile each day becomes a large number really quick.” – Dan</p></blockquote>
+<p>&nbsp;</p>
+<p>What are some potential long-term benefits?</p>
+<blockquote><p>“Longer term, we will also be moving all our automated build servers over to Visual Studio 2019 to reduce our build validation and test turnaround times. This means a reduction in time from checking in code to knowing that the build has succeeded. Also, there will be less changes per build as these builds run continuously. Moving all our tools projects over to Visual Studio 2019 in the future would lead to a further productivity benefit for the tools team, and their ability to spend more time supporting our content creators.” – Andrew</p></blockquote>
+<p>&nbsp;</p>
+<blockquote><p>“One of the longer-term benefits is reduced build times on our server farm.  If someone checks in code that breaks the build, the faster we catch it the less downtime we experience.  It also gives us faster tooling iteration since the time between a developer checking in new tooling code and the build system checking in new tools binaries is reduced.  Additionally, there&#8217;s reduced time for &#8220;validation&#8221; builds.  Prior to checking in, each developer builds a representative sample of the game binaries to ensure that they haven&#8217;t broken anything.  This slows iteration (I&#8217;m sure you can see a pattern emerging &#8211; iteration time is king) and anything we can do to speed that up is extremely valuable.” – Dan</p></blockquote>
+<p>&nbsp;</p>
+<p>How might the link time improvements change the workflow patterns of the studio?</p>
+<blockquote><p>“Besides the improvement in focusing on fixing issues rather than waiting for builds to complete across the team, I think we will be able to focus on other productivity gains which then become a larger overall proportion of our processes. For instance, reducing dependencies in our codebase can improve build times even with the faster toolset and distributed build systems, and we will continue to focus our efforts in this area in the future. Also, using full link allows for less mental ‘task switching’ overhead caused by the stalls, as often when someone hits a stall they might swap to another task for a bit and then back in later, which can cause workflow to become interrupted.” – Andrew</p></blockquote>
+<p>&nbsp;</p>
+<blockquote><p>“If I were to guess, I&#8217;d say that we&#8217;ll see less build breaks.  Validation builds take a significant amount of time to complete.  Even though they&#8217;re required, sometimes developers will omit that step if they&#8217;re in a hurry and feel confident that their fix is trivial enough to be safe.  The faster the build times are the lower that barrier to entry is and the more likely people will perform that step even for changes they consider to be trivial and/or safe.  I also think we might see less code changes between compilations.  The longer compilation and linking takes the more code a developer will add before they hit the button to compile.  If compilation and linking is almost instantaneous, most developers will use that as a quick sanity check to verify that the method/function/class/etc. that they just added compiles before moving on.” – Dan</p></blockquote>
+<h1 id="upgrade-visual-studio">Upgrade Visual Studio</h1>
+<p><a href="http://aka.ms/vspreview">Download the latest Visual Studio 2019 Preview</a> and experience faster end-to-end build iteration times for your own projects.</p>
+<p>How will these improvements impact your day-to-day workflow? Talk to us in the comments below, on <a href="https://twitter.com/VisualC">Twitter (@VisualC)</a>, or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/playground-games-and-turn-10-studios-see-18-2x-and-4-95x-link-time-improvements-respectively-on-visual-studio-2019/">Playground Games and Turn 10 Studios See 18.2X and 4.95X Link Time Improvements Respectively on Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/playground-games-and-turn-10-studios-see-18-2x-and-4-95x-link-time-improvements-respectively-on-visual-studio-2019/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Seamlessly Accelerate CMake Projects in Visual Studio with Incredibuild</title>
+		<link>https://devblogs.microsoft.com/cppblog/seamlessly-accelerate-cmake-projects-in-visual-studio-with-incredibuild/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/seamlessly-accelerate-cmake-projects-in-visual-studio-with-incredibuild/#comments</comments>
+		
+		<dc:creator><![CDATA[Nick Uhlenhuth]]></dc:creator>
+		<pubDate>Wed, 27 Jan 2021 15:00:18 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27444</guid>
+
+					<description><![CDATA[<p>Visual Studio 2017 shipped with first-class CMake support. Since then, we’ve continued to improve our CMake support by adding new features based on your feedback. We previously blogged about the built-in Incredibuild support for accelerating and visualizing your vcxproj projects, and many of you asked to get this same level of support for your CMake projects.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/seamlessly-accelerate-cmake-projects-in-visual-studio-with-incredibuild/">Seamlessly Accelerate CMake Projects in Visual Studio with Incredibuild</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 2017 shipped with <a href="https://devblogs.microsoft.com/cppblog/cmake-support-in-visual-studio/">first-class CMake support</a>. Since then, we’ve continued to improve our CMake support by adding new features based on your feedback. We previously blogged about the <a href="https://devblogs.microsoft.com/cppblog/visualize-your-build-with-incredibuilds-build-monitor-and-visual-studio-2019/">built-in Incredibuild support for accelerating and visualizing your vcxproj projects</a>, and many of you asked to get this same level of support for your CMake projects. We’re happy to announce that Incredibuild can now be used to accelerate the Windows builds of your CMake projects from within Visual Studio.</p>
+<h3 id="incredibuild-recap"><strong>Incredibuild Recap</strong></h3>
+<p>The backbone of Incredibuild’s offering, <a href="https://www.incredibuild.com/technology?utm_source=visual_studio_blog&amp;utm_medium=referral">Virtualized Distributed Processing</a><img src="https://s.w.org/images/core/emoji/13.0.1/72x72/2122.png" alt="™" class="wp-smiley" style="height: 1em; max-height: 1em;" /> enables a workload that consists of multiple, concurrent processes to be automatically and dynamically distributed to hundreds, and even thousands of idle CPUs on remote machine across your network or public cloud. Because CMake builds consist of hundreds of compilation tasks that can be executed in parallel, having hundreds of cores at your disposal can highly accelerate build times, which is exactly what distributed computing offers.</p>
+<p>Virtualized Distributed Processing<img src="https://s.w.org/images/core/emoji/13.0.1/72x72/2122.png" alt="™" class="wp-smiley" style="height: 1em; max-height: 1em;" /> can even use idle CPUs on remote machines while users are working on them – operating in the background. In organizations that have hundreds of machines, the aggregated number of idle CPUs in any given moment can easily be in the thousands. These are wasted cores that Incredibuild recaptures to accelerate time consuming workloads in need of computing power.</p>
+<p>Incredibuild runs processes on remote machines in a secure sandbox. Everything a process requires to run properly is dynamically emulated by Incredibuild from the local host to the remote machine. <strong>This means all you need to install on remote machines is the Incredibuild Agent – there’s no need to install Visual Studio, nor your source code or any other build tools.</strong> Any output generated by the remotely executed process &#8211; std output, errors, return codes, files generated, etc. – is automatically synched back to the local host, as if the process had been executed locally.</p>
+<h3 id="using-visual-studio-cmake-incredibuild"><strong>Using Visual Studio + CMake + Incredibuild</strong></h3>
+<p>In the Visual Studio Installer, ensure that the checkboxes for “C++ CMake tools for Windows” and “IncrediBuild – Build Acceleration” are selected:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/installer.png"><img class="alignnone wp-image-27445 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/installer.png" alt="The checklist of optional features to install, including CMake Tools and Incredibuild" width="416" height="497" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/installer.png 416w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/installer-251x300.png 251w" sizes="(max-width: 416px) 100vw, 416px" /></a></p>
+<p>Once installed, an Incredibuild toolbar and menu appear in the Visual Studio development environment, offering Incredibuild’s distributed Build and Rebuild operations.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/buildIDE.gif"><img class="alignnone wp-image-27446 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/buildIDE.gif" alt="Animated gif showing Incredibuild building a project in a distributed fashion on many cores " width="1552" height="818" /></a></p>
+<h3 id="visualizing-your-build-with-incredibuilds-build-monitor"><strong>Visualizing your build with Incredibuild’s Build Monitor</strong></h3>
+<p>Another benefit of Incredibuild that you can take advantage of from directly within the IDE is the <a href="https://www.incredibuild.com/the-build-monitor?utm_source=visual_studio_blog&amp;utm_medium=referral">Incredibuild Build Monitor</a> tool. This build visualization tool replaces your old text output with a sleek, intuitive graphic UI, transforming your build into a visual entity you can easily engage with, and helps you spot long durations, errors, warnings, bottlenecks, and dependencies.</p>
+<p>Let’s take a look at the standard text output we’re all used to working with:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/terminal.jpg"><img class="alignnone wp-image-27447 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/terminal.jpg" alt="Plain text output" width="618" height="215" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/terminal.jpg 618w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/terminal-300x104.jpg 300w" sizes="(max-width: 618px) 100vw, 618px" /></a></p>
+<p>Now take a look at how a build looks like with Incredibuild’s Build Monitor tool, seamlessly integrated into the Visual Studio experience:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor.jpg"><img class="alignnone wp-image-27448 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor.jpg" alt="Visual build monitor, showing passed tasks, tasks with warning, and a system utilization graph on a timeline" width="1430" height="754" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor.jpg 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor-300x158.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor-1024x540.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitor-768x405.jpg 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></a></p>
+<p>Each color represents the build task status, allowing you to immediately identify which build tasks were executed without a problem and which require your attention. The bar width represents the duration of a specific task, and the side navigation bar lays out the specific machine and core on which the task was executed.</p>
+<p>For more information, refer to the <a href="https://devblogs.microsoft.com/cppblog/visualize-your-build-with-incredibuilds-build-monitor-and-visual-studio-2019/">previous blog post on Incredibuild’s Build Monitor</a>.</p>
+<h3 id="how-much-faster-are-cmake-builds-with-incredibuild"><strong>How much faster are CMake builds with Incredibuild? </strong></h3>
+<p>The following data is based on running CMake with MSBuild by compiling the popular core OpenCV open-source project to establish a known base line. This example uses the Ninja generator, but all the Visual Studio generators are supported. Here are the results with Incredibuild:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/chart.png"><img class="alignnone wp-image-27449 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/chart.png" alt="Graph showing the following results of number of machines and cores against build time: 1 machine, 8 cores took 16 minutes. 4 machines, 22 cores took 6:26. 5 machines, 30 cores took 4:42. 10 machines, 112 cores took 1:42." width="713" height="271" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/chart.png 713w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/chart-300x114.png 300w" sizes="(max-width: 713px) 100vw, 713px" /></a></p>
+<p>Here is what the CMake OpenCV build looks like in the Build Monitor.</p>
+<p><strong> <a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitorgif.gif"><img class="alignnone wp-image-27450 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/monitorgif.gif" alt="Animated gif showing the build monitor for a large build, with the tasks being distributed across many machines" width="600" height="338" /></a></strong></p>
+<p>All in all, there is a 9.5X performance boost which means developers can spend more time building great code in the zone and less time waiting for code to build. In this specific use-case, adding additional cores to the Incredibuild pool, on top of the 100 cores used in this example, will result in even better compile time.</p>
+<h3 id="continuous-integration-continuous-improvement"><strong>Continuous integration, Continuous improvement</strong></h3>
+<p>You can use the same Incredibuild infrastructure to accelerate your CMake project under your CI/CD of choice for the full experience and to also accelerate unit tests that are part of your build or other compute intensive processes such as code analysis, code signing, various test types and more.</p>
+<h3 id="talk-to-us">Talk To Us</h3>
+<p>We encourage you to <a href="https://visualstudio.microsoft.com/downloads/">download Visual Studio 2019</a> and try the <a href="https://www.incredibuild.com/?utm_source=visual_studio_blog&amp;utm_medium=referral">Incredibuild</a> functionality. We can be reached via the comments below or via email (visualcpp@microsoft.com). If you encounter other problems with Visual Studio or have other suggestions you can use the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> tool in Visual Studio or head over to the <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Visual Studio Developer Community</a>. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/seamlessly-accelerate-cmake-projects-in-visual-studio-with-incredibuild/">Seamlessly Accelerate CMake Projects in Visual Studio with Incredibuild</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/seamlessly-accelerate-cmake-projects-in-visual-studio-with-incredibuild/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Blizzard Diablo IV debugs Linux core dumps from Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/#comments</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Tue, 26 Jan 2021 16:49:13 +0000</pubDate>
+				<category><![CDATA[Linux]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27431</guid>
+
+					<description><![CDATA[<p>Blizzard is using Visual Studio 2019 to debug Linux core dumps on WSL. The following blog post is written by Bill Randolph, a Senior Software Engineer at Blizzard working on the development of Diablo IV. Thanks for your partnership, Bill!</p>
+<p>Introduction<br />
+On Diablo IV we develop all our code on Windows and compile for multiple platforms. </p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/">Blizzard Diablo IV debugs Linux core dumps from Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Blizzard is using Visual Studio 2019 to <a href="https://devblogs.microsoft.com/cppblog/debug-linux-core-dumps-in-visual-studio/">debug Linux core dumps on WSL</a>. <strong>The following blog post is written by Bill Randolph, a Senior Software Engineer at Blizzard working on the development of Diablo IV.</strong> Thanks for your partnership, Bill!</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith.jpg"><img class="aligncenter size-full wp-image-27432" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith.jpg" alt="A character from Diablo IV with the title &quot;Diablo IV&quot;." width="1920" height="1080" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith.jpg 1920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/16_9_background_lilith-1536x864.jpg 1536w" sizes="(max-width: 1920px) 100vw, 1920px" /></a></p>
+<h4 id="introduction">Introduction</h4>
+<p>On Diablo IV we develop all our code on Windows and compile for multiple platforms.  This includes our servers, which run on Linux.  (The code includes conditional compilation and custom platform-specific code where necessary).  There are multiple reasons for this workflow.  For one, our team’s core competency is on Windows.  Even our server programmers are most familiar with Windows development, and we appreciate the ability for all the programmers on our team to use a common toolset and knowledge base.</p>
+<p>The other, and most important reason that we develop on Windows is the functionality and robust toolset provided by Visual Studio.  There is nothing quite comparable in the Linux world, even if we were to develop natively in Linux.</p>
+<p>However, this presents us with some challenges when a deployed server crashes and we want to debug the resulting core dump.  There is the option to remote login to the VM (or more specifically the container) that crashed and run gdb to diagnose the crash there.  But there are numerous disadvantages to this.  For one, we don’t deploy source with our binaries, so source is not available in a gdb session on a VM or container.</p>
+<p>Another hurdle is gdb itself: unless you use gdb on a very regular basis, you don’t retain a level of proficiency with it that makes it convenient for our use.  Putting it simply, our developers would much rather use familiar tools to debug.  Since only 2 or 3 of our developers have much proficiency with gdb, they become the de-facto resource for diagnosing production crashes, and that’s not optimal.</p>
+<p>We have always wanted a more intuitive approach for debugging our Linux cores.  That’s why we are so excited to be able to utilize the new Visual Studio feature that lets us do just that in the familiar environment of Visual Studio!  It really is not an exaggeration to say that this is a dream come true.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls.jpg"><img class="aligncenter size-full wp-image-27433" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls.jpg" alt="An image of combat gameplay in Diablo IV." width="1773" height="1080" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls.jpg 1773w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls-300x183.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls-1024x624.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls-768x468.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/Combat-Crypts-Sorceress-Ghouls-1536x936.jpg 1536w" sizes="(max-width: 1773px) 100vw, 1773px" /></a></p>
+<h4 id="our-debugging-workflow">Our debugging workflow</h4>
+<p>The Visual Studio Linux core debug workflow is enabled only if you install WSL or <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160&amp;viewFallbackFrom=vs-2019">add a Linux connection to the Connection Manager</a>. All our server developers install WSL, using the distribution we deploy on.  We run a script I wrote that also installs all the development tools and support libraries needed to build our server within WSL.</p>
+<p>(As a brief side topic, I want to emphasize that we have found WSL to be the best available Linux environment for developers to test their changes in a Linux build.  It’s incredibly convenient to hop into WSL, cd into the shared code directory, and build right from there.  This is a much better solution than running a VM, or even a container.  If you are building with CMake, then you can also leverage Visual Studio’s <a href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-2019-and-windows-subsystem-for-linux-wsl/">native support for WSL</a>.)</p>
+<p>Let me provide a little background about our build.  We develop our code on Windows and have a Windows version of our servers that can run under Windows.  This is useful for normal feature development.  However, we deploy our servers on Linux, which requires a build generated on Linux itself.  The Linux build is generated on a build farm that uses a build system on a Linux box to build the server, and its container that gets deployed.  The Linux executable is only deployed in a container and the developers normally don’t have access to it.</p>
+<p>When a server crashes in our infrastructure an automated process notifies us and the core file is archived to a network share.  To debug a core in either Linux, or using Visual Studio, you must have the executable that was running; it also helps to debug with the exact shared libraries used on the deployed container.  We use another script to obtain these files.  First, we copy the core to our local machine then run the script and point it to the core. The script downloads the Docker container that was built with that version, extracts the server binary from it, along with certain shared runtime libraries for gdb’s use.  (This avoids gdb compatibility problems you may encounter if your WSL version does not exactly match the deployed Linux version.)  The script writes to ~/.gdbinit to set up the shared libraries as system libraries for the debug session.</p>
+<p>Then we switch over to Visual Studio, where the fun begins. We load the solution to build our Windows version of our servers. Then we open the new debug dialog under <strong>Debug -&gt; Other Debug Targets -&gt; Debug Linux Core Dump with Native Only</strong>. We enable the checkbox that says “Debug on WSL” and fill in the (WSL-specific!) path to both the core file and the server binary. After that, we hit Debug &amp; watch the show!</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/coreDumpUI.png"><img class="aligncenter size-full wp-image-27434" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/coreDumpUI.png" alt="A dialog in Visual Studio with the title &quot;Debug Linux core dump (native only). The checkbox &quot;Debug on WSL&quot; is selected." width="819" height="382" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/coreDumpUI.png 819w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/coreDumpUI-300x140.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/coreDumpUI-768x358.png 768w" sizes="(max-width: 819px) 100vw, 819px" /></a></p>
+<p>Visual Studio invokes gdb in our WSL behind the scenes. After some disk activity, up pops a call stack for the crash with the instruction pointer on the relevant line of code. It’s a brave new world!</p>
+<p>So next comes the task of identifying the crash. We have a crash handler that intercepts the crash to perform some housekeeping, so the actual crash will be down the call stack in a single-threaded server. However, some of our servers are multi-threaded, and the crash could have originated from any of those threads. Our crash handler logs the source of the crash’s file and line number, so examining those variables gives us our first lead; we will look for the call stack that was executing that code.</p>
+<p>In the old days of a few weeks ago, we would use gdb to get a backtrace of all threads and peruse the resulting list to see which thread had the most-likely call stack that would have crashed. For example, if a thread is just sleeping, it is most likely not the crashed thread. We would look for a stack that had some more content than a few frames capping with a “sleep” and examine the code to see if a problem is evident, or go into gdb itself to examine the process state.</p>
+<p>However, Visual Studio gives us considerably more powerful options than that. For a multi-threaded core you can open the Threads window in your debug session and poke around in each thread to see what the stack looks like. This is pretty similar to the gdb approach, and if there are 50 threads it can be very tedious. Fortunately, there is a feature that makes this much easier: <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/using-the-parallel-stacks-window?view=vs-2019"><strong>Parallel Stacks</strong></a>.</p>
+<p>I confess most of us did not know about Parallel Stacks until Erika Sweet and her team told us about it. Invoking Debug -&gt; Windows -&gt; Parallel Stacks (only available during your debug session) opens a new window that shows the call stack of every thread in your process. It’s a fascinating 30,000-foot view of your entire process space. You can double-click any stack frame in any thread, and Visual Studio will jump to that frame in both source and the call stack window. This is a huge time-saver for us.</p>
+<p>Once we can see the code near the crash, we can inspect variables using mouse-hover, QuickWatch or any of the other plethora of tools in Visual Studio. It’s true that in a Release build, many variables are optimized out, but at the same time, many are not! We can hone in on a problem much faster using Visual Studio’s interface than we ever could have using just gdb.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo.jpg"><img class="aligncenter size-full wp-image-27435" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo.jpg" alt="Heroes from Diablo IV with the &quot;Diablo IV&quot; logo." width="1926" height="1080" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo.jpg 1926w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo-300x168.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo-1024x574.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo-768x431.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/blizzcon_heroes_w_logo-1536x861.jpg 1536w" sizes="(max-width: 1926px) 100vw, 1926px" /></a></p>
+<h4 id="summary">Summary</h4>
+<p>Our team is very excited about the ability to debug Linux cores from our production environment in Visual Studio! It is a game changer for us, as it allows many more developers to actively diagnose problems “in the wild”, and it makes the powerful toolset of Visual Studio debugging available to all of us. Once our initial setup is complete, it only takes a minute or so to be in a debugging session in Visual Studio. This feature will make finding problems in our code much faster and more efficient! Thanks to Erika and her team for working with us on this!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/">Blizzard Diablo IV debugs Linux core dumps from Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>6</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>A Year of Conference Talks from the Microsoft C++ Team</title>
+		<link>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/#comments</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Mon, 25 Jan 2021 15:00:07 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27426</guid>
+
+					<description><![CDATA[<p>As we learned to adapt to virtual conferences last year we presented more than 20 talks on a wide range of topics. I&#8217;ve collected them all here so you can easily learn about the latest advances in our tooling as well as the cutting edge of C++ features.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/">A Year of Conference Talks from the Microsoft C++ Team</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>As we learned to adapt to virtual conferences last year we presented more than 20 talks on a wide range of topics. I&#8217;ve collected them all here so you can easily learn about the latest advances in our tooling as well as the cutting edge of C++ features.</p>
+<h3 id="c-europe-february">C++ Europe (February)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=uQFr33C36rU">Tools to Ease Cross-Platform C++ Development</a> by Augustin Popa &amp; Elizabeth Morrow</li>
+</ul>
+<h3 id="wslconf-march">WSLConf (March)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=50bokFFOvtA">C++ Cross Platform Development with Visual Studio and WSL</a> by Erika Sweet</li>
+</ul>
+<h3 id="pure-virtual-c-april">Pure Virtual C++ (April)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=drt3yXI-fqk&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Dynamic Polymorphism with Metaclasses and Code Injection</a> by Sy Brand</li>
+<li><a href="https://www.youtube.com/watch?v=ow2zV0Udd9M&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Practical C++20 Modules and the Future of Tooling Around C++ Modules</a> by Cameron DaCamara</li>
+<li><a href="https://www.youtube.com/watch?v=WqXrYfSKJXk&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">C++ Development with Visual Studio Code</a> by Julia Reid</li>
+<li><a href="https://www.youtube.com/watch?v=xO7JG0GarG4&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Peeking Safely at a Table with Concepts</a> by Gabriel Dos Reis</li>
+<li><a href="https://www.youtube.com/watch?v=ArW8n0QBdiE&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Update on MSVC’s implementation of the C++20 Standard Library</a> by Mahmoud Saleh</li>
+<li><a href="https://www.youtube.com/watch?v=ijmZKRIfoOI&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag&amp;index=3&amp;t=4s">C++ Cross-Platform Development with Visual Studio and the Windows Subsystem for Linux</a> by Erika Sweet</li>
+<li><a href="https://www.youtube.com/watch?v=JplnRSDa29w&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Optimize Your C++ Development While Working From Home</a> by Nick Uhlenhuth</li>
+</ul>
+<h3 id="microsoft-build-may">Microsoft Build (May)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=Wgd6aqc7_rk">Modern C++ Development with Visual Studio</a> by Erika Sweet and Nick Uhlenhuth</li>
+</ul>
+<h3 id="c-on-sea-july">C++ on Sea (July)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=Jw2n5QSul34">Live Compiler Development with Cross-Platform Tools</a> by Sy Brand</li>
+<li><a href="https://www.youtube.com/watch?v=pGO65OHo0EM">Objection: A Language Lawyer Story</a> by Sy Brand (lightning talk)</li>
+</ul>
+<h3 id="apaconf-august">APAConf (August)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=4Ji-vFDL52s">Live Compiler Development with Cross-Platform Tools</a> by Sy Brand</li>
+</ul>
+<h3 id="cppcon-september">CppCon (September)</h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=Va9-Qe3WzJ8" target="_blank" rel="noopener noreferrer">A New Decade of Visual Studio: C++20, Open STL, and More</a> by Sy Brand and Marian Luparu</li>
+<li><a href="https://www.youtube.com/watch?v=AGRWRwi7rD0" target="_blank" rel="noopener noreferrer">Building an Intuition for Composition</a> by Sy Brand</li>
+<li><a href="https://www.youtube.com/watch?v=8c6BAQcYF_E" target="_blank" rel="noopener noreferrer">Dynamic Polymorphism with Metaclasses and Code Injection</a> by Sy Brand</li>
+<li><a href="https://www.youtube.com/watch?v=K6qvL_buqc0&amp;feature=emb_logo" target="_blank" rel="noopener noreferrer">How to Cook a Chicken</a> by Sy Brand (lightning talk)</li>
+<li><a href="https://www.youtube.com/watch?v=NsmRPRxhLn0" target="_blank" rel="noopener noreferrer">Introducing Microsoft’s New Open Source Fuzzing Platform</a> by Justin Campbell and Michael Walker</li>
+<li><a href="https://www.youtube.com/watch?v=_pQGRr4P16w" target="_blank" rel="noopener noreferrer">Closing the Gap between Rust and C++ Using Principles of Static Analysis</a> by Sunny Chatterjee</li>
+<li><a href="https://www.youtube.com/watch?v=8kjRx8vo6y4" target="_blank" rel="noopener noreferrer">C++20 STL Features: One Year of Development on GitHub</a> by Stephan T. Lavavej</li>
+<li><a href="https://www.youtube.com/watch?v=qCn6zT76zTs" target="_blank" rel="noopener noreferrer">Collaborative C++ Development with Visual Studio Code</a> by Julia Reid</li>
+<li><a href="https://www.youtube.com/watch?v=6lurOCdaj0Y" target="_blank" rel="noopener noreferrer">Empirically Measuring, and Reducing, C++’s Accidental Complexity</a> by Herb Sutter</li>
+<li><a href="https://www.youtube.com/watch?v=oYCin0B037Y" target="_blank" rel="noopener noreferrer">Cross-Platform Pitfalls and How to Avoid Them</a> by Erika Sweet</li>
+<li><a href="https://www.youtube.com/watch?v=HrOEyJVU5As" target="_blank" rel="noopener noreferrer">Effective Remote C++ Development with Codespaces</a> by Nick Uhlenhuth</li>
+</ul>
+<h3 id="meeting-c-november">Meeting C++ (November)</h3>
+<ul>
+<li>Building an Intuition for Composition by Sy Brand (video not yet available)</li>
+<li><a href="https://www.youtube.com/watch?v=j4du4LNsLiI">Programming in the Large with C++20</a> by Gabriel Dos Reis</li>
+<li><a href="https://www.youtube.com/watch?v=5Typh0bp2SY">Diversity and Inclusion Panel</a> with Sy Brand and Gabriel Dos Reis</li>
+</ul>
+<h3 id="let-us-know-your-thoughts">Let us know your thoughts</h3>
+<p>We&#8217;d love to hear what you think about any of the talks we&#8217;ve given in the last year, or about any topics you&#8217;d like for us to cover in the future. You can reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or on Twitter <a href="https://twitter.com/visualc" target="_blank" rel="noopener noreferrer">@VisualC</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/">A Year of Conference Talks from the Microsoft C++ Team</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Windows ARM64 support for CMake projects in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/#respond</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/#comments</comments>
 		
 		<dc:creator><![CDATA[Erika]]></dc:creator>
 		<pubDate>Thu, 21 Jan 2021 18:53:11 +0000</pubDate>
@@ -62,7 +751,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
+			<slash:comments>1</slash:comments>
 		
 		
 			</item>
@@ -120,7 +809,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -239,7 +928,7 @@ void apply_all_functors (Object&amp; object)
 <p>Note: I intentionally leave <code>TypeList</code> as undefined. The definition is not even needed for the <code>static_cast</code> as I mentioned in <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a>. This can avoid all the overheads associated with defining a class (like declaring lots of compiler generated special member functions, generating debug information, etc.) which can happen accidentally (see the next example for more details).</p>
 <p>We apply this trick in the compiler code base and it cuts the memory usage to compile one expensive file by half. We also see noticeable compile time improvement.</p>
 <h5 id="example-2">Example 2</h5>
-<p>This example is extracted from the code base of an internal game studio. To my surprise, game developers love template metaprogramming <img src="https://s.w.org/images/core/emoji/13.0.0/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />.</p>
+<p>This example is extracted from the code base of an internal game studio. To my surprise, game developers love template metaprogramming <img src="https://s.w.org/images/core/emoji/13.0.1/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />.</p>
 <p>The code tries to obtain a list of trait classes from a type map.</p>
 <pre class="lang:c++ decode:true">#include &lt;tuple&gt;
 #include &lt;utility&gt;
@@ -285,7 +974,7 @@ static std::tuple&lt;trait&lt;typename TypeMap&lt;I&gt;::type&gt;...&gt; impl(st
 <li>Avoid instantiating a non-linear number of template specializations.
 Be aware of type traits which require a non-trivial number of specializations (e.g., those using recursion).</li>
 <li>Leave class template as undefined if possible (e.g., help class which carries all the information in its template arguments).</li>
-<li>Prefer variable templates to class templates for values (<code>variable_template&lt;T&gt;</code> is much cheaper than <code>class_template&lt;T&gt;::value</code> and <code>class_template&lt;T&gt;()</code> is the worst <img src="https://s.w.org/images/core/emoji/13.0.0/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />)</li>
+<li>Prefer variable templates to class templates for values (<code>variable_template&lt;T&gt;</code> is much cheaper than <code>class_template&lt;T&gt;::value</code> and <code>class_template&lt;T&gt;()</code> is the worst <img src="https://s.w.org/images/core/emoji/13.0.1/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />)</li>
 <li>Be aware of expensive template (like <code>std::tuple</code> with lots of template arguments) and switch to a simpler type if you use the template for a different purpose than what it is designed for (e.g., using <code>std::tuple</code> as a type list).</li>
 </ol>
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/">Build Throughput Series: More Efficient Template Metaprogramming</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
@@ -293,593 +982,6 @@ Be aware of type traits which require a non-trivial number of specializations (e
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>C++ with Visual Studio and WSL2</title>
-		<link>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/#comments</comments>
-		
-		<dc:creator><![CDATA[Erika]]></dc:creator>
-		<pubDate>Thu, 14 Jan 2021 18:37:02 +0000</pubDate>
-				<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Linux]]></category>
-		<category><![CDATA[Survey]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27363</guid>
-
-					<description><![CDATA[<p>Our team released native support for C++ with the Windows Subsystem for Linux (WSL) in Visual Studio in 2019. “Native support” means that all commands are executed locally instead of over a SSH connection. Since then, WSL2 has been announced and we’ve received questions about our support for WSL2 in Visual Studio.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/">C++ with Visual Studio and WSL2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Our team released <a href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-2019-and-windows-subsystem-for-linux-wsl/">native support for C++ with the Windows Subsystem for Linux (WSL) in Visual Studio</a> in 2019. “Native support” means that all commands are executed locally instead of over a SSH connection. Since then, <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions">WSL2</a> has been announced and we’ve received questions about our support for WSL2 in Visual Studio. The purpose of this blog post is to:</p>
-<ul>
-<li>Clarify our existing support for WSL1 and WSL2,</li>
-<li>Introduce our plans to add native support for WSL2,</li>
-<li>Gather feedback from customers who have used our native support for WSL1 in Visual Studio through this <a href="https://www.surveymonkey.com/r/L98VDF2">two-question survey</a>. <strong>Update 1/22/2021: This survey is now closed.</strong></li>
-</ul>
-<h4 id="current-support-for-wsl1-and-wsl2">Current support for WSL1 and WSL2</h4>
-<p>Our native support for WSL currently works best with WSL1. Our support executes all commands locally through wsl.exe and relies on Windows drives mounted under the /mnt folder (e.g. /mnt/c/Users…) to access local source files from WSL. These commands are slower with WSL2 because file performance across the Windows and Linux operating systems is faster with WSL1 than WSL2. You can learn more about the differences between WSL1 and WSL2 <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions#exceptions-for-using-wsl-1-rather-than-wsl-2">here</a>.</p>
-<p>To avoid these slowdowns, you can install and run SSH on your local WSL2 installation and <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160&amp;viewFallbackFrom=vs-2019">add a new SSH connection</a> to WSL2 in the Visual Studio Connection Manager. Learn how to install and configure SSH on your WSL installation <a href="https://devblogs.microsoft.com/cppblog/targeting-windows-subsystem-for-linux-from-visual-studio/#install-configure-ssh">here</a>.</p>
-<h4 id="native-support-for-wsl2">Native support for WSL2</h4>
-<p>We are working to add native support for WSL2 in Visual Studio. This will allow you to seamlessly build and debug on WSL2 without adding a SSH connection or observing the slowdowns described above.</p>
-<h5 id="how-it-will-work"><span style="font-size: 14pt;">How it will work</span></h5>
-<p>Behind the scenes, Visual Studio will execute a local rsync copy to copy files from the Windows file system to the WSL2 file system. We’re not able to continue accessing the mounted Windows drives from WSL (as we do with WSL1) because file performance across the Windows and Linux operating systems is slower in WSL2. This local rsync copy will occur automatically when Visual Studio detects that you are using WSL2 and will require no user intervention. You will no longer need to establish a SSH connection to avoid the slowdowns described above, and there will be no change in your ability to build and debug locally on WSL2.</p>
-<h4 id="provide-feedback-on-our-support-for-wsl2">Provide feedback on our support for WSL2</h4>
-<p>If you have used our native support for WSL1 in Visual Studio, then we would love your feedback on our plans for WSL2. Please submit this short, <a href="https://www.surveymonkey.com/r/L98VDF2">two-question survey</a> to help us build the best features for your C++ development needs. <strong>Update 1/22/2021: This survey is now closed.</strong></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/">C++ with Visual Studio and WSL2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c-with-visual-studio-and-wsl2/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Build Throughput Series: Template Metaprogramming Fundamentals</title>
-		<link>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/#comments</comments>
-		
-		<dc:creator><![CDATA[Xiang Fan]]></dc:creator>
-		<pubDate>Thu, 14 Jan 2021 15:00:40 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27328</guid>
-
-					<description><![CDATA[<p>Template metaprogramming is popular and seen in many code bases. However, it often contributes to long compile times. When investigating build throughput improvement opportunities in large codebases, our finding is that more than one million template specializations and template instantiations is quite common and often provides optimization opportunities for significant improvement.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/">Build Throughput Series: Template Metaprogramming Fundamentals</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Template metaprogramming is popular and seen in many code bases. However, it often contributes to long compile times. When investigating build throughput improvement opportunities in large codebases, our finding is that more than one million template specializations and template instantiations is quite common and often provides optimization opportunities for significant improvement.</p>
-<p>In this blog post, I will walk through the differences between template specialization and template instantiation and how they are processed in the MSVC compiler.  I will cover how to find these bottlenecks related to too many template specializations and instantiations in a different blog post (or you can read <a href="https://devblogs.microsoft.com/cppblog/profiling-template-metaprograms-with-cpp-build-insights/">this blog post</a> as a starting point).</p>
-<p>Before we start, let us clarify some terms widely used in template metaprogramming.</p>
-<ul>
-<li>Primary template
-<ul>
-<li>Partial specialization</li>
-</ul>
-</li>
-<li>Template specialization
-<ul>
-<li>Explicit specialization</li>
-</ul>
-</li>
-<li>Template instantiation
-<ul>
-<li>Implicit template instantiation</li>
-<li>Explicit template instantiation</li>
-</ul>
-</li>
-</ul>
-<p>They are better explained by an example:</p>
-<pre class="lang:c++ decode:true">// Primary template.
-template&lt;typename T&gt; struct Trait {};
-// Partial specialization.
-template&lt;typename T&gt; struct Trait&lt;T*&gt; {};
-// Explicit specialization.
-template&lt;&gt; struct Trait&lt;int&gt; {};
- 
-// Implicit template instantiation of template specialization 'Trait&lt;void&gt;' from the primary template.
-Trait&lt;void&gt; trait1;
-// Implicit template instantiation of template specialization 'Trait&lt;void*&gt;' from the partial specialization.
-Trait&lt;void*&gt; trait2;
-// No template instantiation for explicit specialization.
-Trait&lt;int&gt; trait3;
-// Explicit template instantiation of template specialization 'Trait&lt;char&gt;' from the primary template.
-template struct Trait&lt;char&gt;;
-// Explicit template instantiation of template specialization 'Trait&lt;char*&gt;' from the partial specialization.
-template struct Trait&lt;char*&gt;;</pre>
-<p>Template specialization and template instantiation are often used interchangeably. However, the distinction is important when evaluating build throughput.</p>
-<p>Let us look at an example:</p>
-<pre class="lang:c++ decode:true">template&lt;typename T&gt; struct Vector
-{
-    void sort() { /**/ }
-    void clear() { /**/ }
-};
-
-Vector&lt;int&gt; get_vector();
-
-template&lt;typename V&gt; void sort_vector(V&amp; v) { v.sort(); }
-
-void test(Vector&lt;long&gt;&amp; v)
-{
-    ::sort_vector(v); // I will explain why we use '::' here later.
-}</pre>
-<p>In the example above, the MSVC compiler does the following:</p>
-<pre>Start processing user code
-    Process class template 'Vector'
-    Process function 'get_vector'
-        Specialize 'Vector&lt;int&gt;'
-    Process function template 'sort_vector'
-    Process function 'test'
-        Specialize 'Vector&lt;long&gt;'
-        Specialize 'sort_vector&lt;Vector&lt;long&gt;&gt;'
-        Instantiate 'sort_vector&lt;Vector&lt;long&gt;&gt;' (delayed)
-            Add 'sort_vector&lt;Vector&lt;long&gt;&gt;' to the pending list
-End processing user code
-Start processing the pending list for delayed instantiation
-    Iteration 1
-        Instantiate 'sort_vector&lt;Vector&lt;long&gt;&gt;'
-        Instantiate 'Vector&lt;long&gt;'
-        Instantiate 'Vector&lt;long&gt;::sort' (delayed)
-            Add 'Vector&lt;long&gt;::sort' to the pending list
-    Iteration 2
-        Instantiate 'Vector&lt;long&gt;::sort'
-End processing the pending list
-</pre>
-<p>You can see that template specialization occurs at an earlier step in processing than template instantiation and is often cheaper.</p>
-<p>When you specialize a function template (like <code>sort_vector&lt;Vector&lt;long&gt;&gt; </code>in the example), the compiler only processes its declaration and its definition is not processed.  The compiler will create an internal representation for the specialization and add that to a map.  If the same specialization is specialized again later, the compiler will find the internal representation from the map and reuse it to avoid duplicated work (known as <em>memoization</em>). The definition is processed when the specialization is instantiated.</p>
-<p>Similarly, when you specialize a class template its definition is also not processed. Instantiation of class template specialization is a bit more complicated. By default, the member of the class template specialization is not instantiated when the specialization itself is instantiated (like <code>Vector&lt;long&gt;::clear</code>). The member is instantiated when it is used (like <code>Vector&lt;long&gt;::sort</code>) and MSVC will delay the instantiation if possible.</p>
-<p>You may wonder what if I use <code>sort_vector</code> in <code>test</code>. It will change the processing order.</p>
-<ul>
-<li>When qualified name <code>::sort_vector</code> is used, it suppresses <a href="https://en.cppreference.com/w/cpp/language/adl">argument dependent lookup (ADL)</a>.</li>
-<li>When unqualified name <code>sort_vector</code> is used instead, ADL will compute the associated set of <code>v</code> and this forces the instantiation of <code>Vector&lt;long&gt;</code>. So, the instantiation is no longer delayed to the phase which processes the pending list.</li>
-</ul>
-<p>With this information in mind, let us check some common patterns and see which requires template instantiation.</p>
-<pre class="lang:c++ decode:true">template&lt;int N&gt; struct Array { static_assert(N &gt; 0, ""); };
-
-struct Data
-{
-    Array&lt;1&gt; arr; // Array&lt;1&gt; is instantiated.
-};
-
-Array&lt;2&gt; transform(Array&lt;3&gt; *); // Neither Array&lt;2&gt; nor Array&lt;3&gt; is instantiated.
-
-void test()
-{
-    transform(nullptr); // Array&lt;2&gt; is instantiated, Array&lt;3&gt; is not instantiated.
-}</pre>
-<p>The <code>Array&lt;1&gt; </code>case: When it is used as the type of a member, the compiler needs to instantiate the specialization to know its information like the size. This is one of the most common reasons why a template specialization is instantiated in a header and is often hard to avoid.</p>
-<p>The <code>Array&lt;2&gt;</code> case: Using a template specialization as the function return type does not require it to be instantiated (if there is no function definition). The same is true if it is used as the type of a function parameter. However, providing the function definition or calling the function will force the instantiation of the return type.</p>
-<p>The <code>Array&lt;3&gt;</code> case: passing <code>nullptr</code> as the function argument does not require the instantiation because <code>nullptr</code> is always convertible to any pointer type. The same is true if you cast <code>nullptr</code> to <code>Array&lt;3&gt; *</code>. However, if the function argument is a pointer to a class, the compiler must instantiate <code>Array&lt;3&gt;</code> to see whether the conversion is valid.</p>
-<p>In the next blog post, we will use some examples from the real-world code bases and find ways to reduce the number of template specializations and template instantiations.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/">Build Throughput Series: Template Metaprogramming Fundamentals</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals/feed/</wfw:commentRss>
-			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Faster C++ Iteration Builds</title>
-		<link>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/#comments</comments>
-		
-		<dc:creator><![CDATA[Russ Keldorph]]></dc:creator>
-		<pubDate>Wed, 06 Jan 2021 15:00:26 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27076</guid>
-
-					<description><![CDATA[<p>We made improvements to C++ link time earlier in Visual Studio 2019, and we have more improvements to tell you about. As of version 16.7, we measure up to 5X improvement in some incremental linking and debugging scenarios and up to a 1.5X speedup in full linking.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/">Faster C++ Iteration Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We made improvements to C++ link time earlier in Visual Studio 2019, and we have more improvements to tell you about. As of version 16.7, we measure up to 5X improvement in some incremental linking and debugging scenarios and up to a 1.5X speedup in full linking. These represent some of the improvements <a href="https://devblogs.microsoft.com/cppblog/the-coalition-sees-27-9x-iteration-build-improvement-with-visual-studio-2019/">The Coalition saw in their recent experiment</a>. Keep reading to find out the details.</p>
-<p>After the link time improvements in versions <a href="https://devblogs.microsoft.com/cppblog/game-performance-and-compilation-time-improvements-in-visual-studio-2019/">16.0</a> and <a href="https://devblogs.microsoft.com/cppblog/improved-linker-fundamentals-in-visual-studio-2019/">16.2</a>, we took a step back and re-evaluated the complete edit-build-debug (“inner loop”) experience of C++ developers. We were still looking at large projects like AAA games and Chrome because large projects are most likely to suffer from longer iteration times. We found a couple of opportunities that looked promising and went after them. The first, in Visual Studio 2019 version 16.6, is an improvement to some of the algorithms inside the Program Database (PDB) and Debug Interface Access (DIA) components, which are the libraries that enable writing and reading debug information respectively. The second, in Visual Studio 2019 version 16.7, is an optimization to speed up the worst case Incremental Linking time, which can be as bad as or worse than a full link.</p>
-<h2 id="faster-debug-information">Faster Debug Information</h2>
-<p>Program Database (PDB) creation is often the bottleneck when linking binaries, and for large, monolithic codebases, linking ends up being a <em>very</em> long pole at the end of the critical path. Furthermore, PDB reading is a significant contributor to delays when debugging large projects. It features prominently in profiles when hitting breakpoints and single-stepping—particularly when the developer has multiple debug windows like the Call Stack and Watch windows open in Visual Studio.</p>
-<p>In our private benchmarks, these improvements showed some big gains in AAA Games and other large scenarios. The following chart has some examples of the improvements we saw.</p>
-<p><img width="1172" height="706" class="wp-image-27267" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common.png" alt="Chart showing sample improvements for some common iteration build operations between version 16.5 and 16.6: link time (5 sec -&gt; 2.5 sec), time to switch callstack frame (0.9 sec -&gt; 0.2 sec), and initial PDB load time (53 sec -&gt; 32 sec)." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common.png 1172w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-300x181.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-1024x617.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-sample-improvements-for-some-common-768x463.png 768w" sizes="(max-width: 1172px) 100vw, 1172px" /></p>
-<p>Note that the absolute time deltas in the chart are examples taken from different projects. However, all are indicative of the type of speedup we saw across multiple projects. That is, they are not cherry-picked outliers. To summarize, we often saw:</p>
-<ul>
-<li>Up to 1.5X speedup for full linking</li>
-<li>Up to 4X speedup in switching active function on call stack with many variables</li>
-<li>2X speedup of initial PDB load</li>
-</ul>
-<p>Perhaps more compelling, though, is that since version 16.6 was released, the time to enter break state after a single step is faster by about 2X on average. The actual benefit depends on the size of your project and the number of debugger windows (watch, callstack, etc.) you have open, but the good news is that users who encountered stepping delays in the past are likely to notice improvements in version 16.6.</p>
-<h3 id="what-we-did">What We Did</h3>
-<p>For version 16.6, we profiled some common developer scenarios and found several opportunities to improve the code that both reads and writes debug information. Below are some examples of the types of algorithmic improvements we made.</p>
-<ol>
-<li>Avoid search by Relative Virtual Address (RVA) by caching the result of the previous request, which in 99% of cases uses the same RVA</li>
-<li>Compute older CRC-32 hash for type records on-demand (gives the most speedup in /Zi full link)</li>
-<li>Create fast-path for the VS debugger’s query pattern</li>
-<li>Improve memory-mapped file reading by using AVX-based memcpy tuned for multiples of the page size</li>
-<li>Use C++ std::sort instead of qsort</li>
-<li>Use integer division by a constant (e.g. page size) rather than division by a variable</li>
-<li>Re<em>use</em> rather than re<em>build</em> hash tables</li>
-<li>Avoid virtual function calls and manually inline code for the two most common symbol lookups</li>
-<li>Prefetch PDB data in some cases</li>
-</ol>
-<p>Note that the first item, caching the previous request’s result, was responsible for the vast majority of the PDB reading wins.</p>
-<h2 id="better-worst-case-incremental-linking">Better Worst-case Incremental Linking</h2>
-<p>Incremental linking is one of the most time-saving features of our toolset. It allows developers to iterate quickly when making common source changes in large projects by reusing most of the results of earlier links and strategically applying the differences made in the last source edit. However, it can’t accommodate all source changes and will sometimes be forced to fall back on full linking, which means the overall incremental link time can actually be worse than a full link, since incremental linking will spend time figuring out it can’t proceed before starting over from scratch. It makes sense that high-impact edits, like changing compiler or linker options or touching a widely-included header file require a rebuild, but simply adding a new object (.obj) file will also trigger a full re-link. For many developers, this isn’t a big deal since they rarely add new object files and/or full linking isn’t terribly long anyway. However, if you work on large binaries or you use a coding style or project system (like some variants of a <a href="https://en.wikipedia.org/wiki/Unity_build">Unity build</a>) that commonly results in object files being added or removed, the hit to incremental link time can be tens of seconds or more. Unfortunately, these limitations are fundamental to the design of incremental linking and removing them would mean slowing down the most common case that incremental linking is optimized for: simple source edits to small numbers of existing translation units.</p>
-<h3 id="type-merge-cache">Type Merge Cache</h3>
-<p>In version 16.7, though we couldn’t reasonably make incremental linking work in more cases, we realized that we <em>could</em> improve how long it takes to link when we must fall back on full linking. The key insights were:</p>
-<ol>
-<li>Most of the time for a full link is spent generating debug information, and</li>
-<li>Generating correct debug information is much more forgiving than correctly linking an executable binary.</li>
-</ol>
-<p>Conceptually similar to how incremental linking works, we added the ability to cache the results of earlier debug information generation (specifically, the result of <em>type merging</em>) and reuse that during subsequent links. This technique can mean drastic speedups (2X-5X) in link time when incremental linking falls back on full linking. The following chart has some examples of the impact on three AAA Game projects and Chrome.</p>
-<p><img width="1174" height="707" class="wp-image-27268" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif.png" alt="Chart showing worst-case incremental link time difference between versions 16.6 and 16.7 for three AAA games and Chrome. Speedups range from 1.5X to 5.5X." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif.png 1174w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-300x181.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-1024x617.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/chart-showing-worst-case-incremental-link-time-dif-768x463.png 768w" sizes="(max-width: 1174px) 100vw, 1174px" /></p>
-<p>This caching does have some downsides, though:</p>
-<ol>
-<li>The cached data is stored in the PDB file, which is therefore larger, and</li>
-<li>The first (clean) link of an incremental build takes slightly longer since the cache must be built up.</li>
-</ol>
-<p>The following table captures the benefits as well as downsides for the above projects.</p>
-<table>
-<tbody>
-<tr>
-<td></td>
-<td><strong>Initial link time </strong></td>
-<td><strong>PDB size</strong></td>
-<td><strong>Subsequent full link time</strong></td>
-</tr>
-<tr>
-<td>Game X</td>
-<td>10%</td>
-<td>35.1%</td>
-<td>-48.8%</td>
-</tr>
-<tr>
-<td>Game Y</td>
-<td>1.4%</td>
-<td>31.8%</td>
-<td>-81.1%</td>
-</tr>
-<tr>
-<td>Game Z</td>
-<td>3.4%</td>
-<td>27.9%</td>
-<td>-64.2%</td>
-</tr>
-<tr>
-<td>Chrome</td>
-<td>10.9%</td>
-<td>10.1%</td>
-<td>-29.4%</td>
-</tr>
-</tbody>
-</table>
-<p>The “Subsequent full link time” column corresponds to a scenario where incremental linking is enabled (<code>/INCREMENTAL</code>) but had to fall back on full linking, such as when a new object file is introduced. As you can see, the impact of this new cache can be substantial when the full link time is measured in tens of seconds or minutes.</p>
-<p>It&#8217;s interesting to note that the cache could be used for any full linking scenarios, not just the case when incremental linking must fall back to a full link. However, because of the drawbacks, it’s only on-by-default when incremental linking is used. Release builds and builds where incremental linking is disabled (<code>/INCREMENTAL:NO</code>) won’t see an impact unless the new <code>/PDBTMCACHE </code>linker switch is specified. Similarly, the <code>/PDBTMCACHE:NO</code> switch can be used to disable the cache creation and return to version 16.6 behavior if desired. Note that the linker does not rely on the presence of the cache. If the cache is present and passes validation, the linker will use it to accelerate linking, but a missing cache or a cache that has been invalidated is silently ignored.</p>
-<h3 id="future-work">Future work</h3>
-<p>We know there are at least a few people for whom the PDB size impact of the Type Merge Cache will be a concern, so, in the future, we might consider placing the cache in a separate file. We didn’t put it in the incremental link file (.ilk) because the feature isn’t fundamentally tied to incremental linking—that’s why there is a switch to control it independently.</p>
-<p>In a future blog post, we’ll share the details of further link time improvements in version 16.8!</p>
-<h2 id="upgrade-today-and-let-us-know-about-the-difference-you-see">Upgrade today and let us know about the difference you see</h2>
-<p>We profiled developer inner loops in several scenarios that we track, and we tamped down a couple of hot spots that stood out in PDB reading and writing and incremental link fall-back. Did you notice a difference when upgrading from version 16.5 or earlier to 16.6 and/or 16.7? If so, we’d love to hear about them in the comments below or via email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>). If you’ve got a problem or would like to share other feedback, please use Help &gt; Send Feedback &gt; Report A Problem / Provide A Suggestion in Visual Studio or go to <a href="http://developercommunity.visualstudio.com/">Developer Community</a>. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>)). And, of course, if you haven’t tried Visual Studio 2019 yet, we’d love for you to <a href="https://visualstudio.microsoft.com/vs/preview/">download it and give it a try</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/">Faster C++ Iteration Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/faster-c-iteration-builds/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</title>
-		<link>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/#comments</comments>
-		
-		<dc:creator><![CDATA[Erika]]></dc:creator>
-		<pubDate>Tue, 08 Dec 2020 19:17:29 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27214</guid>
-
-					<description><![CDATA[<p>Visual Studio can now configure IntelliSense in CMake projects based on the value of CMake variables set by CMake toolchain files. These improvements provide automatic IntelliSense configuration when a CMake toolchain file is used for configuration and build. For example, Visual Studio can now provide IntelliSense for CMake projects using an Android toolchain file.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/">Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Visual Studio can now configure IntelliSense in CMake projects based on the value of CMake variables set by CMake toolchain files. These improvements provide automatic IntelliSense configuration when a <a href="https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html">CMake toolchain file</a> is used for configuration and build. For example, Visual Studio can now provide IntelliSense for CMake projects using an Android toolchain file. These changes will also improve IntelliSense for embedded developers using Visual Studio’s IoT (cross-compiler) configuration. More information on these changes is provided below. This support builds on Visual Studio’s <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160&amp;viewFallbackFrom=vs-2019">native support for CMake</a> and is available in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 2</a>.</p>
-<p>The following changes have been made to handle CMake toolchain files when using GCC or Clang. Make sure that the IntelliSense mode is set to any Clang or GCC option in the CMake Settings Editor (&#8220;Show advanced settings&#8221; at the bottom of the editor &gt; &#8220;IntelliSense mode&#8221;). These changes apply to local Windows configurations and configurations targeting a <a href="https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=msvc-160">remote Linux system or WSL</a>. Visual Studio will introspect the following variables for extra IntelliSense information.</p>
-<ol>
-<li>If a CMake toolchain file defines CMAKE_CXX_COMPILER and CMAKE_C_COMPILER and writes the value to the CMake cache, then Visual Studio will query these compilers for the list of predefined DEFINES and the list of include search locations.</li>
-<li>If a CMake toolchain file defines CMAKE_SYSROOT and writes the value to the CMake cache, then Visual Studio will pass the value (−−sysroot=&lt;value&gt;) when determining the compilers defines and headers. If this variable is not found in the CMake cache, then Visual Studio next checks if the sysroot environment variable is defined and uses it instead.</li>
-<li>If a CMake toolchain file defines CMAKE_C_COMPILER_TARGET and CMAKE_CXX_COMPILER_TARGET and writes the value to the CMake cache, then Visual Studio will also pass these to the compiler (−−target=&lt;value&gt;).</li>
-</ol>
-<p>Note that CMake scripts can write a variable to the CMake cache by appending <a href="https://cmake.org/cmake/help/latest/command/set.html#set-cache-entry">CACHE &lt;type&gt; &lt;docstring&gt;</a> to the set command.</p>
-<p>Additionally, the following options have been added to CMakeSettings.json to enable further IntelliSense configuration. These options can be set per configuration.</p>
-<pre class="prettyprint">"intellisenseOptions": {
-
-        "additionalCompilerArgs": "&lt;any-args&gt;",
-
-        "useCompilerDefaults": false
-
-      }</pre>
-<p><strong>additionalCompilerArgs</strong> can be used to explicitly add arguments to be used when Visual Studio queries the compiler for IntelliSense. <strong>useCompilerDefaults</strong> can be used to disable the use of the GCC/Clang compiler for IntelliSense configuration (defaults to true). These options apply to Windows, Linux, and WSL configurations.</p>
-<h4 id="give-us-your-feedback">Give us your feedback</h4>
-<p>Download <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 2</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/">Configure IntelliSense with CMake Toolchain Files in Visual Studio 2019 16.9 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio Code C++ Extension: ARM and ARM64 support</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/#respond</comments>
-		
-		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
-		<pubDate>Tue, 08 Dec 2020 14:00:03 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27195</guid>
-
-					<description><![CDATA[<p>The latest release of the Visual Studio Code C++ extension brings C++ IntelliSense and build support for Windows ARM64, Linux ARM and Linux ARM64 architectures. What’s more, you can download VS Code builds for ARM and ARM64 architectures, meaning you can officially use VS Code and the C++ extension on a Raspberry Pi,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/">Visual Studio Code C++ Extension: ARM and ARM64 support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The latest release of the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Visual Studio Code C++ extension</a> brings C++ IntelliSense and build support for Windows ARM64, Linux ARM and Linux ARM64 architectures. What’s more, you can <a href="https://code.visualstudio.com/#alt-downloads">download VS Code builds for ARM and ARM64 architectures</a>, meaning you can officially use VS Code and the C++ extension on a Raspberry Pi, Chromebook, Surface Pro X, and other ARM-based devices! To find out more about all the enhancements in the November 2020 update, check out our <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.1.0">release notes on GitHub.</a></p>
-<h2 id="windows-arm64-support"><strong>Windows ARM64 support</strong></h2>
-<p>If you’re using a Surface Pro X, you now have access to the C++ extension’s rich feature set. This includes IntelliSense (things like quick info, autocomplete, and signature help), code navigation (find all references, go to definition/declaration), and refactoring (rename symbol). Along with code editing features, the latest release supports building C++ projects on Windows ARM64!</p>
-<h2 id="linux-arm-and-arm64-support"><strong>Linux ARM and ARM64 support</strong></h2>
-<p>The September 2020 1.0 release of the C++ extension enabled building and debugging on Linux ARM and ARM64 through remote-SSH with your compiler and debugger of choice. Since then, <a href="https://code.visualstudio.com/updates/v1_50#_linux-arm-builds">VS Code has released official builds for Linux ARM and ARM64</a>, which means you can now build and debug C++ projects in VS Code directly on your Raspberry Pi! Check out this quick demo to learn more:</p>
-<p><div style="width: 640px;" class="wp-video"><!--[if lt IE 9]><script>document.createElement('video');</script><![endif]-->
-<video class="wp-video-shortcode" id="video-27195-1" width="640" height="360" preload="metadata" controls="controls"><source type="video/mp4" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4?_=1" /><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4">https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4</a></video></div></p>
-<h2 id="what-do-you-think"><strong>What do you think?</strong></h2>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>. You can also join our Insiders program and get access to early builds of our release by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and under <strong>Extensions</strong> &gt; <strong>C/C++,</strong> change the “<strong>C_Cpp: Update Channel</strong>” to “<strong>Insiders</strong>”.</p>
-<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/">Visual Studio Code C++ Extension: ARM and ARM64 support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-arm-and-arm64-support/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		<enclosure url="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2020/12/Cpp-ARM-2.mp4" length="8800912" type="video/mp4" />
-
-			</item>
-		<item>
-		<title>Conditionally Trivial Special Member Functions</title>
-		<link>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Fri, 20 Nov 2020 15:49:10 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27135</guid>
-
-					<description><![CDATA[<p>The C++ standards committee is currently focusing on adding features to the language which can simplify code. One small example of this in C++20 is conditionally trivial special member functions, which we added support for in Visual Studio 2019 version 16.8.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/">Conditionally Trivial Special Member Functions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ standards committee is currently focusing on adding features to the language which can simplify code. One small example of this in C++20 is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0848r3.html">conditionally trivial special member functions</a>, which we added support for in <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">Visual Studio 2019 version 16.8</a>. Its benefit isn’t immediately obvious unless you’ve been deep down the rabbit hole of high-performance library authoring, so I’ve written this post to show you how it can make certain generic types more efficient without requiring huge amounts of template magic.</p>
-<h1 id="the-problem">The Problem</h1>
-<p>Types which wrap other types are common in the C++ world: pairs, tuples, optionals, adapters, etc. For some of these your implementation can’t use the default special member functions (default constructor, copy/move constructor, copy/move assignment, destructor) because there’s some additional work that needs to be done. Take for example this <code>std::optional</code>-like type:<code></code></p>
-<pre class="prettyprint">template &lt;typename T&gt;
-struct optional {
-   bool has_value_;
-   union {
-      T value_;
-      char empty_; //dummy member
-   };
-};</pre>
-<p>It has a <code>bool</code> member to say whether it is currently storing a value, and a union member which either stores a value or stores a dummy member when the <code>optional</code> is empty.</p>
-<p>The default special members won’t work here: when the union member has non-trivial constructors and destructors, we need to explicitly handle these in our <code>optional</code> type. Focusing on the copy constructor, here’s a potential implementation:</p>
-<pre class="prettyprint">   optional(optional const&amp; rhs)
-      : has_value_(rhs.has_value_), empty_()
-   {
-      if (has_value_) {
-         new (&amp;value_) T(rhs.value_);
-      }
-   }</pre>
-<p>We check if the <code>rhs</code> has a value, and if it does, we use it to copy-construct our own value.</p>
-<p>But there’s a performance issue here. Say we make a copy of an <code>optional&lt;int&gt;</code>, like this:</p>
-<pre class="prettyprint">optional&lt;int&gt; make_copy(optional&lt;int&gt; const&amp; o) {
-  return o;
-}</pre>
-<p>Since <code>int</code>s are <a href="https://en.cppreference.com/w/cpp/language/copy_constructor#Trivial_copy_constructor">trivially copy constructible</a> (i.e. one can copy them by copying their memory rather than having to use any constructors), copying the <code>optional&lt;int&gt;</code> <em>should</em> only require copying its byte representation. But this is the code which the compiler generates for <code>make_copy</code>:</p>
-<pre class="prettyprint">      movzx eax, BYTE PTR [rdx]   #load o
-      mov BYTE PTR [rcx], al      #copy.has_value_ = rhs.has_value_
-      test al, al                 #test rhs.has_value_
-      je SHORT $EMPTY             #if it’s empty, jump to the end
-      mov eax, DWORD PTR [rdx+4]  #load rhs.value_
-      mov DWORD PTR [rcx+4], eax  #store to copy.value_
-$EMPTY:
-      mov rax, rcx                #return copy
-      ret 0</pre>
-<p>What we really want is a way to use the default special member if the corresponding one in <code>T</code> is trivial, and otherwise use our custom one.</p>
-<h1 id="c17-approaches">C++17 Approaches</h1>
-<p>One approach which at first seems possible is using <code><a href="https://en.cppreference.com/w/cpp/types/enable_if">std::enable_if</a> </code>to select between the default and custom copy constructor implementations depending on the properties of <code>T</code>:</p>
-<pre class="prettyprint">template &lt;class U = T, 
-          std::enable_if_t&lt;std::is_copy_constructible_v&lt;U&gt; &amp;&amp; 
-                           std::is_trivially_copy_constructible_v&lt;U&gt;&gt;* = nullptr&gt;
-optional(optional const&amp; rhs) = default;
-
-template &lt;class U = T, 
-          std::enable_if_t&lt;std::is_copy_constructible_v&lt;U&gt; &amp;&amp;
-                           !std::is_trivially_copy_constructible_v&lt;U&gt;&gt;* = nullptr&gt;
-optional(optional const&amp; rhs)
-      : has_value_(rhs.has_value_), empty_()
-{
-   if (has_value_) {
-   new (&amp;value_) T(rhs.value_);
-  }
-}</pre>
-<p>Unfortunately, special members other than the default constructor cannot be templates, so this doesn’t work.</p>
-<p>The common solution which <em>does</em> work is to rip the storage and special members of the template into base classes and select which to inherit from by checking the relevant type traits. The implementation of this is fairly hairy, so I’ve explained it down at the bottom of this post for those who want to see it.</p>
-<p>If we make this change, then the assembly for <code>make_copy</code> becomes this:</p>
-<pre class="prettyprint">      mov rax, QWORD PTR [rdx]   #load o
-      mov QWORD PTR [rcx], rax   #copy memory
-      mov rax, rcx               #return copy
-      ret 0</pre>
-<p>Now we have more efficient code generated, but a whole load of tricky C++ which is hard to write, to maintain, and for the compiler to build efficiently. C++20 lets us keep the efficient assembly, and vastly simplifies the C++.</p>
-<h1 id="c20-solution">C++20 Solution</h1>
-<p>Although our<code> std::enable_if</code> solution from above wouldn’t work because those functions can’t be templates, you <em>can</em> constrain non-template functions using C++20 concepts:</p>
-<pre class="prettyprint">optional(optional const&amp;) = default;
-
-optional(optional const&amp; rhs)
-requires std::copy_constructible&lt;T&gt; &amp;&amp; !std::is_trivially_copy_constructible_v&lt;T&gt;
-    : has_value_(rhs.has_value_), empty_()
-{
-   if (has_value_) {
-   new (&amp;value_) T(rhs.value_);
-  }
-}</pre>
-<p>Now <code>optional&lt;T&gt;</code> is trivially copy constructible if and only if <code>T</code> is, with minimal template magic. We’ve got both efficient code generation and C++ which can be understood and maintained a lot easier than before.</p>
-<h1 id="the-hairy-c17-implementation">The Hairy C++17 Implementation</h1>
-<p>As promised, here’s how you’d do this in C++17.</p>
-<p>We start off by tearing the storage out into its own base class:</p>
-<pre class="prettyprint">template &lt;class T&gt;
-struct optional_storage_base {
-   optional_storage_base() :
-     has_value_(false), empty_()
-   {}
-   bool has_value_;
-   union {
-      T value_;
-      char empty_;
-   };
-};</pre>
-<p>We then have a base class for the copy constructor for when <code>T</code> is trivially copy constructible, and we introduce a default template parameter which we’ll specialize later.</p>
-<pre class="prettyprint">template &lt;class T, bool = std::is_trivially_copy_constructible_v&lt;T&gt;&gt;
-struct optional_copy_base : optional_storage_base&lt;T&gt; {
-  //default copy ctor
-   optional_copy_base(optional_copy_base const&amp;) = default;
-
-  //have to default other special members
-   ~optional_copy_base() = default;
-   optional_copy_base() = default;
-   optional_copy_base(optional_copy_base&amp;&amp;) = default;
-   optional_copy_base&amp; operator=(optional_copy_base const&amp;) = default;
-   optional_copy_base&amp; operator=(optional_copy_base &amp;&amp;) = default;
-};</pre>
-<p>Then we specialize this template for when <code>T</code> is <em>not</em> trivially copy constructible:</p>
-<pre class="prettyprint">template &lt;class T&gt;
-struct optional_copy_base&lt;T, false&gt; : optional_storage_base&lt;T&gt; {
-   optional_copy_base(optional_copy_base const&amp; rhs)
-   {
-      if (rhs.has_value_) {
-         this-&gt;has_value_ = true;
-         new (&amp;this-&gt;value_) T(rhs.value_);
-      }
-   }
-
-   //have to default other special members
-   ~optional_copy_base() = default;
-   optional_copy_base() = default;
-   optional_copy_base(optional_copy_base&amp;&amp;) = default;
-   optional_copy_base&amp; operator=(optional_copy_base const&amp;) = default;
-   optional_copy_base&amp; operator=(optional_copy_base &amp;&amp;) = default;
-};</pre>
-<p>Then we make optional inherit from<code> optional_copy_base&lt;T&gt;</code>:</p>
-<pre class="prettyprint">template &lt;typename T&gt;
-struct optional : optional_copy_base&lt;T&gt; {
-   //other members
-};</pre>
-<p>Then we do this all over again for the move constructor, destructor, copy assignment, and move assignment operators. This is exactly what <a href="https://github.com/microsoft/STL/blob/master/stl/inc/optional">standard library implementors have to go through</a> to get the best codegen possible at the expense of implementation and maintenance burden. It’s not fun, trust me.</p>
-<h1 id="give-us-your-feedback">Give us your feedback</h1>
-<p>Download <a href="https://visualstudio.microsoft.com/vs/" target="_blank" rel="noopener noreferrer">Visual Studio 2019 version 16.8 </a>today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html" target="_blank" rel="noopener noreferrer">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener noreferrer">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/">Conditionally Trivial Special Member Functions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/conditionally-trivial-special-member-functions/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</title>
-		<link>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/#comments</comments>
-		
-		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
-		<pubDate>Thu, 19 Nov 2020 00:07:07 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27117</guid>
-
-					<description><![CDATA[<p>What’s New<br />
-We have continued our efforts to implement C++20 in the MSVC toolset, with noteworthy progress being made in VS (Visual Studio) 2019 v16.7 and VS 2019 v16.8. This blog post lists the features implemented since the C++20 Features and Fixes in VS 2019 16.1 through 16.6 blog post.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/">C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h2 aria-level="1" aria-level="1" id="whats-new"><span data-contrast="none">What’s </span><span data-contrast="none">New</span></h2>
-<p><span data-contrast="auto">We have</span><span data-contrast="auto"> continued our efforts to implement C++20 in the MSVC toolset, with </span><span data-contrast="auto">noteworthy progress</span><span data-contrast="auto"> being made in</span><span data-contrast="auto"> </span><span data-contrast="auto">VS (Visual Studio)</span><span data-contrast="auto"> 2019 v16.7 and VS 2019 v16.8. This blog post lists the features implemented </span><span data-contrast="auto">since</span> <span data-contrast="auto">the</span><span data-contrast="auto"> </span><a href="https://devblogs.microsoft.com/cppblog/c20-features-and-fixes-in-vs-2019-16-1-through-16-6/"><span data-contrast="auto">C++20 Features and Fixes in VS 2019 16.1 through 16.6</span></a><span data-contrast="auto"> blog post.</span></p>
-<p><span data-contrast="auto">This blog post will specifically focus on language features implemented in the </span><span data-contrast="auto">MSVC </span><span data-contrast="auto">compiler</span><span data-contrast="auto"> (cl.exe)</span><span data-contrast="auto">. The changelog for conformance progress for the STL is tracked in the </span><a href="https://github.com/microsoft/STL/wiki/Changelog"><span data-contrast="auto">Standard Library changelog</span></a><span data-contrast="auto"> in the </span><a href="https://github.com/microsoft/stl"><span data-contrast="auto">Microsoft STL GitHub</span></a><span data-contrast="auto"> repo</span><span data-contrast="auto">.</span></p>
-<p><span data-contrast="auto">Some of the features covered </span><span data-contrast="auto">were already highlighted in the</span><span data-contrast="auto"> announcements made </span><span data-contrast="auto">a</span><span data-contrast="auto">t</span><span data-contrast="auto"> </span><span data-contrast="auto">CppCon</span><span data-contrast="auto"> 2020</span><span data-contrast="auto"> in September related to the VS 2019 v16.8 Preview 3 release</span><span data-contrast="auto">.</span></p>
-<p><span data-contrast="auto">As a reminder, the </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=vs-2019"><span data-contrast="auto">/</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++17 and /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest</span></a><span data-contrast="auto"> compiler options are necessary to use C++17 and C++20 features</span><span data-contrast="auto">, respectively</span><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>&nbsp;</p>
-<h2 aria-level="1" aria-level="1" id="vs-2019-v16-7"><span data-contrast="none">VS 2019 v16.7</span></h2>
-<h3 aria-level="2" aria-level="2" id="c20-language-feature-support"><span data-contrast="none">C++20 Language Feature Support</span></h3>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1009R2"><span data-contrast="none">P1009R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Array size deduction in new-expressions</span><span data-contrast="none"> </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0722R3"><span data-contrast="none">P0722R3</span></a><span data-contrast="none"> </span><span data-contrast="none">Efficient</span><span data-contrast="none"> sized </span><span data-contrast="none">delete</span><span data-contrast="none"> for variable sized classes</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1094R2"><span data-contrast="none">P1094R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Nested inline namespaces</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1331R2"><span data-contrast="none">P1331R2</span></a><span data-contrast="none"> </span><span data-contrast="none">Permitting trivial default initialization in constexpr contexts</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1816R0"><span data-contrast="none">P1816R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CTAD for aggregates</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0388R4"><span data-contrast="none">P0388R4</span></a><span data-contrast="none"> </span><span data-contrast="none">Permit conversions to arrays of unknown bound</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1452R2"><span data-contrast="none">P1452R2</span></a><span data-contrast="none"> </span><span data-contrast="none">On the non-uniform semantics of return-type-requirements</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1152R4"><span data-contrast="none">P1152R4</span></a><span data-contrast="none"> </span><span data-contrast="none">Deprecating volatile</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1814R0"><span data-contrast="none">P1814R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CTAD for alias templates</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1972R0"><span data-contrast="none">P1972R0</span></a><span data-contrast="none"> </span><span data-contrast="none">US105 Check satisfaction of constraints for non-templates…</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1980R0"><span data-contrast="none">P1980R0</span></a><span data-contrast="none"> </span><span data-contrast="none">CA096: Declaration matching for non-dependent requires-clauses</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p0528r3"><span data-contrast="none">P0528R3</span></a><span data-contrast="none"> A</span><span data-contrast="none">tomic compare-and-exchange with </span><span data-contrast="none">padding</span><span data-contrast="none"> </span><span data-contrast="none">bits</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p1358r0"><span data-contrast="none">P1358R0</span></a><span data-contrast="none"> T</span><span data-contrast="none">ype completeness and derived-to-base pointer </span><span data-contrast="none">conversions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p0466r5"><span data-contrast="none">P0466R5</span></a><span data-contrast="none"> </span><span data-contrast="none">L</span><span data-contrast="none">ayout-Compatibility</span><span data-contrast="none"> and Pointer-Interconvertibility Traits</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2107r0"><span data-contrast="none">P2107R0</span></a><span data-contrast="none"> </span><span data-contrast="none">US064 Copy semantics of coroutine </span><span data-contrast="none">parameters</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Implemented</span><span data-contrast="auto"> </span><a href="https://wg21.link/p2107r0"><span data-contrast="none">P2107R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">US052 </span><span data-contrast="auto">Non-executed return statements in </span><span data-contrast="auto">coroutines</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2103r0"><span data-contrast="none">P2103R0</span></a><span data-contrast="none"> </span><span data-contrast="none">Allow &#8220;import&#8221; inside linkage-specifications [</span><span data-contrast="none">dcl.link</span><span data-contrast="none">]</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/p2085R0"><span data-contrast="none">P2085R0</span></a><span data-contrast="none"> </span><span data-contrast="none">Consistent </span><span data-contrast="none">defaulted</span><span data-contrast="none"> comparisons</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="4" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2280 Matching a usual deallocation function with placement </span><span data-contrast="auto">new</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="5" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2382 Array allocation overhead for non-allocating placement </span><span data-contrast="auto">new</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Implemented </span><span data-contrast="auto">CWG</span><span data-contrast="auto"> 2441 Inline function </span><span data-contrast="auto">parameters</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">Implemented CWG 2282</span><span data-contrast="none"> Consistency with mismatched aligned/non-over-aligned allocation/deallocation functions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="auto">Implemented US212 Converting from T* to bool should be considered </span><span data-contrast="auto">narrowing</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h2 aria-level="1" aria-level="1" id="vs-2019-v16-8"><span data-contrast="none">VS 2019 v</span><span data-contrast="none">16.8</span></h2>
-<h3 aria-level="2" aria-level="2" id="c20-language-feature-support"><span data-contrast="none">C++20 Language Feature Support</span></h3>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1103R3"><span data-contrast="none">P1103R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Modules</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0912R5"><span data-contrast="none">P0912R5</span></a><span data-contrast="none"> </span><span data-contrast="auto">Coroutines</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1286R2"><span data-contrast="none">P1286R2</span></a><span data-contrast="none"> </span><span data-contrast="auto">Contra CWG DR1778</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0315R4"><span data-contrast="none">P0315R4</span></a><span data-contrast="none"> </span><span data-contrast="auto">Allowing lambdas in unevaluated contexts</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0960R3"><span data-contrast="none">P0960R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Allow initializing aggregates from a parenthesized list of values</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P0848R3"><span data-contrast="none">P0848R3</span></a><span data-contrast="none"> </span><span data-contrast="auto">Conditionally trivial special member functions</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1811R0"><span data-contrast="none">P1811R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">Relaxing redefinition restrictions for re-exportation robustness</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1766R1"><span data-contrast="none">P1766R1</span></a><span data-contrast="none"> </span><span data-contrast="auto">Mitigating minor modules maladies</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1975R0"><span data-contrast="none">P1975R0</span></a><span data-contrast="none"> </span><span data-contrast="auto">Fixing the wording of parenthesized aggregate-initialization</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="none">Implemented</span><span data-contrast="none"> </span><a href="https://wg21.link/P1874R1"><span data-contrast="none">P1874R1</span></a><span data-contrast="none"> </span><span data-contrast="auto">Dynamic Initialization Order of Non-Local Variables in Modules</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></li>
-</ul>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Two of the major features of C++20, </span><a href="https://devblogs.microsoft.com/cppblog/standard-c20-modules-support-with-msvc-in-visual-studio-2019-version-16-8/"><span data-contrast="none">Modules</span></a><span data-contrast="auto"> and </span><a href="https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/"><span data-contrast="none">Coroutines</span></a><span data-contrast="auto">, are now feature-complete in the MSVC toolset and are now implied by the /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest compiler switch. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h3 aria-level="2" aria-level="2" id="strict-conformance-mode-permissive-and-stdclatest"><span data-contrast="none">Strict conformance mode (/permissive-) and /</span><span data-contrast="none">std:c</span><span data-contrast="none">++latest</span></h3>
-<p><span data-contrast="auto">As a prerequisite for Modules support, `/permissive-` is now enabled when /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest is specified</span><span data-contrast="auto">. </span><span data-contrast="auto">See</span><span data-contrast="auto"> </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=vs-2019"><span data-contrast="none">/permissive- </span><span data-contrast="none">documentation</span></a><span data-contrast="auto"> </span><span data-contrast="auto">regarding</span><span data-contrast="auto"> compiling code under `/permissive-`.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">For code that previously compiled under /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest and requires non-conformant compiler behaviors, `/permissive` may be specified to turn off strict conformance mode in the compiler and must appear after /</span><span data-contrast="auto">std:c</span><span data-contrast="auto">++latest in the command line argument list. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">However, specifying `/permissive` will result in an error if Modules usage is </span><span data-contrast="auto">encountered</span><span data-contrast="auto">:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>error C1214: Modules conflict with non-standard behavior requested via &#8216;[option]&#8217;</p>
-<p><span data-contrast="auto">Where the most common values for [</span><span data-contrast="auto">option</span><span data-contrast="auto">] are:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">`</span><span data-contrast="auto"> </span><span data-contrast="auto">:</span><span data-contrast="auto"> Two Phase name lookup (`/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto">`) is </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 Modules and implied by `/permissive-`</span><span data-contrast="auto">. </span><span data-contrast="auto">See also [/</span><span data-contrast="auto">Zc:twoPhase</span><span data-contrast="auto"> </span><span data-contrast="auto">documentation](</span><span data-contrast="auto">https://docs.microsoft.com/en-us/cpp/build/reference/zc-twophase?view=vs-2019). </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:hiddenFriend</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">` :</span><span data-contrast="auto"> </span><span data-contrast="auto">S</span><span data-contrast="auto">tandard hidden friend name lookup rules </span><span data-contrast="auto">are</span><span data-contrast="auto"> </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 Modules and implied by `/permissive-`. </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">`/</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto">&#8211;</span><span data-contrast="auto">` :</span><span data-contrast="auto"> Use of the conformant preprocessor (/</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto">) is </span><span data-contrast="auto">required</span><span data-contrast="auto"> for C++20 header unit usage and creation only</span><span data-contrast="auto">. </span><span data-contrast="auto">Named Modules do not require this </span><span data-contrast="auto">option</span><span data-contrast="auto">. See also /</span><span data-contrast="auto">Zc:preprocessor</span><span data-contrast="auto"> documentation](</span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=vs-2019"><span data-contrast="none">https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=vs-2019</span></a><span data-contrast="auto">) </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<h2 aria-level="1" aria-level="1" id="more-information"><span data-contrast="none">More Information</span></h2>
-<p>For Visual Studio changes (beyond the C++ toolset) and download links, see the <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">VS Release Notes</a> and <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-preview">VS Preview Release Notes</a>. You can report bugs through <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Developer Community</a>, and you can also report STL bugs via <a href="https://github.com/microsoft/STL/issues">microsoft/STL GitHub issues</a>.</p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/">C++20 Features in Visual Studio 2019 versions 16.7 and 16.8</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c20-features-in-visual-studio-2019-versions-16-7-and-16-8/feed/</wfw:commentRss>
-			<slash:comments>13</slash:comments>
 		
 		
 			</item>
