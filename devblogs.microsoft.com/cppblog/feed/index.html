@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 18 Feb 2021 01:56:22 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 09 Feb 2021 15:58:48 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,293 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>Take control of your vcpkg dependencies with versioning support</title>
-		<link>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/#respond</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Thu, 18 Feb 2021 01:54:07 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27597</guid>
-
-					<description><![CDATA[<p>We have an exciting new feature to announce in vcpkg: the long-awaited and highly requested package versioning! This feature makes it possible to install specific versions of dependencies and control installed versions over time. In order to use this feature, a vcpkg.json manifest file must be present in your repo to declare dependencies.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/">Take control of your vcpkg dependencies with versioning support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We have an exciting new feature to announce in vcpkg: the long-awaited and highly requested package versioning! This feature makes it possible to install specific versions of dependencies and control installed versions over time. In order to use this feature, a <strong>vcpkg.json</strong> manifest file must be present in your repo to declare dependencies. Versioning is not currently available for libraries installed via the command line (i.e. <code>vcpkg install library_name</code> commands). The versioning feature is completely optional – you can choose not to specify library versions, and vcpkg will pick the most appropriate set of compatible versions for your dependencies from its baseline catalog. For now, we are considering this feature experimental. Please give us your feedback and let us know how we can improve.</p>
-<p>&nbsp;</p>
-<h3 id="announcing-package-versioning-support">Announcing package versioning support</h3>
-<p>For the past year we have been focusing our efforts on implementing highly requested features in vcpkg that will help our users in a wide variety of scenarios. Two such features are manifests and binary caching, <a href="https://devblogs.microsoft.com/cppblog/vcpkg-accelerate-your-team-development-environment-with-binary-caching-and-manifests/">which we announced some time ago</a>, and users have been successfully using them in their projects since then. Today, we are announcing support for another anticipated feature: Package versioning. With this feature users will be able to:</p>
-<ul>
-<li>Declare minimum version constraints on dependencies.</li>
-<li>Freeze dependencies at specific versions.</li>
-<li>Conveniently upgrade all declared dependencies at once via baselines.</li>
-<li>Get reproducible builds independent from the current state of the vcpkg ports registry.</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="getting-started-with-versions">Getting started with versions</h3>
-<p>To enable versioning, you must turn on the “versions” feature flag. There are several ways to do this:</p>
-<ul>
-<li>Setting the <code>VCPKG_FEATURE_FLAGS</code> environment variable, example in Windows 10:<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag.png"><img class="alignnone size-full wp-image-27599" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag.png" alt="Image versioning feature flag" width="1092" height="307" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag.png 1092w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag-300x84.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag-1024x288.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/versioning-feature-flag-768x216.png 768w" sizes="(max-width: 1092px) 100vw, 1092px" /></a></li>
-<li>Setting the <code>VCPKG_FEATURE_FLAGS</code> variable before invoking vcpkg in the command line (example in PowerShell):
-<code>$env:VCPKG_FEATURE_FLAGS="versions"</code>
-<code>vcpkg install</code></li>
-<li>Passing the feature flags in the command line for vcpkg (example in PowerShell):
-<code>vcpkg --feature-flags="versions" install</code></li>
-</ul>
-<p>In the example below, we will be using Visual Studio Code to create a simple CMake project that automatically reads a vcpkg manifest file and installs dependencies. You can do this in Visual Studio as well. For information on how to set up Visual Studio for use with vcpkg with manifests (for MSBuild or CMake), see <a href="https://devblogs.microsoft.com/cppblog/vcpkg-accelerate-your-team-development-environment-with-binary-caching-and-manifests/">vcpkg: Accelerate your team development environment with binary caching and manifests</a>.</p>
-<h4 id="example-1-simple-versioning">Example #1: Simple versioning</h4>
-<p>Begin by creating a folder with the following files:</p>
-<p><strong>vcpkg.json</strong></p>
-<pre class="prettyprint">{
-    "name": "versions-test",
-    "version": "1.0.0",
-    "dependencies": [
-        {
-            "name": "fmt",
-            "version&gt;=": "7.1.3"
-        },
-        "zlib"
-    ],
-    "builtin-baseline": "b60f003ccf5fe8613d029f49f835c8929a66eb61"
-}</pre>
-<p>vcpkg has new version declaration properties when you use manifests. Previously, you could only declare versions for your projects using the “version-string” property. Now that versioning has come around, vcpkg is aware of some new versioning schemes.</p>
-<table style="width: 29.7662%;">
-<tbody>
-<tr>
-<td style="width: 30.2663%;"><strong>Version scheme</strong></td>
-<td style="width: 80.0773%;"><strong>Description</strong></td>
-</tr>
-<tr>
-<td style="width: 30.2663%;"><strong>version</strong></td>
-<td style="width: 80.0773%;">Dot-separated numerals: <strong>1.0.0</strong></td>
-</tr>
-<tr>
-<td style="width: 30.2663%;"><strong>version-semver</strong></td>
-<td style="width: 80.0773%;">Compliant semantic versions: <strong>1.2.0, 1.2.1-rc</strong></td>
-</tr>
-<tr>
-<td style="width: 30.2663%;"><strong>version-date</strong></td>
-<td style="width: 80.0773%;">Dates in YYYY-MM-DD format: <strong>2021-01-01</strong></td>
-</tr>
-<tr>
-<td style="width: 30.2663%;"><strong>version-string</strong></td>
-<td style="width: 80.0773%;">Arbitrary strings: <strong>vista, xp</strong></td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<p>The selected versioning scheme has consequences in what vcpkg will allow as a valid version string and the rules for ordering versions. You can read more about versioning schemes in <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/versioning.reference.md#version-schemes">our documentation</a>.</p>
-<p>Second, we use the “<code>version&gt;=</code>” property to declare a minimum version constraint on <code>fmt</code>. Notice that we also declare a dependency on <code>zlib</code> without any version constraint.</p>
-<p>And lastly, we declare a “<code>builtin-baseline</code>”, the value of which is a commit SHA from the vcpkg repository.</p>
-<p>In our example, vcpkg will look inside commit <code>b60f003ccf5fe8613d029f49f835c8929a66eb61</code> and find what the latest versions of <code>fmt</code> and <code>zlib</code> at that point in time were:</p>
-<ul>
-<li><code>fmt 7.1.3</code></li>
-<li><code>zlib 1.2.11#9</code> (the #9 suffix indicates that this is the 9th version of this library build recipe)</li>
-</ul>
-<p>The set of libraries and versions listed above can be described as the baseline versions for the dependencies used in this project. Baseline versions get added as additional minimum version constraints when resolving package versions.</p>
-<p><strong>main.cpp</strong></p>
-<pre class="prettyprint">#include &lt;fmt/core.h&gt;
-#include &lt;zlib.h&gt;
-
-int main()
-{
-    fmt::print("fmt version is {}\n"
-               "zlib version is {}\n",
-               FMT_VERSION, ZLIB_VERSION);
-    return 0;
-}</pre>
-<p><em>[Above] This is a simple single file program to test that dependencies are correctly installed.</em></p>
-<p><strong>CMakeLists.txt</strong></p>
-<pre class="prettyprint">cmake_minimum_required(VERSION 3.18)
-
-set(VCPKG_FEATURE_FLAGS "versions")
-project(versions-test CXX)
-
-add_executable(main main.cpp)
-
-find_package(ZLIB REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-target_link_libraries(main PRIVATE ZLIB::ZLIB fmt::fmt)</pre>
-<p><em>[Above] To use vcpkg manifests with a CMake project, it is necessary to add find_package and target_link_libraries functions to identify your dependencies in CMakeLists.txt. This experience is the same whether a package manager like vcpkg is being used or not. Including these lines makes it possible for dependencies to be included in builds.</em></p>
-<p><strong>.vscode/settings.json</strong></p>
-<pre class="prettyprint">{
-    "cmake.configureSettings": {
-        "CMAKE_TOOLCHAIN_FILE": "D:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-windows"
-    }
-}</pre>
-<p><em>[Above] For Visual Studio Code, this is how to point a CMake project to the vcpkg CMake toolchain file. This file must be specified for any CMake project using vcpkg. Other IDEs or editors may have a different experience for pointing to CMake toolchain files.</em></p>
-<p>Next, generate the CMake cache using the Visual Studio Code <strong>CMake: Configure</strong> command:</p>
-<pre class="prettyprint">[cmakefileapi-driver] Removing d:/versions-test/build/CMakeCache.txt
-[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" --no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE:STRING=D:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET:STRING=x64-windows -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Hd:/versions-test -Bd:/versions-test/build -G "Visual Studio 16 2019" -T host=x64 -A x64
-[cmake] -- Running vcpkg install
-[cmake] Detecting compiler hash for triplet x64-windows...
-[cmake] The following packages will be built and installed:
-[cmake]     fmt[core]:x64-windows -&gt; 7.1.3 -- D:\vcpkg\buildtrees\versioning\versions\fmt\d99b6a35e1406ba6b6e09d719bebd086f83ed5f3
-[cmake]     zlib[core]:x64-windows -&gt; 1.2.11#9 -- D:\vcpkg\buildtrees\versioning\versions\zlib\827111046e37c98153d9d82bb6fa4183b6d728e4</pre>
-<p><em>[Above] This is the output produced by the CMake command line when generating the CMake cache. In Visual Studio Code, with the CMake Tools extension installed, the cache can be generated with the &#8220;CMake: Configure&#8221; command.</em></p>
-<p>You will know that versioning is working if you notice the “<code>&lt;path-to-vcpkg&gt;/buildtrees/versioning/versions/&lt;portname&gt;/&lt;sha&gt;</code>” pattern in the paths. The port files are being checked out by vcpkg for the declared versions at those locations.</p>
-<p>Lastly, run the program:</p>
-<pre class="prettyprint">fmt version is 70103  
-zlib version is 1.2.11</pre>
-<h4 id="example-2-pinning-older-versions">Example #2: Pinning older versions</h4>
-<p>Since baselines establish a version floor for all packages and explicit constraints get upgraded when they are lower than the baseline, we need another mechanism to downgrade versions past the baseline.</p>
-<p>The mechanism vcpkg provides for that scenario is overrides. When an override is declared on a package, vcpkg will ignore all other version constraints either directly declared in the manifest or from transitive dependencies. In short, overrides will force vcpkg to use the exact version declared, period.</p>
-<p>First, change your manifest to add an override on <code>fmt</code> and force vcpkg to use version 6.0.0:</p>
-<pre class="prettyprint">{
-    "name": "versions-test",
-    "version": "1.0.0",
-    "dependencies": [
-        {
-            "name": "fmt",
-            "version&gt;=": "7.1.3"
-        },
-        "zlib"
-    ],
-    "builtin-baseline": "b60f003ccf5fe8613d029f49f835c8929a66eb61", 
-    "overrides": [
-        { "name": "fmt", "version": "6.0.0" }
-    ]
-}</pre>
-<p>Next, delete your build folder, generate the CMake cache, and build again:</p>
-<pre class="prettyprint">[cmake] -- Running vcpkg install
-[cmake] Detecting compiler hash for triplet x64-windows...
-[cmake] The following packages will be rebuilt:
-[cmake]     fmt[core]:x64-windows -&gt; 6.0.0 -- D:\Work\viromer\versioning\vcpkg\buildtrees\versioning\versions\fmt\d99b6a35e1406ba6b6e09d719bebd086f83ed5f3</pre>
-<p>Lastly, run the program:</p>
-<pre class="prettyprint">fmt version is 60000  
-zlib version is 1.2.11</pre>
-<h3 id="how-versioning-works-in-vcpkg">How versioning works in vcpkg</h3>
-<p>In the diagram below we depict the chronology of versions released for four different libraries: FMT, zlib, Boost and Azure’s core C++ library.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/vcpkg-versioning-diagram.png"><img class="alignnone size-full wp-image-27634" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/vcpkg-versioning-diagram.png" alt="Image vcpkg versioning diagram" width="784" height="567" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/vcpkg-versioning-diagram.png 784w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/vcpkg-versioning-diagram-300x217.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/vcpkg-versioning-diagram-768x555.png 768w" sizes="(max-width: 784px) 100vw, 784px" /></a></p>
-<p>The vcpkg versioning system is comprised of the following pieces:</p>
-<h4 id="baselines">Baselines</h4>
-<p>To enable versioning, it is required that you set a baseline to a specific vcpkg commit. By selecting a baseline, you are selecting a snapshot of a certain point in time of the chronology.
-Setting the baseline will set a minimum version floor on all your dependencies, the minimum versions being the ones that existed at the selected snapshot. In the picture above, we would have version 7.1.0 for FMT, version 1.2.11 at port revision 9 for zlib, version 1.74.0 for Boost and the September 2020 release for Azure’s Core C++ library.
-An advantage of using baselines is that versions that are contemporary are more likely to be compatible. The main vcpkg registry does, after all, build all libraries it contains at the same time to try to ensure compatibility of the whole catalog at every commit.</p>
-<h4 id="constraints">Constraints</h4>
-<p>In contrast with baselines that set minimum versions for all packages, constraints allow you to specify a minimum version in a package-by-package basis.</p>
-<p>Constraints only allow you to upgrade versions further than those at the baseline. As stated above, the baseline sets a minimum version floor for all packages, so if you attempt to add a constraint that is lower than the baseline, the constraint will be upgraded.</p>
-<p>An important thing to notice about constraints is that they are transitive where baselines and overrides are not. Dependencies in the graph can express their own constraints and they will be considered by the version resolution algorithm.</p>
-<p>But what if you really need to set a version to be lower than the baseline? How can you do it without lowering the baseline? For those cases, you can use overrides.</p>
-<h4 id="overrides">Overrides</h4>
-<p>An override forces vcpkg to use a specific version while ignoring all other constraint (either explicit or transitive). This allows the user to solve some specific situations like:</p>
-<ul>
-<li>Downgrading versions lower than the baseline.</li>
-<li>Forcing upgraded/downgraded versions on transitive dependencies.</li>
-<li>Solving version conflicts between different packages.</li>
-</ul>
-<p>In the scenario depicted in the diagram, given all that we know about baselines, constraints, and overrides. We can see that version resolution for a project using all four packages would result in:</p>
-<ul>
-<li>FMT: Version 7.1.2, as specified via constraint.</li>
-<li>zlib: Version 1.2.11 at port revision 2, as specified via override.</li>
-<li>Boost: Version 1.74, as defaulted by the baseline.</li>
-<li>azure-core-pp: Version 2020-09-01, as defaulted by the baseline.</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="versions-and-custom-ports">Versions and custom ports</h3>
-<p>The last thing to discuss is how overlay ports interact with versioning resolution. The answer is: they do not interact at all by design.
-Going into more detail, when you provide an overlay for a port, vcpkg will always use the overlay port without caring what version is contained in it. The reasons are two-fold: (1) it is consistent with the existing behavior of overlay ports (completely masking the existing port), and (2) overlay ports do not (and are not expected to) provide enough information to power vcpkg&#8217;s versioning feature.</p>
-<p>If you want to have flexible port customization along with versioning features, you should consider making your own custom registry. See our <a href="https://github.com/microsoft/vcpkg/blob/master/docs/specifications/registries-2.md">registries specification for more details</a>.</p>
-<p>&nbsp;</p>
-<h3 id="further-reading">Further reading</h3>
-<p>If you&#8217;re interested in delving deeper into the details of how versioning works we recommended that you read the <a href="https://github.com/microsoft/vcpkg/blob/master/docs/specifications/versioning.md">original versioning specification</a>.</p>
-<p>&nbsp;</p>
-<h3 id="give-us-your-feedback">Give us your feedback!</h3>
-<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg/issues">GitHub repo</a>. We welcome your feedback on the tool and the new features <a href="https://github.com/microsoft/vcpkg/issues">in our issue tracker</a>. To see what’s next for vcpkg, including support for versioning and registries, <a href="https://aka.ms/vcpkg/roadmap">check out our roadmap</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/">Take control of your vcpkg dependencies with versioning support</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Now announcing: Makefile support in Visual Studio Code!</title>
-		<link>https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/#respond</comments>
-		
-		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
-		<pubDate>Wed, 17 Feb 2021 23:42:46 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Linux]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27606</guid>
-
-					<description><![CDATA[<p>We are excited to announce a brand-new extension for building and debugging Makefile projects in Visual Studio Code: Makefile Tools (preview)! The extension is in pilot stages, but we’ve curated a list of over 70 popular opensource Makefile projects that work with Makefile Tools.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/">Now announcing: Makefile support in Visual Studio Code!</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are excited to announce a brand-new extension for building and debugging Makefile projects in Visual Studio Code: <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">Makefile Tools (preview)</a>! The extension is in pilot stages, but we’ve curated a <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/docs/repositories.md">list of over 70 popular opensource Makefile projects</a> that work with Makefile Tools. Give it a try and let us know what you think!</p>
-<h2 id="installing-the-extension">Installing the extension</h2>
-<p>First, install the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">Makefile Tools extension</a> from the VS Code Marketplace.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace.png"><img class="alignnone size-full wp-image-27626" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace.png" alt="Image of Makefile Tools extension in VS Code Marketplace" width="1562" height="370" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace.png 1562w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace-300x71.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace-1024x243.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace-768x182.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-tools-marketplace-1536x364.png 1536w" sizes="(max-width: 1562px) 100vw, 1562px" /></a></p>
-<h2 id="activating-the-extension">Activating the extension</h2>
-<p>Once the extension is installed, it will activate when it finds a Makefile in your project’s root folder. If your project’s Makefile is not in the root folder, you can use the <strong>Makefile Path</strong> setting to instruct the extension where to find it. Update <strong>Makefile Path</strong> by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and then selecting <strong>makefile</strong> under <strong>Extensions.</strong></p>
-<p><strong><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath.png"><img class="alignnone size-full wp-image-27611" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath.png" alt="Image showing the Makefile Tools extension's Makefile Path property in VS Code settings" width="1238" height="241" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath.png 1238w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath-300x58.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath-1024x199.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makefilepath-768x150.png 768w" sizes="(max-width: 1238px) 100vw, 1238px" /></a> </strong></p>
-<p>After updating <strong>Makefile Path</strong>, type “makefile” into the Command Palette and run a Makefile Tools command to activate the extension.</p>
-<h2 id="configuring-your-project">Configuring your project</h2>
-<p>By default, the extension will attempt to use a make program that resides within your $PATH to configure the project. If your make.exe is not in your $PATH, update the <strong>Make Path </strong>setting by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and then selecting <strong>makefile</strong> under <strong>Extensions. </strong>The<strong> Make Path</strong> setting tells the extension where to find your make executable.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath.png"><img class="alignnone size-full wp-image-27612" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath.png" alt="Image showing the Makefile Tools extension's Make Path property in VS Code settings" width="1230" height="213" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath.png 1230w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath-300x52.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath-1024x177.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile.makepath-768x133.png 768w" sizes="(max-width: 1230px) 100vw, 1230px" /></a></p>
-<p>Once your make path is properly set, accept the prompt to allow Makefile Tools to configure IntelliSense.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense.png"><img class="alignnone size-full wp-image-27623" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense.png" alt="Image showing pop-up notification for allowing the Makefile Tools extension to configure IntelliSense" width="1104" height="269" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense.png 1104w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense-300x73.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense-1024x250.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-allow-intellisense-768x187.png 768w" sizes="(max-width: 1104px) 100vw, 1104px" /></a></p>
-<p>If you don&#8217;t see that notification, or you accidentally dismissed it, you can grant Makefile Tools permission to configure IntelliSense by running “<strong>C/C++: Change Configuration Provider”</strong> from the Command Palette and selecting <strong>Makefile Tools</strong>.</p>
-<p>Now you’re ready to configure your project! If you normally run make from the command line without passing it any additional arguments, you shouldn&#8217;t need to do anything else at this point.</p>
-<p>If you regularly pass additional arguments to make, use the Makefile Tools’ <strong>Configurations</strong> setting (<strong>makefile.configurations</strong> in settings.json) to specify those arguments. Makefile.configurations is an array of configuration objects, each with a <strong>name</strong> and <strong>makeArgs</strong> property that holds the arguments to pass to make. To help you out, we’ve <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/docs/repositories.md">documented the correct configurations</a> for over 70 popular open-source repositories. For example, to create a configuration for <a href="https://github.com/littlekernel/lk">littlekernel</a>, where you need to pass “PROJECT=armemu-test” to make, your settings.json would look something like this:</p>
-<pre class="prettyprint">"makefile.configurations": [
-    {
-        "name": "littlekernel",
-        "makeArgs": ["PROJECT=armemu-test"]
-    }
-]</pre>
-<p>To choose the configuration for a project, select the Makefile Tools icon in the left explorer menu.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon.png"><img class="alignnone size-full wp-image-27619" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon.png" alt="Image showing the Makefile Tools icon in the explorer menu on the left" width="2871" height="2078" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon.png 2871w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon-300x217.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon-1024x741.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon-768x556.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon-1536x1112.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-explorer-icon-2048x1482.png 2048w" sizes="(max-width: 2871px) 100vw, 2871px" /></a></p>
-<p>Hover over <strong>Configuration</strong> and select the pencil icon to choose a configuration for your project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-configuration.png"><img class="alignnone size-full wp-image-27615" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-configuration.png" alt="Image showing the &quot;edit Configuration&quot; button that appears on hover in the Makefile Tools UI pane" width="836" height="870" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-configuration.png 836w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-configuration-288x300.png 288w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-configuration-768x799.png 768w" sizes="(max-width: 836px) 100vw, 836px" /></a></p>
-<p>If you didn’t define any configurations in<strong> makefile.configurations</strong>, the extension will automatically select a default one.</p>
-<h2 id="building-targets">Building targets</h2>
-<p>After configuring your project, you’re ready to build. Choose a Build target by selecting the pencil icon that appears on hover.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-build-target.png"><img class="alignnone size-full wp-image-27614" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-build-target.png" alt="Image showing the &quot;edit Build target&quot; button that appears on hover in the Makefile Tools UI pane" width="838" height="960" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-build-target.png 838w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-build-target-262x300.png 262w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-build-target-768x880.png 768w" sizes="(max-width: 838px) 100vw, 838px" /></a></p>
-<p>Then choose from the list of targets found in your project’s Makefile.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets.png"><img class="alignnone size-full wp-image-27620" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets.png" alt="Image showing a list of build targets found in the project's Makefile, returned by the Makefile Tools extension" width="3240" height="2075" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets.png 3240w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets-300x192.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets-1024x656.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets-768x492.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets-1536x984.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-list-build-targets-2048x1312.png 2048w" sizes="(max-width: 3240px) 100vw, 3240px" /></a></p>
-<p>After setting the Build target, click the Build icon.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-build-target.png"><img class="alignnone size-full wp-image-27613" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-build-target.png" alt="Image showing the Build button in the top right corner of the Makefile Tools UI pane" width="838" height="960" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-build-target.png 838w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-build-target-262x300.png 262w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-build-target-768x880.png 768w" sizes="(max-width: 838px) 100vw, 838px" /></a></p>
-<h2 id="debugging-and-running-targets">Debugging and running targets</h2>
-<p>To run/debug your program, use the pencil icon to select a Launch target. A configuration for the selected target will be added to the <strong>makefile.launchConfigurations </strong>setting. If you need to pass additional arguments to your targets—things like MIMode, miDebuggerPath, stopAtEntry— add the <strong>binaryArgs</strong> property to the target’s configuration in <strong>makefile.launchConfigurations</strong>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-launch-target.png"><img class="alignnone size-full wp-image-27616" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-launch-target.png" alt="Image showing the &quot;edit Launch target&quot; button that appears on hover in the Makefile Tools UI pane" width="841" height="952" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-launch-target.png 841w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-launch-target-265x300.png 265w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-choose-launch-target-768x869.png 768w" sizes="(max-width: 841px) 100vw, 841px" /></a></p>
-<p>Once the Launch target is set, select the Debug icon to start a debugging session.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-debug-target.png"><img class="alignnone size-full wp-image-27618" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-debug-target.png" alt="Image showing the Debug target button in the top right corner of the Makefile Tools UI pane" width="841" height="952" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-debug-target.png 841w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-debug-target-265x300.png 265w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-debug-target-768x869.png 768w" sizes="(max-width: 841px) 100vw, 841px" /></a></p>
-<p>To run the program without debugging, select the Run in Terminal button.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-run-in-terminal.png"><img class="alignnone size-full wp-image-27621" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-run-in-terminal.png" alt="Image showing the Run in Terminal button in top right corner of the Makefile Tools UI pane" width="841" height="952" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-run-in-terminal.png 841w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-run-in-terminal-265x300.png 265w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-run-in-terminal-768x869.png 768w" sizes="(max-width: 841px) 100vw, 841px" /></a></p>
-<h2 id="makefile-tools-commands">Makefile Tools commands</h2>
-<p>You can find all the Makefile Tools commands by opening the Command Palette and typing &#8220;makefile&#8221;. For your convenience, there are commands for building clean and building ALL that you can run without changing the Build target.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands.png"><img class="alignnone size-full wp-image-27617" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands.png" alt="Image showing the Makefile Tools extensions commands in the Command Palette, all beginning with &quot;makefile:&quot;" width="1471" height="856" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands.png 1471w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands-300x175.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands-1024x596.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/makefile-commands-768x447.png 768w" sizes="(max-width: 1471px) 100vw, 1471px" /></a></p>
-<h2 id="makefile-tools-settings">Makefile Tools settings</h2>
-<p>To find all Makefile Tools settings, go to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and then select <strong>makefile</strong> under <strong>Extensions.</strong> The settings you’ll probably use the most are:</p>
-<ul>
-<li>configurations (tells the extension which arguments to pass to make when configuring your project)</li>
-<li>defaultLaunchConfiguration (global debugger settings)</li>
-<li>launchConfigurations (debugger settings for specific launch targets)</li>
-<li>makePath (path to your make executable)</li>
-<li>makefilePath (path to project’s Makefile)</li>
-<li>buildLog (alternative to dry-run)</li>
-</ul>
-<h2 id="known-limitations">Known limitations</h2>
-<p>This is a preview release of Makefile Tools, and although we’ve tested it with over 70 repositories, you may need to do some fiddling to configure your project for the first time. Please feel free to submit a PR to <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/docs/repositories.md">this document</a>, adding your repository and its correct configuration settings, to help anyone who might be trying to build the same project.</p>
-<p>Check out our <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/docs/troubleshooting.md">troubleshooting guide</a> for a list of known limitations and work-arounds.</p>
-<h2 id="what-do-you-think">What do you think?</h2>
-<p>Download the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">Makefile Tools extension</a> for Visual Studio Code today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/microsoft/vscode-makefile-tools/issues">Issues section of our GitHub repository</a>.</p>
-<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/">Now announcing: Makefile support in Visual Studio Code!</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>Visual Studio Code C++ Extension: Cross-Compilation IntelliSense Configurations</title>
 		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/#comments</comments>
@@ -375,7 +88,7 @@ Going into more detail, when you provide an overlay for a port, vcpkg will alway
 		<item>
 		<title>Improved OpenMP Support for C++ in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/#comments</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/#respond</comments>
 		
 		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
 		<pubDate>Tue, 09 Feb 2021 15:00:37 +0000</pubDate>
@@ -436,7 +149,7 @@ x = (omp_get_thread_num() == 0) ? 7 : 10;</pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>6</slash:comments>
+			<slash:comments>0</slash:comments>
 		
 		
 			</item>
@@ -1039,6 +752,236 @@ On Diablo IV we develop all our code on Windows and compile for multiple platfor
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/#comments</comments>
+		
+		<dc:creator><![CDATA[Helena Gregg]]></dc:creator>
+		<pubDate>Thu, 21 Jan 2021 15:02:59 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27390</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review. </p>
+<p>Address Sanitizer: The IDE integration for ASan-reported exceptions (vcasan.lib) now handles the complete collection of exceptions ASan can report.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/">MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="none">In </span><a href="https://visualstudio.microsoft.com/vs/preview"><span data-contrast="none">Visual Studio 2019</span></a><span data-contrast="none"> version 16.9</span><span data-contrast="none"> </span><span data-contrast="none">Preview 3</span><span data-contrast="none"> we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><b><span data-contrast="none">Address Sanitizer:</span></b><span data-contrast="none"> The IDE integration for ASan-reported exceptions (vcasan.lib) now handles the complete collection of exceptions ASan can report. That vcasan lib is also found automatically, just like the other ASan libraries, when you throw /fsanitize=address. The compiler and linker also additionally will suggest emitting debug information if they detect you&#8217;re building with ASan but not emitting debug information. We&#8217;re excited to be able to share these user-model improvements in this latest preview! More details will be available in the upcoming full ASan documentation as 16.9 approaches the final release. Additional technical improvements include:</span>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Expanded RtlAllocateHeap support, fixed compatibility of RtlCreateHeap and RtlAllocateHeap interceptors with executable memory.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Added ASan interceptor support for GlobalAlloc and LocalAlloc moveable memory.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Updated handling of interception failures, added check for ASAN_WIN_CONTINUE_ON_INTERCEPTION_FAILURE  environment variable to continue after interception failure.</span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Updated error messages for shadow memory interleaving and interception failure to make problems and resolutions explicit.</span></li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><strong>OpenMP</strong> <strong>targeting the LLVM runtime</strong>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">We’ve added the option to target the LLVM version of the OpenMP runtime. </span><span data-contrast="none">T</span><span data-contrast="none">arget the new runtime</span><span data-contrast="none"> </span><span data-contrast="none">by using</span><span data-contrast="none"> the new CL switch </span><span data-contrast="none">/openmp:llvm instead of /openmp. </span><span data-contrast="none">In addition to all the OpenMP features supported with /openmp, /openmp:llvm </span><span data-contrast="none">adds </span><span data-contrast="none">support</span><span data-contrast="none"> for</span><span data-contrast="none"> </span><span data-contrast="none">the lastprivate clause on #pragma </span><span data-contrast="none">omp </span><span data-contrast="none">section</span><span data-contrast="none">s</span><span data-contrast="none"> and </span><span data-contrast="none">unsigned </span><span data-contrast="none">index variables in parallel for loops. </span><span data-contrast="none">Th</span><span data-contrast="none">e</span><span data-contrast="none"> /openmp:llvm switch</span><span data-contrast="none"> </span><span data-contrast="none">is available</span><span data-contrast="none"> only f</span><span data-contrast="none">or the</span><span data-contrast="none"> amd64</span><span data-contrast="none"> target</span><span data-contrast="none"> and is still experimental</span><span data-contrast="none">.</span></li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Improved coroutine debugging support</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Maintain pre-coloring for arm64 (jump-threading)
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fixed a code generation bug when compiling arm64 functions that return a large object with /O2. (linked customer feedback: <a href="https://developercommunity2.visualstudio.com/t/Incorrect-O2-ARM64-function-call-codegen/1170230">Incorrect /O2 ARM64 function call codegen passing parameter, returning object (visualstudio.com)</a>)</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Swap order of loop fusion and vectorization
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Improved loop optimizer to apply loop fusion in many more cases.</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Remove unnecessary memory loads using the reg-mem variants of commutative x86 instructions</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fix issue with /OPT:REF under LTCG
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Fixed an issue where a function referenced only by data (such as a vtable) could be incorrectly removed under /OPT:REF and LTCG in rare cases</li>
+</ul>
+</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Incremental linking support for C++ Modules linkage</li>
+<li data-leveltext="" data-font="Symbol" data-listid="12" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Support for Intel Keylocker and User Interrupt instructions as well as intrinsic functions added in VC tools such as Compiler, MASM, and MSDIS</li>
+</ul>
+<p>Do you want to experience the new improvements of the C++ backend? <span style="font-size: 1rem;" data-contrast="none">Please download</span> <a href="https://visualstudio.microsoft.com/vs/preview/">the latest Visual Studio 2019</a> and<span style="font-size: 1rem;" data-contrast="none"> give it a try! Any feedback is welcome. We can be reached via the comments </span>below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>), and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/">MSVC Backend Updates in Visual Studio 2019 version 16.9 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-9-preview-3/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Build Throughput Series: More Efficient Template Metaprogramming</title>
+		<link>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/#respond</comments>
+		
+		<dc:creator><![CDATA[Xiang Fan]]></dc:creator>
+		<pubDate>Tue, 19 Jan 2021 15:00:35 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27337</guid>
+
+					<description><![CDATA[<p>In the previous blog post I shared how template specialization and template instantiation are processed in the MSVC compiler. We will now look at some examples from real-world code bases to show some ways to reduce the number of them.<br />
+Example 1<br />
+This example is extracted from our own MSVC compiler code base.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/">Build Throughput Series: More Efficient Template Metaprogramming</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a> I shared how template specialization and template instantiation are processed in the MSVC compiler. We will now look at some examples from real-world code bases to show some ways to reduce the number of them.</p>
+<h5 id="example-1">Example 1</h5>
+<p>This example is extracted from our own MSVC compiler code base. The code tries to apply several stateless functors on an object. Because the functors are stateless, they are represented by a list of types. Here is the code:</p>
+<pre class="lang:c++ decode:true">// A helper class which represents a list of types.
+template&lt;typename...&gt; struct TypeList;
+
+// The definition of 'Object' is irrelevant and omitted.
+struct Object;
+// The function which applies a stateless functor. Its definition is irrelevant and omitted.
+template &lt;typename Functor&gt; void apply_functor(Object&amp; object);
+
+// We have two functors.
+struct Functor1;
+struct Functor2;
+
+// We want to apply the two functors above.
+void apply(Object&amp; object)
+{
+    using Functors = TypeList&lt;Functor1, Functor2&gt;;
+    apply_all_functors&lt;Functors&gt;(object); // 'apply_all_functors' is not implemented yet.
+}</pre>
+<p>Now let us see the initial implementation of <code>apply_all_functors</code>. We extract the functors from <code>TypeList</code> and apply them one by one:</p>
+<pre class="lang:c++ decode:true">#include &lt;utility&gt;
+
+template &lt;typename Functors&gt;
+struct apply_all_functors_impl {
+    template &lt;size_t I&gt;
+    static void apply(Object&amp; object) {
+        using Functor = TypeListAt&lt;I, Functors&gt;; // 'TypeListAt' is not implemented yet.
+
+        apply_functor&lt;Functor&gt;(object);
+    }
+
+    template &lt;size_t... I&gt;
+    static void apply_all(Object&amp; object, std::index_sequence&lt;I...&gt;) {
+        (apply&lt;I&gt;(object), ...);
+    }
+
+    void operator()(Object&amp; object) const
+    {
+        apply_all(object, std::make_index_sequence&lt;TypeListSize&lt;Functors&gt;&gt;{}); // 'TypeListSize' is not implemented yet.
+    }
+};
+
+template &lt;typename Functors&gt;
+constexpr apply_all_functors_impl&lt;Functors&gt; apply_all_functors{};</pre>
+<p>To extract the functor from the list, we need a sequence of indices. This is obtained using <code>std::make_index_sequence</code>. We then use a fold expression to efficiently iterate through the sequence and call <code>apply</code> to extract and apply the functor one by one.</p>
+<p>The code above uses a class template so that the template arguments are shared across all its member functions. You can also use global function templates instead.</p>
+<p>There are several ways to implement <code>TypeListAt</code> and <code>TypeListSize</code>. Here is one solution:</p>
+<pre class="lang:c++ decode:true">// Implementation of TypeListSize.
+template&lt;typename&gt; struct TypeListSizeImpl;
+template&lt;typename... Types&gt; struct TypeListSizeImpl&lt;TypeList&lt;Types...&gt;&gt;
+{
+    static constexpr size_t value = sizeof...(Types);
+};
+template&lt;typename Types&gt; constexpr size_t TypeListSize = TypeListSizeImpl&lt;Types&gt;::value;
+
+// Implementation of TypeListAt.
+template&lt;size_t, typename&gt; struct TypeListAtImpl;
+template&lt;size_t I, typename Type, typename... Types&gt; struct TypeListAtImpl&lt;I, TypeList&lt;Type, Types...&gt;&gt;
+{
+    using type = typename TypeListAtImpl&lt;I - 1, TypeList&lt;Types...&gt;&gt;::type;
+};
+template&lt;typename Type, typename... Types&gt; struct TypeListAtImpl&lt;0, TypeList&lt;Type, Types...&gt;&gt;
+{
+    using type = Type;
+};
+
+template&lt;size_t I, typename Types&gt; using TypeListAt = typename TypeListAtImpl&lt;I, Types&gt;::type;</pre>
+<p>Now let us examine the number of template instantiations in the initial implementation (assume we have <code>N</code> functors):</p>
+<ol>
+<li>We iterate through an integer sequence of <code>N</code> elements (with value <code>0, ..., N - 1</code>).</li>
+<li>Each iteration specializes one <code>TypeListAt</code> which instantiates <code>O(I)</code> <code>TypeListAtImpl</code> specializations (<code>I</code> is the element in the integer sequence).</li>
+</ol>
+<p>For example, when <code>TypeListAt&lt;2, TypeList&lt;T1, T2, T3&gt;&gt;</code> (I = 2, N = 3) is used, it goes through the following:</p>
+<pre>TypeListAt&lt;2, TypeList&lt;T1, T2, T3&gt;&gt; =&gt;
+TypeListAtImpl&lt;2, TypeList&lt;T1, T2, T3&gt;&gt;::type =&gt;
+TypeListAtImpl&lt;1, TypeList&lt;T2, T3&gt;&gt;::type =&gt;
+TypeListAtImpl&lt;0, TypeList&lt;T3&gt;&gt;::type =&gt;
+T3</pre>
+<p>So, <code>apply_all_functors_impl&lt;TypeList&lt;T1, ..., TN&gt;&gt;::operator()</code> instantiates <code>O(N^2)</code> template specializations.</p>
+<p>How can we reduce the number? The core logic is to extract types from the helper class <code>TypeList</code>.</p>
+<p>To reduce the number of template instantiations, we can extract directly without using <code>std::integer_sequence</code>. This takes advantage of function template argument deduction which can deduce the template arguments of a class template specialization used as the type of the function parameter.</p>
+<p>Here is the more efficient version:</p>
+<pre class="lang:c++ decode:true">// Function template argument deduction can deduce the functors from the helper class.
+template &lt;typename... Functors&gt;
+void apply_all_functors_impl (Object&amp; object, TypeList&lt;Functors...&gt;*)
+{
+    ((apply_functor&lt;Functors&gt;(object)), ...);
+}
+
+template &lt;typename Functors&gt;
+void apply_all_functors (Object&amp; object)
+{
+    apply_all_functors_impl(object, static_cast&lt;Functors*&gt;(nullptr));
+}</pre>
+<p>Now it only instantiates <code>O(N)</code> template specializations.</p>
+<p>Note: I intentionally leave <code>TypeList</code> as undefined. The definition is not even needed for the <code>static_cast</code> as I mentioned in <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a>. This can avoid all the overheads associated with defining a class (like declaring lots of compiler generated special member functions, generating debug information, etc.) which can happen accidentally (see the next example for more details).</p>
+<p>We apply this trick in the compiler code base and it cuts the memory usage to compile one expensive file by half. We also see noticeable compile time improvement.</p>
+<h5 id="example-2">Example 2</h5>
+<p>This example is extracted from the code base of an internal game studio. To my surprise, game developers love template metaprogramming <img src="https://s.w.org/images/core/emoji/13.0.1/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />.</p>
+<p>The code tries to obtain a list of trait classes from a type map.</p>
+<pre class="lang:c++ decode:true">#include &lt;tuple&gt;
+#include &lt;utility&gt;
+
+// This class contains some useful information of a type.
+template &lt;typename&gt;
+class trait {};
+
+// TypeMap is a helper template which maps an index to a type.
+template &lt;template &lt;int&gt; class TypeMap, int N&gt;
+struct get_type_traits;
+
+template&lt;int&gt; struct type_map;
+template&lt;&gt; struct type_map&lt;0&gt; { using type = int; };
+template&lt;&gt; struct type_map&lt;1&gt; { using type = float; };
+
+// we want to get back 'std::tuple&lt;trait&lt;int&gt;, trait&lt;float&gt;&gt;'.
+using type_traits = get_type_traits&lt;type_map, 2&gt;::type; // 'get_type_traits' is not implemented yet.</pre>
+<p>Here is the initial implementation:</p>
+<pre class="lang:c++ decode:true">template &lt;template &lt;int&gt; class TypeMap, int N&gt;
+struct get_type_traits
+{
+private:
+    template &lt;int... I&gt;
+    static auto impl(std::integer_sequence&lt;int, I...&gt;)
+    {
+        return std::make_tuple(trait&lt;typename TypeMap&lt;I&gt;::type&gt;{}...);
+    }
+public:
+    using type = decltype(impl(std::make_integer_sequence&lt;int, N&gt;{}));
+};</pre>
+<p>It also uses the same <code>make_integer_sequence</code> trick in example 1.</p>
+<p><code>get_type_traits</code> itself doesn’t have the <code>O(N^2)</code> specializations issue. But unfortunately, the current <code>std::tuple</code> implementation in MSVC has O(n^2) behavior to instantiate where <code>n</code> is the number of its template arguments.</p>
+<p>This overhead can be completely avoided because the class only needs to get back a type which does not necessarily require instantiation.</p>
+<p>However, the initial implementation forces the instantiation of <code>std::tuple</code> due to the definition of <code>impl</code>. As mentioned in <a href="https://devblogs.microsoft.com/cppblog/build-throughput-series-template-metaprogramming-fundamentals">the previous blog post</a>, having a template specialization as the return type does not require instantiation if there is no function definition.</p>
+<p>The solution is to specify the return type of <code>impl</code> explicitly and remove the definition. This trick is not always possible when the return type is complicated. But in this case, we can specify it as:</p>
+<pre class="lang:c++ decode:true">template &lt;int... I&gt;
+static std::tuple&lt;trait&lt;typename TypeMap&lt;I&gt;::type&gt;...&gt; impl(std::integer_sequence&lt;int, I...&gt;);</pre>
+<p>This change reduces the compile time by 0.9s where an <code>std::tuple</code> of 85 template arguments is used. We have seen such <code>std::tuple</code> (with lots of template arguments) usages in quite a few code bases.</p>
+<h5 id="summary">Summary</h5>
+<p>Here is a list of simple tips which can help reduce the number and overhead of template specialization/instantiation:</p>
+<ol>
+<li>Avoid instantiating a non-linear number of template specializations.
+Be aware of type traits which require a non-trivial number of specializations (e.g., those using recursion).</li>
+<li>Leave class template as undefined if possible (e.g., help class which carries all the information in its template arguments).</li>
+<li>Prefer variable templates to class templates for values (<code>variable_template&lt;T&gt;</code> is much cheaper than <code>class_template&lt;T&gt;::value</code> and <code>class_template&lt;T&gt;()</code> is the worst <img src="https://s.w.org/images/core/emoji/13.0.1/72x72/1f60a.png" alt="😊" class="wp-smiley" style="height: 1em; max-height: 1em;" />)</li>
+<li>Be aware of expensive template (like <code>std::tuple</code> with lots of template arguments) and switch to a simpler type if you use the template for a different purpose than what it is designed for (e.g., using <code>std::tuple</code> as a type list).</li>
+</ol>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/">Build Throughput Series: More Efficient Template Metaprogramming</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-throughput-series-more-efficient-template-metaprogramming/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
 		
 		
 			</item>
