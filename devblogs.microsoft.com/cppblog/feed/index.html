@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 25 Feb 2021 21:54:35 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 18 Feb 2021 21:15:42 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,148 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>Registries: Bring your own libraries to vcpkg</title>
-		<link>https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/#comments</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Thu, 25 Feb 2021 21:49:24 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27658</guid>
-
-					<description><![CDATA[<p>Special thanks to Nicole Mazzuca for providing the content of this blog post.<br />
-Are you working on a C++ project with library dependencies? Are you tired of maintaining a custom-built package management workflow with duct tape and git submodules? Then you should consider trying out a package manager.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/">Registries: Bring your own libraries to vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><em>Special thanks to Nicole Mazzuca for providing the content of this blog post. </em></p>
-<p>Are you working on a C++ project with library dependencies? Are you tired of maintaining a custom-built package management workflow with duct tape and git submodules? Then you should consider trying out a package manager. Perhaps you have been side-eyeing vcpkg for a while, and it looks like the perfect solution for your team, but for one problem: not all your dependencies are open source! Your company has internal libraries that they expect everyone to use too.</p>
-<p>&nbsp;</p>
-<h3 id="can-vcpkg-work-with-non-open-source-dependencies">Can vcpkg work with non-open-source dependencies?</h3>
-<p>Yes! Up until now, your best options included hacking up overlay ports or forking the vcpkg ports tree. But there was room for improvement. Now, we are happy to announce a feature with an experience to manage any libraries you want, whether they are internal-only, open source, your own forks of open source projects, and more. In this blog post, we will delve into <strong>registries</strong>, our new experimental feature. We would love for you to try this feature out, give us feedback, and help us make it the best feature it can be!</p>
-<h3 id="getting-started-with-registries">Getting started with registries</h3>
-<p>So, we’ve discussed the why of registries; now let’s discuss the how. Let’s say we are developers at North Wind Traders, and our company has a GitHub Enterprise subscription. Of course, depending on your company’s or even your personal situation, you can use whatever solution you’re already using. The goal in this blog post is to set up a git registry, the most common type of registry.</p>
-<h4 id="1-create-a-new-registry">1. Create a new registry</h4>
-<p>The company’s GitHub organization is at <a href="https://github.com/northwindtraders">https://github.com/northwindtraders</a>, and that can be used to set up the registry. We will create our registry at <a href="https://github.com/northwindtraders/vcpkg-registry">https://github.com/northwindtraders/vcpkg-registry</a>, since that’s as good a name as any, and you can follow along with the branches there.</p>
-<p>Once we’ve created this registry, we’ll have to do a few things to actually set it up to contain the packages we want, in this case our internal JSON and Unicode libraries.</p>
-<ul>
-<li>First, we’ll set up an empty baseline, the minimum requirement for a registry.</li>
-<li>Then, we’ll add the files that our library needs to build, and make sure that they work.</li>
-<li>Finally, we’ll add the library to the registry, by adding it to the versions database and writing down where to find the library in the git repository.</li>
-</ul>
-<h4 id="2-create-an-empty-registry-baseline">2. Create an empty registry baseline</h4>
-<p>So, let’s start. Clone the (empty) repository, and add a baseline.json file underneath the top level versions directory, containing just the following:</p>
-<pre class="prettyprint">{
-"default": {}
-}</pre>
-<h4 id="3-create-a-vcpkg-port-for-your-library">3. Create a vcpkg port for your library</h4>
-<p>Now, let’s set up a port entry for the first of our two libraries, the Unicode library <a href="https://github.com/northwindtraders/beicode">beicode</a>. If you have ever written a port, you know how to do this, but for those of us who haven’t, let’s go through it all the same.</p>
-<p>We first create a folder for the ports to live; following the standard of the vcpkg central registry, we’ll call the folder ports. Since we use a stable git identifier to specify the directory, we don’t need to put it in a specific place, but it’s good to follow idioms. Inside this ports directory, create beicode’s port directory; inside there, place two empty files, <em>portfile.cmake</em> and <em>vcpkg.json</em>.</p>
-<p>At this point, the registry directory should look something like this:</p>
-<pre class="prettyprint">ports/
-    beicode/
-        portfile.cmake
-        vcpkg.json
-versions/
-    baseline.json</pre>
-<p>Now, let’s fill out the port. First, since the beicode GitHub repository already has a vcpkg.json manifest, copy that into the <em>vcpkg.json</em> file you created:</p>
-<pre class="prettyprint">{
-  "name": "beicode",
-  "version": "1.0.0",
-  "description": "A simple utf-8 based unicode decoding and encoding library",
-  "homepage": "https://github.com/northwindtraders/beicode"
-}</pre>
-<h4 id="4-test-your-new-vcpkg-port-using-overlays">4. Test your new vcpkg port using overlays</h4>
-<p>Let’s make sure this works by trying to install the port; we’re not using registries yet, just the pre-existing overlay-ports feature to test stuff out:</p>
-<p><code>&gt; vcpkg install beicode --overlay-ports=vcpkg-registry/ports/beicode</code></p>
-<p>We should get an error: “<em>The folder /include is empty or not present</em>”. Since we aren’t doing anything just yet, that makes sense. So, let’s fill out our port! Since our port is a simple CMake library, we can create a very simple <em>portfile.cmake</em>:</p>
-<pre class="prettyprint">vcpkg_from_github(
-  OUT_SOURCE_PATH SOURCE_PATH
-  REPO northwindtraders/beicode
-  REF 19a1f95c2f56a27ced90227b5e2754a602a08e69
-  SHA512 7b2bb7acb2a8ff07bff59cfa27247a7b2cced03828919cd65cc0c8cf1f724f5f1e947ed6992dcdbc913fb470694a52613d1861eaaadbf8903e94eb9cdfe4d000
-  HEAD_REF main
-)
-
-vcpkg_configure_cmake(
-  SOURCE_PATH "${SOURCE_PATH}"
-  PREFER_NINJA
-)
-vcpkg_install_cmake()
-vcpkg_fixup_cmake_targets()
-
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-
-file(
-  INSTALL "${SOURCE_PATH}/LICENSE"
-  DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-  RENAME copyright)</pre>
-<p>If we run</p>
-<p><code>&gt; vcpkg install beicode --overlay-ports=vcpkg-registry/ports/beicode</code></p>
-<p>again, we’ll see that it successfully installed! We have written our first port for the registry, and now all that there’s left to do is to add the port to the version set in the registry.</p>
-<h4 id="5-specify-each-version-of-your-library-in-the-registry">5. Specify each version of your library in the registry</h4>
-<p>Every port’s version data lives in its own file: <em>versions/[first character]-/[portname].json</em>. For example, the version data for <em>fmt</em> would live in <em>versions/f-/fmt.json</em>; the version data for <em>zlib</em> would live in <em>versions/z-/zlib.json</em>. So, for <em>beicode</em>, create <em>versions/b-/beicode.json</em>:</p>
-<pre class="prettyprint">{
-  "versions": [
-    {
-      "version": "1.0.0",
-      "git-tree": ""
-    }
-  ]
-}</pre>
-<p>And add the following to <em>versions/baseline.json</em>:</p>
-<pre class="prettyprint">{
-  "default": {
-    "beicode": { "baseline": "1.0.0", "port-version": 0 }
-  }
-}</pre>
-<p>Finally, let’s figure out what to put in that &#8220;<em>git-tree</em>&#8221; field. Do a git commit of the beicode port tree (but do not push), to make sure git knows about it:</p>
-<pre class="prettyprint">&gt; git add ports/beicode
-&gt; git commit -m "[beicode] new port"</pre>
-<p>Then get the tree identifier for that directory:</p>
-<p><code>&gt; git rev-parse HEAD:ports/beicode</code></p>
-<p>You should get something like <code>7fb5482270b093d40ab8ac31db89da4f880f01ba</code>; put that in for the &#8220;<em>git-tree</em>&#8221; in <em>beicode.json</em>, and commit the new files:</p>
-<pre class="prettyprint">&gt; git add versions
-&gt; git commit --amend --no-edit</pre>
-<p>And we should be done! The reason we have to do this slightly complex dance is so that we can grab exactly the files of the version we want; other versions will exist in the history of the repository, and thus are always there to be checked out.</p>
-<h4 id="6-consume-libraries-from-your-vcpkg-registry-in-a-c-project">6. Consume libraries from your vcpkg registry in a C++ project</h4>
-<p>Once we’ve done this, let’s try to consume the library from the new registry in an example codebase. Create a directory outside of the registry and change into that directory. Create a <em>vcpkg.json</em> which depends on beicode:</p>
-<pre class="prettyprint">{
-"name": "test",
-"version": "0",
-"dependencies": [
-  "fmt",
-  "beicode"
-]
-}</pre>
-<p>And a <em>vcpkg-configuration.json</em> that sets up the registry as a git registry:</p>
-<pre class="prettyprint">{
-  "registries": [
-    {
-      "kind": "git",
-      "repository": "[full path to]/vcpkg-registry",
-      "packages": [ "beicode", "beison" ]
-    }
-  ]
-}</pre>
-<p>And try a vcpkg install:</p>
-<p><code>&gt; vcpkg install --feature-flags=registries,manifests</code></p>
-<p>If it works, then you’re ready to push the registry upstream! You can try again with the actual remote registry by replacing the &#8220;<em>repository</em>&#8221; field in your <em>vcpkg-configuration.json</em> file with the actual upstream repository URL.</p>
-<p>&nbsp;</p>
-<h3 id="how-vcpkg-resolves-libraries-from-registries">How vcpkg resolves libraries from registries</h3>
-<p>You’ll notice that beicode and beison are taken from the registry we created; this is because we’ve explicitly said in vcpkg-configuration.json that this is where they’re from. Since we haven’t said where fmt should come from, it just comes from the default registry, which is in this case the registry that ships with vcpkg itself. Registries are never transitive; if you left off beicode from the registry in vcpkg-configuration.json, this would fail to work since beicode doesn’t exist in the default registry, and that’s where vcpkg will look for it. If you wanted to override fmt with your own copy, you could add it to the registry, and then add it to the packages field.</p>
-<p>Packaging beison will be much the same, just with a different name. You can try it out for yourself, and then see if your code is any different from <a href="https://github.com/northwindtraders/vcpkg-registry">the upstream</a>.</p>
-<p>&nbsp;</p>
-<h3 id="give-us-your-feedback">Give us your feedback!</h3>
-<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg/issues">GitHub repo</a>. We welcome your feedback on the tool and the new features <a href="https://github.com/microsoft/vcpkg/issues">in our issue tracker</a> or by reaching out to us at <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a>. We are always looking to improve your experience. To see what’s next for vcpkg, <a href="https://aka.ms/vcpkg/roadmap">check out our roadmap</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/">Registries: Bring your own libraries to vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>Take control of your vcpkg dependencies with versioning support</title>
 		<link>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/#comments</comments>
@@ -1144,6 +1002,45 @@ On Diablo IV we develop all our code on Windows and compile for multiple platfor
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Windows ARM64 support for CMake projects in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/#comments</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Thu, 21 Jan 2021 18:53:11 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27392</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we added support for deploying CMake projects to a remote Windows machine and debugging them with the Visual Studio remote tools. CMake developers targeting ARM64 Windows can now cross-compile (with cl or clang-cl),</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/">Windows ARM64 support for CMake projects in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In Visual Studio 2019 version 16.9 Preview 3 we added support for deploying CMake projects to a remote Windows machine and debugging them with the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Visual Studio remote tools.</a> CMake developers targeting ARM64 Windows can now cross-compile (with cl or clang-cl), deploy, and debug their projects directly from Visual Studio. You can download and install the latest preview of Visual Studio <a href="https://visualstudio.microsoft.com/vs/preview/">here</a>.</p>
+<p>For step-by-step instructions of this workflow, check out the <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160">Tutorial: Debug a CMake project on a remote Windows machine</a>. This tutorial is specific to ARM64 development, but the steps can be generalized for other Windows architectures. An overview of the new feature set is below.</p>
+<p>Before you get started, you will need to install the ARM64 build tools on your host machine. In this scenario, your host machine is the machine where you are building and where Visual Studio is installed. You will also need to install and configure the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?%2523download-and-install-the-remote-tools=&amp;view=vs-2019#download-and-install-the-remote-tools">remote tools</a> on your target machine. In this scenario, your target machine is the ARM64 Windows machine where you will be running and debugging your program.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png"><img class="aligncenter size-full wp-image-27421" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png" alt="The Visual Studio Installer is open. The individual component &quot;ARM64 build tools (latest)&quot; is selected for installation." width="719" height="304" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest.png 719w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64_latest-300x127.png 300w" sizes="(max-width: 719px) 100vw, 719px" /></a></p>
+<p>Install the latest version of the ARM64 build tools on your host machine.</p>
+<h4 id="cross-compile-cmake-projects-for-arm64">Cross-compile CMake projects for ARM64</h4>
+<p>You can now <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#configure-for-arm64">add a new CMake configuration</a> of type <strong>arm64-Debug</strong> or <strong>arm64-Release</strong> to the CMake Settings Editor. You can also modify existing CMake configurations to build with the <strong>msvc_arm64_x64, clang_cl_arm64_x64, </strong> <strong>msvc_arm64, </strong>or <strong>clang_cl_arm64</strong> toolset. <strong>arm64_x64</strong> toolsets select 64-bit host tools to cross-compile for ARM64, and <strong>arm64</strong> toolsets select 32-bit host tools to cross-compile for ARM64.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png"><img class="aligncenter wp-image-27394" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png" alt="The dialog to add a new configuration to the CMake Settings Editor in Visual Studio is open. The new template of type &quot;arm64-Debug&quot; is highlighted." width="700" height="444" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig.png 1156w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-300x190.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-1024x649.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/arm64-newconfig-768x487.png 768w" sizes="(max-width: 700px) 100vw, 700px" /></a></p>
+<h4 id="debug-cmake-projects-on-a-remote-windows-machine">Debug CMake projects on a remote Windows machine</h4>
+<p><a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#add-a-debug-configuration-file">Add a new debug configuration</a> of type <strong>C/C++ Remote Windows Debug </strong>to launch.vs.json to debug your project on a remote Windows machine. You will need to set the value of <strong>remoteMachineName</strong> to the IP address of your remote ARM64 machine that hosts the remote tools. You may also need to update the value of <strong>authenticationType </strong>to match the authentication mode set on your remote machine. For more information and a sample launch.vs.json file, check out the <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160#add-a-debug-configuration-file">remote debugging tutorial</a>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png"><img class="aligncenter wp-image-27396" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png" alt="The remote debugging tool options window is open. The authentication mode setting is highlighted and the mode &quot;Windows Authentication&quot; is selected." width="650" height="488" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options.png 816w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options-300x225.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-debugger-options-768x577.png 768w" sizes="(max-width: 650px) 100vw, 650px" /></a></p>
+<p>Note: Visual Studio’s support for remote Linux development requires you to add an SSH connection to your remote machine in the <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160&amp;viewFallbackFrom=vs-2019">Connection Manager</a>. Remote Windows deployment does not require you to use the Connection Manager because it communicates over the Windows remote debugger (<strong>msvsmon.exe</strong>) instead of SSH.</p>
+<p>When you run the application, Visual Studio will cross-compile locally on your host system, deploy the application to your remote Windows machine, and start debugging the application on the remote machine. You can set breakpoints and utilize Visual Studio’s debugging features as if you were debugging locally on your host system.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png"><img class="aligncenter wp-image-27398" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png" alt="An executable is running in a Windows terminal. The program output reads &quot;Hello CMake.&quot; " width="800" height="181" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app.png 1131w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-300x68.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-1024x232.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/01/remote-cmake-app-768x174.png 768w" sizes="(max-width: 800px) 100vw, 800px" /></a></p>
+<h4 id="give-us-your-feedback">Give us your feedback</h4>
+<p>Download <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview 3</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/">Windows ARM64 support for CMake projects in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/windows-arm64-support-for-cmake-projects-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
 		
 		
 			</item>
