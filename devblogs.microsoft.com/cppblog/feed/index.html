@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 25 Feb 2021 21:54:35 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 26 Feb 2021 12:19:38 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,113 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Remote Debug Support in Visual Studio 2019</title>
+		<link>https://devblogs.microsoft.com/cppblog/remote-debug-support-in-visual-studio-2019/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/remote-debug-support-in-visual-studio-2019/#respond</comments>
+		
+		<dc:creator><![CDATA[Lisbeth Cardoso Guerra]]></dc:creator>
+		<pubDate>Fri, 26 Feb 2021 15:00:27 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<category><![CDATA[Linux]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27664</guid>
+
+					<description><![CDATA[<p>Visual Studio 2019 offers remote debug support for MSBuild and CMake projects targeting Windows and Linux. Thanks to remote debugging, the following scenarios and more are now possible:</p>
+<p>Debugging on your production machines with no development tools installed other than the remote debugger tools.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-debug-support-in-visual-studio-2019/">Remote Debug Support in Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 2019 offers remote debug support for MSBuild and CMake projects targeting Windows and Linux. Thanks to remote debugging, the following scenarios and more are now possible:</p>
+<ul>
+<li>Debugging on your production machines with no development tools installed other than the remote debugger tools.</li>
+<li>Targeting developer environments that you do not use daily (i.e., less common operating systems or software configurations).</li>
+<li>Targeting environments where Visual Studio is unavailable (i.e., ARM64 machines, or unsupported operating system versions).</li>
+</ul>
+<p>To guarantee a seamless remote debugging experience for users, you need some additional dependencies to be copied to the target machine. Luckily, we do that for you and automatically deploy these dependencies alongside the built binaries from your project we deem as needed for debugging. In Windows scenarios specifically, we automatically deploy the Universal CRT library (debug only, as the release version ships with the Windows operating system) as well as VCRuntime libraries which are necessary to run and debug binaries in environments where these libraries are not available on the system.</p>
+<p>For step-by-step instructions of the various remote debug workflows, check out the following tutorials:</p>
+<p><a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Remote Debug a C++ Project &#8211; Visual Studio | Microsoft Docs</a></p>
+<p><a href="https://docs.microsoft.com/en-us/cpp/linux/deploy-run-and-debug-your-linux-project?view=msvc-160#:~:text=%20Debug%20your%20Linux%20project%20%201%20Select,option%20if%20the%20local%20version%20of...%20More">Deploy, run, and debug your Linux MSBuild C++ project in Visual Studio | Microsoft Docs</a></p>
+<p><a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160">Tutorial: Debug a CMake project on a remote Windows machine | Microsoft Docs</a></p>
+<p><a href="https://docs.microsoft.com/en-us/cpp/build/configure-cmake-debugging-sessions?view=msvc-160">Configure CMake debugging sessions in Visual Studio | Microsoft Docs</a></p>
+<p><strong>Note:</strong> Although with Visual Studio 2019 you can create MSBuild and CMake projects targeting Linux and Windows, CMake is encouraged for Linux development because the same project files can be used in both platforms.</p>
+<h2 id="user-customizability-of-remote-deploy">User Customizability of Remote Deploy</h2>
+<p>Whether you are targeting Windows or Linux, or using MSBuild or CMake, Visual Studio offers you the flexibility to customize your deployment. We will cover some of these in the sub-sections below.</p>
+<h3 id="msbuild-projects-targeting-windows">MSBuild Projects targeting Windows</h3>
+<p>You can deploy and debug MSBuild projects targeting a remote Windows machine very easily in Visual Studio 2019. In the Property Pages, within the <strong>Debugging </strong>tab, you will need to specify <strong>Remote Command</strong>, <strong>Working Directory</strong>, <strong>Remote Server Name</strong> and <strong>Deployment Directory</strong> properties as a minimum. If you want to deploy additional files, you will have to specify them in the <strong>Additional Files to Deploy</strong> property.</p>
+<p><img class="alignnone wp-image-27665" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/word-image.png" alt="The &quot;Deploy Visual C++ Runtime Libraries&quot; option highlighted and set to Yes" width="1176" height="817" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/word-image.png 1176w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/word-image-300x208.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/word-image-1024x711.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/word-image-768x534.png 768w" sizes="(max-width: 1176px) 100vw, 1176px" /></p>
+<p>Visual Studio 2019 allows you to specify both debug and release versions of the runtime libraries. To do so, you must set the <strong>Deploy Visual C++ Debug Runtime Libraries</strong> and <strong>Deploy Visual C++ Runtime Libraries</strong> properties to <strong>Yes</strong>.</p>
+<p>Once your configuration is set, Visual Studio will take care of deploying all the files (including the ucrt and vcruntime libraries needed) to your remote machine.</p>
+<h3 id="msbuild-projects-targeting-linux">MSBuild Projects targeting Linux</h3>
+<p>When targeting Linux using MSBuild project, you can specify a different machine from your build machine (the default) to deploy to and debug on, as shown below:</p>
+<h3 id=""><img class="alignnone wp-image-27666" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/graphical-user-interface-text-application-email.png" alt="The Remote Debug Machine setting set with a username, port, and authentication method" width="887" height="624" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/graphical-user-interface-text-application-email.png 887w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/graphical-user-interface-text-application-email-300x211.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/02/graphical-user-interface-text-application-email-768x540.png 768w" sizes="(max-width: 887px) 100vw, 887px" /></h3>
+<p>By default, only the files necessary for the process to debug will be deployed to the remote debug machine. However, in some cases, you may want more control over your project&#8217;s deployment. In these cases, you can append the code MSBuild elements below to your .vcxproj file, making sure to specify the actual source and target paths you want:</p>
+<pre class="prettyprint">&lt;ItemGroup&gt; 
+   &lt;RemoteDeploy Include="__example.cpp"&gt; 
+&lt;!-- This is the source Linux machine, can be empty if DeploymentType is LocalRemote --&gt; 
+      &lt;SourceMachine&gt;$(RemoteTarget)&lt;/SourceMachine&gt; 
+      &lt;TargetMachine&gt;$(RemoteDebuggingTarget)&lt;/TargetMachine&gt; 
+      &lt;SourcePath&gt;~/example.cpp&lt;/SourcePath&gt; 
+      &lt;TargetPath&gt;~/example.cpp&lt;/TargetPath&gt; 
+&lt;!-- DeploymentType can be LocalRemote, in which case SourceMachine will be empty and SourcePath is a local file on Windows --&gt; 
+      &lt;DeploymentType&gt;RemoteRemote&lt;/DeploymentType&gt; 
+&lt;!-- Indicates whether the deployment contains executables --&gt; 
+      &lt;Executable&gt;true&lt;/Executable&gt; 
+   &lt;/RemoteDeploy&gt; 
+&lt;/ItemGroup&gt;</pre>
+<p>You can also specify additional source files in your solution that you want deployed if you: right-click on the source file in solution explorer &gt; select properties &gt; set the <strong>Content </strong>property to “yes”.</p>
+<h3 id="cmake-projects-targeting-windows">CMake Projects targeting Windows</h3>
+<p>Visual Studio 2019 has support for deploying CMake projects to a remote Windows machine and debugging them with the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Visual Studio remote tools.</a> You can specify the <strong>type </strong>and <strong>remoteMachineName </strong>properties within the launch.vs.json file.</p>
+<pre class="prettyprint">"configurations": [ 
+   { 
+      "type": "remoteWindows", 
+      "project": "CMakeLists.txt", 
+      "projectTarget": "CMakeProject.exe (CMakeProject\\CMakeProject.exe)", 
+      "name": "CMakeProject.exe (CMakeProject\\CMakeProject.exe)", 
+      "remoteMachineName": "[remote machine’s IP address]: [remote machine’s port number]", 
+      "deployDebugRuntimeLibraries": true, 
+      "deployRuntimeLibraries": true, 
+      "deployDirectory": "~/foo", 
+      "disableDeploy": true, 
+   } 
+]</pre>
+<p>Visual Studio 2019 allows you to specify both debug and release versions of the runtime libraries. To do so, you must set the <strong>deployDebugRuntimeLibraries</strong> and <strong>deployRuntimeLibraries</strong> properties to <strong>true</strong>.</p>
+<p>The contents of the project outputs will be deployed automatically to C:\Windows Default Deploy Directory\&lt;targetname&gt; in the remote machine. If you want to specify a different location, you can set it up in the <strong>deployDirectory </strong>property. If you do not want to deploy files at all, you can set <strong>disableDeploy </strong>to <strong>true</strong>.</p>
+<p>In addition, you can specify individual additional files or entire directories you want to deploy each time in case there are some external source/content files you want to be deployed. To do this, you add the following block to your launch.vs.json (make sure you replace example.cpp/exampleDirectory with the actual path to your file/directory):</p>
+<pre class="prettyprint">"deploy": [ 
+   { 
+      "sourcePath": "~/example.cpp", 
+      "targetPath": "~/test/example.cpp", 
+   }, 
+   { 
+      "sourcePath": "~/exampleDirectory", 
+      "targetPath": "~/test/exampleDirectory", 
+   }, 
+]</pre>
+<h3 id="cmake-projects-targeting-linux">CMake Projects targeting Linux</h3>
+<p><span style="font-size: 12pt;">When targeting Linux using CMake, you can specify a different machine from your build machine (the default) to deploy to and debug on. To do this, just set the remoteMachineName json filed to one of the established connections in the Connection Manager (IntelliSense will populate the list of all the available options).</span></p>
+<p><span style="font-size: 12pt;">You can also customize the deploy location on the target machine by setting the <strong>deployDirectory </strong>property in launch.vs.json to the intended directory.</span></p>
+<p><span style="font-size: 12pt;">In addition, if you want complete control over your deployment, you can append the following code block in your launch.vs.json file. For example:</span></p>
+<pre class="prettyprint">"deploy": [ 
+   { 
+      "sourceMachine": "127.0.0.1 (username=example1, port=22, authentication=Password)", 
+      "targetMachine": "192.0.0.1 (username=example2, port=22, authentication=Password)", 
+      "sourcePath": "~/example.cpp", 
+      "targetPath": "~/example.cpp", 
+      "executable": "false" 
+   } 
+]</pre>
+<h2 id="give-us-your-feedback">Give us your feedback</h2>
+<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 Preview</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<h2 id="authors">Authors</h2>
+<p>Moyo Okeremi and Lisbeth Cardoso Guerra.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-debug-support-in-visual-studio-2019/">Remote Debug Support in Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/remote-debug-support-in-visual-studio-2019/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Registries: Bring your own libraries to vcpkg</title>
 		<link>https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/#comments</comments>
@@ -1068,82 +1175,6 @@ On Diablo IV we develop all our code on Windows and compile for multiple platfor
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/blizzard-diablo-iv-debugs-linux-core-dumps-from-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>6</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>A Year of Conference Talks from the Microsoft C++ Team</title>
-		<link>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Mon, 25 Jan 2021 15:00:07 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27426</guid>
-
-					<description><![CDATA[<p>As we learned to adapt to virtual conferences last year we presented more than 20 talks on a wide range of topics. I&#8217;ve collected them all here so you can easily learn about the latest advances in our tooling as well as the cutting edge of C++ features.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/">A Year of Conference Talks from the Microsoft C++ Team</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>As we learned to adapt to virtual conferences last year we presented more than 20 talks on a wide range of topics. I&#8217;ve collected them all here so you can easily learn about the latest advances in our tooling as well as the cutting edge of C++ features.</p>
-<h3 id="c-europe-february">C++ Europe (February)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=uQFr33C36rU">Tools to Ease Cross-Platform C++ Development</a> by Augustin Popa &amp; Elizabeth Morrow</li>
-</ul>
-<h3 id="wslconf-march">WSLConf (March)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=50bokFFOvtA">C++ Cross Platform Development with Visual Studio and WSL</a> by Erika Sweet</li>
-</ul>
-<h3 id="pure-virtual-c-april">Pure Virtual C++ (April)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=drt3yXI-fqk&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Dynamic Polymorphism with Metaclasses and Code Injection</a> by Sy Brand</li>
-<li><a href="https://www.youtube.com/watch?v=ow2zV0Udd9M&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Practical C++20 Modules and the Future of Tooling Around C++ Modules</a> by Cameron DaCamara</li>
-<li><a href="https://www.youtube.com/watch?v=WqXrYfSKJXk&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">C++ Development with Visual Studio Code</a> by Julia Reid</li>
-<li><a href="https://www.youtube.com/watch?v=xO7JG0GarG4&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Peeking Safely at a Table with Concepts</a> by Gabriel Dos Reis</li>
-<li><a href="https://www.youtube.com/watch?v=ArW8n0QBdiE&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Update on MSVC’s implementation of the C++20 Standard Library</a> by Mahmoud Saleh</li>
-<li><a href="https://www.youtube.com/watch?v=ijmZKRIfoOI&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag&amp;index=3&amp;t=4s">C++ Cross-Platform Development with Visual Studio and the Windows Subsystem for Linux</a> by Erika Sweet</li>
-<li><a href="https://www.youtube.com/watch?v=JplnRSDa29w&amp;list=PLReL099Y5nRdHYz4JwB0bq1kaVw2yGDag">Optimize Your C++ Development While Working From Home</a> by Nick Uhlenhuth</li>
-</ul>
-<h3 id="microsoft-build-may">Microsoft Build (May)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=Wgd6aqc7_rk">Modern C++ Development with Visual Studio</a> by Erika Sweet and Nick Uhlenhuth</li>
-</ul>
-<h3 id="c-on-sea-july">C++ on Sea (July)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=Jw2n5QSul34">Live Compiler Development with Cross-Platform Tools</a> by Sy Brand</li>
-<li><a href="https://www.youtube.com/watch?v=pGO65OHo0EM">Objection: A Language Lawyer Story</a> by Sy Brand (lightning talk)</li>
-</ul>
-<h3 id="apaconf-august">APAConf (August)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=4Ji-vFDL52s">Live Compiler Development with Cross-Platform Tools</a> by Sy Brand</li>
-</ul>
-<h3 id="cppcon-september">CppCon (September)</h3>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=Va9-Qe3WzJ8" target="_blank" rel="noopener noreferrer">A New Decade of Visual Studio: C++20, Open STL, and More</a> by Sy Brand and Marian Luparu</li>
-<li><a href="https://www.youtube.com/watch?v=AGRWRwi7rD0" target="_blank" rel="noopener noreferrer">Building an Intuition for Composition</a> by Sy Brand</li>
-<li><a href="https://www.youtube.com/watch?v=8c6BAQcYF_E" target="_blank" rel="noopener noreferrer">Dynamic Polymorphism with Metaclasses and Code Injection</a> by Sy Brand</li>
-<li><a href="https://www.youtube.com/watch?v=K6qvL_buqc0&amp;feature=emb_logo" target="_blank" rel="noopener noreferrer">How to Cook a Chicken</a> by Sy Brand (lightning talk)</li>
-<li><a href="https://www.youtube.com/watch?v=NsmRPRxhLn0" target="_blank" rel="noopener noreferrer">Introducing Microsoft’s New Open Source Fuzzing Platform</a> by Justin Campbell and Michael Walker</li>
-<li><a href="https://www.youtube.com/watch?v=_pQGRr4P16w" target="_blank" rel="noopener noreferrer">Closing the Gap between Rust and C++ Using Principles of Static Analysis</a> by Sunny Chatterjee</li>
-<li><a href="https://www.youtube.com/watch?v=8kjRx8vo6y4" target="_blank" rel="noopener noreferrer">C++20 STL Features: One Year of Development on GitHub</a> by Stephan T. Lavavej</li>
-<li><a href="https://www.youtube.com/watch?v=qCn6zT76zTs" target="_blank" rel="noopener noreferrer">Collaborative C++ Development with Visual Studio Code</a> by Julia Reid</li>
-<li><a href="https://www.youtube.com/watch?v=6lurOCdaj0Y" target="_blank" rel="noopener noreferrer">Empirically Measuring, and Reducing, C++’s Accidental Complexity</a> by Herb Sutter</li>
-<li><a href="https://www.youtube.com/watch?v=oYCin0B037Y" target="_blank" rel="noopener noreferrer">Cross-Platform Pitfalls and How to Avoid Them</a> by Erika Sweet</li>
-<li><a href="https://www.youtube.com/watch?v=HrOEyJVU5As" target="_blank" rel="noopener noreferrer">Effective Remote C++ Development with Codespaces</a> by Nick Uhlenhuth</li>
-</ul>
-<h3 id="meeting-c-november">Meeting C++ (November)</h3>
-<ul>
-<li>Building an Intuition for Composition by Sy Brand (video not yet available)</li>
-<li><a href="https://www.youtube.com/watch?v=j4du4LNsLiI">Programming in the Large with C++20</a> by Gabriel Dos Reis</li>
-<li><a href="https://www.youtube.com/watch?v=5Typh0bp2SY">Diversity and Inclusion Panel</a> with Sy Brand and Gabriel Dos Reis</li>
-</ul>
-<h3 id="let-us-know-your-thoughts">Let us know your thoughts</h3>
-<p>We&#8217;d love to hear what you think about any of the talks we&#8217;ve given in the last year, or about any topics you&#8217;d like for us to cover in the future. You can reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or on Twitter <a href="https://twitter.com/visualc" target="_blank" rel="noopener noreferrer">@VisualC</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/">A Year of Conference Talks from the Microsoft C++ Team</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-year-of-conference-talks-from-the-microsoft-c-team/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
