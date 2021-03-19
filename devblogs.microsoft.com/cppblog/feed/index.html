@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 11 Mar 2021 19:29:18 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 19 Mar 2021 17:25:39 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,172 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 16.9</title>
+		<link>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/#respond</comments>
+		
+		<dc:creator><![CDATA[Jordan Maples]]></dc:creator>
+		<pubDate>Wed, 17 Mar 2021 10:58:32 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[Writing Code]]></category>
+		<category><![CDATA[cppcorecheck]]></category>
+		<category><![CDATA[static analysis]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27707</guid>
+
+					<description><![CDATA[<p>The C++ static analysis team&#8217;s goal is to make your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 16.9</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ static analysis team&#8217;s goal is to make your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Going forward, the C++ team will provide a list of code analysis bug and crash fixes with every GA release of Visual Studio. Below is the compilation of improvements and bug fixes that were made from VS 2019 16.8 to 16.9 for <a href="https://docs.microsoft.com/en-us/cpp/build/reference/analyze-code-analysis">code analysis</a> and <a href="https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers">Cpp Core Check</a>.</p>
+<h3 id="analysis-crash-fixes">Analysis crash fixes:</h3>
+<ul>
+<li>Using an index operator on the address of a non-address and non-array object.</li>
+</ul>
+<pre class="prettyprint">void function() {
+    int buf{};
+    ((unsigned char*)&amp;buf)[3] = 1;
+}</pre>
+<ul>
+<li>Functions with more than 255 arguments would cause a crash during analysis.</li>
+<li>Array member field addresses were incorrectly converted in dynamic initializer function.</li>
+<li>Fixed internal compiler error for aggregate initialization in /analyze.</li>
+</ul>
+<pre class="prettyprint">char c[]{'1', {}};</pre>
+<ul>
+<li>Fixed a crash caused during analysis of bitfields and enums.</li>
+</ul>
+<pre class="prettyprint">struct TestStruct {
+public:
+    enum TestEnum : char { Dummy };
+    TestEnum    m1 : 1;
+    TestEnum    m2 : 1;
+    short       m3;
+}
+
+TestStruct Test() {
+    return{ TestStruct::Dummy, TestStruct::Dummy, {} };
+}</pre>
+<ul>
+<li>Specifying an array of three elements but only providing two elements in the initializer list.</li>
+</ul>
+<pre class="prettyprint">#include &lt;array&gt;
+#include &lt;string&gt;
+using namespace std;
+void function() {
+    array&lt;string, 3&gt; arr {"one", "two"};
+}</pre>
+<ul>
+<li>Fixed crash on empty KMDF projects.</li>
+</ul>
+<h3 id="bug-fixes">Bug fixes:</h3>
+<ul>
+<li>Addressed noisy warnings in an object&#8217;s destructor when a function that would have initialized or updated the object fails.</li>
+<li>Support for the GSL functions <code>gsl::as_bytes</code> and <code>gsl::as_writable_bytes</code> was added to prevent <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26710">C26710</a> warnings from being issued against otherwise valid buffer accesses.</li>
+</ul>
+<pre class="prettyprint">#include &lt;gsl/span&gt;
+void fn1(gsl::span&lt;int, 5&gt; view, byte val) {
+    auto bview = as_writable_bytes(view);
+    bview[19] = val;  // OK
+    bview[20] = val;  // C26710 &amp; C26000
+}</pre>
+<ul>
+<li>Fixed ruleset loading failures that occurred when a relative path of a ruleset was used in combination with the exact path of a ruleset directory.
+E.g: <code>/analyze:rulesetdirectory f:\customRuleset /analyze:ruleset myrules.ruleset</code></li>
+<li>Fixed false positives of <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c6237">C6237</a> and <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c6285">C6285</a> on <code>if constexpr</code> expressions.</li>
+</ul>
+<pre class="prettyprint">constexpr bool get_condition_a() { return false; }
+constexpr bool some_other_check() { return true; }
+constexpr void f1() {
+    constexpr bool some_condition = get_condition_a();
+    if constexpr (some_condition &amp;&amp; some_other_check()) {  //Previously issued C6237
+        //...
+    }
+}
+
+constexpr void f2() {
+    constexpr int print_debug = false;
+    constexpr int headers_debug = false;
+    if constexpr (print_debug == true || headers_debug == true) { //Previously issued C6285
+        //...
+    }
+}</pre>
+<ul>
+<li>Fixed false positive of <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26444">C26444</a> when returning upon construction.</li>
+</ul>
+<pre class="prettyprint">struct Test {
+    int i{};
+};
+
+Test foo() {
+    return Test(); //Previously issued C26444
+}</pre>
+<ul>
+<li>Fixed issue where casts with the same source and destination types were being misidentified as reinterpret cast, which would produce <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26490">C26490</a> instead of <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26473">C26473</a>.</li>
+</ul>
+<pre class="prettyprint">struct S{};
+void foo(S* s) {
+    S* s2 = static_cast&lt;S*&gt;(s); //Previously C26490, now C26473
+}</pre>
+<ul>
+<li>Fixed an incorrect <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26465">C26465</a> warning when attempting to cast away const. <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26492">C26492</a> will now be issued instead.</li>
+</ul>
+<pre class="prettyprint">struct S{};
+void foo(const S&amp; s) {
+    const S* pS = &amp;s;
+    S* s2 = const_cast&lt;S*&gt;(pS); //Previously C26465, now C26492
+}</pre>
+<ul>
+<li>Fixed false positive for <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26814">C26814</a> that would be issued on <code>const</code> member variables.</li>
+<li>Fixed corner case where PREFast entered an infinite loop while examining buffer extents.</li>
+<li>Fixed false positive of <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26815">C26815</a> that fired when assigning a value to a <code>std::optional</code> that is passed by reference into a function.</li>
+<li>Fixed false positive <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26816">C26816</a> when returning a pointer from a vector of pointers.</li>
+<li>Fixed false positive of <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26485">C26485</a> which appeared when calls to printf used string literals chosen by a ternary operator.</li>
+</ul>
+<h3 id="additional-changes">Additional changes:</h3>
+<ul>
+<li>Updated support for SARIF format to conform to the version 2.1 specification.</li>
+<li>Added SARIF support for additional rule action levels for ruleset files.
+The rule actions can now be specified as “None”, “Default”, “Info”, “Warning”, and “Error”.</li>
+<li>Removed <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26443">C26443</a> – The enforcement for <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c128-virtual-functions-should-specify-exactly-one-of-virtual-override-or-final">C.128</a> has changed making C26443 obsolete.</li>
+</ul>
+<pre class="prettyprint">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RuleSet Name="Example For Warning Levels" Description="" ToolsVersion="16.0"&gt;
+  &lt;IncludeAll Action="Info" /&gt;
+  &lt;Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis"
+         RuleNamespace="Microsoft.Rules.Native"&gt;
+    &lt;Rule Id="C6001" Action="Error" /&gt;
+    &lt;Rule Id="C6011" Action="Warning" /&gt;
+    &lt;Rule Id="C6101" Action="Info" /&gt;
+    &lt;Rule Id="C6201" Action="Default" /&gt;
+    &lt;Rule Id="C6386" Action="None" /&gt;
+  &lt;/Rules&gt;
+&lt;/RuleSet&gt;</pre>
+<ul>
+<li>Using a C-style void cast to ignore return values decorated with <code>[[nodiscard]]</code> previously issued <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26493">C26493</a> urging developers to not use C-style casts. The new rule <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26457">C26457</a> will be issued in its place, guiding the developer to assign the return value to <code>std::ignore</code> if they intend to discard the return value.</li>
+</ul>
+<pre class="prettyprint">#include &lt;tuple&gt;
+
+struct S{};
+[[nodiscard]] S fn1();
+
+void function() {
+    (void)fn1(); //Previously C26493, now C26457
+    std::ignore = fn1();
+}</pre>
+<ul>
+<li>The text for <a href="https://docs.microsoft.com/en-us/cpp/code-quality/c26496">C26496</a> was updated from <code>“The variable '%variable%' is assigned only once, mark it as const (con.4)”</code> to <code>“The variable '%variable%' does not change after construction, mark it as const (con.4)”.</code></li>
+</ul>
+<p>As mentioned earlier, the work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check.</p>
+<p>Stay tuned for more C++ static analysis blogs as we work towards 16.10. Coming soon are posts on improvements to C++ Core Check rules, improved diagnostics, and an update on the Microsoft/GSL GitHub project. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 16.9</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>IntelliSense Improvements in Visual Studio 2019</title>
 		<link>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/#comments</comments>
@@ -113,7 +279,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/feed/</wfw:commentRss>
-			<slash:comments>9</slash:comments>
+			<slash:comments>11</slash:comments>
 		
 		
 			</item>
@@ -167,7 +333,7 @@ You can check out a demo on this feature in the latest Visual Studio Toolbox epi
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/feed/</wfw:commentRss>
-			<slash:comments>14</slash:comments>
+			<slash:comments>15</slash:comments>
 		
 		
 			</item>
@@ -656,7 +822,7 @@ Going into more detail, when you provide an overlay for a port, vcpkg will alway
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/take-control-of-your-vcpkg-dependencies-with-versioning-support/feed/</wfw:commentRss>
-			<slash:comments>7</slash:comments>
+			<slash:comments>8</slash:comments>
 		
 		
 			</item>
@@ -867,59 +1033,6 @@ x = (omp_get_thread_num() == 0) ? 7 : 10;</pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>14</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Abbreviated Function Templates and Constrained Auto</title>
-		<link>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Thu, 04 Feb 2021 15:00:50 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27526</guid>
-
-					<description><![CDATA[<p>Declaring function templates in C++ has always been quite verbose. C++20 added a new way of doing so that is more terse and more consistent with lambdas: abbreviated function templates. This short post will show how to use this syntax and how it applies to C++20 concepts.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/">Abbreviated Function Templates and Constrained Auto</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Declaring function templates in C++ has always been quite verbose. C++20 added a new way of doing so that is more terse and more consistent with lambdas: abbreviated function templates. This short post will show how to use this syntax and how it applies to C++20 concepts.</p>
-<h1 id="abbreviated-function-templates">Abbreviated Function Templates</h1>
-<p>C++11 introduced lambdas, which look like this:</p>
-<pre class="prettyprint">[captures] (type_1 param_1, type_2 param_2) { body(param_1, param_2); }
-</pre>
-<p>You can only call this lambdas with arguments of <code>type_1</code> and <code>type_2</code>. However we frequently use lambdas in situations where the types would be difficult to spell out in full (especially when using features like <a href="https://en.cppreference.com/w/cpp/ranges">ranges</a>). C++14 allowed you to make lambdas which can be called with arguments of any type by using the <code>auto</code> keyword:</p>
-<pre class="prettyprint">[captures] (auto param_1, auto param_2) { body(param_1, param_2); }</pre>
-<p>Now you can pass any types as the arguments. C++20&#8217;s abbreviated function templates allows you to apply this kind of syntax to function templates.</p>
-<p>In C++17 you might write a function to give animals head scratches as a function template, so it can be called with any type of animal:</p>
-<pre class="prettyprint">template &lt;class Animal&gt;
-void give_head_scratches (Animal const&amp; the_animal);</pre>
-<p>In C++20 you can simplify this using <code>auto</code>:</p>
-<pre class="prettyprint">void give_head_scratches (auto const&amp; the_animal);</pre>
-<p>This version is less verbose, requires coming up with fewer names, and is more consistent with C++14 lambdas.</p>
-<h1 id="constrained-auto">Constrained Auto</h1>
-<p>There&#8217;s a problem with the above function template though: according to the declaration we can pass literally anything to it. We can happily make calls that look like this:</p>
-<pre class="prettyprint">give_head_scratches(42);
-give_head_scratches(a_cactus);
-give_head_scratches(blog_post);
-give_head_scratches(the_platonic_ideal_of_a_chair);</pre>
-<p>They might compile and do something weird, or they might fail to compile due to the implementation of the template doing something which those types don&#8217;t support. Ideally we&#8217;d want to both document the interface of this function template with what kind of types it supports and also give the compiler the ability to give detailed errors when the declaration is instantiated with in incompatible type.</p>
-<p>C++20 gives us <a href="https://devblogs.microsoft.com/cppblog/c20-concepts-are-here-in-visual-studio-2019-version-16-3/">Concepts</a> to help solve this problem. If we have some <code>animal</code> concept which defines what interface a type representing an animal should have then we can use it like so:</p>
-<pre class="prettyprint">template &lt;animal Animal&gt;
-void give_head_scratches (Animal const&amp; the_animal);</pre>
-<p>This is quite verbose and repetitive. Ideally we&#8217;d be able to use the concept name directly in the function parameter list like this:</p>
-<pre class="prettyprint">void give_head_scratches (animal const&amp; the_animal);</pre>
-<p>However, this syntax was rejected from standardization, because you can&#8217;t tell whether this is a function template or a regular function without knowing whether <code>animal</code> is a type or a concept.</p>
-<p>Fortunately, a version of this syntax was included in C++20 which uses the <code>auto</code> keyword again:</p>
-<pre class="prettyprint">void give_head_scratches (animal auto const&amp; the_animal);</pre>
-<p>This checks that whatever is substituted for <code>auto</code> satisfies the <code>animal</code> concept. So if we instantiate the template with a <code>kitten</code> then <code>animal&lt;kitten&gt;</code> will be checked. This gives us back our terse syntax while also allowing us to constrain our template declarations.</p>
-<h1 id="try-them-out">Try Them Out!</h1>
-<p>Constrained auto has been supported in MSVC since <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2019 version 16.8,</a> and abbreviated function templates have recently been added to <a href="https://visualstudio.microsoft.com/vs/preview/">version 16.9 Preview 3</a>. We encourage you to download the tools and give the implementations a try! We can be reached via the comments below or via email (visualcpp@microsoft.com). If you find any problems you can use the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> tool in Visual Studio or head over to the <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Visual Studio Developer Community</a>. You can also find us on Twitter <a href="https://twitter.com/visualc">@VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/">Abbreviated Function Templates and Constrained Auto</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/abbreviated-function-templates-and-constrained-auto/feed/</wfw:commentRss>
-			<slash:comments>9</slash:comments>
 		
 		
 			</item>
