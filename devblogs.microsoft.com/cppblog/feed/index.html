@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 19 Mar 2021 17:25:39 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 31 Mar 2021 20:49:54 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,77 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg Host Dependencies for Cross-Compilation</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/#respond</comments>
+		
+		<dc:creator><![CDATA[Robert Schumacher]]></dc:creator>
+		<pubDate>Wed, 31 Mar 2021 18:28:10 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27828</guid>
+
+					<description><![CDATA[<p>If you’re not familiar with our C++ library manager vcpkg, welcome! This post covers an intermediate/advanced topic, so you may want to first get an overview and try things out from the vcpkg GitHub page or some of our previous blogs.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/">vcpkg Host Dependencies for Cross-Compilation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[</p>
+<p>If you’re not familiar with our C++ library manager vcpkg, welcome! This post covers an intermediate/advanced topic, so you may want to first get an overview and try things out from the <a href="https://github.com/Microsoft/vcpkg">vcpkg GitHub page</a> or some of <a href="https://devblogs.microsoft.com/cppblog/?s=vcpkg">our previous blogs</a>.</p>
+<p>&nbsp;</p>
+<h3 id="introduction">Introduction</h3>
+<p>One of the best features of C++ is that it generates tailored, specialized code for each specific machine, enabling you to squeeze every ounce of performance per watt. It enables clean abstractions to coexist peacefully with low-level platform-specific bit twiddling. However, this comes at a price for many developers that venture beyond their own machine: you must build different binaries for your developer machine compared to your final target, be it a phone, a cloud server, or an embedded microcontroller.</p>
+<p>For most small-to-medium sized projects, this isn’t a problem. You already have a compiler, a code editor, and a build system, which is plenty to make tons of incredible applications. However, since time immemorial some developers need even more flexibility, extensibility, and power than just the compiler; they need to generate sophisticated code at build time. Maybe it’s computing a <a href="https://en.wikipedia.org/wiki/Perfect_hash_function">perfect hash function</a> over your known data set, maybe it’s a <a href="https://en.wikipedia.org/wiki/Yacc">table-driven parser</a>, or maybe it’s a bunch of <a href="https://en.wikipedia.org/wiki/Foreign_function_interface">foreign function interface</a> boilerplate into your embedded scripting language. For whatever reason, you need the flexibility of C++ <em>for your development environment</em> in addition to the final runtime target.</p>
+<p>In this blog post we’ll cover the newly shipped vcpkg feature designed to enable all these scenarios and more: <strong>Host Dependencies</strong>.</p>
+<p>&nbsp;</p>
+<h3 id="simultaneous-compilation">Simultaneous Compilation</h3>
+<p>As mentioned in the introduction, because C++ compiles all the way down to the metal, you generally can’t use the same compiler and flags to simultaneously target your final runtime and your developer machine. If you’re using a multi-targeting compiler like Clang/LLVM you’ll need at least different flags and if you’re using a single-target compiler like GCC or MSVC you’ll need an entirely different compiler.</p>
+<p>If you’re lucky, your buildsystem has specific documentation for how to handle this case. Even then, it can sometimes be extremely subtle to ensure things are wired up correctly: Did you accidentally pass the flags for the target to the developer machine build? What if you need libraries for your code generator to run? What about code generators generating code for other code generators? It’s a tricky problem space that has ramifications on every aspect of the build environment.</p>
+<p>&nbsp;</p>
+<h3 id="triplets">Triplets</h3>
+<p>In vcpkg, we label each target universe as a separate &#8220;triplet&#8221;. For example, x64 Windows Desktop using dynamic CRT and MSVC, but building static libraries might be named <code>x64-windows-static-md</code>. Each library built within that universe links against other libraries from that universe, keeping everything super consistent. We include many triplet definitions in the box, but you can easily make your own to tweak compiler flags or adjust settings on a per-library basis (maybe you’d like Qt to be built dynamically, but your JSON parser built statically).</p>
+<p>Naturally, your developer environment also matches one of these universes. By default, we pick <code>x64-windows</code>, <code>x64-linux</code>, or <code>x64-osx</code> as appropriate but it’s fully configurable at runtime via <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/host-dependencies.md#specifying-the-host-triplet">several methods</a>.</p>
+<p>&nbsp;</p>
+<h3 id="host-dependencies">Host Dependencies</h3>
+<p>Despite having a triplet matching the developer environment, vcpkg didn’t have syntax for libraries to express a dependency upon a port built for that environment. We’ve gotten very far with imperfect approaches, like dynamically attempting to consume libraries from a hardcoded set of fallback triplets, however these would always fall short of the ideal and required imperfect, copied code between different ports. These workarounds also fall completely flat in <a href="https://devblogs.microsoft.com/cppblog/vcpkg-accelerate-your-team-development-environment-with-binary-caching-and-manifests/">manifest mode</a>, which is specifically designed to prevent the flaky behaviors that occur with these sorts of “dynamic” accesses. The fix is, of course, a way to naturally and directly express a requirement upon ports built for the developer environment.</p>
+<p><strong>Enter: Host Dependencies. Available now, ports and consumers can now declare dependencies upon other ports built against the developer environment.</strong></p>
+<p>The syntax to activate this is simply setting <code>"host"</code> to <code>true</code> in the manifest dependency object:</p>
+<pre class="prettyprint">{
+    "dependencies": [
+        { "name": "contoso-cgen", "host": true }
+    ]
+}</pre>
+<p>During execution, a port can rely on all host dependencies having been installed to <code>CURRENT_HOST_INSTALLED_DIR</code> (the analog of <code>CURRENT_INSTALLED_DIR</code>) and they can get the currently configured host triplet via <code>HOST_TRIPLET</code> (the analog of <code>TARGET_TRIPLET</code>).</p>
+<pre class="prettyprint">set(CGEN ${CURRENT_HOST_INSTALLED_DIR}/tools/contoso-cgen/cgen${VCPKG_HOST_EXECUTABLE_SUFFIX})
+vcpkg_cmake_configure(
+    SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS -DCODE_GENERATOR=${CGEN}
+)</pre>
+<p>For projects that have their own code generators embedded inside, it’s perfectly valid to require <em>yourself</em> built for the host:</p>
+<pre class="prettyprint">{
+    "name": "protobuf",
+    "dependencies": [
+        { "name": "protobuf", "host": true }
+    ]
+}</pre>
+<p>Then, the port can determine if it is cross-building or native-building by comparing the triplets:</p>
+<pre class="prettyprint">if(HOST_TRIPLET STREQUAL TARGET_TRIPLET)
+  # Native compilation, set build flags to build and install the code generator
+else()
+  # Cross compilation, set build flags to consume the prebuilt code generator
+  # from ${CURRENT_HOST_INSTALLED_DIR}
+endif()</pre>
+<p>&nbsp;</p>
+<h3 id="give-us-your-feedback">Give us your feedback!</h3>
+<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. We welcome your feedback on the tool and the new features <a href="https://github.com/microsoft/vcpkg/issues">in our issue tracker</a>. </p>
+<p>We&#8217;ve only just begun incorporating this powerful new facility into the existing catalog, such as for Boost.Build (<a href="https://github.com/microsoft/vcpkg/blob/b5bb1511f0a07be530e0bde3ae098eb3d8e83e68/ports/boost-date-time/vcpkg.json#L10-L13">vcpkg/vcpkg.json at master · microsoft/vcpkg (github.com)</a>) and Protobuf (<a href="https://github.com/microsoft/vcpkg/blob/b5bb1511f0a07be530e0bde3ae098eb3d8e83e68/ports/protobuf/vcpkg.json#L8-L11">vcpkg/vcpkg.json at master · microsoft/vcpkg (github.com)</a>). It&#8217;s an enormous step forward for vcpkg users targeting important platforms such as iOS, Android, and Emscripten/WebAssembly.</p>
+<p>The current up-to-date documentation on Host Dependencies can be found on our GitHub at <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/host-dependencies.md">vcpkg/host-dependencies.md at master · microsoft/vcpkg (github.com)</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/">vcpkg Host Dependencies for Cross-Compilation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 16.9</title>
 		<link>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/#comments</comments>
@@ -189,7 +260,7 @@ void function() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/feed/</wfw:commentRss>
-			<slash:comments>5</slash:comments>
+			<slash:comments>11</slash:comments>
 		
 		
 			</item>
@@ -279,7 +350,7 @@ void function() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/feed/</wfw:commentRss>
-			<slash:comments>11</slash:comments>
+			<slash:comments>12</slash:comments>
 		
 		
 			</item>
@@ -333,7 +404,7 @@ You can check out a demo on this feature in the latest Visual Studio Toolbox epi
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/feed/</wfw:commentRss>
-			<slash:comments>16</slash:comments>
+			<slash:comments>17</slash:comments>
 		
 		
 			</item>
@@ -965,74 +1036,6 @@ Going into more detail, when you provide an overlay for a port, vcpkg will alway
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-cross-compilation-intellisense-configurations/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Improved OpenMP Support for C++ in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
-		<pubDate>Tue, 09 Feb 2021 15:00:37 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27530</guid>
-
-					<description><![CDATA[<p>As devices with multiple cores and processors became ubiquitous, programming languages adapted to provide developers with control over how tasks are divided across processors. The OpenMP application program interface for C, C++, and Fortran was originally developed in the 1990s for this purpose,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/">Improved OpenMP Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>As devices with multiple cores and processors became ubiquitous, programming languages adapted to provide developers with control over how tasks are divided across processors. The <a href="https://www.openmp.org/">OpenMP application program interface</a> for C, C++, and Fortran was originally developed in the 1990s for this purpose, and today the standard continues to evolve to support new scenarios, such as off-loading to additional devices and providing more fine-grained control over which threads execute which tasks.</p>
-<p>Microsoft Visual Studio has <a href="https://docs.microsoft.com/en-us/cpp/build/reference/openmp-enable-openmp-2-0-support">supported the OpenMP 2.0 standard</a> since 2005. In the initial release of Visual Studio 2019 we added the <strong>-openmp:experimental</strong> switch to enable <a href="https://devblogs.microsoft.com/cppblog/simd-extension-to-c-openmp-in-visual-studio/">minimal support for the OpenMP SIMD directive</a> first introduced in the OpenMP 4.0 standard.</p>
-<h3 id="our-openmp-plans">Our OpenMP Plans</h3>
-<p>Starting with Visual Studio 2019 version 16.9 we have begun adding experimental support for newer versions of the OpenMP standard in a more systematic way. As a first step, we added the option to generate code compatible with <a href="https://openmp.llvm.org/index.html">LLVM’s OpenMP runtime library</a> (libomp) on the x64 architecture. Going forward, support for additional OpenMP features will leverage LLVM’s OpenMP runtime. When we find issues in the LLVM OpenMP runtime on Windows, we will fix them in the version of libomp we ship and contribute fixes back to the LLVM community once they have been tested.</p>
-<p>Moving forward, our next step for OpenMP support will be to support the additional features added in the OpenMP 3.1 standard on the x86 and arm64 architectures alongside x64. Then we will add support for the pragmas and clauses added in the OpenMP 4.5 standard that do not involve offloading. Which features are added after that will depend on user feedback. We would love to hear which specific OpenMP features you would like to see, so we can prioritize which features to support first.</p>
-<h3 id="new-openmpllvm-switch">New -openmp:llvm switch</h3>
-<p>A program can be compiled to target the LLVM OpenMP runtime by using the new experimental CL switch <strong>-openmp:llvm</strong> instead of <strong>-openmp</strong>. In Visual Studio 2019 version 16.9 the <strong>-openmp:llvm</strong> switch only works on the x64 architecture. The new switch currently supports all the same OpenMP 2.0 directives as <strong>-openmp</strong>, as well as support for unsigned integer indices in parallel for loops according to the OpenMP 3.0 standard. Support for more directives will be added in future releases. The <strong>-openmp:llvm switch</strong> is compatible with <a href="https://devblogs.microsoft.com/cppblog/simd-extension-to-c-openmp-in-visual-studio/">all the SIMD directives</a> supported by the <strong>-openmp:experimental</strong> switch.</p>
-<p>Compiling an executable with the <strong>-openmp:llvm</strong> switch automatically adds a dynamic link to the appropriate libomp DLL. In order for the executable to run, it will need access to either libomp140d.x86_64.dll (if compiled with /DEBUG) or libomp140.x86_64.dll. These DLLs can be found in the Visual Studio installation directory under the Program Files or Program Files (x86) directory at VC\Redist\MSVC\&lt;version&gt;\debug_nonredist\x64\Microsoft.VC142.OpenMP.LLVM and will be automatically included in the PATH if the executable is run from an x64 NativeTools command prompt.</p>
-<p>As the <strong>-openmp:llvm</strong> switch is still experimental, both the release and debug versions of the runtime still have asserts enabled, which makes detecting incorrect behavior easier but will affect performance. The DLLs were compiled with CMAKE_BUILD_TYPE=RelWithDebInfo and LLVM_ENABLE_ASSERTIONS=ON. Future versions of the libomp DLLs may not be backwards compatible and the current version of these DLLs is not redistributable.</p>
-<p>The <strong>-openmp:llvm</strong> switch is not compatible with <strong>/clr</strong> or <strong>/ZW</strong>.</p>
-<h3 id="improvements-with-openmpllvm">Improvements with -openmp:llvm</h3>
-<p>Using the <strong>-openmp:llvm</strong> switch enables a few correctness fixes. In Visual Studio version 16.9 Preview 3 the lastprivate clause in <strong>#pragma omp sections</strong> is now correctly handled. When used with sections, the lastprivate clause guarantees that on exiting a sections block the variables listed in the clause will be set equal to the private version of that variable from the last section. For example, after executing the following code the value of x will be 6.</p>
-<pre class="prettyprint">int x = 0;
-#pragma omp parallel sections lastprivate(x)
-{
-   #pragma omp section
-   x = 4;
-   #pragma omp section
-   x = 6;
-}</pre>
-<p>Visual Studio 2019 version 16.9 Preview 4 also includes fixes to the optimizer to correctly handle OpenMP constructs. MSVC will now avoid moving writes across an implicit or explicit flush boundary. Take the following code using <strong>#pragma omp flush</strong> as an example:</p>
-<pre class="prettyprint">x = 7;
-#pragma omp flush
-if (omp_get_thread_num() == 0) {
-    x = 10;
-}</pre>
-<p>In some cases, previous versions of the compiler could incorrectly optimize away the potential double write to x by changing this code to:</p>
-<pre class="prettyprint">#pragma omp flush
-x = (omp_get_thread_num() == 0) ? 7 : 10;</pre>
-<p>However, this optimization does not respect the barrier guaranteed by the <strong>#pragma omp flush</strong>. With the original code, as omp_get_thread_num() returns 0 for exactly one thread in the group, only that thread would write to x after the flush point and x would be 10. Because after the optimization other threads could write to x after the flush point and create a race condition, the optimization was not legal.</p>
-<p>The optimizer will also properly recognize that even a variable local to a function can be changed by other threads inside of an OpenMP parallel region. For example, in the following code the value of shared in the x &gt; shared test can not be replaced with -1 because another thread could have written to shared since the initial assignment:</p>
-<pre class="prettyprint">int shared = -1;
-#pragma omp parallel
-{
-    unsigned int x = omp_get_thread_num();
-    #pragma omp critical
-    {
-        if (x &gt; shared) {
-            shared = x;
-        }
-    }
-}</pre>
-<h3 id="new-features-with-openmpllvm">New Features with -openmp:llvm</h3>
-<p>In addition to correctness fixes, the new <strong>-openmp:llvm</strong> switch already supports a few features added in the OpenMP 3.0 standard. Parallel for loops may now use unsigned integers as indices. Limited support for <strong>#pragma omp task</strong> has been added, but clauses on the task pragma are not guaranteed to work. Due to the many limitations in <strong>#pragma omp task</strong> at this time, the pragma is only supported under the <strong>-openmp:experimenta</strong>l switch.</p>
-<h3 id="feedback">Feedback</h3>
-<p>We encourage you to try out this new feature in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.9 Preview</a>. As always, we welcome your feedback. If you encounter a correctness issue in code generated with the <strong>-openmp:llvm</strong> switch or bugs in the libomp140 DLLs shipped with Visual Studio, please let us know. We can be reached via the comments below, via twitter (@visualc), or via <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/">Improved OpenMP Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>14</slash:comments>
 		
 		
 			</item>
