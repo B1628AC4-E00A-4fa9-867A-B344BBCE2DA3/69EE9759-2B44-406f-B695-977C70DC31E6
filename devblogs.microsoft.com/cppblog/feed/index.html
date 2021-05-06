@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 03 May 2021 09:41:39 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 06 May 2021 10:58:23 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,37 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Ignoring Automatic Initialization for Code Analysis</title>
+		<link>https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/#respond</comments>
+		
+		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
+		<pubDate>Thu, 06 May 2021 15:00:15 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27927</guid>
+
+					<description><![CDATA[<p>Reading uninitialized memory is one of the major sources of security vulnerabilities in C and C++ programs. Microsoft developed many tools to find such errors including compiler warnings, static analysis checks, and more recently: code instrumentation.  For a more detailed overview of uninitialized memory related vulnerabilities and mitigations please refer to Microsoft Security Response Center’s great blog post.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/">Ignoring Automatic Initialization for Code Analysis</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="auto">Reading uninitialized memory is one of the major sources of security vulnerabilities in C and C++ programs. Microsoft developed many tools to find such errors including compiler warnings, static analysis checks, and more recently: code instrumentation.  For a more detailed overview of uninitialized memory related vulnerabilities and mitigations please refer to <a href="https://msrc-blog.microsoft.com/2020/05/13/solving-uninitialized-stack-memory-on-windows/">Microsoft Security Response Center’s great blog post</a></span><span data-contrast="auto">. This blog post summarizes the potential interactions between code analysis and code instrumentation and improvements we&#8217;ve made in Visual Studio 2019 version 16.9.1.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">When we turn on the automatic initialization features of MSVC it will initialize certain constructs on the stack with a pattern. This solution can help mitigate the risks of reading uninitialized memory. However, to keep the performance costs of this mitigation minimal, the compiler will not initialize everything. It is a best effort method that tries to hit a good balance in mitigating security risks and avoiding noticeable performance regressions. Moreover, this is a non-standard feature that might not be available (or might behave differently) in other compilers, or in other versions of the same compiler. As a result, users should never rely on such an instrumentation. The proper fix is to explicitly initialize memory in the source code and only use instrumentation as a mitigation for any error that slipped through the code reviews, static analysis or any other tools of the QA process.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">As a result, we want the compiler to warn on the following code regardless of the options used to compile the code:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint">void g(int); 
+void f() { 
+    int l; 
+    g(l); // Warning C6001 expected regardless of the build configuration. 
+}</pre>
+<p><span data-contrast="auto">Starting from Visual Studio 2019 version 16.9.1, and 16.10 Preview 2 we ensured that the code analysis always sees the code as written as opposed to the instrumented version.  This behavior is in line with other toolchains and encourages developers to not rely on the automatic initialization feature.</span></p>
+<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/" target="_blank" rel="noopener">Visual Studio 2019 Preview</a> today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html" target="_blank" rel="noopener">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/">Ignoring Automatic Initialization for Code Analysis</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2021 is Today</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-is-today/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-is-today/#respond</comments>
@@ -81,7 +112,7 @@ All times are on Monday 3rd May 2021 UTC.</p>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
+			<slash:comments>6</slash:comments>
 		
 		
 			</item>
@@ -168,7 +199,7 @@ All times are on Monday 3rd May 2021 UTC.</p>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/feed/</wfw:commentRss>
-			<slash:comments>7</slash:comments>
+			<slash:comments>11</slash:comments>
 		
 		
 			</item>
@@ -653,96 +684,6 @@ void function() {
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-16-9/feed/</wfw:commentRss>
 			<slash:comments>17</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>IntelliSense Improvements in Visual Studio 2019</title>
-		<link>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/#comments</comments>
-		
-		<dc:creator><![CDATA[Will Buik]]></dc:creator>
-		<pubDate>Wed, 10 Mar 2021 06:02:16 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27741</guid>
-
-					<description><![CDATA[<p>We’ve made many great improvements to C++ IntelliSense over the course of the Visual Studio 2019 release. We’ve collected a few of the highlights in case you are interested in upgrading to Visual Studio 2019 or just want to learn how to be more productive when writing C++ code.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/">IntelliSense Improvements in Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We’ve made many great improvements to C++ IntelliSense over the course of the Visual Studio 2019 release. We’ve collected a few of the highlights in case you are interested in upgrading to Visual Studio 2019 or just want to learn how to be more productive when writing C++ code. If you have followed our blog since the 2019 Previews, you may be familiar with some of these features already. We hope you find this collection helpful. If you want to try all these features out, please grab the latest release of <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2019</a>.</p>
-<p>Many of these features are rooted in community suggestions. If you have any suggestions or run into issues with Visual Studio, please let us know on <a href="https://developercommunity.visualstudio.com/">Developer Community</a>. Your feedback really does help us deliver a great product!</p>
-<h2 id="c-standards">C++ Standards</h2>
-<p>We strive to make Visual Studio the best IDE for working with the latest language standards. That involves a lot of work in our compilers and standard library but is not complete without the corresponding IntelliSense in the IDE to back these new features up while you are editing your code.</p>
-<h3 id="c20">C++20</h3>
-<p>C++20 includes great new features such as modules, coroutines, concepts, ranges, the three-way operator, designated initializers and many more. All these features are supported in the IDE by the IntelliSense features you know and love.</p>
-<p><strong><em>For instance: coroutine support:</em></strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Co-routine-Screenshot.png"><img class="alignnone size-full wp-image-27742" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Co-routine-Screenshot.png" alt="Co-routine Support in IntelliSense" width="457" height="433" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Co-routine-Screenshot.png 457w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Co-routine-Screenshot-300x284.png 300w" sizes="(max-width: 457px) 100vw, 457px" /></a></p>
-<p>Most of these features deserve a blog post on their own, so here they are if you want to learn more:</p>
-<ul>
-<li><a href="https://devblogs.microsoft.com/cppblog/a-tour-of-cpp-modules-in-visual-studio/">Modules</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/">Coroutines</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/c20-concepts-are-here-in-visual-studio-2019-version-16-3/">Concepts</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/initial-support-for-c20-ranges/">Ranges</a></li>
-</ul>
-<h2 id="c-modernization">C++ Modernization</h2>
-<p>We want to make it as easy as possible to update your codebases to use the latest languages standards. One way to do this is with our code analysis, code tidying, and C++ linting tools. These work together and allow you to turn the dial in Visual Studio depending on how comprehensive you want to be in analyzing and updating your code. These features range from the very lightweight like our new C++ Linters that run inside the IntelliSense engine, to features like <a href="https://docs.microsoft.com/en-us/cpp/code-quality/clang-tidy">clang-tidy</a> that bring in many more checks, and all the way up to the complete rulesets that MSVC’s Code Analysis provides.</p>
-<h3 id="in-editor-code-analysis">In-Editor Code Analysis</h3>
-<p>The Microsoft Visual C++ Compiler has had <a href="https://docs.microsoft.com/en-us/cpp/code-quality/code-analysis-for-c-cpp-overview">extensive support for code analysis</a> for some time. However, before VS 2019, you needed to compile your code before you could see any warnings or errors from this comprehensive analysis. In the latest version of Visual Studio, code analysis runs in the background for any files you are editing and results are shown directly in the IDE’s editor:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/In-editor-Code-Analysis.png"><img class="alignnone size-full wp-image-27745" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/In-editor-Code-Analysis.png" alt="Image In editor Code Analysis" width="780" height="218" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/In-editor-Code-Analysis.png 780w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/In-editor-Code-Analysis-300x84.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/In-editor-Code-Analysis-768x215.png 768w" sizes="(max-width: 780px) 100vw, 780px" /></a></p>
-<p>You can <a href="https://devblogs.microsoft.com/cppblog/in-editor-code-analysis-in-visual-studio-2019-preview-2/">learn more about in-editor code analysis here</a>.</p>
-<h3 id="intellisense-linter">IntelliSense Linter</h3>
-<p>We introduced the IntelliSense C++ linter as a complement to the more comprehensive code analysis that now runs in the background. The IntelliSense linter gives instantaneous results for the most critical issues, instantly, as you type. Currently, the linter is focused on common C++ typos, common bugs such arithmetic and operator mismatches, performance issues, and security issues such pointer arithmetic problems.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/C-Linter.png"><img class="alignnone size-full wp-image-27746" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/C-Linter.png" alt="Image C Linter" width="936" height="322" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/C-Linter.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/C-Linter-300x103.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/C-Linter-768x264.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
-<p>This complements the more comprehensive code analysis from the compiler. While code analysis is much more flexible and powerful than the linter, it also takes longer to provide results because the translation unit must be compiled first. The linter is now enabled by default in Visual Studio. You can <a href="https://devblogs.microsoft.com/cppblog/intellisense-code-linter-for-cpp/">learn more about the IntelliSense Linter here</a>.</p>
-<h3 id="c-concept-intellisense">C++ Concept IntelliSense</h3>
-<p>One of the great new features in C++20 is concepts. Visual Studio makes it easier than ever to create to create and use concepts in your code. In the first template in the code below we have defined a concept &#8216;is_cat&#8217; that defines the properties of a cat. In the second template we use that concept to constrain the types that can be passed to it. This is fully supported by IntelliSense automatically and you can see that the Member List contains the methods defined by the concept above (&#8216;pet&#8217; and &#8216;meow&#8217;).</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Concept-IntelliSense.png"><img class="alignnone size-full wp-image-27767" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Concept-IntelliSense.png" alt="Image Concept IntelliSense" width="642" height="299" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Concept-IntelliSense.png 642w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Concept-IntelliSense-300x140.png 300w" sizes="(max-width: 642px) 100vw, 642px" /></a></p>
-<p>We didn&#8217;t need to provide any information to the IDE beyond the code and no types needed to be manually entered into the template bar (to the right of the second template). All the information instead comes from the concepts defined in the code.</p>
-<h3 id="template-intellisense">Template IntelliSense</h3>
-<p>If you work with C++, you have no doubt encountered a great deal of templated code. Working with this in an IDE can be tricky because the IDE doesn’t know exactly how these templates are going to be instantiated. The new Template IntelliSense Bar in Visual Studio 2019 helps solve this problem. Using the Template Bar, you can tell the IDE how your template will be used and receive full IntelliSense based on those types. If you place the cursor in any template, you will see the new template bar:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Template-IntelliSensepng.png"><img class="alignnone size-full wp-image-27748" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Template-IntelliSensepng.png" alt="Image Template IntelliSensepng" width="541" height="179" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Template-IntelliSensepng.png 541w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Template-IntelliSensepng-300x99.png 300w" sizes="(max-width: 541px) 100vw, 541px" /></a></p>
-<p>You may have noticed the “Instantiations” item in the type dropdown below. Visual Studio can now scan your entire codebase to automatically provide suggestions on how the template may be used. You can <a href="https://devblogs.microsoft.com/cppblog/template-intellisense-improvements-for-visual-studio-2019-preview-2/">learn more about the Template Bar here</a>.</p>
-<h3 id="perfect-forwarding-intellisense-make_unique-make_shared-emplace-emplace_back">Perfect Forwarding IntelliSense (make_unique, make_shared, emplace, emplace_back)</h3>
-<p>One piece of community feedback that we have received has been to improve the IntelliSense for perfect forwarding templates in C++. We’ve taken the first steps towards that by improving the way a few perfect forwarding templates in the STL are handled. In particular, make_unique, make_shared, emplace, and emplace_back.</p>
-<p>Here is how this looked before:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-Before.png"><img class="alignnone size-full wp-image-27749" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-Before.png" alt="Image Perfect Forwarding Before" width="624" height="89" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-Before.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-Before-300x43.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>Notice how the parameter help doesn’t list the actual parameters of your type. In the latest version of Visual Studio, it is much more convenient:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-After.png"><img class="alignnone size-full wp-image-27750" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Perfect-Forwarding-After.png" alt="Image Perfect Forwarding After" width="260" height="92" /></a></p>
-<p>We don’t want to stop with just these four STL functions though. We are investigating ways to support your own perfect forwarding templates here as well. As always, we would love to hear your feedback about this. If you are interested in this feel free to open a suggestion on <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
-<h2 id="c-productivity">C++ Productivity</h2>
-<p>In addition to language conformance and modernization tools, we also want Visual Studio to be the most productive IDE on the market to get work done. With that in mind, we have added a number of productivity focused IntelliSense features in 2019.</p>
-<h3 id="intellicode">IntelliCode</h3>
-<p>IntelliCode uses machine learning to provide better code-completion recommendations. We added <a href="https://devblogs.microsoft.com/cppblog/?s=intellicode">IntelliCode</a> support for C++ in Visual Studio 2019.  By default, IntelliCode will give you recommendations on popular libraries such as STL.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-with-with-and-without-IntelliCode.png"><img class="alignnone size-full wp-image-27752" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-with-with-and-without-IntelliCode.png" alt="Image Member List with with and without IntelliCode" width="624" height="230" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-with-with-and-without-IntelliCode.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-with-with-and-without-IntelliCode-300x111.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>We took this a step further in Visual Studio 2019 16.5 where we added the ability to <a href="https://devblogs.microsoft.com/cppblog/custom-ai-assisted-intellisense-for-your-team/">train IntelliCode on your own codebase</a>. This enables you to get smarter completion recommendations on your team’s own types. To keep your Team Completion model up-to-date, you can <a href="https://github.com/marketplace/actions/intellicode-team-completions">automate the training process using GitHub Actions</a> or <a href="https://docs.microsoft.com/en-us/visualstudio/intellicode/custom-models#automatically-create-and-retrain-a-model-in-azure-pipelines">Azure Pipelines</a>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Custom-IntelliCode-Animation.gif"><img class="alignnone size-full wp-image-27753" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Custom-IntelliCode-Animation.gif" alt="Image Custom IntelliCode Animation" width="645" height="243" /></a></p>
-<h3 id="intelligent-member-list-filtering">Intelligent Member List Filtering</h3>
-<p>The Member List now takes more of your code’s context into account when listing available members. For instance, if you invoke the member list on a const variable, all non-const variables will no longer be shown in the list. Partial matches are also now highlighted in bold in the Member List as well.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-Filtering.gif"><img class="alignnone size-full wp-image-27761" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Member-List-Filtering.gif" alt="Image Member List Filtering" width="456" height="265" /></a></p>
-<p>You can <a href="https://devblogs.microsoft.com/cppblog/smarter-member-list-filtering-for-c/">learn more about Member List filtering here</a>.</p>
-<h3 id="doxygen-support">Doxygen Support</h3>
-<p>Another feature we received feedback from the community about was that our customers wanted Doxygen support in the IDE in addition to XML doc comments. In Visual Studio 2019, Doxygen is now fully supported in C++ and will provide information in the Quick Info and Parameter Help UIs:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Doxygen-Support.png"><img class="alignnone size-full wp-image-27755" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Doxygen-Support.png" alt="Image Doxygen Support" width="500" height="311" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Doxygen-Support.png 500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Doxygen-Support-300x187.png 300w" sizes="(max-width: 500px) 100vw, 500px" /></a></p>
-<p>Visual Studio does not default to Doxygen style comments, but they can be enabled in “Tools &gt; Options &gt; Text Editor &gt; C/C++ &gt; Code Style &gt; General”. Additionally, you can add your preferred type of doc comment to your project’s .editorconfig file. You can <a href="https://devblogs.microsoft.com/cppblog/doxygen-and-xml-doc-comment-support/">learn more about Doxygen support here</a>.</p>
-<h3 id="intellisense-colorization-and-quick-info-improvements">IntelliSense Colorization and Quick Info Improvements</h3>
-<p>To help you be as productive as possible, we’ve made several enhancements to the Quick Info, Parameter Help, and Member List UIs. The first thing you might notice is that these UIs are now fully colorized to match the editor:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Quick-Info-and-Member-List-Colorizaiotn.png"><img class="alignnone size-full wp-image-27756" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Quick-Info-and-Member-List-Colorizaiotn.png" alt="Image Quick Info and Member List Colorizaiotn" width="624" height="159" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Quick-Info-and-Member-List-Colorizaiotn.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Quick-Info-and-Member-List-Colorizaiotn-300x76.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>Quick Info also now allows you to easily search for errors or function and type names online. You can now just hover over any red squiggle in the editor instead of searching through the error list:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Search-From-Quick-Info.png"><img class="alignnone size-full wp-image-27759" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Search-From-Quick-Info.png" alt="Image Search From Quick Info" width="624" height="96" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Search-From-Quick-Info.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Search-From-Quick-Info-300x46.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>You can <a href="https://devblogs.microsoft.com/cppblog/quick-info-improvements-in-visual-studio-2019-colorization-and-search-online/">learn more about the enhancements to Quick Info here</a>.</p>
-<h3 id="snippet-commit-options">Snippet Commit Options</h3>
-<p>We’ve received feedback to make the commit options for snippets and the Member List more flexible. The defaults remain the same, but there are new options to choose between Enter, Space, and Tab now in “Tools Options &gt; Text Editor &gt; C/C++ &gt; Advanced &gt; IntelliSense”:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Snippet-Commit-Options.png"><img class="alignnone size-full wp-image-27757" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Snippet-Commit-Options.png" alt="Image Snippet Commit Options" width="543" height="84" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Snippet-Commit-Options.png 543w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/Snippet-Commit-Options-300x46.png 300w" sizes="(max-width: 543px) 100vw, 543px" /></a></p>
-<h2 id="platform-support-and-extensibility">Platform Support and Extensibility</h2>
-<p>We have introduced new flexibility and extensibility in our IntelliSense engines to support a wide variety of platforms, such as Windows, Linux, and consoles. This includes the ability to <a href="https://devblogs.microsoft.com/cppblog/configure-intellisense-with-cmake-toolchain-files-in-visual-studio-2019-16-9-preview-2/">configure the IntelliSense engine with a CMake toolchain file</a>. These toolchains can be checked in to your code and each configuration can have a unique toolchain bringing an unprecedented amount of flexibility.</p>
-<p>Additionally, we have made several updates to the way <a href="https://devblogs.microsoft.com/cppblog/improvements-to-accuracy-and-performance-of-linux-intellisense/">IntelliSense is handled for remote machines</a>. This improves the accuracy of remote IntelliSense by automatically downloading system and library headers from the remote machine (or <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">WSL</a>) and using them to provide full fidelity IntelliSense with the actual headers on the machine you are targeting.</p>
-<h2 id="send-us-feedback">Send Us Feedback</h2>
-<p>Please grab a copy of the <a href="https://visualstudio.microsoft.com/downloads/">latest update to Visual Studio</a> and try it out. We would love to hear your feedback about Visual Studio. Please submit any suggestions to Developer Community.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/">IntelliSense Improvements in Visual Studio 2019</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/intellisense-improvements-in-visual-studio-2019/feed/</wfw:commentRss>
-			<slash:comments>14</slash:comments>
 		
 		
 			</item>
