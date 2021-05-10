@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 07 May 2021 12:38:13 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 10 May 2021 19:05:14 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,171 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</title>
+		<link>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/#respond</comments>
+		
+		<dc:creator><![CDATA[Kevin Cadieux]]></dc:creator>
+		<pubDate>Mon, 10 May 2021 19:05:14 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28026</guid>
+
+					<description><![CDATA[<p>AddressSanitizer (ASan) was officially released in Visual Studio 2019 version 16.9. We recently used this feature to find and fix a bug in the MSVC compiler itself. To further validate the usefulness of our ASan implementation, we also used it on a collection of widely used open source projects where it found bugs in Boost,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>AddressSanitizer (ASan) was <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/">officially released in Visual Studio 2019 version 16.9</a>. We recently used this feature to <a href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-msvc-compiler/">find and fix a bug in the MSVC compiler itself</a>. To further validate the usefulness of our ASan implementation, we also used it on a collection of widely used open source projects where it found bugs in Boost, Azure IoT C SDK, and OpenSSL. In this article, we present our findings by describing the type of bugs that we found and how they presented themselves in these projects. We provide links to the GitHub commits where these bugs were fixed so you can get a helpful look at what code changes were involved. If you are unfamiliar with what ASan is and how to use it, you may want to take a look at the <a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-160">AddressSanitizer documentation</a> prior to delving into this article.</p>
+<p>&nbsp;</p>
+<h3 id="boost-and-the-eager-iterator"><span style="font-size: 18pt;">Boost and the Eager Iterator</span></h3>
+<p>An <em>eager iterator</em> is one that points to an element outside the bounds of a container and is then dereferenced. The following code sample shows an example of this buggy memory access pattern:</p>
+<pre class="prettyprint">template &lt;typename Iter&gt;
+int ComputeSum(Iter b, Iter e)
+{
+    int sum = 0;
+
+    for (; b &lt;= e; ++b) {
+        // ERROR: will dereference the 'end' iterator
+        // due to the use of the '&lt;=' operator above.
+        sum += *b;
+    }
+
+    return sum;
+}</pre>
+<p>Sometimes, eager iterators can appear by mistake in loops that are more complex, such as in the <code>do_length</code> function from Boost&#8217;s UTF-8 conversion facet implementation, shown below:</p>
+<pre class="prettyprint">int utf8_codecvt_facet::do_length(
+    std::mbstate_t &amp;,
+    const char * from,
+    const char * from_end, 
+    std::size_t max_limit
+) const
+#if BOOST_WORKAROUND(__IBMCPP__, BOOST_TESTED_AT(600))
+        throw()
+#endif
+{ 
+    int last_octet_count=0;
+    std::size_t char_count = 0;
+    const char* from_next = from;
+
+    while (from_next+last_octet_count &lt;= from_end &amp;&amp; char_count &lt;= max_limit) {
+        from_next += last_octet_count;
+        last_octet_count = (get_octet_count(*from_next));
+        ++char_count;
+    }
+    return static_cast&lt;int&gt;(from_next-from);
+}</pre>
+<p>Here, the less-or-equal operator is used to correctly set <code>from_next</code> to <code>from_end</code> when the latter points at a UTF-8 character boundary. However, this also causes a bug where the end iterator is dereferenced. Building this code with ASan and debugging it in Visual Studio results in an ASan break at the expected location:</p>
+<p><img class="alignnone wp-image-28029" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2.png" alt="Screenshot of a debugging session in Visual Studio showing an AddressSanitizer global buffer overflow error in the 'do_length' function at line 'last_octet_count = (get_octet_count(*from_next));'" width="700" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2-300x195.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<p>We let the Boost team know about this issue and they promptly <a href="https://github.com/boostorg/detail/commit/131208d8ccd82ef69afb9cf0bad1a314bd931d88">committed a fix on GitHub</a>.</p>
+<p>&nbsp;</p>
+<h3 id="azure-iot-c-sdk-an-array-and-its-length-constant-disagree"><span style="font-size: 18pt;">Azure IoT C SDK: An Array and Its Length Constant Disagree</span></h3>
+<p>A disagreement between an array and its length constant happens when a constant is used to keep track of the length of an array but has the incorrect length. This can result in memory access bugs when the length constant is used in memory copy operations. The simple example below illustrates the problem:</p>
+<pre class="prettyprint">#include &lt;cstring&gt;
+
+unsigned char GLOBAL_BUFFER[] = { 1,2,3,4,5 };
+constexpr size_t BUF_SIZE = 6;
+
+void CopyGlobalBuffer(unsigned char* dst)
+{
+    // ERROR: AddressSanitizer: global-buffer-overflow
+    std::memcpy(dst, GLOBAL_BUFFER, BUF_SIZE);
+}</pre>
+<p>We found an instance of this bug in the Azure IoT C SDK, where the length constant for a string did not match the actual length:</p>
+<pre class="prettyprint">static const unsigned char* TWIN_REPORTED_PROPERTIES = 
+    (const unsigned char*)
+    "{ \"reportedStateProperty0\": \"reportedStateProperty0\", "
+    "\"reportedStateProperty1\": \"reportedStateProperty1\" }";
+
+static int TWIN_REPORTED_PROPERTIES_LENGTH = 117;</pre>
+<p>The value of the <code>TWIN_REPORTED_PROPERTIES_LENGTH</code> constant is 117 while the actual size of the <code>TWIN_REPORTED_PROPERTIES</code> string is 107, resulting in a global buffer overflow when copying the string with <code>memcpy</code>. Building this code with ASan and debugging with Visual Studio shows an error during a call to <code>memcpy</code>, in a deep internal function named <code>CONSTBUFFER_Create_Internal</code>:</p>
+<p><img class="alignnone wp-image-28032" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5.png" alt="Screenshot of a debugging session in Visual Studio showing an AddressSanitizer error in the 'CONSTBUFFER_Create_Internal' function on line '(void)memcpy(temp, source, size);'" width="700" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5-300x195.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<p>This didn’t immediately tell us what the origin of the bug was, but thanks to the ASan integration within Visual Studio, it was possible to use the Call Stack window to walk up the stack and find the function that passed the incorrect size value:</p>
+<p><img class="alignnone wp-image-28033" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6.png" alt="Screenshot of the Call Stack window from a debugging session in Visual Studio. The call stack contains the following functions: CONSTBUFFER_Create_Internal, real_CONSTBUFFER_Create, send_one_report_patch, twin_msgr_do_work_started_with_EXPIRED_in_progress_patches_success, RunTests, and main." width="698" height="205" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6.png 698w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6-300x88.png 300w" sizes="(max-width: 698px) 100vw, 698px" /></p>
+<p>The culprit in this case was the <code>send_one_report_patch</code> function, which passed <code>TWIN_REPORTED_PROPERTIES</code> and <code>TWIN_REPORTED_PROPERTIES_LENGTH</code> to a function that indirectly calls <code>CONSTBUFFER_Create_Internal</code>:</p>
+<pre class="prettyprint">static void send_one_report_patch(TWIN_MESSENGER_HANDLE handle, time_t current_time)
+{
+    const unsigned char* buffer = (unsigned char*)TWIN_REPORTED_PROPERTIES;
+    size_t size = TWIN_REPORTED_PROPERTIES_LENGTH;
+    CONSTBUFFER_HANDLE report = real_CONSTBUFFER_Create(buffer, size);
+
+    umock_c_reset_all_calls();
+    set_twin_messenger_report_state_async_expected_calls(report, current_time);
+    (void)twin_messenger_report_state_async(handle, report, 
+        TEST_on_report_state_complete_callback, NULL);
+
+    real_CONSTBUFFER_DecRef(report);
+}</pre>
+<p>We fixed this issue by using the <code>sizeof</code> operator to set the length constant to a value that always reflects the actual size of the string. You can find our <a href="https://github.com/Azure/azure-iot-sdk-c/commit/79f6983b2ed86541bbdd943dbee59390efdd0ca9#diff-3c98bfc52b3211e281a71ec49c4ad26d5d0bb632f26795d33982d5e04abe2c31">bug fix commit on GitHub</a>.</p>
+<p>&nbsp;</p>
+<h3 id="openssl-and-the-shapeshifting-type"><span style="font-size: 18pt;">OpenSSL and the Shapeshifting Type</span></h3>
+<p>A shapeshifting type is born when a type’s size varies depending on a preprocessor definition. If the type is then assumed to have a specific size, memory access bugs can occur. A simple example is shown below:</p>
+<pre class="prettyprint">#include &lt;cstdint&gt;
+#include &lt;cstring&gt;
+#include &lt;array&gt;
+
+#ifdef BIGGER_INT
+typedef int64_t MyInt;
+#else
+typedef int32_t MyInt;
+#endif
+
+MyInt GLOBAL_BUFFER[] = { 1,2,3,4,5 };
+
+void SizeTypeExample()
+{
+    int localBuffer[std::size(GLOBAL_BUFFER)];
+
+    // ERROR: AddressSanitizer: stack-buffer-overflow
+    std::memcpy(localBuffer, GLOBAL_BUFFER, sizeof(GLOBAL_BUFFER));
+}</pre>
+<p>If <code>BIGGER_INT</code> is defined, the <code>memcpy</code> operation might trigger a stack buffer overflow due to the <code>localBuffer</code> variable assuming <code>MyInt</code> has a size identical to <code>int</code>. An instance of this bug was found in the <code>test_param_time_t</code> OpenSSL test:</p>
+<pre class="prettyprint">static int test_param_time_t(int n)
+{
+    time_t in, out;
+    unsigned char buf[MAX_LEN], cmp[sizeof(size_t)];
+    const size_t len = raw_values[n].len &gt;= sizeof(size_t)
+                       ? sizeof(time_t) : raw_values[n].len;
+    OSSL_PARAM param = OSSL_PARAM_time_t("a", NULL);
+
+    memset(buf, 0, sizeof(buf));
+    le_copy(buf, raw_values[n].value, sizeof(in));
+    memcpy(&amp;in, buf, sizeof(in));
+    param.data = &amp;out;
+    if (!TEST_true(OSSL_PARAM_set_time_t(&amp;param, in)))
+        return 0;
+    le_copy(cmp, &amp;out, sizeof(out));
+    if (!TEST_mem_eq(cmp, len, raw_values[n].value, len))
+        return 0;
+    in = 0;
+    if (!TEST_true(OSSL_PARAM_get_time_t(&amp;param, &amp;in)))
+        return 0;
+    le_copy(cmp, &amp;in, sizeof(in));
+    if (!TEST_mem_eq(cmp, sizeof(in), raw_values[n].value, sizeof(in)))
+        return 0;
+    param.data = &amp;out;
+    return test_param_type_extra(&amp;param, raw_values[n].value, sizeof(size_t));
+}</pre>
+<p>Here, <code>size_t</code> is assumed to be the same type as <code>time_t</code>, but this is not always the case depending on the architecture being compiled for. When copying <code>out</code> to <code>cmp</code> using the <code>le_copy</code> function, the size of the copying operation is <code>sizeof(time_t)</code> but the <code>cmp</code> buffer was initialized with size <code>size_t</code>. When building the OpenSSL tests with ASan and debugging with Visual Studio, the debugger breaks with an ASan error inside <code>le_copy</code>:</p>
+<p><img class="alignnone wp-image-28037" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10.png" alt="Screenshot of a debugging session in Visual Studio, showing an AddressSanitizer error in the 'le_copy' function on line 'memcpy(out, in, len)'." width="700" height="445" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10-300x191.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<p>Again, thanks to the ASan integration in VS, we were able to use the call stack window to walk up to the actual source of the bug: the <code>test_param_time_t</code> function:</p>
+<p><img class="alignnone wp-image-28038" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11.png" alt="Screenshot of the Call Stack window from a Visual Studio debugging session. The call stack contains the following functions: le_copy, test_param_time_t, run_tests, and main." width="696" height="182" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11.png 696w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11-300x78.png 300w" sizes="(max-width: 696px) 100vw, 696px" /></p>
+<p>We let the OpenSSL team know about this bug and a fix was <a href="https://github.com/openssl/openssl/commit/628d2d3a7f2318b6a6a1c36f9d8d12032c69a9dd">committed on GitHub</a>.</p>
+<p>&nbsp;</p>
+<h3 id="try-addresssanitizer-today"><span style="font-size: 18pt;">Try AddressSanitizer Today!</span></h3>
+<p>In this article, we shared how we were able to use AddressSanitizer to find bugs in various open source projects. We hope this will motivate you to try out this feature on your own code base. Have you found eager iterators, shapeshifting types, or array / length constant disagreements in your projects? Let us know in the comments below, on Twitter <a href="https://twitter.com/visualc">(@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p><em>This article contains code snippets from the following sources:</em></p>
+<p><em><a href="https://github.com/boostorg/detail/blob/b29edf18cb94b01076c2cca1d72b32dc684ee575/include/boost/detail/utf8_codecvt_facet.ipp">utf8_codecvt_facet.ipp</a> file, <a href="https://github.com/boostorg/boost">Boost C++ Libraries</a>, Copyright (c) 2001 Ronald Garcia and Andrew Lumsdaine, distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</a>.</em></p>
+<p><em><a href="https://github.com/Azure/azure-iot-sdk-c">Azure IoT C SDKs and Libraries</a>, Copyright (c) Microsoft Corporation, distributed under the <a href="https://github.com/Azure/azure-iot-sdk-c/blob/116d971f17a64d79ca745b46d707c8210dbe3437/LICENSE">MIT License</a>.</em></p>
+<p><em><a href="https://github.com/Azure/azure-c-shared-utility">Azure C Shared Utility</a>, Copyright (c) Microsoft Corporation, distributed under the <a href="https://github.com/Azure/azure-c-shared-utility/blob/c4e4d472679958b595a06c58849e3e2faf0074b7/LICENSE">MIT License</a>.</em></p>
+<p><em><a href="https://github.com/openssl/openssl/blob/8020d79b4033400d0ef659a361c05b6902944042/test/params_api_test.c">params_api_test.c</a> file, <a href="https://github.com/openssl/openssl">OpenSSL</a>, Copyright 2019-2021 The OpenSSL Project Authors, Copyright (c) 2019 Oracle and/or its affiliates, distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache License 2.0</a>.</em></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>2x-3x Performance Improvements for Debug Builds</title>
 		<link>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/#comments</comments>
@@ -101,7 +266,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>4</slash:comments>
 		
 		
 			</item>
@@ -132,7 +297,7 @@ void f() { 
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
+			<slash:comments>4</slash:comments>
 		
 		
 			</item>
@@ -525,77 +690,6 @@ The AddressSanitizer (ASan) is generally available for MSVC since the recently-r
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/sign-up-for-the-pure-virtual-cpp-2021-conference/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>vcpkg Host Dependencies for Cross-Compilation</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/#comments</comments>
-		
-		<dc:creator><![CDATA[Robert Schumacher]]></dc:creator>
-		<pubDate>Wed, 31 Mar 2021 18:28:10 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27828</guid>
-
-					<description><![CDATA[<p>If you’re not familiar with our C++ library manager vcpkg, welcome! This post covers an intermediate/advanced topic, so you may want to first get an overview and try things out from the vcpkg GitHub page or some of our previous blogs.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/">vcpkg Host Dependencies for Cross-Compilation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[</p>
-<p>If you’re not familiar with our C++ library manager vcpkg, welcome! This post covers an intermediate/advanced topic, so you may want to first get an overview and try things out from the <a href="https://github.com/Microsoft/vcpkg">vcpkg GitHub page</a> or some of <a href="https://devblogs.microsoft.com/cppblog/?s=vcpkg">our previous blogs</a>.</p>
-<p>&nbsp;</p>
-<h3 id="introduction">Introduction</h3>
-<p>One of the best features of C++ is that it generates tailored, specialized code for each specific machine, enabling you to squeeze every ounce of performance per watt. It enables clean abstractions to coexist peacefully with low-level platform-specific bit twiddling. However, this comes at a price for many developers that venture beyond their own machine: you must build different binaries for your developer machine compared to your final target, be it a phone, a cloud server, or an embedded microcontroller.</p>
-<p>For most small-to-medium sized projects, this isn’t a problem. You already have a compiler, a code editor, and a build system, which is plenty to make tons of incredible applications. However, since time immemorial some developers need even more flexibility, extensibility, and power than just the compiler; they need to generate sophisticated code at build time. Maybe it’s computing a <a href="https://en.wikipedia.org/wiki/Perfect_hash_function">perfect hash function</a> over your known data set, maybe it’s a <a href="https://en.wikipedia.org/wiki/Yacc">table-driven parser</a>, or maybe it’s a bunch of <a href="https://en.wikipedia.org/wiki/Foreign_function_interface">foreign function interface</a> boilerplate into your embedded scripting language. For whatever reason, you need the flexibility of C++ <em>for your development environment</em> in addition to the final runtime target.</p>
-<p>In this blog post we’ll cover the newly shipped vcpkg feature designed to enable all these scenarios and more: <strong>Host Dependencies</strong>.</p>
-<p>&nbsp;</p>
-<h3 id="simultaneous-compilation">Simultaneous Compilation</h3>
-<p>As mentioned in the introduction, because C++ compiles all the way down to the metal, you generally can’t use the same compiler and flags to simultaneously target your final runtime and your developer machine. If you’re using a multi-targeting compiler like Clang/LLVM you’ll need at least different flags and if you’re using a single-target compiler like GCC or MSVC you’ll need an entirely different compiler.</p>
-<p>If you’re lucky, your buildsystem has specific documentation for how to handle this case. Even then, it can sometimes be extremely subtle to ensure things are wired up correctly: Did you accidentally pass the flags for the target to the developer machine build? What if you need libraries for your code generator to run? What about code generators generating code for other code generators? It’s a tricky problem space that has ramifications on every aspect of the build environment.</p>
-<p>&nbsp;</p>
-<h3 id="triplets">Triplets</h3>
-<p>In vcpkg, we label each target universe as a separate &#8220;triplet&#8221;. For example, x64 Windows Desktop using dynamic CRT and MSVC, but building static libraries might be named <code>x64-windows-static-md</code>. Each library built within that universe links against other libraries from that universe, keeping everything super consistent. We include many triplet definitions in the box, but you can easily make your own to tweak compiler flags or adjust settings on a per-library basis (maybe you’d like Qt to be built dynamically, but your JSON parser built statically).</p>
-<p>Naturally, your developer environment also matches one of these universes. By default, we pick <code>x64-windows</code>, <code>x64-linux</code>, or <code>x64-osx</code> as appropriate but it’s fully configurable at runtime via <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/host-dependencies.md#specifying-the-host-triplet">several methods</a>.</p>
-<p>&nbsp;</p>
-<h3 id="host-dependencies">Host Dependencies</h3>
-<p>Despite having a triplet matching the developer environment, vcpkg didn’t have syntax for libraries to express a dependency upon a port built for that environment. We’ve gotten very far with imperfect approaches, like dynamically attempting to consume libraries from a hardcoded set of fallback triplets, however these would always fall short of the ideal and required imperfect, copied code between different ports. These workarounds also fall completely flat in <a href="https://devblogs.microsoft.com/cppblog/vcpkg-accelerate-your-team-development-environment-with-binary-caching-and-manifests/">manifest mode</a>, which is specifically designed to prevent the flaky behaviors that occur with these sorts of “dynamic” accesses. The fix is, of course, a way to naturally and directly express a requirement upon ports built for the developer environment.</p>
-<p><strong>Enter: Host Dependencies. Available now, ports and consumers can now declare dependencies upon other ports built against the developer environment.</strong></p>
-<p>The syntax to activate this is simply setting <code>"host"</code> to <code>true</code> in the manifest dependency object:</p>
-<pre class="prettyprint">{
-    "dependencies": [
-        { "name": "contoso-cgen", "host": true }
-    ]
-}</pre>
-<p>During execution, a port can rely on all host dependencies having been installed to <code>CURRENT_HOST_INSTALLED_DIR</code> (the analog of <code>CURRENT_INSTALLED_DIR</code>) and they can get the currently configured host triplet via <code>HOST_TRIPLET</code> (the analog of <code>TARGET_TRIPLET</code>).</p>
-<pre class="prettyprint">set(CGEN ${CURRENT_HOST_INSTALLED_DIR}/tools/contoso-cgen/cgen${VCPKG_HOST_EXECUTABLE_SUFFIX})
-vcpkg_cmake_configure(
-    SOURCE_PATH ${SOURCE_PATH}
-    OPTIONS -DCODE_GENERATOR=${CGEN}
-)</pre>
-<p>For projects that have their own code generators embedded inside, it’s perfectly valid to require <em>yourself</em> built for the host:</p>
-<pre class="prettyprint">{
-    "name": "protobuf",
-    "dependencies": [
-        { "name": "protobuf", "host": true }
-    ]
-}</pre>
-<p>Then, the port can determine if it is cross-building or native-building by comparing the triplets:</p>
-<pre class="prettyprint">if(HOST_TRIPLET STREQUAL TARGET_TRIPLET)
-  # Native compilation, set build flags to build and install the code generator
-else()
-  # Cross compilation, set build flags to consume the prebuilt code generator
-  # from ${CURRENT_HOST_INSTALLED_DIR}
-endif()</pre>
-<p>&nbsp;</p>
-<h3 id="give-us-your-feedback">Give us your feedback!</h3>
-<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. We welcome your feedback on the tool and the new features <a href="https://github.com/microsoft/vcpkg/issues">in our issue tracker</a>. </p>
-<p>We&#8217;ve only just begun incorporating this powerful new facility into the existing catalog, such as for Boost.Build (<a href="https://github.com/microsoft/vcpkg/blob/b5bb1511f0a07be530e0bde3ae098eb3d8e83e68/ports/boost-date-time/vcpkg.json#L10-L13">vcpkg/vcpkg.json at master · microsoft/vcpkg (github.com)</a>) and Protobuf (<a href="https://github.com/microsoft/vcpkg/blob/b5bb1511f0a07be530e0bde3ae098eb3d8e83e68/ports/protobuf/vcpkg.json#L8-L11">vcpkg/vcpkg.json at master · microsoft/vcpkg (github.com)</a>). It&#8217;s an enormous step forward for vcpkg users targeting important platforms such as iOS, Android, and Emscripten/WebAssembly.</p>
-<p>The current up-to-date documentation on Host Dependencies can be found on our GitHub at <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/host-dependencies.md">vcpkg/host-dependencies.md at master · microsoft/vcpkg (github.com)</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/">vcpkg Host Dependencies for Cross-Compilation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-host-dependencies/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
