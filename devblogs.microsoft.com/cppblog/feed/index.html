@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 13 May 2021 17:30:21 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 13 May 2021 19:40:53 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,220 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Microsoft C++ Code Analysis supports SARIF 2.1</title>
+		<link>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/#respond</comments>
+		
+		<dc:creator><![CDATA[Hwi-sung Im]]></dc:creator>
+		<pubDate>Thu, 13 May 2021 19:40:53 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<category><![CDATA[code analysis]]></category>
+		<category><![CDATA[Rule Action]]></category>
+		<category><![CDATA[Ruleset]]></category>
+		<category><![CDATA[SARIF]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28068</guid>
+
+					<description><![CDATA[<p>Starting with Visual Studio 16.8, MSVC Code Analysis officially supports SARIF 2.1.0 standard. SARIF is an industry standard for representing static analysis logs and we&#8217;ve been one of the earliest collaborators with the SARIF Technical Committee. Behind the scenes, analysis log files in the SARIF format powers Visual Studio IDE to provide a richer experience that was not possible with the legacy XML logs.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">Microsoft C++ Code Analysis supports SARIF 2.1</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="none">Starting with Visual Studio 16.8, MSVC Code Analysis officially supports SARIF 2.1.0 standard. SARIF is an industry standard for representing static analysis logs and we&#8217;ve been one of the earliest collaborators with the SARIF Technical Committee.</span><span data-contrast="auto"> Behind the scenes, analysis log files in the SARIF format powers Visual Studio IDE to provide a richer experience that was not possible with the legacy XML logs. In this blog post we will present one of those enhanced experiences – </span><span data-contrast="auto">code analysis defects with different severity levels </span><span data-contrast="auto">in Error List and </span><span data-contrast="auto">color-coded squiggles </span><span data-contrast="auto">for offending code segments.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<h1 aria-level="1" aria-level="1" id="what-is-sarif"><span data-contrast="none">What is SARIF?</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
+<p><span data-contrast="auto">SARIF is an acronym for the Static Analysis Results Interchange Format, which is a standard, JSON-based format for the output of static analysis tools. SARIF provides a rich format intended to meet the needs of a wide range of analysis tools, both sophisticated and simple ones. It also provides an extensibility mechanism to allow tool authors to store custom data that the SARIF format doesn&#8217;t directly support.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">You can find more information on SARIF at </span><a href="https://sarifweb.azurewebsites.net/#:~:text=The%20Static%20Analysis%20Results%20Interchange,approved%20as%20an%20OASIS%20standard"><span data-contrast="none">this</span></a><span data-contrast="auto"> introductory page. The latest SARIF standard is available at </span><a href="https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=sarif"><span data-contrast="none">this</span></a><span data-contrast="auto"> page.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h1 aria-level="1" aria-level="1" id="c-code-analysis-and-sarif"><span data-contrast="none">C++ Code Analysis and SARIF</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
+<p><span data-contrast="auto">MSVC Code Analysis has been using a custom XML log format to report defects it finds during code analysis. While this has served customers well for the last decade, we decided to support SARIF for richer capability such as logging list of files analyzed, configuration overrides for analysis, location where defects are suppressed if logging suppressed warnings, etc.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="none">We have been supporting SARIF in VS for quite some time, even the earliest drafts of the specification. 16.8 is the release that MSVC Code Analysis supports SARIF 2.1 standard.</span><span data-contrast="auto"> With this update, MSVC Code Analysis provided some enhanced experience that many readers may already know, including but not limited to:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Background code analysis</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Green squiggles for code analysis defects</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Fix-it for automatic recommendations to fix defects</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<p><span data-contrast="auto">To add more improvements to code analysis, we have updated MSVC Code Analysis to support the latest SARIF 2.1.0 standard. At the same time, it has been updated to provide options to record more information to the SARIF log file:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">List of files analyzed </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Configurations used for code analysis, including command-line options</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Rule actions for each of the active rules for which defects are reported</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<p><span data-contrast="auto">While we were updating MSVC Code Analysis to add more information to SARIF log files, we also added new capabilities to it:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="17" data-aria-level="1"><span data-contrast="auto">Ability to log compiler warnings in addition to code analysis warnings</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Ability to log suppressed warnings with location of suppression</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:720,&quot;335559737&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259,&quot;335559991&quot;:360}"> </span></li>
+</ul>
+<h1 aria-level="1" aria-level="1" id="rule-actions-in-visual-studio"><span data-contrast="none">Rule Actions in Visual Studio</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
+<p><span data-contrast="auto">As we update MSVC Code Analysis with support of the latest SARIF standard and additional information on analysis and defects, we also updated Visual Studio to enhance the code analysis experience. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">In the following sections, let’s look at an enhanced code analysis experience in Visual Studio IDE.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h2 aria-level="1" aria-level="1" id="ruleset-and-rule-actions"><span data-contrast="none">Ruleset and Rule Actions</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h2>
+<p><span data-contrast="auto">MSVC Code Analysis can be used with one or more ruleset files that can enable or disable selected rules. Rules that are enabled in the ruleset are checked and reported by the analysis tools. Rules that are disabled in a ruleset will be ignored by MSVC Code Analysis and will not be checked or reported. More information on rulesets can be found </span><a href="https://docs.microsoft.com/en-us/visualstudio/code-quality/using-rule-sets-to-group-code-analysis-rules"><span data-contrast="none">here</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">Each of the rules in the ruleset file can be assigned with one of the following “Rule Action” values:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<table data-tablestyle="MsoTableGrid" data-tablelook="1184" aria-rowcount="7">
+<tbody>
+<tr aria-rowindex="1">
+<td data-celllook="65536"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="65536"><b><span data-contrast="auto">Description</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="2">
+<td data-celllook="0"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">Do not check or report</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="3">
+<td data-celllook="0"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">May check, but do not report</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="4">
+<td data-celllook="0"><span data-contrast="auto">Default</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">Inherit default action from &lt;Include&gt; or &lt;IncludeAll&gt;</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="5">
+<td data-celllook="0"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">Report as Informational</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="6">
+<td data-celllook="0"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">Report as Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="7">
+<td data-celllook="0"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">Report as Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+</tbody>
+</table>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">Until we added support for SARIF, MSVC Code Analysis could only map these rule actions simply to “enabled” or “disabled” states, and either reported or ignored until it was added with the support for SARIF. Visual Studio build used ruleset files directly and could differentiate rules with “Error” Rule Action from the reset of the enabled rules, which were considered as “Warning” regardless of their Rule Action values. Visual Studio IDE did not honor the Rule Action values, and treated everything as “Warning”.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">With the support of SARIF, MSVC Code Analysis now maps these rule actions to the SARIF’s level property in the log file as follows:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<table data-tablestyle="MsoTableGrid" data-tablelook="1184" aria-rowcount="6">
+<tbody>
+<tr aria-rowindex="1">
+<td data-celllook="65536"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="65536"><b><span data-contrast="auto">SARIF level property</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="2">
+<td data-celllook="0"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="3">
+<td data-celllook="0"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="4">
+<td data-celllook="0"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">note</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="5">
+<td data-celllook="0"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+<tr aria-rowindex="6">
+<td data-celllook="0"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+<td data-celllook="0"><span data-contrast="auto">error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
+</tr>
+</tbody>
+</table>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">A rule with Rule Action value of “default” will be assigned with one of the other Rule Action values before mapped to the SARIF’s level.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h2 aria-level="1" aria-level="1" id="rule-actions-in-action"><span data-contrast="none">Rule Actions in Action</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h2>
+<p><span data-contrast="auto">Let’s look at how Visual Studio now uses the Rule Action values in the ruleset to improve the code analysis experience. As an example, let’s consider a custom ruleset with the following content:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint">&lt;?xml version="1.0" encoding="utf-8"?&gt; 
+&lt;RuleSet Name="Copy of Microsoft Native Recommended Rules" Description="My custom rules" ToolsVersion="16.0"&gt; 
+  &lt;Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native"&gt; 
+    &lt;Rule Id="C6001" Action="Warning" /&gt; 
+    &lt;Rule Id="C6011" Action="Error" /&gt; 
+    &lt;Rule Id="C6201" Action="None" /&gt; 
+    &lt;Rule Id="C6385" Action="Info" /&gt; 
+    &lt;Rule Id="C6386" Action="Info" /&gt; 
+  &lt;/Rules&gt; 
+&lt;/RuleSet&gt;</pre>
+<p><span data-contrast="auto">And a *.cpp file with following test code:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
+<pre class="prettyprint">#pragma warning(disable:4700)
+  
+void foo()
+{ 
+    int arr[4]{}; 
+    int v = arr[4]; // C6201, C6385 
+    arr[4] = 2;     // C6201, C6386 
+
+    int x; 
+    int* py = nullptr; 
+    int y = *py;    // C6011 
+    y += x;         // C6001 
+}</pre>
+<p><span data-contrast="auto">When configured to use the above custom ruleset for analysis, analyzing the test code in Visual Studio produces results as shown in below screenshot:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1.png"><img class="alignnone wp-image-28070" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-300x173.png" alt="Image Untitled" width="791" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-300x173.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-1024x592.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-768x444.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1.png 1293w" sizes="(max-width: 791px) 100vw, 791px" /></a></p>
+<p><span data-contrast="auto">Please note how the defects are listed in the Error List window, and how their corresponding code segments are highlighted in the text editor window:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">In the Error List window, C6011 is listed as an Error, C6001 as a Warning,  and C6385 and C6386 as Messages.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">In the text editor window, code segment for C6011 is highlighted with red squiggle, C6001 with green squiggle, and C6385 and C6386 with gray squiggles (dots)</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<p><span data-contrast="auto">As you can see in the above example, rule actions in the ruleset maps to Visual Studio build output, Error List, and text editor display through the level property of SARIF as follows:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<table data-tablestyle="MsoNormalTable" data-tablelook="1184" aria-rowcount="7">
+<tbody>
+<tr aria-rowindex="1">
+<td data-celllook="69905"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="69905"><b><span data-contrast="auto">SARIF level</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="69905"><b><span data-contrast="auto">Build Output</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="69905"><b><span data-contrast="auto">Error List</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="69905"><b><span data-contrast="auto">Editor Display</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="2">
+<td data-celllook="4369"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Errors</span></i><span data-contrast="auto"> in the output window. These cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Errors</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a red squiggle and marked by a small red box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="3">
+<td data-celllook="4369"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the output window. These do not cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a green squiggle and marked by a small green box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="4">
+<td data-celllook="4369"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">note</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the build output. These do not cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Messages</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a gray squiggle and marked by a small gray box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="5">
+<td data-celllook="4369"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="6">
+<td data-celllook="4369"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+<tr aria-rowindex="7">
+<td data-celllook="4369"><span data-contrast="auto">Default</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td data-celllook="4369"><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+<td colspan="3" data-celllook="4369"><span data-contrast="auto">Corresponds to the default action of the rule.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
+</tr>
+</tbody>
+</table>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">Please note that rules with Rule Action value of “Info” is also reported as “Warning” in the Visual Studio build output window. This has been the behavior before the adoption of SARIF log format. Following our guiding principle of keeping minimal friction for our customers during Visual Studio upgrades, we kept this behavior as is to not change the build behavior of existing projects. Please share your feedback on this for future improvements – whether it should be updated to honor the Rule Action value of “Info” and reported as “Note” or something like that.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<h1 aria-level="1" aria-level="1" id="send-us-feedback"><span data-contrast="none">Send Us Feedback</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
+<p><span data-contrast="none">Please download </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">the latest Visual Studio 2019</span></a><span data-contrast="none"> and give it a try! Any feedback is welcome. We can be reached via the comments below, </span><a href="https://developercommunity.visualstudio.com/spaces/8/index.html"><span data-contrast="none">Developer Community</span></a><span data-contrast="none">, email (</span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none">), and Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">Microsoft C++ Code Analysis supports SARIF 2.1</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>OpenMP Updates and Fixes for C++ in Visual Studio 2019 version 16.10</title>
 		<link>https://devblogs.microsoft.com/cppblog/openmp-updates-and-fixes-for-cpp-in-visual-studio-2019-16-10/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/openmp-updates-and-fixes-for-cpp-in-visual-studio-2019-16-10/#comments</comments>
@@ -625,111 +839,6 @@ All times are on Monday 3rd May 2021 UTC.</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-extension-april-2021-update-cuda-c-c-intellisense-and-apple-silicon-support/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC Backend Updates in Visual Studio 2019 version 16.10 Preview 2</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-10-preview-2/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-10-preview-2/#comments</comments>
-		
-		<dc:creator><![CDATA[Helena Gregg]]></dc:creator>
-		<pubDate>Wed, 14 Apr 2021 17:27:30 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27875</guid>
-
-					<description><![CDATA[<p>In Visual Studio 2019 version 16.10 Preview 2 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review. </p>
-<p>Address Sanitizer </p>
-<p>Fixed false negative bugs, </p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-10-preview-2/">MSVC Backend Updates in Visual Studio 2019 version 16.10 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="none">In </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">Visual Studio 2019</span></a><span data-contrast="none"> version 16.10 Preview 2 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a brief list of improvements for you to review.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><b><span data-contrast="none">Address Sanitizer</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="2"><span data-contrast="auto">Fixed false negative bugs, fixed false positive bugs, and improved debugger step-over fidelity of ASan-instrumented code.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><b><span data-contrast="auto">ARM64 support for /guard:ehcont</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="2" data-aria-level="2"><span data-contrast="auto">The /guard:ehcont flag can be added to both compilation and linking of an executable to generate metadata that could be used by the OS to perform security checks at exception handling continuation points. Previously, this was only generated and supported for AMD64, but with 16.10 it is also possible to compile ARM64 executables with this metadata.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="3" data-aria-level="2"><span data-contrast="auto">Documentation for this switch: </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/guard-enable-eh-continuation-metadata?view=msvc-160"><span data-contrast="none">/guard:ehcont (Enable EH Continuation Metadata) | Microsoft Docs</span></a><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="4" data-aria-level="2"><span data-contrast="auto">See Windows blog for Control-Flow Integrity (CFI) mitigations using ehcont: </span><a href="https://techcommunity.microsoft.com/t5/windows-kernel-internals/developer-guidance-for-hardware-enforced-stack-protection/ba-p/2163340"><span data-contrast="none">Developer Guidance for Hardware-enforced Stack Protection &#8211; Microsoft Tech Community</span></a><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><b><span data-contrast="auto">OpenMP</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="5" data-aria-level="2"><span data-contrast="auto">Made /openmp:llvm available on x86 and ARM64</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><b><span data-contrast="auto">Bigger stack reserve for link.exe and mspdbsrv.exe</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="2"><span data-contrast="auto">Increased stack reserve for link.exe and mspdbsrv.exe (x86 and amd64 hosted only) from the default 1MB to 4MB, to accommodate recursive type merging at link time.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="2" data-aria-level="2"><span data-contrast="auto">Feedback: </span><a href="https://developercommunity2.visualstudio.com/t/Unhandled-Exception-During-Linking-IN-li/1300875"><span data-contrast="none">Unhandled Exception During Linking IN link.exe &#8211; Visual Studio Feedback</span></a><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><b><span data-contrast="auto">Added flags to enable/disable the SSA peeps for amd64 and x86 </span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="3" data-aria-level="2"><span data-contrast="auto">Added retail flags (-post-color-ssa-peeps, post-color-ssa-peeps-) to allow users to disable post-color ssa peeps and -pre-color-ssa-peeps and -pre-color-ssa-peeps- to enable them. This should allow users affected by an overly aggressive peep to work around their issue without having to completely disable the optimizer.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><b><span data-contrast="auto">Avoid PDB size overgrowth from incremental linking</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="2"><span data-contrast="auto">Feedback: </span><a href="https://developercommunity2.visualstudio.com/t/PDBs-keep-growing-in-size-on-incremental/1307614"><span data-contrast="none">PDBs keep growing in size on incremental links &#8211; Visual Studio Feedback</span></a><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><b><span data-contrast="auto">Debug mode performance improvements</span></b><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li style="list-style-type: none;">
-<ul>
-<li data-leveltext="o" data-font="Courier New" data-listid="4" aria-setsize="-1" data-aria-posinset="2" data-aria-level="2"><span data-contrast="auto">Removed unnecessary overhead due to </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/rtc-run-time-error-checks?view=msvc-160"><span data-contrast="none">runtime checks</span></a><span data-contrast="auto">. This may increase performance of your code compiled in debug mode by up to 3x.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><strong>Added additional peephole optimizations for ARM64</strong><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:276}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="6" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><strong>Enabled volatile metadata by default when targeting x64 to improve emulation performance</strong></li>
-</ul>
-<p><span data-contrast="none">Do you want to experience the new improvements of the C++ backend? Please download </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">the latest Visual Studio 2019</span></a><span data-contrast="none"> and give it a try! Any feedback is welcome. We can be reached via the comments below, </span><a href="https://developercommunity.visualstudio.com/spaces/8/index.html"><span data-contrast="none">Developer Community</span></a><span data-contrast="none">, email (</span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none">), and Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">).</span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-10-preview-2/">MSVC Backend Updates in Visual Studio 2019 version 16.10 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2019-version-16-10-preview-2/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
