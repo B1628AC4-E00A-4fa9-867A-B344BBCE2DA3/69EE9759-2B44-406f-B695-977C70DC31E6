@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2021-05-16T08:26:16+00:00</dc:date>
+<dc:date>2021-05-16T10:26:17+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,7 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://developers.srad.jp/story/21/05/16/0855227/" />
   <rdf:li rdf:resource="https://security.srad.jp/story/21/05/16/0610227/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/21/05/16/0253215/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/21/05/16/0021246/" />
@@ -37,7 +38,6 @@
   <rdf:li rdf:resource="https://hardware.srad.jp/story/21/05/15/068215/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/21/05/15/0322235/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/21/05/15/028238/" />
-  <rdf:li rdf:resource="https://mobile.srad.jp/story/21/05/14/0127207/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,93 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://developers.srad.jp/story/21/05/16/0855227/">
+<title>MicrosoftのC#コーディング規約に「privateフィールドにはプレフィックス」と追記されて混乱を呼ぶ</title>
+<link>https://developers.srad.jp/story/21/05/16/0855227/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/programming_64.png"&gt;あるAnonymous Coward 曰く、C#のコーディング規約として一番権威あるのは本家Microsoftのものだと思われるが、そのページに、いつの間にか「private/internalフィールドには _ プレフィックス」「private/internalなstaticフィールドには s_ プレフィックス」「ThreadStaticの場合は t_ プレフィックス」を付ける必要がある(should)という項目が追加され、C#er達が大混乱に陥っている(C#のコーディング規則、
+発端となったツイート）。
+ 
+C#においては、後発のUnityがプレフィックスを付ける文化を持っている一方、本家のC#においては、プレフィックスを付けずに this. で参照する文化があり、StyleCop.Analyzersなどのスタイルチェックもこれをデフォルトとしている。また、2010年頃のプログラミング書籍では「メンバー変数にプレフィックスを付けるのはIDEが未発達の頃の名残で、IDEが発達した現代では不要」としてプレフィックスを付けないことが推奨されていたと記憶している。 今回の記述はそうしたこれまでの流れと真っ向から対立するもので、Twitter上ではアンダースコア派が歓喜する一方、this派からは大ブーイングが起こっているようだ。ただし、この規約が書かれたのは6年前でそれが今になって反映されただけといったコメントもあるなど、なんでこうなったかはよく分からない。
+
+元となったコーディング規約はオープンソースの.NETランタイム貢献者向けに書かれたものであり、C#開発者一般に向けたものではない。日本語版にはまだ反映されていないが、英語版には「.NET Runtime, C# Coding Style」から取り入れられたものであることが明記され、使いたければ使えばいいという感じになっている。「s_」「t_」の使用はハンガリアン記法を使用しないよう求める.NETの一般的な名前付け規則に反するが、この点は解決されていない。
+
+なお、元のコーディング規約では「this.」について、「どうしても必要な場合を除いて避ける」と記載されている。&lt;p&gt; &lt;a href="https://developers.srad.jp/story/21/05/16/0855227/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://developers.srad.jp/"&gt;デベロッパーセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt; | &lt;a href="https://srad.jp/stories/microsoft"&gt;マイクロソフト&lt;/a&gt; | &lt;a href="https://srad.jp/stories/programming"&gt;プログラミング&lt;/a&gt; | &lt;a href="https://srad.jp/stories/developers"&gt;デベロッパー&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://developers.srad.jp/story/21/05/16/0855227/&amp;amp;text=Microsoft%E3%81%AEC%23%E3%82%B3%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E8%A6%8F%E7%B4%84%E3%81%AB%E3%80%8Cprivate%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E3%83%89%E3%81%AB%E3%81%AF%E3%83%97%E3%83%AC%E3%83%95%E3%82%A3%E3%83%83%E3%82%AF%E3%82%B9%E3%80%8D%E3%81%A8%E8%BF%BD%E8%A8%98%E3%81%95%E3%82%8C%E3%81%A6%E6%B7%B7%E4%B9%B1%E3%82%92%E5%91%BC%E3%81%B6" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://developers.srad.jp/story/21/05/16/0855227/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://developers.srad.jp/story/21/05/16/0855227/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://developers.srad.jp/story/21/05/16/0855227/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/07/12/0420200"&gt;Linuxカーネルのコーディング規約、包括的用語使用のガイドラインが追加&lt;/a&gt; &lt;small&gt;2020年07月12日&lt;/small&gt; &lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/06/04/1249216"&gt;Linuxカーネルのコーディング規約、1行80桁の制限を撤廃&lt;/a&gt; &lt;small&gt;2020年06月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/19/07/24/1610259"&gt;「 いいコーディング規約、悪いコーディング規約？」2019年版&lt;/a&gt; &lt;small&gt;2019年07月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/18/07/25/055234"&gt;Microsoft、ソースコードのコーディング規約を自動推論する技術を開発・プレビュー公開&lt;/a&gt; &lt;small&gt;2018年07月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/18/03/09/2026253"&gt;Windows版のChrome 64以降はClangでコンパイルされている&lt;/a&gt; &lt;small&gt;2018年03月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/15/02/08/0721252"&gt;Microsoft、オープンソースの.NET実行エンジン「CoreCLR」を公開&lt;/a&gt; &lt;small&gt;2015年02月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://askslashdot.srad.jp/story/14/12/25/0432229"&gt;オープンソースとなった.NETは仕事で使えるか&lt;/a&gt; &lt;small&gt;2014年12月26日&lt;/small&gt; &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/12/22/0938240"&gt;Microsoftのオープンソース受け入れは何を生み出すのか&lt;/a&gt; &lt;small&gt;2014年12月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/12/06/2248240"&gt;Microsoftが.NET Coreを紹介&lt;/a&gt; &lt;small&gt;2014年12月07日&lt;/small&gt; &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/11/13/0638237"&gt;Microsoft、「.NET Core」をオープンソース化。LinuxやMacもサポート&lt;/a&gt; &lt;small&gt;2014年11月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/09/05/04/0350234"&gt;もうやらなくていい昔のコーディングテクニックあれこれ&lt;/a&gt; &lt;small&gt;2009年05月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/08/07/22/1057248"&gt;いいコーディング規約、悪いコーディング規約？&lt;/a&gt; &lt;small&gt;2008年07月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/07/04/04/1855238"&gt;ExcelやWordの開発者、いよいよ宇宙へ&lt;/a&gt; &lt;small&gt;2007年04月05日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>headless</dc:creator>
+<dc:date>2021-05-16T09:08:00+00:00</dc:date>
+<dc:subject>programming</dc:subject>
+<slash:department>混乱</slash:department>
+<slash:section>developers</slash:section>
+<slash:comments>10</slash:comments>
+<slash:hit_parade>10,10,3,1,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/programming_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;C#のコーディング規約として一番権威あるのは本家Microsoftのものだと思われるが、そのページに、いつの間にか「private/internalフィールドには _ プレフィックス」「private/internalなstaticフィールドには  s_ プレフィックス」「ThreadStaticの場合は t_ プレフィックス」を付ける必要がある(should)という項目が追加され、C#er達が大混乱に陥っている(&lt;a href="https://docs.microsoft.com/ja-jp/dotnet/csharp/programming-guide/inside-a-program/coding-conventions"&gt;C#のコーディング規則&lt;/a&gt;、
+&lt;a href="https://twitter.com/korinVR/status/1393034790870212609"&gt;発端となったツイート&lt;/a&gt;）。
+&lt;br&gt; &lt;br&gt;
+C#においては、後発のUnityがプレフィックスを付ける文化を持っている一方、本家のC#においては、プレフィックスを付けずに this. で参照する文化があり、&lt;a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers"&gt;StyleCop.Analyzers&lt;/a&gt;などのスタイルチェックもこれをデフォルトとしている。また、2010年頃のプログラミング書籍では「メンバー変数にプレフィックスを付けるのはIDEが未発達の頃の名残で、IDEが発達した現代では不要」としてプレフィックスを付けないことが推奨されていたと記憶している。&lt;br&gt; &lt;br&gt;今回の記述はそうしたこれまでの流れと真っ向から対立するもので、Twitter上ではアンダースコア派が歓喜する一方、this派からは大ブーイングが起こっているようだ。ただし、&lt;a href="https://twitter.com/shiena/status/1393049484083433473"&gt;この規約が書かれたのは6年前でそれが今になって反映されただけ&lt;/a&gt;といったコメントもあるなど、なんでこうなったかはよく分からない。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+
+元となったコーディング規約はオープンソースの.NETランタイム貢献者向けに書かれたものであり、C#開発者一般に向けたものではない。日本語版にはまだ反映されていないが、&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions"&gt;英語版&lt;/a&gt;には「&lt;a href="https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md"&gt;.NET Runtime, C# Coding Style&lt;/a&gt;」から取り入れられたものであることが明記され、使いたければ使えばいいという感じになっている。「s_」「t_」の使用はハンガリアン記法を使用しないよう求める.NETの&lt;a href="https://docs.microsoft.com/ja-jp/dotnet/standard/design-guidelines/general-naming-conventions"&gt;一般的な名前付け規則&lt;/a&gt;に反するが、この点は解決されていない。&lt;br&gt;
+&lt;br&gt;
+なお、元のコーディング規約では「this.」について、「どうしても必要な場合を除いて避ける」と記載されている。&lt;/p&gt;&lt;p&gt;
+	&lt;a href="https://developers.srad.jp/story/21/05/16/0855227/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://developers.srad.jp/"&gt;デベロッパーセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/microsoft"&gt;マイクロソフト&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/programming"&gt;プログラミング&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/developers"&gt;デベロッパー&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://developers.srad.jp/story/21/05/16/0855227/&amp;amp;text=Microsoft%E3%81%AEC%23%E3%82%B3%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E8%A6%8F%E7%B4%84%E3%81%AB%E3%80%8Cprivate%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E3%83%89%E3%81%AB%E3%81%AF%E3%83%97%E3%83%AC%E3%83%95%E3%82%A3%E3%83%83%E3%82%AF%E3%82%B9%E3%80%8D%E3%81%A8%E8%BF%BD%E8%A8%98%E3%81%95%E3%82%8C%E3%81%A6%E6%B7%B7%E4%B9%B1%E3%82%92%E5%91%BC%E3%81%B6" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://developers.srad.jp/story/21/05/16/0855227/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://developers.srad.jp/story/21/05/16/0855227/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://developers.srad.jp/story/21/05/16/0855227/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/07/12/0420200"&gt;Linuxカーネルのコーディング規約、包括的用語使用のガイドラインが追加&lt;/a&gt;
+			&lt;small&gt;2020年07月12日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/06/04/1249216"&gt;Linuxカーネルのコーディング規約、1行80桁の制限を撤廃&lt;/a&gt;
+			&lt;small&gt;2020年06月04日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/19/07/24/1610259"&gt;「 いいコーディング規約、悪いコーディング規約？」2019年版&lt;/a&gt;
+			&lt;small&gt;2019年07月25日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/18/07/25/055234"&gt;Microsoft、ソースコードのコーディング規約を自動推論する技術を開発・プレビュー公開&lt;/a&gt;
+			&lt;small&gt;2018年07月25日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/18/03/09/2026253"&gt;Windows版のChrome 64以降はClangでコンパイルされている&lt;/a&gt;
+			&lt;small&gt;2018年03月10日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/15/02/08/0721252"&gt;Microsoft、オープンソースの.NET実行エンジン「CoreCLR」を公開&lt;/a&gt;
+			&lt;small&gt;2015年02月08日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://askslashdot.srad.jp/story/14/12/25/0432229"&gt;オープンソースとなった.NETは仕事で使えるか&lt;/a&gt;
+			&lt;small&gt;2014年12月26日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/12/22/0938240"&gt;Microsoftのオープンソース受け入れは何を生み出すのか&lt;/a&gt;
+			&lt;small&gt;2014年12月23日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/12/06/2248240"&gt;Microsoftが.NET Coreを紹介&lt;/a&gt;
+			&lt;small&gt;2014年12月07日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/14/11/13/0638237"&gt;Microsoft、「.NET Core」をオープンソース化。LinuxやMacもサポート&lt;/a&gt;
+			&lt;small&gt;2014年11月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/09/05/04/0350234"&gt;もうやらなくていい昔のコーディングテクニックあれこれ&lt;/a&gt;
+			&lt;small&gt;2009年05月04日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/08/07/22/1057248"&gt;いいコーディング規約、悪いコーディング規約？&lt;/a&gt;
+			&lt;small&gt;2008年07月22日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/07/04/04/1855238"&gt;ExcelやWordの開発者、いよいよ宇宙へ&lt;/a&gt;
+			&lt;small&gt;2007年04月05日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://security.srad.jp/story/21/05/16/0610227/">
 <title>読売新聞社、「読売新聞オンライン」の偽サイトが確認されたとして注意喚起</title>
 <link>https://security.srad.jp/story/21/05/16/0610227/</link>
@@ -135,8 +222,8 @@
 <dc:subject>it</dc:subject>
 <slash:department>粘着</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>8</slash:comments>
-<slash:hit_parade>8,8,1,1,0,0,0</slash:hit_parade>
+<slash:comments>13</slash:comments>
+<slash:hit_parade>13,12,1,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/it_64.png"&gt;3MでPost-Itの粘着剤を発明したスペンサー・シルバー氏が8日、80歳で死去したそうだ(&lt;a href="https://news.3m.com/English/3m-stories/3m-details/2021/Spencer-Silver-co-inventor-of-3M-Post-it-Notes-dies-at-80/default.aspx"&gt;3Mのプレスリリース&lt;/a&gt;、 &lt;a href="https://www.theregister.com/2021/05/14/postit_note_inventor/"&gt;The Registerの記事&lt;/a&gt;、 &lt;a href="https://www.nytimes.com/2021/05/13/business/spencer-silver-dead.html"&gt;The New York Timesの記事&lt;/a&gt;、 &lt;a href="https://www.startribune.com/obituaries/detail/0000390808/"&gt;Star Tribuneの記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 シルバー氏は1941年2月6日生まれ。コロラド大学で博士号を取得したのち、1966年に3Mの研究所に化学者として入社する。1968年、航空機の組み立てに使用可能な強力接着剤を研究していたシルバー氏は目的を果たせなかったが、紙を貼り合わせるのに十分な接着力を持ちつつ紙を損傷せずに剥がすことができ、貼り直しも可能な粘着剤を発明した。&lt;br&gt;
@@ -195,8 +282,8 @@ Associated Press Newsの記事、
 <dc:subject>mars</dc:subject>
 <slash:department>着陸</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>21</slash:comments>
-<slash:hit_parade>21,20,3,1,0,0,0</slash:hit_parade>
+<slash:comments>25</slash:comments>
+<slash:hit_parade>25,24,2,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/mars_64.png"&gt;中国国家航天局(CNSA)は15日、火星探査機 天問(Tianwen)1号着陸機の火星着陸成功を発表した(&lt;a href="http://www.cnsa.gov.cn/n6758823/n6758838/c6812001/content.html"&gt;ニュースリリース&lt;/a&gt;、
 &lt;a href="https://apnews.com/article/china-technology-business-science-e1c1d0679aa78a8cc79c04a4d1375322"&gt;Associated Press Newsの記事&lt;/a&gt;、
 &lt;a href="http://www.xinhuanet.com/english/2021-05/15/c_139947277.htm"&gt;新華網の記事&lt;/a&gt;)。&lt;br&gt;
@@ -263,8 +350,8 @@ Model 3は証拠品として押収されたが、釈放された男性は別のM
 <dc:subject>crime</dc:subject>
 <slash:department>移動</slash:department>
 <slash:section>idle</slash:section>
-<slash:comments>48</slash:comments>
-<slash:hit_parade>48,48,2,0,0,0,0</slash:hit_parade>
+<slash:comments>56</slash:comments>
+<slash:hit_parade>56,56,4,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/crime_64.png"&gt;カリフォルニアハイウェイパトロール(CHP)ゴールデンゲート署は11日、誰も運転席に座っていない状態でTesla Model 3の後部座席に座り、Autopilotを有効にして州間高速道路80号線を走行していた25歳男性を逮捕したと発表した(&lt;a href="https://www.facebook.com/CHPGoldenGate/photos/a.715745458449777/4234774066546881/"&gt;CHP - Golden Gate DivisionのFacebook投稿&lt;/a&gt;、
 &lt;a href="https://arstechnica.com/tech-policy/2021/05/tesla-owner-jailed-for-leaving-driver-seat-empty-says-he-feels-safer-in-back-seat/"&gt;Ars Technicaの記事&lt;/a&gt;、
 &lt;a href="https://www.vice.com/en/article/wx5dnb/man-arrested-for-sitting-alone-in-backseat-of-moving-tesla-has-very-incriminating-instagram"&gt;Motherboardの記事&lt;/a&gt;、
@@ -344,8 +431,8 @@ Colonialは14日、全パイプラインシステムを安全に再起動した�
 <dc:subject>humor</dc:subject>
 <slash:department>注意</slash:department>
 <slash:section>idle</slash:section>
-<slash:comments>63</slash:comments>
-<slash:hit_parade>63,63,8,4,0,0,0</slash:hit_parade>
+<slash:comments>65</slash:comments>
+<slash:hit_parade>65,64,8,4,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/humor_64.png"&gt;米消費者製品安全委員会(CPSC)は12日、ガソリンをプラスチック製の袋に入れたりせず、燃料用として認可された容器のみをメーカーの指示に従って使用するよう注意喚起した(&lt;a href="https://twitter.com/USCPSC/status/1392482092823502849"&gt;CPSCのツイート&lt;/a&gt;、 &lt;a href="https://www.cbsnews.com/news/gas-shortage-plastic-bags-warning/"&gt;CBS Newsの記事&lt;/a&gt;、 &lt;a href="https://www.washingtonpost.com/technology/2021/05/12/gas-shortage-plastic-bag/"&gt;The Washington Postの記事&lt;/a&gt;、 &lt;a href="https://www.usatoday.com/story/money/2021/05/12/consumer-agency-warns-people-not-fill-plastic-bags-gas/5056515001/"&gt;USA TODAYの記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 CPSCは注意喚起に至った理由に触れていないが、米東海岸に燃料を届ける&lt;a href="https://security.srad.jp/story/21/05/09/161234/"&gt;Colonial Pipeline Companyが7日にランサムウェア攻撃を受けてパイプラインシステムが一時停止&lt;/a&gt;したことが原因のようだ。これによりガソリン不足や価格上昇が発生し、ガソリンスタンドには車の行列ができているという。&lt;br&gt;
@@ -462,8 +549,8 @@ TeslaのWebサイトでは&lt;a href="https://www.tesla.com/assets/pdf/BTC_What_
 <dc:subject>power</dc:subject>
 <slash:department>需給</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>121</slash:comments>
-<slash:hit_parade>121,121,17,6,1,0,0</slash:hit_parade>
+<slash:comments>122</slash:comments>
+<slash:hit_parade>122,122,17,7,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/power_64.png"&gt;maia 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;梶山経済産業大臣は14日、今夏および次の冬のピーク時の電力供給の見通しが厳しいと発表した(&lt;a href="https://news.tbs.co.jp/newseye/tbs_newseye4268396.htm"&gt;TBS Newsの記事&lt;/a&gt;、
 &lt;a href="https://www.youtube.com/watch?v=NyF0fo7FzR8&amp;amp;t=281s"&gt;記者会見動画&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
@@ -657,53 +744,6 @@ TeslaのWebサイトでは&lt;a href="https://www.tesla.com/assets/pdf/BTC_What_
 		
 			&lt;br&gt;&lt;a href="https://science.srad.jp/story/21/04/01/1551250"&gt;政府、宮城県・大阪府・兵庫県でCOVID-19まん延防止等重点措置の実施を決定&lt;/a&gt;
 			&lt;small&gt;2021年04月02日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://mobile.srad.jp/story/21/05/14/0127207/">
-<title>携帯番号が090から始まる人はおっさんという話題</title>
-<link>https://mobile.srad.jp/story/21/05/14/0127207/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/wireless_64.png"&gt;「090」で始まる番号は「おっさん」であるとする指摘がTwitterであったそうで、これを見てショックを受けた人が少なからずいたらしい。長期間、携帯電話を利用していて番号を変更していない場合はとくにそうだ。スラド内ならもっと詳しい人もいるとは思うが、J-CASTの記事によれば、自動車電話サービスがスタートした1979年では、030で始まる10桁の電話番号が割り振られていたという（Togetter、J-CAST）。 その後080なども使用されていたが、1999年に携帯電話利用者の増加から、現在の11桁番号に変更。そのときにすべて「090」に統一されている。それまで010、040、080で始まる携帯電話番号を取得し、番号を変えていない場合はそれなりの年齢と言うことになる。 なお「080」が追加されたのは2002年、2013にPHSで利用されていた「070」が番号が携帯電話向けに割り当てられている。現在では「070」が最も多く出されているとのことで、携帯電話番号で利用者の年代がある程度は予想できるというのは事実ではあるようだ。&lt;p&gt; &lt;a href="https://mobile.srad.jp/story/21/05/14/0127207/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://mobile.srad.jp/"&gt;モバイルセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/mobile"&gt;モバイル&lt;/a&gt; | &lt;a href="https://srad.jp/stories/japan"&gt;日本&lt;/a&gt; | &lt;a href="https://srad.jp/stories/keitai"&gt;携帯通信&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://mobile.srad.jp/story/21/05/14/0127207/&amp;amp;text=%E6%90%BA%E5%B8%AF%E7%95%AA%E5%8F%B7%E3%81%8C090%E3%81%8B%E3%82%89%E5%A7%8B%E3%81%BE%E3%82%8B%E4%BA%BA%E3%81%AF%E3%81%8A%E3%81%A3%E3%81%95%E3%82%93%E3%81%A8%E3%81%84%E3%81%86%E8%A9%B1%E9%A1%8C" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://mobile.srad.jp/story/21/05/14/0127207/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://mobile.srad.jp/story/21/05/14/0127207/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://mobile.srad.jp/story/21/05/14/0127207/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/18/07/18/0731236"&gt;フリービットに「0600」で始まる電話番号が割り当てられる&lt;/a&gt; &lt;small&gt;2018年07月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/15/10/21/1535205"&gt;総務省、IoT向けに13桁の「020」番号を割り当てる方針&lt;/a&gt; &lt;small&gt;2015年10月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/15/06/23/0546252"&gt;070で始まる携帯電話番号も平成30年ごろには枯渇か、060や020の割り当てを検討へ&lt;/a&gt; &lt;small&gt;2015年06月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/13/11/12/046254"&gt;070ではじまる携帯電話の番号「ちょっとイヤだ」が約3割&lt;/a&gt; &lt;small&gt;2013年11月12日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/11/05/12/0022211"&gt;携帯電話の番号枯渇問題、「070」を携帯でも使うことで回避へ&lt;/a&gt; &lt;small&gt;2011年05月12日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2021-05-14T23:03:00+00:00</dc:date>
-<dc:subject>keitai</dc:subject>
-<slash:department>女性はPHSからの利用が多いから助かってる？</slash:department>
-<slash:section>mobile</slash:section>
-<slash:comments>103</slash:comments>
-<slash:hit_parade>103,101,14,6,1,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/wireless_64.png"&gt;「090」で始まる番号は「おっさん」であるとする指摘がTwitterであったそうで、これを見てショックを受けた人が少なからずいたらしい。長期間、携帯電話を利用していて番号を変更していない場合はとくにそうだ。スラド内ならもっと詳しい人もいるとは思うが、J-CASTの記事によれば、自動車電話サービスがスタートした1979年では、030で始まる10桁の電話番号が割り振られていたという（&lt;a href="https://togetter.com/li/1710307"&gt;Togetter&lt;/a&gt;、&lt;a href="https://www.j-cast.com/trend/2021/05/10411166.html?p=all"&gt;J-CAST&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;その後080なども使用されていたが、1999年に携帯電話利用者の増加から、現在の11桁番号に変更。そのときにすべて「090」に統一されている。それまで010、040、080で始まる携帯電話番号を取得し、番号を変えていない場合はそれなりの年齢と言うことになる。&lt;br&gt; &lt;br&gt;なお「080」が追加されたのは2002年、2013にPHSで利用されていた&lt;a href="https://mobile.srad.jp/story/15/06/23/0546252/"&gt;「070」が番号が携帯電話向けに割り当てられ&lt;/a&gt;ている。現在では「070」が最も多く出されているとのことで、携帯電話番号で利用者の年代がある程度は予想できるというのは事実ではあるようだ。&lt;p&gt;
-	&lt;a href="https://mobile.srad.jp/story/21/05/14/0127207/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://mobile.srad.jp/"&gt;モバイルセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/mobile"&gt;モバイル&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/japan"&gt;日本&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/keitai"&gt;携帯通信&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://mobile.srad.jp/story/21/05/14/0127207/&amp;amp;text=%E6%90%BA%E5%B8%AF%E7%95%AA%E5%8F%B7%E3%81%8C090%E3%81%8B%E3%82%89%E5%A7%8B%E3%81%BE%E3%82%8B%E4%BA%BA%E3%81%AF%E3%81%8A%E3%81%A3%E3%81%95%E3%82%93%E3%81%A8%E3%81%84%E3%81%86%E8%A9%B1%E9%A1%8C" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://mobile.srad.jp/story/21/05/14/0127207/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://mobile.srad.jp/story/21/05/14/0127207/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://mobile.srad.jp/story/21/05/14/0127207/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/18/07/18/0731236"&gt;フリービットに「0600」で始まる電話番号が割り当てられる&lt;/a&gt;
-			&lt;small&gt;2018年07月18日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/15/10/21/1535205"&gt;総務省、IoT向けに13桁の「020」番号を割り当てる方針&lt;/a&gt;
-			&lt;small&gt;2015年10月22日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/15/06/23/0546252"&gt;070で始まる携帯電話番号も平成30年ごろには枯渇か、060や020の割り当てを検討へ&lt;/a&gt;
-			&lt;small&gt;2015年06月23日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/13/11/12/046254"&gt;070ではじまる携帯電話の番号「ちょっとイヤだ」が約3割&lt;/a&gt;
-			&lt;small&gt;2013年11月12日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/11/05/12/0022211"&gt;携帯電話の番号枯渇問題、「070」を携帯でも使うことで回避へ&lt;/a&gt;
-			&lt;small&gt;2011年05月12日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
