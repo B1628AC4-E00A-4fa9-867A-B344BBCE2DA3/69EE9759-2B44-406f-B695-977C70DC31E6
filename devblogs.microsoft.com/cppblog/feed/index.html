@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 19 May 2021 23:45:58 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 24 May 2021 18:46:41 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,60 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>How to start using registries with vcpkg</title>
+		<link>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/#respond</comments>
+		
+		<dc:creator><![CDATA[Nicole Mazzuca]]></dc:creator>
+		<pubDate>Mon, 24 May 2021 18:46:41 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28108</guid>
+
+					<description><![CDATA[<p>For many users of vcpkg, the built-in repository of packages is completely sufficient. If you only need public, non-experimental libraries, the default vcpkg registry is completely fine. However, once you go outside of this world &#8211; once you have company-internal libraries,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/">How to start using registries with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>For many users of vcpkg, the built-in repository of packages is completely sufficient. If you only need public, non-experimental libraries, the default vcpkg registry is completely fine. However, once you go outside of this world &#8211; once you have company-internal libraries, or you want to use experimental libraries, the recommended solution is to use a registry.</p>
+<p>Quite a few people have already set up their own registries, and if you want to learn to set up your own, you can check out the <a href="https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/">last blogpost</a>. However, if you want to use an existing registry, this tutorial is for you.</p>
+<p>We also have <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">reference documentation in the vcpkg repository</a>.</p>
+<p>&nbsp;</p>
+<h3 id="getting-started">Getting Started</h3>
+<p>Before anything else, you&#8217;ll need a vcpkg installation, and you&#8217;ll need to decide whether you&#8217;re using manifest mode or classic mode (in other words, installing packages manually using the command line). The use of registries is the same either way.</p>
+<p>You&#8217;ll want to create a <code>vcpkg-configuration.json</code> file; in manifest mode, you&#8217;d place it alongside your <code>vcpkg.json</code> file, while in classic mode you&#8217;d place it in the vcpkg root directory. There are two important keys in this file: <code>"default-registry"</code>, and <code>"registries"</code>.</p>
+<p><code>"default-registry"</code> allows you to set the fallback registry, for packages that aren&#8217;t covered by any of the registries in the <code>"registries"</code> array. <code>"registries"</code> allows you to set up registries for specific packages.</p>
+<p>&nbsp;</p>
+<h3 id="example-north-wind-traders">Example: North Wind Traders</h3>
+<p>Your company, North Wind Traders, has decided to mirror the default vcpkg registry (from <a href="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</a>) in order to ensure business continuity and control of sources for purposes of security, and you&#8217;ve set it up as your default registry so that it&#8217;s used for every package that isn&#8217;t explicitly listed in a package registry. Your <code>vcpkg-configuration.json</code> file should look like this:</p>
+<pre><code>{
+  "default-registry": {
+    "kind": "git",
+    "repository": "https://github.com/northwindtraders/vcpkg-mirror",
+    "baseline": "eefee7408133f3a0fef711ef9c6a3677b7e06fd7"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/northwindtraders/vcpkg-registry",
+      "baseline": "dacf4de488094a384ca2c202b923ccc097956e0c",
+      "packages": [ "beison", "beicode" ]
+    }
+  ]
+}
+</code></pre>
+<p>You also depend on your private registry for two of your internal libraries: beison and beicode. These libraries are neither open source nor public, but they are still managed via vcpkg, and you don&#8217;t have to be concerned about different processes for different libraries (at least at the consumption side). With manifests, you write your dependencies down, and the CMake or MSBuild integration will install all of those dependencies into your project, whether from the default, built-in registry, or from third-party registries. Private dependencies are exactly the same as public dependencies, as far as vcpkg is concerned. For classic mode, you tell vcpkg to install the packages you need from the command line. vcpkg will install them into the vcpkg git repository you’ve cloned, and you can access them either via direct usage or via the CMake and MSBuild integration. These existing use cases all &#8220;just work&#8221;, without any extra work from you on top of existing workflows. All you need is a configuration file.</p>
+<p>&nbsp;</p>
+<h3 id="give-us-your-feedback">Give us your feedback!</h3>
+<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>.</p>
+<p>This is a relatively new feature, and the user experience is still being actively worked on. We want to create the best and simplest experience possible for our users, and so we welcome your feedback on this new feature in our <a href="https://github.com/microsoft/vcpkg/issues/new">issue tracker</a>!</p>
+<p>The current up-to-date documentation on using registries can be found in <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">our GitHub repository</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/">How to start using registries with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>All vcpkg enterprise features now generally available: versioning, binary caching, manifests and registries</title>
 		<link>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/#comments</comments>
@@ -762,94 +816,6 @@ All times are on Monday 3rd May 2021 UTC.</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/feed/</wfw:commentRss>
 			<slash:comments>8</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>CMake Presets integration in Visual Studio and Visual Studio Code</title>
-		<link>https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/#comments</comments>
-		
-		<dc:creator><![CDATA[Erika]]></dc:creator>
-		<pubDate>Tue, 20 Apr 2021 16:30:20 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Linux]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27911</guid>
-
-					<description><![CDATA[<p>CMakePresets.json was released in CMake 3.19 and 3.20 and allows users to specify common configure, build, and test options and share them with others. We have added support for CMakePresets.json in Visual Studio and the CMake Tools extension for Visual Studio Code.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">CMake Presets integration in Visual Studio and Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">CMakePresets.json</a> was released in CMake 3.19 and 3.20 and allows users to specify common configure, build, and test options and share them with others. We have added support for CMakePresets.json in Visual Studio and the CMake Tools extension for Visual Studio Code. You can now invoke CMake with the same CMakePresets.json file in Visual Studio, in Visual Studio Code, in a Continuous Integration pipeline, and from the CLI on Windows, Linux, and macOS.</p>
-<p>Our CMake Presets integration is now available in preview in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2019 version 16.10 Preview 2</a> and <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools">CMake Tools version 1.7</a>.</p>
-<h4 id="why-should-i-use-cmake-presets">Why should I use CMake Presets?</h4>
-<p>CMake released support for <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#configure-preset">Configure Presets</a> in CMake 3.19. Our team at Microsoft contributed support for <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#build-preset">Build Presets</a> and <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#test-preset">Test Presets</a> in CMake 3.20. We’re excited to adopt CMake Presets to address some common problems related to CMake configuration and build.</p>
-<ul>
-<li><strong>Move seamlessly between Visual Studio and Visual Studio Code. </strong>With the adoption of CMakePresets.json, the same file can be used to drive CMake in both Visual Studio and Visual Studio Code. This makes it easier for developers on your team to hop between Visual Studio and Visual Studio Code and work in the development environment that best suits their needs.</li>
-<li><strong>Project-specific information can always be checked in. </strong>CMake supports two files: CMakePresets.json and CMakeUserPresets.json. CMakePresets.json is intended to save project-wide presets, while CMakeUserPresets.json is intended for developers to save their own local presets. This ensures project-specific information can always be checked into source control and makes it easier for new team members to get up-and-running. It also makes it easier for teams to synchronize changes to their CMake builds across the entire team. Both CMakePresets.json and CMakeUserPresets.json are supported in Visual Studio and Visual Studio Code.</li>
-<li><strong>Reproduce builds in Visual Studio and Visual Studio Code from the CLI. </strong>Since CMakePresets.json is supported by CMake itself, the same CMakePresets.json file can be used to invoke CMake in Visual Studio, in Visual Studio Code, in a Continuous Integration pipeline, and from the CLI on Windows, Linux, and macOS. CMake 3.20 or higher is required to build with CMakePresets.json from the CLI.</li>
-<li><strong>Streamline build instructions for open source CMake projects. </strong>You can pull down any project that has a CMakePresets.json file at the root of the repository and build and test it locally using the instructions encoded in a preset. All command arguments that can be passed to CMake or CTest from the command line can be specified in a Configure, Build, or Test Preset.</li>
-</ul>
-<p>For more information on CMake Presets, you can check out my recent <a href="https://www.youtube.com/watch?v=-NhaPNq16Qk">session at ACCU</a> where I demonstrate how to use CMakePresets.json in Visual Studio, from the CLI, and in a GitHub Actions pipeline. You can also view a <a href="https://github.com/esweet431/box2d-lite/blob/main/CMakePresets.json">sample CMakePresets.json file</a>, register for <a href="https://devblogs.microsoft.com/cppblog/sign-up-for-the-pure-virtual-cpp-2021-conference/">Pure Virtual C++</a>, or read the <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">official CMake documentation</a>. More information on CMake Presets integration in Visual Studio and VS Code is below.</p>
-<p style="text-align: center;"><iframe src="//www.youtube.com/embed/-NhaPNq16Qk" width="560" height="314" allowfullscreen="allowfullscreen"></iframe></p>
-<h4 id="cmake-presets-in-visual-studio">CMake Presets in Visual Studio</h4>
-<p>The best resource to learn about our CMake Presets integration in Visual Studio is our <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">documentation</a>. CMake Presets integration in Visual Studio is still in preview.</p>
-<p>CMakePresets.json will be a recommended alternative to CMakeSettings.json. Visual Studio will never read from both CMakePresets.json and CMakeSettings.json at the same time. You can enable CMake Presets integration for all projects in <strong>Tools &gt; Options &gt; CMake &gt; General</strong>. You must close and reopen the folder in Visual Studio to activate the integration.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/enable.png"><img class="aligncenter size-full wp-image-27912" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/enable.png" alt="The Tools &gt; Options &gt; CMake dialog in Visual Studio. The option to &quot;Use CMakePresets.json to drive CMake configure, build, and test&quot; is checked and underscored in red." width="740" height="429" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/enable.png 740w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/enable-300x174.png 300w" sizes="(max-width: 740px) 100vw, 740px" /></a>You can enable CMake Presets integration for a single project by adding a CMakePresets.json file to the root of the open folder. Again, you must close and reopen the folder to activate the integration. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#enable-cmakepresetsjson-integration-in-visual-studio-2019">Enable CMake Presets integration in Visual Studio 2019</a> for more information.</p>
-<p>Once CMake Presets integration is enabled, you will see three dropdowns across the menu bar.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/cmakepresets.png"><img class="aligncenter size-full wp-image-27914" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/cmakepresets.png" alt="The menu bar has 3 dropdowns. The dropdown on the left reads &quot;WSL: ubuntu2004&quot;, the dropdown in the middle reads &quot;ninja-debug&quot;, and the dropdown on the right reads &quot;verbose-build&quot;. " width="664" height="158" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/cmakepresets.png 664w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/cmakepresets-300x71.png 300w" sizes="(max-width: 664px) 100vw, 664px" /></a></p>
-<p>The dropdown on the left indicates the active <strong>Target System</strong>. This is the system where CMake will be invoked to configure and build the project. This dropdown lists your local machine, all SSH connections in the <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160#set-up-the-remote-connection">Connection Manager</a> by host name, and all Windows Subsystem for Linux (WSL) installations that Visual Studio can find.</p>
-<p>The dropdown in the middle indicates the active <strong>Configure Preset</strong>. This is the Configure Preset that will be used when CMake is invoked to generate the project build system. This dropdown lists the union of non-hidden Configure Presets defined in CMakePresets.json and CMakeUserPresets.json that apply to the active <strong>Target System</strong>. The active Configure Preset in the image above is ninja-debug.</p>
-<p>The dropdown on the right indicates the active <strong>Build Preset</strong>. This is the Build Preset that will be used when CMake is invoked to build the project. This dropdown lists the union of non-hidden Build Presets defined in CMakePresets.json and CMakeUserPresets.json that apply to the active <strong>Configure Preset</strong>. The active Build Preset in the image above is verbose-build. Check out our documentation on <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#configure-and-build">CMake configuration and build</a> to learn more.</p>
-<p>With Visual Studio you can edit, build, and debug your CMake targets on Windows, WSL, and remote systems from the comfort of a single IDE. Visual Studio will automatically copy your source code to the specified target system, but your build tools (CMake, generator, compilers), rsync, zip, and gdb must be already installed. See <a href="https://docs.microsoft.com/en-us/cpp/linux/download-install-and-setup-the-linux-development-workload?view=msvc-160#options-for-creating-a-linux-environment">Creating a Linux environment</a> for more information.</p>
-<p>For more information on adding presets, editing presets, running tests, and more, see our documentation on <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">CMake Presets integration in Visual Studio</a>.</p>
-<h4 id="cmake-presets-in-the-cmake-tools-extension-for-visual-studio-code">CMake Presets in the CMake Tools extension for Visual Studio Code</h4>
-<p>The best resource to learn about CMake Presets integration in the CMake Tools extension is our <a href="https://github.com/microsoft/vscode-cmake-tools/blob/develop/docs/cmake-presets.md">documentation</a>. CMake Presets integration in the CMake Tools extension is still in preview.</p>
-<p>CMakePresets.json will be a recommended alternative to kits and variants files. CMake Tools will never read from both CMakePresets.json and kits and variants files at the same time. You can enable CMake Presets integration by modifying the value of cmake.useCMakePresets in settings.json.</p>
-<table>
-<tbody>
-<tr>
-<td width="163">
-<p style="text-align: center;"><strong>Setting</strong></p>
-</td>
-<td width="221">
-<p style="text-align: center;"><strong>Description</strong></p>
-</td>
-<td width="144">
-<p style="text-align: center;"><strong>Accepted values</strong></p>
-</td>
-<td width="96">
-<p style="text-align: center;"><strong>Default value</strong></p>
-</td>
-</tr>
-<tr>
-<td style="text-align: center;" width="163">cmake.useCMakePresets</td>
-<td style="text-align: center;" width="221">Use CMakePresets.json to drive CMake configure, build, and test</td>
-<td style="text-align: center;" width="144">always, never, auto</td>
-<td style="text-align: center;" width="96">auto</td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<p><strong>auto </strong>evaluates to <strong>always</strong> if there’s a CMakePresets.json in the cmake.sourceDirectory of the active folder. It evaluates to <strong>never</strong> if there isn’t a CMakePresets.json file in the cmake.sourceDirectory of the active folder. Set cmake.useCMakePresest to <strong>always </strong>or <strong>never</strong> to explicitly enable or disable CMake Presets integration for all CMake projects. See <a href="https://github.com/microsoft/vscode-cmake-tools/blob/develop/docs/cmake-presets.md#enable-cmakepresetsjson-in-the-cmake-tools-extension">Enable CMake Presets in the CMake Tools extension</a> for more information.</p>
-<p>Once CMake Presets integration is enabled, you can run several new commands.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/command-palette.png"><img class="aligncenter size-full wp-image-27915" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/command-palette.png" alt="The command palette is open in Visual Studio Code and reads &quot;&gt;CMake: Preset&quot;. Several commands specific to CMake Presets are available including &quot;CMake: Add Configure Preset&quot; and &quot;CMake: Select Build Preset&quot;. " width="619" height="189" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/command-palette.png 619w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/command-palette-300x92.png 300w" sizes="(max-width: 619px) 100vw, 619px" /></a></p>
-<p>Use the commands <strong>CMake: Select Configure Preset</strong>, <strong>CMake: Select Build Preset</strong>, and <strong>CMake: Select Test Preset</strong> to select your active presets. Your active presets are displayed in the status bar.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/status-bar.png"><img class="aligncenter size-full wp-image-27916" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/status-bar.png" alt="Image status bar" width="863" height="41" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/status-bar.png 863w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/status-bar-300x14.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/status-bar-768x36.png 768w" sizes="(max-width: 863px) 100vw, 863px" /></a></p>
-<p>In the image above, <strong>[active-configure-preset]</strong> indicates the active Configure Preset, <strong>[active-build-preset] </strong>indicates the active Build Preset, and <strong>[active-test-preset] </strong>indicates the active Test Preset.</p>
-<p>For more information on adding presets, editing presets, running CMake, and more, see our documentation on <a href="https://github.com/microsoft/vscode-cmake-tools/blob/develop/docs/cmake-presets.md">CMake Presets integration in Visual Studio Code</a>.</p>
-<h4 id="whats-next">What&#8217;s next?</h4>
-<p>CMake Presets integration in Visual Studio and Visual Studio Code is still in preview. We’ll continue to add to our integration and address your feedback in future release of Visual Studio and the CMake Tools extension for VS Code.</p>
-<p>In Visual Studio, the best way to file a bug or suggest a feature is with the <strong>Send Feedback</strong> button in the upper right-hand corner of the IDE. See <a href="https://docs.microsoft.com/en-us/visualstudio/ide/feedback-options?view=vs-2019#:~:text=In%20Visual%20Studio%2C%20choose%20the%20feedback%20icon%20in,information%2C%20see%20Suggest%20a%20feature%20for%20Visual%20Studio.">Visual Studio feedback options</a> for more information.</p>
-<p>In VS Code, the best way to file a bug or suggest a feature is by creating (or upvoting) an issue in the <a href="https://github.com/microsoft/vscode-cmake-tools/issues">extension’s GitHub repository</a>.</p>
-<p>We’d love to learn how your team is adopting CMakePresets.json. If you have feedback or a success story to share, you can contact us at <a href="mailto:cmake@microsoft.com">cmake@microsoft.com</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">CMake Presets integration in Visual Studio and Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/feed/</wfw:commentRss>
-			<slash:comments>13</slash:comments>
 		
 		
 			</item>
