@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 24 May 2021 18:46:41 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 26 May 2021 17:21:00 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,72 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++20 Ranges are complete in Visual Studio 2019 version 16.10</title>
+		<link>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/#respond</comments>
+		
+		<dc:creator><![CDATA[Casey Carter]]></dc:creator>
+		<pubDate>Wed, 26 May 2021 17:21:00 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=26348</guid>
+
+					<description><![CDATA[<p>We are proud to announce completion of our implementation of C++20 Ranges in the Standard Library in the VS2019 v16.10 release under/std:c++latest. We announced the first useful user-visible parts of Ranges in VS 2019 v16.6 in mid 2020, the trickle accelerated into a gushing stream,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/">C++20 Ranges are complete in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are proud to announce completion of our implementation of C++20 Ranges in the Standard Library in the VS2019 v16.10 release under<code>/std:c++latest</code>. We <a href="https://devblogs.microsoft.com/cppblog/initial-support-for-c20-ranges/">announced the first useful user-visible parts of Ranges in VS 2019 v16.6 in mid 2020</a>, the trickle accelerated into a gushing stream, and the final parts are now in place. This represents a huge body of work with input from multiple open-source contributors over the last two years.</p>
+<p>Ironically enough, ranges are nothing new to the Standard Library. STL algorithms have always operated on ranges of elements whose bounds are denoted by an iterator that denotes the first element and an iterator pointing past the end of the sequence of elements subject to a computation. The novelty in C++20 Ranges is that we recognize the expressive power that comes from passing ranges around directly as abstractions instead of passing iterator pairs – eliminating passing iterators into different ranges as a source of errors – and that operations on ranges can compose more easily than operations on their elements.</p>
+<h2 id="what-components-comprise-the-c20-ranges-design">What components comprise the C++20 Ranges design?</h2>
+<p>Ranges first relaxes the old C++ iterator-pair design by allowing the sentinel that denotes the end of a sequence of elements to have a different type than the iterator that denotes the beginning. This enables expression of simple notions like a range bounded by a pointer-to-character and a delimiter sentinel that compares equal to a pointer-to-character when the pointer points to <code>'\0'</code>. A Range is then any expression <code>meow</code> such that <code>std::ranges::begin(meow)</code> and <code>std::ranges::end(meow)</code> return an iterator and a sentinel.</p>
+<p>The Ranges library expresses predicates over types (“is this a bidirectional iterator?”) and relationships between types (“is this a valid iterator-and-sentinel pair?”) using C++ Concepts. Ranges is the first use – and quite an extensive use, at that – of the new Concepts language feature in the C++ Standard Library. Concepts are nicely expressive in that they allow the specification of type requirements, and to a lesser extent preconditions on the values of arguments, to appear directly in code as syntax instead of appearing in documentation as English prose. (See <a href="https://devblogs.microsoft.com/cppblog/c20-concepts-are-here-in-visual-studio-2019-version-16-3/">“C++20 Concepts Are Here in Visual Studio 2019 version 16.3”</a> for more discussion of C++ Concepts.)</p>
+<p>Ranges adds a set of algorithms – mirrors of the algorithms defined in namespace <code>std</code> – in namespace <code>std::ranges</code>. These algorithms are constrained with Concepts, and unlike their siblings in <code>std</code> accept both range arguments, and iterator-sentinel pair arguments where the sentinel and iterator types differ.</p>
+<p>Ranges also unsurprisingly adds a slew of ranges to the Standard Library. The Standard splits these out into factories that create ranges:</p>
+<ul>
+<li><code>std::views::iota(0, 42)</code> is the range of integers from 0 up to but not including 42,</li>
+<li><code>std::views::istream_view&lt;int&gt;(std::cin)</code> is a range of whitespace-delimited integers read from <code>std::cin</code>,</li>
+</ul>
+<p>and adaptors that transform the elements of an underlying range into a new range:</p>
+<ul>
+<li><code>std::views::filter(my_vec, [](const auto&amp; x) { return x % 2 == 0; })</code> is a range of only the even elements of <code>my_vec</code>,</li>
+<li><code>std::views::transform(my_vec, [](const auto&amp; x) { return 3 * x; })</code> is a range of elements with value 3k where k is the value of the corresponding element of <code>my_vec</code>.</li>
+</ul>
+<p>The range adaptors are often best thought of as lazy, composable algorithms since they do no work until you begin to iterate over them and they are functions from ranges to ranges. We could compose the above two examples into:</p>
+<pre class="prettyprint">auto r1 = std::views::filter(my_vec, [](const auto&amp; x) { return x % 2 == 0; });
+auto r2 = std::views::transform(r1, [](const auto&amp; x) { return 3 * x; });
+</pre>
+<p>for example, to get a range consisting of elements whose value is three times the value of the even elements of <code>my_vec</code>. The design even provides a pipeline syntax to facilitate this composition, using <code>|</code> to provide a left-hand range as input to a right-hand range adaptor:</p>
+<pre class="prettyprint">auto r = my_vec
+       | std::views::filter([](const auto&amp; x) { return x % 2 == 0; })
+       | std::views::transform([](const auto&amp; x) { return 3 * x; });
+</pre>
+<p>Doing the equivalent work with algorithms would require storing intermediate and final results in some kind of container, which an adaptor composition like this avoids by working element-at-a-time.</p>
+<h2 id="where-did-this-implementation-come-from">Where did this implementation come from?</h2>
+<p>A typical STL feature is described by a 10-20 page proposal that WG21 polishes into a specification to merge into the C++ Standard. <a href="https://wg21.link/p0896r4">P0896R4 “The One Ranges Proposal”</a> was around 230 pages. As if that weren’t enough, <a href="https://github.com/microsoft/STL/issues/39">our tracking issue for Ranges implementation</a> documents a litany of 22 follow-up proposals (design changes) and 35 LWG issues (bug fixes) that are covered in the Ranges implementation. <a href="https://github.com/microsoft/STL/issues/39#issuecomment-599807825">Our implementation plan</a> broke the work down into bitesize pieces starting with “Implement common_reference and common_type change” from May 13 2019, one of four internal PRs from before the STL became open-source, through another <a href="https://github.com/microsoft/STL/pulls?q=is%3Apr+label%3Aranges">99 GitHub pull requests</a> ending in <a href="https://github.com/microsoft/STL/pull/1748">“Define __cpp_lib_ranges [feature-test macro]” on Mar 18 2021</a>. While we certainly drew from experience prototyping the library for the Ranges Technical Specification to provide guidance, the STL implementation was almost entirely a full rewrite reusing only some test cases.</p>
+<p>This is certainly the largest single Standard Library feature to-date, and we can’t express enough how much we appreciate all the work from the many members of the C++ community that helped bring it to life. We’d like to personally thank <a href="https://github.com/AdamBucior/">AdamBucior</a>, <a href="https://github.com/ahanamuk/">ahanamuk</a>, <a href="https://github.com/barcharcraz/">barcharcraz</a>, <a href="https://github.com/BillyONeal/">BillyONeal</a>, <a href="https://github.com/bkentel/">bkentel</a>, <a href="https://github.com/CaseyCarter/">CaseyCarter</a>, <a href="https://github.com/cbezault/">cbezault</a>, <a href="https://github.com/cpplearner/">cpplearner</a>, <a href="https://github.com/fsb4000/">fsb4000</a>, <a href="https://github.com/futuarmo/">futuarmo</a>, <a href="https://github.com/MahmoudGSaleh/">MahmoudGSaleh</a>, <a href="https://github.com/miscco/">miscco</a>, <a href="https://github.com/mnatsuhara/">mnatsuhara</a>, <a href="https://github.com/statementreply/">statementreply</a>, <a href="https://github.com/StephanTLavavej/">StephanTLavavej</a>, <a href="https://github.com/SuperWig/">SuperWig</a>, and <a href="https://github.com/timsong-cpp/">timsong-cpp</a>, each of whom contributed either code, code review comments, or issue reports for MSVC Ranges. On a personal note, my Ranges journey started six years ago this month at the WG21 meeting in Lenexa, Kansas. As an unemployed enthusiast C++ aficionado very excited about the design in <a href="https://wg21.link/n4128">Eric Niebler’s N4128 “Ranges for the Standard Library,”</a> I never would have believed that I’d spend the next six years working on that design through the standardization process right up through today’s shipping product.</p>
+<h2 id="can-i-try-it-today">Can I try it today?</h2>
+<p>Yes, that’s the point! Please give the available components a try, and we’ll keep them coming. Don’t forget to download (or update to) <a href="https://visualstudio.microsoft.com/vs/">Visual Studio 2019 version 16.10</a>; some but not all of the Ranges design is present in earlier releases. Be aware that WG21 is <a href="https://github.com/cplusplus/LEWG/wiki/Backports">processing some breaking changes for C++20</a>, three of which have bearing directly on Ranges. You can expect changes to (1)<code> std::ranges::split_view</code> / <code>std::views::split</code>, which WG21 has largely redesigned since publishing C++20, (2) <code>std::ranges::join_view</code> / <code>std::views::join</code>, which has been tweaked to be usable in more cases, and (3) the <code>std::ranges::view</code> concept itself will lose its requirement for default construction allowing range adaptors to more efficiently adapt underlying ranges that aren’t default constructible by producing a result view that is not default constructible.</p>
+<p>We love to hear your feedback and suggestions. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). For issues and questions specific to the STL or our Ranges implementation, the best way to reach is by <a href="https://github.com/microsoft/STL/issues">filing an issue on GitHub</a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/">C++20 Ranges are complete in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>How to start using registries with vcpkg</title>
 		<link>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/#respond</comments>
@@ -783,39 +849,6 @@ void f() { 
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-is-today/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2021 Schedule Available</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 20 Apr 2021 18:03:44 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27919</guid>
-
-					<description><![CDATA[<p>The schedule for Pure Virtual C++ 2021 is now live on the event website. Remember to sign up to be the first to access our extra on-demand C++ demos and get more virtual surprises.<br />
-Schedule<br />
-All times are on Monday 3rd May 2021 UTC.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/">Pure Virtual C++ 2021 Schedule Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The schedule for Pure Virtual C++ 2021 is <a href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">now live on the event website</a>. Remember to sign up to be the first to access our extra on-demand C++ demos and get more virtual surprises.</p>
-<h1 id="schedule">Schedule</h1>
-<p>All times are on Monday 3<sup>rd</sup> May 2021 UTC. Abstracts and speaker bios are available on the <a href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">website</a>.</p>
-<ul>
-<li>14:30-15:00 UTC: Visibility, Reachability, Linkage &#8211; The Three Secret Spices of C++ Modules by Daniela Engert</li>
-<li>15:00-15:30 UTC: An Introduction to CMakePresets.json by Erika Sweet, Kyle Edwards, and Bill Hoffman</li>
-<li>15:40-16:10 UTC: Manage code dependencies at work with new vcpkg features by Augustin Popa</li>
-<li>16:15-16:45 UTC: Code Analysis: Empowering developers to write performant, reliable, and safe C++ by Sunny Chatterjee</li>
-<li>16:50-17:20 UTC: C++ Modules: Year 2021 by Gabriel Dos Reis</li>
-</ul>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/">Pure Virtual C++ 2021 Schedule Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2021-schedule-available/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
 		
 		
 			</item>
