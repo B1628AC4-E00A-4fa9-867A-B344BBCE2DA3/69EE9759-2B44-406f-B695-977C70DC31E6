@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 01 Jun 2021 19:27:27 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 09 Jun 2021 08:59:16 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,230 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</title>
+		<link>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/#respond</comments>
+		
+		<dc:creator><![CDATA[Jordan Maples]]></dc:creator>
+		<pubDate>Thu, 10 Jun 2021 16:00:10 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[cppcorecheck]]></category>
+		<category><![CDATA[static analysis]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28184</guid>
+
+					<description><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the  C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the  <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the compilation of improvements and bug fixes that were made from Visual Studio 2019 versions 16.9 to 16.10 for <a href="https://docs.microsoft.com/en-us/cpp/build/reference/analyze-code-analysis">code analysis</a> and <a href="https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers">CppCoreCheck</a>.</p>
+<h2 id="new-features">New features:</h2>
+<ul>
+<li><a href="https://aka.ms/cpp/warnings/C26479">C26479</a> is a new warning that supports <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#f48-dont-return-stdmovelocal">F.48</a>, don’t return a local variable with <code>std::move</code>.</li>
+<li><a href="https://aka.ms/cpp/warnings/C26458">C26458</a> is a new warning that serves as a path-sensitive version of <a href="https://aka.ms/cpp/warnings/C26446">C26446</a>. C26458 had a dedicated blog post in mid-May. In case you missed it, you can read more about the new warning <a href="https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/">here</a>.</li>
+<li><a href="https://aka.ms/cpp/warnings/C26800">C26800</a>, which is used to detect if a variable is used after it has been moved from, is no longer an experimental rule and is now a part of the default rule set.</li>
+<li>The lifetime warnings <a href="https://aka.ms/cpp/warnings/C26810">C26810</a> and <a href="https://aka.ms/cpp/warnings/C26811">C26811</a>, originally introduced in 16.2 and discussed <a href="https://devblogs.microsoft.com/cppblog/new-code-analysis-checks-in-visual-studio-2019-use-after-move-and-coroutine/">here</a>, are no longer experimental and can be used by selecting the default ruleset or <code>“CppCoreCheckLifetimeRules”</code>.</li>
+<li>Sarif suppression properties will only be populated when <code>/analyze:log:includesuppressed</code> is specified. This can be useful for auditing the rules that are suppressed in a codebase.</li>
+</ul>
+<h2 id="analysis-crash-fixes">Analysis crash fixes:</h2>
+<ul>
+<li>Fixed a crash in the analysis engine caused by an empty brace initializer in an initializer list.</li>
+</ul>
+<pre class="prettyprint">struct TestStruct {
+public:
+    enum TestEnum : char { Dummy };
+
+    TestEnum m1 : 1;
+    TestEnum m2 : 1;
+    short m3;
+};
+
+TestStruct Test2()
+{
+    return{ TestStruct::Dummy, TestStruct::Dummy, {} };
+}</pre>
+<ul>
+<li>Fixed analysis engine crash when using the drivers plugin from the WDK.</li>
+</ul>
+<h2 id="bug-fixes-and-optimizations">Bug fixes and optimizations:</h2>
+<ul>
+<li><a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c35-a-base-class-destructor-should-be-either-public-and-virtual-or-protected-and-non-virtual">C.35</a> no longer is issued on functions marked override in classes that are marked <code>final</code>.</li>
+<li>The message string for <a href="https://aka.ms/cpp/warnings/C26434">C26434</a> has been updated to remove the reference to <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c128-virtual-functions-should-specify-exactly-one-of-virtual-override-or-final">C.128</a>. This warning does not align to C.128 but is still a helpful warning to prevent hiding member functions.</li>
+<li>Fix false negative for <a href="https://aka.ms/cpp/warnings/C26414">C26414</a> for some unique pointers returned from <code>std::make_unique</code> where no arguments are passed to <code>std::make_unique</code></li>
+</ul>
+<pre class="prettyprint">#include &lt;memory&gt;
+struct struct_1
+{
+    void method_1();
+};
+void c26414()
+{
+    auto ptr = std::make_unique&lt;struct_1&gt;(); //now issues C26414
+    ptr-&gt;method_1();
+}</pre>
+<ul>
+<li><a href="https://aka.ms/cpp/warnings/C26800">C26800</a> – Use of a moved from object.
+<ul>
+<li>Prevent analysis in function bodies where called functions do not have rvalue reference parameters.</li>
+<li>Fixed false positive that appeared when using coroutines.</li>
+</ul>
+</li>
+<li>Improved the detection of <a href="https://aka.ms/cpp/warnings/C26812">C26812</a>, “prefer <code>enum class</code> over <code>enum</code>”</li>
+<li>Fixed false positive for <a href="https://aka.ms/cpp/warnings/C6285">C6285</a> and <a href="https://aka.ms/cpp/warnings/C6237">C6237</a> when code contains <code>if constexpr</code>.</li>
+</ul>
+<pre class="prettyprint">constexpr void f1()
+{
+    constexpr int val1 = false;
+    constexpr int val2 = false;
+    if constexpr (val1 == true || val2 == true)
+    {
+        //...
+    }
+    if (val1 == true || val2 == true) // C6285
+    {
+        //...
+    }
+}
+
+constexpr bool foo()
+{
+    return false;
+}
+constexpr bool bar()
+{
+    return true;
+}
+constexpr void f2()
+{
+    constexpr bool fooVal = foo();
+    if constexpr (fooVal &amp;&amp; bar())
+    {
+        //...
+    }
+    if (fooVal &amp;&amp; bar()) //C6237
+    {
+        //...
+    }
+}</pre>
+<ul>
+<li>Improvements for the coroutine checks:
+<ul>
+<li>Fixed problem that caused warnings to be issued against an incorrect line.</li>
+<li>Improved detection for cases using rvalue references.</li>
+<li>Fixed a false positive in code using <code>std::suspend_never</code></li>
+</ul>
+</li>
+<li>Fixed false positive in local lifetime check caused by use of <code>std::optional</code></li>
+</ul>
+<pre class="prettyprint">void assignToReferenceArg( std::optional&lt;double&gt;&amp; x )
+{
+    x = 1.0; // Used to produce false positive
+}</pre>
+<ul>
+<li>Fixed bounds warning for code in <code>if constexpr</code> block.</li>
+</ul>
+<pre class="prettyprint">constexpr void test_constexpr()
+{
+    int arr[] = {1,2,3};
+    constexpr int index = -1;
+
+    if constexpr (index != -1)
+    {
+        arr[index]; //No C6201
+    }
+
+    if constexpr (index == -1)
+    {
+        arr[index]; //C6201
+    }
+}</pre>
+<ul>
+<li>Fixed analysis failure for file paths that contained non-ASCII characters.</li>
+<li>General improvements to the <code>uninit</code> check. See this <a href="https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/">post</a> for more information on how this
+affects analysis.</li>
+</ul>
+<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
+<p>The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>&#060;format&#062; in Visual Studio 2019 version 16.10</title>
+		<link>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/#comments</comments>
+		
+		<dc:creator><![CDATA[Charlie Barto]]></dc:creator>
+		<pubDate>Wed, 09 Jun 2021 16:00:28 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28122</guid>
+
+					<description><![CDATA[<p>C++20 adds a new text formatting facility to the standard library, designed primarily to replace snprintf and friends with a fast and type safe interface. The standardized library is based on the existing {fmt} library, so users of that library will feel at home.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/">&lt;format&gt; in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>C++20 adds a new text formatting facility to the standard library, designed primarily to replace <code>snprintf</code> and friends with a fast and type safe interface. The standardized library is based on the existing <a href="https://github.com/fmtlib/fmt">{fmt}</a> library, so users of that library will feel at home.</p>
+<p>Before diving into how <code>std::format</code> works I want to thank Victor Zverovich, Elnar Dakeshov, Casey Carter, and miscco, all of whom made <a href="https://github.com/microsoft/STL/pulls?q=is:pr+label:format+">substantial contributions</a> to this feature, and were the reason why we could complete it so quickly.</p>
+<h2 id="overview">Overview</h2>
+<p>To start using <code>&lt;format&gt;</code> you just need to be using Visual Studio 2019 version 16.10 or later and you need to be compiling with <code>/std:c++latest</code>. You can get the latest Visual Studio preview <a href="https://visualstudio.microsoft.com/vs/preview/">here</a>.</p>
+<p>The simplest and most common way to use <code>&lt;format&gt;</code> is to call:</p>
+<pre class="prettyprint">template&lt;class... Args&gt;
+string format(string_view fmt, const Args&amp;... args);</pre>
+<p><code>fmt</code> is the format-string and <code>args</code> are the things you’d like to format. The format string consists of some text interspersed with curly brace delimited replacement fields. For example: <code>"Format arguments: {} {}!"</code> is a format string for formatting two arguments. Each replacement field corresponds to the next argument passed. So <code>std::format("Format arguments {} {}!", 2, 1)</code> would produce the string <code>"Format arguments 2 1!"</code></p>
+<p>Format strings can also contain numbered replacement fields, for example <code>"Format arguments {1} {0}!"</code>. These refer to the numbered argument passed in, starting from zero. Numbered and un-numbered (automatic) replacement fields can not be mixed in the same format string.</p>
+<p>There are all sorts of modifiers you can use to change the way a particular parameter is formatted. These are called “format specifiers” and are specified in the replacement field like so: <code>std::format("{:&lt;specifiers&gt;}", &lt;arg&gt;)</code>. Let’s look at an example that has one of everything.</p>
+<pre class="prettyprint"><code>std::format("{:&#x1f431;^+#12.4La}", 4.f);</code></pre>
+<p>This returns the string <code>“&#x1f431;+1.0000p+2&#x1f431;”</code> (printing this string out to the console on Windows can be a bit difficult). Let’s go through what each component of the above string told <code>std::format</code> to do. First we have<code> “&#x1f431;^”</code> the “fill and align” part of the format specifiers, saying we’d like our output center aligned and padded with cat emojis. Next we have <code>“+”</code>, meaning we’d like a sign character no matter what (the default is <code>“-”</code> to only print the<code> “-”</code> sign for negatives, and you can also use a space to ask for a minus sign or a space). After that we specify <code>“#”</code>, meaning “alternate form”. For floats the alternate form causes format to always insert a decimal point. Next we specify <code>“12.4”</code> to get a width of 12 and a precision of 4. That means format will use the “fill” and “alignment” settings to make sure our output is at least 12 characters wide and the float itself will be printed to 4 digits of precision. Next the <code>“L”</code> specifier causes format to use locale specific formatting to print things like decimal separators. Finally <code>“a”</code> causes the output to be in hexfloat format. More detailed information about the possible format specifications can be found at <a href="https://en.cppreference.com/w/cpp/utility/format/formatter#Standard_format_specification">cppreference</a>.</p>
+<p>For width and precision specifiers you may reference a format argument instead of using a literal value like so:</p>
+<pre class="prettyprint">std::format("{0:{1}.{2}}", 4.2f, 4, 5);</pre>
+<p>This results in a width of 4 and a precision of 5. The rules for mixing automatic and manual indexing (don’t do it) still apply, but you can use automatic indexing to reference width and precision as in:</p>
+<pre class="prettyprint">std::format("{:{}.{}}", 4.2f, 4, 5);</pre>
+<p>The assignment of automatic indices is performed left to right, so the above two examples are equivalent.</p>
+<h2 id="performance">Performance</h2>
+<p>In general <code>std::format</code> performance should be in the same ballpark as <code>fmt::format</code> and <code>snprintf</code> if you compile your code with the <code>/utf-8</code> <a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8?view=msvc-160"> </a>. If you don’t use the <code>/utf-8</code> option then performance can be significantly degraded because we need to retrieve your system locale to correctly parse the format string. While we’re working to improve performance for this case in a future release we recommend you use <code>/utf-8</code> for the best experience.</p>
+<h2 id="unicode">Unicode</h2>
+<p><code>std::format</code> doesn’t do any transcoding between different text encodings, however it is aware of the “execution character set” and uses it to interpret the format string. The versions of <code>std::format</code> taking a wide (<code>wchar_t</code>) format string are <em>always</em> interpreted as UTF-16. The versions of <code>std::format</code> taking a narrow (char) format string interpret the format string as UTF-8 if we detect the<code> /utf-8</code> (or <code>/execution-charset:utf-8</code>) option. Otherwise we interpret the format string as being encoded in the active system codepage. This means that if you compile your code with a non-UTF-8 execution charset it may not run correctly on systems with a different system codepage setting. There’s also a <em>significant</em> performance cost to figuring out the system codepage, so for best performance we recommend you compile with<code> /utf-8</code>. We’re working to improve the performance of format in non-UTF execution character sets in future releases.</p>
+<p>Unicode also comes into play when dealing with width and precision specification for strings. When we interpret the format string as UTF-8 or UTF-16 we compute the “estimated width” of a string taking into account a rough estimate of the size of each code-point. If we’re interpreting the format string as a non-Unicode encoding we just estimate the width as the number of code units (not code points) in the string. In a future release we’ll add grapheme clusterization to the width computations for Unicode encodings.</p>
+<h2 id="locales">Locales</h2>
+<p>While we always parse the <em>format string</em> according to the rules above, the locale used for things like decimal separator positions can be customized. By default no locale is used. If you use the <code>L</code> specifier then some locale specific formatting may be used. By default it’s the current global locale as returned by a default constructed <code>std::locale</code>, however each formatting function has a version allowing you to pass in your own <code>std::locale</code> object to override that behavior.</p>
+<h2 id="future-work">Future work</h2>
+<p>Over the next few Visual Studio releases we’ll be improving the performance of <code>std::format</code>, and fixing bugs. Additionally C++23 will likely add compile time format checking to format literals and we may implement that before 2023 (for code you want to work great in C++23 don’t rely on catching <code>std::format_errors</code> from invalid format strings!). C++23 will also make a small change to the definitions of <code>std::vformat_to</code> and <code>std::format_to</code> that reduces code size but can be observable, for forward compatibility make sure any custom formatters work with all output iterators. More information on these changes can be found in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html">p2216r3</a>. C++23 may also bring additional functionality like <code>std::print</code> and better ways to handle Unicode text.</p>
+<h2 id="differences-from-fmt-not-exhaustive">Differences from {fmt} (not exhaustive)</h2>
+<p>For those familiar with <code>{fmt}</code>, a quick list of differences from the standardized version of the library:</p>
+<ul>
+<li>Named arguments are not supported.</li>
+<li>None of the miscellaneous formatting functions like <code>fmt::print</code> or <code>fmt::printf</code> are supported.</li>
+<li>Format strings are not checked at compile time</li>
+<li>There is no support for automatically formatting types with an <code>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const T&amp;)</code> overload</li>
+<li>The behavior of some format specifiers is slightly different (for example the default alignment for <code>void*</code>, and allowing sign specifiers for unsigned types)</li>
+</ul>
+<h2 id="give-us-feedback">Give us feedback</h2>
+<p>Try out format in your own code, and file any bugs on our <a href="https://github.com/microsoft/STL/issues">out GitHub issue tracker</a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/">&lt;format&gt; in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
+			<slash:comments>13</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++20&#8217;s Extensions to Chrono Available in Visual Studio 2019 version 16.10</title>
 		<link>https://devblogs.microsoft.com/cppblog/cpp20s-extensions-to-chrono-available-in-visual-studio-2019-version-16-10/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/cpp20s-extensions-to-chrono-available-in-visual-studio-2019-version-16-10/#comments</comments>
@@ -693,249 +917,6 @@ int main(void)
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</title>
-		<link>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/#comments</comments>
-		
-		<dc:creator><![CDATA[Kevin Cadieux]]></dc:creator>
-		<pubDate>Mon, 10 May 2021 19:05:14 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28026</guid>
-
-					<description><![CDATA[<p>AddressSanitizer (ASan) was officially released in Visual Studio 2019 version 16.9. We recently used this feature to find and fix a bug in the MSVC compiler itself. To further validate the usefulness of our ASan implementation, we also used it on a collection of widely used open source projects where it found bugs in Boost,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>AddressSanitizer (ASan) was <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/">officially released in Visual Studio 2019 version 16.9</a>. We recently used this feature to <a href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-msvc-compiler/">find and fix a bug in the MSVC compiler itself</a>. To further validate the usefulness of our ASan implementation, we also used it on a collection of widely used open source projects where it found bugs in Boost, Azure IoT C SDK, and OpenSSL. In this article, we present our findings by describing the type of bugs that we found and how they presented themselves in these projects. We provide links to the GitHub commits where these bugs were fixed so you can get a helpful look at what code changes were involved. If you are unfamiliar with what ASan is and how to use it, you may want to take a look at the <a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-160">AddressSanitizer documentation</a> prior to delving into this article.</p>
-<p>&nbsp;</p>
-<h3 id="boost-and-the-eager-iterator"><span style="font-size: 18pt;">Boost and the Eager Iterator</span></h3>
-<p>An <em>eager iterator</em> is one that points to an element outside the bounds of a container and is then dereferenced. The following code sample shows an example of this buggy memory access pattern:</p>
-<pre class="prettyprint">template &lt;typename Iter&gt;
-int ComputeSum(Iter b, Iter e)
-{
-    int sum = 0;
-
-    for (; b &lt;= e; ++b) {
-        // ERROR: will dereference the 'end' iterator
-        // due to the use of the '&lt;=' operator above.
-        sum += *b;
-    }
-
-    return sum;
-}</pre>
-<p>Sometimes, eager iterators can appear by mistake in loops that are more complex, such as in the <code>do_length</code> function from Boost&#8217;s UTF-8 conversion facet implementation, shown below:</p>
-<pre class="prettyprint">int utf8_codecvt_facet::do_length(
-    std::mbstate_t &amp;,
-    const char * from,
-    const char * from_end, 
-    std::size_t max_limit
-) const
-#if BOOST_WORKAROUND(__IBMCPP__, BOOST_TESTED_AT(600))
-        throw()
-#endif
-{ 
-    int last_octet_count=0;
-    std::size_t char_count = 0;
-    const char* from_next = from;
-
-    while (from_next+last_octet_count &lt;= from_end &amp;&amp; char_count &lt;= max_limit) {
-        from_next += last_octet_count;
-        last_octet_count = (get_octet_count(*from_next));
-        ++char_count;
-    }
-    return static_cast&lt;int&gt;(from_next-from);
-}</pre>
-<p>Here, the less-or-equal operator is used to correctly set <code>from_next</code> to <code>from_end</code> when the latter points at a UTF-8 character boundary. However, this also causes a bug where the end iterator is dereferenced. Building this code with ASan and debugging it in Visual Studio results in an ASan break at the expected location:</p>
-<p><img class="alignnone wp-image-28029" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2.png" alt="Screenshot of a debugging session in Visual Studio showing an AddressSanitizer global buffer overflow error in the 'do_length' function at line 'last_octet_count = (get_octet_count(*from_next));'" width="700" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-2-300x195.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
-<p>We let the Boost team know about this issue and they promptly <a href="https://github.com/boostorg/detail/commit/131208d8ccd82ef69afb9cf0bad1a314bd931d88">committed a fix on GitHub</a>.</p>
-<p>&nbsp;</p>
-<h3 id="azure-iot-c-sdk-an-array-and-its-length-constant-disagree"><span style="font-size: 18pt;">Azure IoT C SDK: An Array and Its Length Constant Disagree</span></h3>
-<p>A disagreement between an array and its length constant happens when a constant is used to keep track of the length of an array but has the incorrect length. This can result in memory access bugs when the length constant is used in memory copy operations. The simple example below illustrates the problem:</p>
-<pre class="prettyprint">#include &lt;cstring&gt;
-
-unsigned char GLOBAL_BUFFER[] = { 1,2,3,4,5 };
-constexpr size_t BUF_SIZE = 6;
-
-void CopyGlobalBuffer(unsigned char* dst)
-{
-    // ERROR: AddressSanitizer: global-buffer-overflow
-    std::memcpy(dst, GLOBAL_BUFFER, BUF_SIZE);
-}</pre>
-<p>We found an instance of this bug in the Azure IoT C SDK, where the length constant for a string did not match the actual length:</p>
-<pre class="prettyprint">static const unsigned char* TWIN_REPORTED_PROPERTIES = 
-    (const unsigned char*)
-    "{ \"reportedStateProperty0\": \"reportedStateProperty0\", "
-    "\"reportedStateProperty1\": \"reportedStateProperty1\" }";
-
-static int TWIN_REPORTED_PROPERTIES_LENGTH = 117;</pre>
-<p>The value of the <code>TWIN_REPORTED_PROPERTIES_LENGTH</code> constant is 117 while the actual size of the <code>TWIN_REPORTED_PROPERTIES</code> string is 107, resulting in a global buffer overflow when copying the string with <code>memcpy</code>. Building this code with ASan and debugging with Visual Studio shows an error during a call to <code>memcpy</code>, in a deep internal function named <code>CONSTBUFFER_Create_Internal</code>:</p>
-<p><img class="alignnone wp-image-28032" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5.png" alt="Screenshot of a debugging session in Visual Studio showing an AddressSanitizer error in the 'CONSTBUFFER_Create_Internal' function on line '(void)memcpy(temp, source, size);'" width="700" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-5-300x195.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
-<p>This didn’t immediately tell us what the origin of the bug was, but thanks to the ASan integration within Visual Studio, it was possible to use the Call Stack window to walk up the stack and find the function that passed the incorrect size value:</p>
-<p><img class="alignnone wp-image-28033" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6.png" alt="Screenshot of the Call Stack window from a debugging session in Visual Studio. The call stack contains the following functions: CONSTBUFFER_Create_Internal, real_CONSTBUFFER_Create, send_one_report_patch, twin_msgr_do_work_started_with_EXPIRED_in_progress_patches_success, RunTests, and main." width="698" height="205" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6.png 698w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-6-300x88.png 300w" sizes="(max-width: 698px) 100vw, 698px" /></p>
-<p>The culprit in this case was the <code>send_one_report_patch</code> function, which passed <code>TWIN_REPORTED_PROPERTIES</code> and <code>TWIN_REPORTED_PROPERTIES_LENGTH</code> to a function that indirectly calls <code>CONSTBUFFER_Create_Internal</code>:</p>
-<pre class="prettyprint">static void send_one_report_patch(TWIN_MESSENGER_HANDLE handle, time_t current_time)
-{
-    const unsigned char* buffer = (unsigned char*)TWIN_REPORTED_PROPERTIES;
-    size_t size = TWIN_REPORTED_PROPERTIES_LENGTH;
-    CONSTBUFFER_HANDLE report = real_CONSTBUFFER_Create(buffer, size);
-
-    umock_c_reset_all_calls();
-    set_twin_messenger_report_state_async_expected_calls(report, current_time);
-    (void)twin_messenger_report_state_async(handle, report, 
-        TEST_on_report_state_complete_callback, NULL);
-
-    real_CONSTBUFFER_DecRef(report);
-}</pre>
-<p>We fixed this issue by using the <code>sizeof</code> operator to set the length constant to a value that always reflects the actual size of the string. You can find our <a href="https://github.com/Azure/azure-iot-sdk-c/commit/79f6983b2ed86541bbdd943dbee59390efdd0ca9#diff-3c98bfc52b3211e281a71ec49c4ad26d5d0bb632f26795d33982d5e04abe2c31">bug fix commit on GitHub</a>.</p>
-<p>&nbsp;</p>
-<h3 id="openssl-and-the-shapeshifting-type"><span style="font-size: 18pt;">OpenSSL and the Shapeshifting Type</span></h3>
-<p>A shapeshifting type is born when a type’s size varies depending on a preprocessor definition. If the type is then assumed to have a specific size, memory access bugs can occur. A simple example is shown below:</p>
-<pre class="prettyprint">#include &lt;cstdint&gt;
-#include &lt;cstring&gt;
-#include &lt;array&gt;
-
-#ifdef BIGGER_INT
-typedef int64_t MyInt;
-#else
-typedef int32_t MyInt;
-#endif
-
-MyInt GLOBAL_BUFFER[] = { 1,2,3,4,5 };
-
-void SizeTypeExample()
-{
-    int localBuffer[std::size(GLOBAL_BUFFER)];
-
-    // ERROR: AddressSanitizer: stack-buffer-overflow
-    std::memcpy(localBuffer, GLOBAL_BUFFER, sizeof(GLOBAL_BUFFER));
-}</pre>
-<p>If <code>BIGGER_INT</code> is defined, the <code>memcpy</code> operation might trigger a stack buffer overflow due to the <code>localBuffer</code> variable assuming <code>MyInt</code> has a size identical to <code>int</code>. An instance of this bug was found in the <code>test_param_time_t</code> OpenSSL test:</p>
-<pre class="prettyprint">static int test_param_time_t(int n)
-{
-    time_t in, out;
-    unsigned char buf[MAX_LEN], cmp[sizeof(size_t)];
-    const size_t len = raw_values[n].len &gt;= sizeof(size_t)
-                       ? sizeof(time_t) : raw_values[n].len;
-    OSSL_PARAM param = OSSL_PARAM_time_t("a", NULL);
-
-    memset(buf, 0, sizeof(buf));
-    le_copy(buf, raw_values[n].value, sizeof(in));
-    memcpy(&amp;in, buf, sizeof(in));
-    param.data = &amp;out;
-    if (!TEST_true(OSSL_PARAM_set_time_t(&amp;param, in)))
-        return 0;
-    le_copy(cmp, &amp;out, sizeof(out));
-    if (!TEST_mem_eq(cmp, len, raw_values[n].value, len))
-        return 0;
-    in = 0;
-    if (!TEST_true(OSSL_PARAM_get_time_t(&amp;param, &amp;in)))
-        return 0;
-    le_copy(cmp, &amp;in, sizeof(in));
-    if (!TEST_mem_eq(cmp, sizeof(in), raw_values[n].value, sizeof(in)))
-        return 0;
-    param.data = &amp;out;
-    return test_param_type_extra(&amp;param, raw_values[n].value, sizeof(size_t));
-}</pre>
-<p>Here, <code>size_t</code> is assumed to be the same type as <code>time_t</code>, but this is not always the case depending on the architecture being compiled for. When copying <code>out</code> to <code>cmp</code> using the <code>le_copy</code> function, the size of the copying operation is <code>sizeof(time_t)</code> but the <code>cmp</code> buffer was initialized with size <code>size_t</code>. When building the OpenSSL tests with ASan and debugging with Visual Studio, the debugger breaks with an ASan error inside <code>le_copy</code>:</p>
-<p><img class="alignnone wp-image-28037" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10.png" alt="Screenshot of a debugging session in Visual Studio, showing an AddressSanitizer error in the 'le_copy' function on line 'memcpy(out, in, len)'." width="700" height="445" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-10-300x191.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
-<p>Again, thanks to the ASan integration in VS, we were able to use the call stack window to walk up to the actual source of the bug: the <code>test_param_time_t</code> function:</p>
-<p><img class="alignnone wp-image-28038" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11.png" alt="Screenshot of the Call Stack window from a Visual Studio debugging session. The call stack contains the following functions: le_copy, test_param_time_t, run_tests, and main." width="696" height="182" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11.png 696w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/word-image-11-300x78.png 300w" sizes="(max-width: 696px) 100vw, 696px" /></p>
-<p>We let the OpenSSL team know about this bug and a fix was <a href="https://github.com/openssl/openssl/commit/628d2d3a7f2318b6a6a1c36f9d8d12032c69a9dd">committed on GitHub</a>.</p>
-<p>&nbsp;</p>
-<h3 id="try-addresssanitizer-today"><span style="font-size: 18pt;">Try AddressSanitizer Today!</span></h3>
-<p>In this article, we shared how we were able to use AddressSanitizer to find bugs in various open source projects. We hope this will motivate you to try out this feature on your own code base. Have you found eager iterators, shapeshifting types, or array / length constant disagreements in your projects? Let us know in the comments below, on Twitter <a href="https://twitter.com/visualc">(@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p><em>This article contains code snippets from the following sources:</em></p>
-<p><em><a href="https://github.com/boostorg/detail/blob/b29edf18cb94b01076c2cca1d72b32dc684ee575/include/boost/detail/utf8_codecvt_facet.ipp">utf8_codecvt_facet.ipp</a> file, <a href="https://github.com/boostorg/boost">Boost C++ Libraries</a>, Copyright (c) 2001 Ronald Garcia and Andrew Lumsdaine, distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</a>.</em></p>
-<p><em><a href="https://github.com/Azure/azure-iot-sdk-c">Azure IoT C SDKs and Libraries</a>, Copyright (c) Microsoft Corporation, distributed under the <a href="https://github.com/Azure/azure-iot-sdk-c/blob/116d971f17a64d79ca745b46d707c8210dbe3437/LICENSE">MIT License</a>.</em></p>
-<p><em><a href="https://github.com/Azure/azure-c-shared-utility">Azure C Shared Utility</a>, Copyright (c) Microsoft Corporation, distributed under the <a href="https://github.com/Azure/azure-c-shared-utility/blob/c4e4d472679958b595a06c58849e3e2faf0074b7/LICENSE">MIT License</a>.</em></p>
-<p><em><a href="https://github.com/openssl/openssl/blob/8020d79b4033400d0ef659a361c05b6902944042/test/params_api_test.c">params_api_test.c</a> file, <a href="https://github.com/openssl/openssl">OpenSSL</a>, Copyright 2019-2021 The OpenSSL Project Authors, Copyright (c) 2019 Oracle and/or its affiliates, distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache License 2.0</a>.</em></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-patterns-from-open-source-projects/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>2x-3x Performance Improvements for Debug Builds</title>
-		<link>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/#comments</comments>
-		
-		<dc:creator><![CDATA[Pranav Kant]]></dc:creator>
-		<pubDate>Fri, 07 May 2021 12:38:13 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[faster]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[debug builds]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=27969</guid>
-
-					<description><![CDATA[<p>We have made substantial runtime performance improvements in the x86/x64 C++ compiler for Visual Studio&#8217;s default debug configuration. For Visual Studio 2019 version 16.10 Preview 2, we measure 2x &#8211; 3x speedup for programs compiled in debug mode. These improvements come from reducing the overhead introduced by runtime checks (/RTCs) which are enabled by default. </p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/">2x-3x Performance Improvements for Debug Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">We have made substantial runtime performance improvements in the x86/x64 C++ compiler for Visual Studio&#8217;s default debug configuration. For </span><a href="https://visualstudio.microsoft.com/vs/preview/%22%20/"><span data-contrast="none">Visual Studio 2019</span><span data-contrast="auto"> version 16.10 Preview 2</span></a><span data-contrast="auto">, we measure 2x &#8211; 3x speedup for programs compiled in debug mode. These improvements come from reducing the overhead introduced by runtime checks (/RTCs) which are enabled by default.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h3 id="default-debug-configuration"><b><span data-contrast="auto">Default debug configuration</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">When you compile your code in debug configuration in Visual Studio, there are some flags that are passed to the C++ compiler by default. Most relevant to this blog post are </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/rtc-run-time-error-checks?view=msvc-160"><span data-contrast="none">/RTC1</span></a><span data-contrast="auto">, </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/jmc?view=msvc-160"><span data-contrast="none">/JMC</span></a><span data-contrast="auto"> and </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-160"><span data-contrast="none">/ZI</span></a><span data-contrast="auto">. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">While all of these flags add useful debugging functionality, their interactions, particularly when /RTC1 is involved, add significant overhead. In this release, we removed the unnecessary overhead while making sure they keep helping you find bugs and make your debugging experience smoother.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Consider the following simple function:</span></p>
-<div>
-<div>
-<pre>1    int foo() {
-2        return 32;
-3    }</pre>
-</div>
-</div>
-<p>and <span data-contrast="auto">the x64 assembly generated by the 16.9 compiler when compiled with /RTC1 /JMC /ZI (<a href="https://godbolt.org/z/MnWehTso7">Godbolt link</a>):</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<div>
-<pre>1    int foo(void) PROC                  
-2    $LN3:
-3            push rbp
-4            push rdi
-5            sub rsp, 232                ; extra space allocated due to /ZI, /JMC
-6            lea rbp, QWORD PTR [rsp+32]
-7            mov rdi, rsp
-8            mov ecx, 58                 ; (= x)
-9            mov eax, -858993460         ; 0xCCCCCCCC
-10           rep stosd                   ; write 0xCC on stack for x DWORDs
-11           lea rcx, OFFSET FLAT:__977E49D0_example@cpp
-12           ; call due to /JMC
-13           call __CheckForDebuggerJustMyCode
-14           mov eax, 32
-15           lea rsp, QWORD PTR [rbp+200]
-16           pop rdi
-17           pop rbp
-18           ret 0
-19    int foo(void) ENDP</pre>
-</div>
-<p><span data-contrast="auto">In the assembly shown above, the /JMC and /ZI flags add a total of 232 additional bytes on the stack (line 5). This stack space is not always necessary. When combined with the /RTC1 flag, which initializes the allocated stack space (line 10), it consumes a lot of CPU cycles. In this specific example, even though the stack space we allocated is necessary for proper functioning of /JMC and /ZI, its initialization is not. We can prove at compile time that these checks are unnecessary. There are plenty of such functions in any real-world C++ codebase, and that’s where the performance benefit comes from.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Keep reading to get a deeper dive into each of these flags, their interactions with /RTC1, and how we avoid its unnecessary overhead.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h4 id="rtc1"><b><span data-contrast="auto">/RTC1</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h4>
-<p><span data-contrast="auto">Using </span><a href="https://docs.microsoft.com/en-us/cpp/build/reference/rtc-run-time-error-checks?view=msvc-160"><span data-contrast="none">/RTC1</span></a><span data-contrast="auto"> flag is equivalent to using both /RTCs and /RTCu flags. /RTCs initializes the stack frame of functions by 0xCC to do various runtime checks namely, detecting uninitialized local variables, detecting array overrun and underruns, and stack pointer verification (for x86). You can see the code bloat with /RTCs </span><a href="https://godbolt.org/z/fEo9sYGTG"><span data-contrast="none">here</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">As seen in the above assembly code (line 10), the </span><code><i><span data-contrast="auto">rep stosd</span></i></code><span data-contrast="auto"> instruction, introduced by /RTCs, is the main reason for the slowdown. The situation is exacerbated when /RTCs (or /RTC1) is used in conjunction with /JMC, /ZI, or both.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h4 id="interactions-with-jmc"><b><span data-contrast="auto">Interactions with /JMC</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h4>
-<p><a href="https://docs.microsoft.com/en-us/cpp/build/reference/jmc?view=msvc-160"><span data-contrast="none">/JMC</span></a><span data-contrast="auto"> stands for </span><i><span data-contrast="auto">Just My Code Debugging</span></i><span data-contrast="auto"> functionality</span><span data-contrast="auto">,</span><span data-contrast="auto"> and during debugging, it automatically skips over functions that are not written by you (such as framework, library, and other non-user code). It works by inserting a function call in the prologue that calls into the runtime library. This helps the debugger to distinguish between user and non-user code. The problem here is that inserting a function call into the prologue of every function in your project means that there are no leaf functions anymore in your whole project. If the function doesn&#8217;t need any stack frame originally, now it will, because as per </span><a href="https://docs.microsoft.com/en-us/cpp/build/stack-usage?view=msvc-160#stack-allocation"><span data-contrast="none">AMD64 ABI</span></a> for Windows platforms<span data-contrast="auto">, we need to have at least four stack slots available for function parameters (called <em>P</em></span><i><span data-contrast="auto">aram Home area</span></i><span data-contrast="auto">). This means all the functions that were not being initialized earlier by /RTCs, because they were leaf functions and had no stack frame, will now be initialized. It&#8217;s normal to have lots and lots of leaf functions in your program</span><span data-contrast="auto">,</span><span data-contrast="auto"> especially if you are using a heavily templated code library like C++ STL. /JMC will happily eat some of your CPU cycles in this case. This doesn&#8217;t apply for x86 (32 bit) because we don&#8217;t have any param home area there. You can see the effects of /JMC </span><a href="https://godbolt.org/z/v9qE3e7f5"><span data-contrast="none">here</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h4 id="interaction-with-zi"><b><span data-contrast="auto">Interaction with /ZI</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h4>
-<p><span data-contrast="auto">The next interaction we are going to talk about is with /ZI. It enables your code for </span><a href="https://docs.microsoft.com/en-us/visualstudio/debugger/edit-and-continue-visual-cpp?view=vs-2019"><span data-contrast="none">Edit and Continue</span></a><span data-contrast="auto"> support, which means you don&#8217;t need to recompile the whole program during debugging for small changes.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">In order to add such support, we add some padding bytes to the stack (the actual number of padding bytes depends on how big a function is). This way</span><span data-contrast="auto">,</span><span data-contrast="auto"> all the new variables you add during your debugging session can be allocated on the padding area without changing the total stack frame size, and you can continue your debugging without having to recompile your code.  See </span><a href="https://godbolt.org/z/oef3Pjn4G"><span data-contrast="none">here</span></a><span data-contrast="auto"> how enabling this flag adds an extra 64 bytes to the generated code.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">As you may have guessed, more stack area means more things to initialize by /RTCs, leading to more overhead.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h3 id="solution"><b><span data-contrast="auto">Solution</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">The root of all these problems is unnecessary initialization. Do we really need to initialize the stack area every time? No. One can safely prove within the compiler when stack initialization is really needed. For example, you need it when there is at least one address-taken variable, an array declared in your function or uninitialized variables. For every other case, we can safely skip over the initialization, as we are not going to find anything useful through runtime checks anyway.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">The situation gets a bit more complicated when you compile with edit-and-continue because now you may add uninitialized variables in the debugging session that can only be detected if we initialize the stack area. And we may not have done that. To solve this problem, we included the necessary bits in debugging info and exposed it via <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/debug-interface-access-sdk?view=vs-2019">Debug Interface Access SDK</a>. This information tells the debugger where the padding area introduced by /ZI </span><a href="https://docs.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/idiasymbol-get-framepadoffset?view=vs-2019"><span data-contrast="none">starts</span></a><span data-contrast="auto"> and </span><a href="https://docs.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/idiasymbol-get-framepadsize?view=vs-2019"><span data-contrast="none">ends</span></a><span data-contrast="auto">. It also tells the debugger if the function </span><a href="https://docs.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/idiasymbol-get-isrtcs?view=vs-2019"><span data-contrast="none">needed any stack initialization</span></a><span data-contrast="auto">. If so, the debugger then unconditionally initializes the stack area in this memory range for the functions that you have edited during your debugging session. The new variables are always allocated on top of this initialized area and our runtime checks can now detect if your newly added code is safe or not.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h3 id="results"><b><span data-contrast="auto">Results</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">We compiled following projects in default debug configuration and then used the generated executables to run tests. We noticed 2x – 3x improvements in all the projects we tried. More STL-heavy projects may see larger improvements. Let us know in the comments any improvements you noticed in your projects. Project 1 and </span><a href="https://zeux.io/2019/01/17/is-c-fast/"><span data-contrast="none">Project 2</span></a><span data-contrast="auto"> are customer provided samples.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/results-5.png"><img class="size-full wp-image-28007 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/results-5.png" alt="Image results" width="1024" height="570" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/results-5.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/results-5-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/results-5-768x428.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></p>
-<p>&nbsp;</p>
-<h4 id="tell-us-what-you-think"><b><span data-contrast="auto">Tell us what you think!</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></h4>
-<p><span data-contrast="auto">We hope this speedup makes your debugging workflow efficient and enjoyable. We are continuously listening to your feedback and working towards improving your inner loop experience. We’d love to hear about your experience in the comments below. You can also get in touch with us at </span><a href="https://developercommunity.visualstudio.com/spaces/8/index.html"><span data-contrast="none">Developer Community</span></a><span data-contrast="none">, email (</span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none">), and Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/">2x-3x Performance Improvements for Debug Builds</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/2x-3x-performance-improvements-for-debug-builds/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
