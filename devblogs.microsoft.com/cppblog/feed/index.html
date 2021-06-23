@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 09 Jun 2021 08:59:16 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 22 Jun 2021 17:29:43 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,129 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Address Sanitizer Now in “Early Release” for Xbox Developers</title>
+		<link>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/#respond</comments>
+		
+		<dc:creator><![CDATA[David Li]]></dc:creator>
+		<pubDate>Tue, 22 Jun 2021 17:29:43 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[address sanitizer]]></category>
+		<category><![CDATA[debugging]]></category>
+		<category><![CDATA[dump]]></category>
+		<category><![CDATA[memory]]></category>
+		<category><![CDATA[xbox]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28236</guid>
+
+					<description><![CDATA[<p>The following blog post is authored by Tad Swift, a Principal Software Engineer on the Xbox Advanced Technology Group (ATG).<br />
+Introduction<br />
+Address Sanitizer (ASan) is a valuable tool for lighting up hard-to-find memory bugs. Since the MSVC release in Visual Studio version 16.9,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/">Address Sanitizer Now in “Early Release” for Xbox Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png"><img class="aligncenter size-full wp-image-28237" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png" alt="Image Xbox 2020 horz Grn RGB" width="1659" height="793" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png 1659w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-300x143.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-1024x489.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-768x367.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-1536x734.png 1536w" sizes="(max-width: 1659px) 100vw, 1659px" /></a></p>
+<p><strong>The following blog post is authored by Tad Swift, a Principal Software Engineer on the Xbox Advanced Technology Group (ATG). </strong></p>
+<h1 id="introduction">Introduction</h1>
+<p><strong>Address Sanitizer</strong> (<a href="https://devblogs.microsoft.com/cppblog/addresssanitizer-asan-for-windows-with-msvc/">ASan</a>) is a valuable tool for lighting up hard-to-find memory bugs. Since the MSVC release in <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/">Visual Studio version 16.9</a>, we&#8217;ve been working with our partners to bring ASan to the Xbox platform.</p>
+<p>With the recent release of the June Xbox GDK, we are happy to announce Address Sanitizer is available in <em>&#8220;early release&#8221;</em> form.</p>
+<p>In this blog post, we will showcase how to get ASan working with the Xbox platform.</p>
+<h1 id="building-with-address-sanitizer">Building with Address Sanitizer</h1>
+<p>Setting up an Xbox project for ASan should follow the same guidelines as the PC version, with the Address Sanitizer being integrated into the usual Visual Studio debugging experience. However, there are some specific use-cases for Xbox developers that were not supported by default under ASan.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png"><img class="aligncenter size-full wp-image-27733" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png" alt="Image ASan example" width="1428" height="949" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-300x199.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-1024x681.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-768x510.png 768w" sizes="(max-width: 1428px) 100vw, 1428px" /></a></p>
+<p>Modern games consist of highly complicated, multi-threaded code whose goal is to run as fast as possible while holding a target frame rate. This means that the code is tested frequently through development by means of an automated build and test setup. These server machines may build the code, deploy it to a console, and run the game without a debugger connection meaning that they might miss any ASan error reports shown in the debug output. Ideally, the test server could collect crash dumps from any Asan errors, but due to differences in the Xbox GDK, extra steps must be taken to extract Address Sanitizer crash dump information from automated runs.</p>
+<h1 id="enhanced-debugger-support">Enhanced Debugger Support</h1>
+<p><a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan-offline-crash-dumps?view=msvc-160">MSVC’s ASan implementation</a> can create a crash dump with detailed exception information, but this could only be enabled from an environment variable which isn’t supported on Xbox. To get crash dumps on Xbox, developers must specify a function in their code to supply the dump filename.</p>
+<p>Here are two examples of what the function looks like:</p>
+<pre class="prettyprint">extern "C" const wchar_t* __vcasan_save_dumps()
+{
+    return L"myCrashDump.dmp";
+}</pre>
+<pre class="prettyprint">extern "C" const WCHAR* __vcasan_save_dumps()
+{
+    // Choose to create a crash dump based on a runtime flag
+    if ( gCollectCrashDumps )
+    {
+        return L"myCrashDump.dmp";
+    }
+    else
+    {
+        // Returning NULL stops ASan creating a crash dump
+        return NULL;
+    };
+}
+</pre>
+<p>There are no specific requirements around the name returned by this function, but it must be a valid filepath on the target device where the code is being run.</p>
+<p>Now that we can support crash dumps on Xbox, we also decided to give developers more flexibility around the type of crash dump that is produced. There are instances where a simple “Triage” dump is sufficient to see the callstack of where the process failed, but within games, there is usually the requirements to see more of the surrounding memory when the issue occurred. To this end, we have provided three configurable crash dump types that are supported by the Xbox platform and match the crash dumps developers expect from their Xbox consoles.</p>
+<p><strong><em><u>Note:</u></em></strong> As with the previous function, this override is <strong><em>optional</em></strong> on Xbox, but it is highly recommended if you want to use crash dumps to collect ASan information without a debugger attached.  If you provide the dump filename but <strong><em>not</em></strong> a dumptype override, then it will fail to generate a valid crash dump on Xbox.</p>
+<p>This callback returns a number to indicate the dump type required. Valid types are shown in the example below:</p>
+<pre class="prettyprint">extern "C" const signed int __vcasan_override_dumptype()
+{
+    // The current valid values are:
+    // 0 : Triage Dump
+    // 1 : Mini Dump
+    // 2 : Heap Dump
+    // Values outside this range are defaulted to 2 (Full Heap)
+
+    // This example uses Heap Dumps which give the most information
+    return 2;
+}
+</pre>
+<p>Both callback functions are available as part of 16.9.8, 16.10.2 or a future 16.11 preview release of Visual Studio.</p>
+<h1 id="example-code">Example code</h1>
+<p>This code demonstrates how easily these functions can be added into an existing codebase and adapted as required:</p>
+<pre class="prettyprint">#include &lt;cstdio&gt;
+ 
+extern "C" const wchar_t* __vcasan_save_dumps()
+{
+    // Specify dump filename
+    return L"myCrashDump.dmp";
+}
+ 
+extern "C" const signed int __vcasan_override_dumptype()
+{
+    // Full Heap dump requested
+    return 2;
+}
+ 
+static const int arraySize = 8;
+static int asanArray[arraySize];
+static int asanAccumulator = 0;
+ 
+int main()
+{
+    // ASan should use the callback functions that we have provided
+    for (int loop = 0; loop &lt;= arraySize; loop++)
+    {
+        // We don’t really care about accumulating the values
+        // We just want to access outside the array causing an ASan error
+        asanAccumulator += asanArray[loop];
+    }
+ 
+    // If we get here, we have failed as ASAN should have caught the error above
+    printf("fail");
+ 
+    return 0;
+}
+</pre>
+<p>Compile the code via this command line:</p>
+<pre class="prettyprint">cl /nologo /fsanitize=address /Zi AsanTest.cpp</pre>
+<p>This code, when run should throw an ASan exception and produce a crash dump as specified by our functions above. You can integrate these functions into existing code and generate crash dumps of your choosing.</p>
+<h1 id="summary">Summary<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg"><img class="aligncenter size-full wp-image-28247" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg" alt="Xbox Eco System " width="1920" height="1080" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg 1920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-1536x864.jpg 1536w" sizes="(max-width: 1920px) 100vw, 1920px" /></a></h1>
+<p>With Address Sanitizer now being available on Xbox, developers can leverage this powerful technology to help debug memory issues in their titles.  Combined with the crash dump changes detailed here, it should provide all the flexibility required to support your automated tests suites and enable you to find issues quickly and easily.  We welcome any feedback on these changes and would ask you to raise any issues through the Xbox forums in the usual way.</p>
+<p>Further references for more information:</p>
+<ul>
+<li>Detailed information regarding the setup and available options in the Microsoft documentation: <a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-160">Address Sanitizer | Microsoft Docs</a></li>
+<li>Discussion around where this technology has been useful: <a href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-msvc-compiler/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a></li>
+</ul>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/">Address Sanitizer Now in “Early Release” for Xbox Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</title>
 		<link>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/#respond</comments>
@@ -247,7 +370,7 @@ string format(string_view fmt, const Args&amp;... args);</pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
-			<slash:comments>23</slash:comments>
+			<slash:comments>26</slash:comments>
 		
 		
 			</item>
@@ -847,76 +970,6 @@ int main(void)
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/openmp-updates-and-fixes-for-cpp-in-visual-studio-2019-16-10/feed/</wfw:commentRss>
 			<slash:comments>8</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>New Static Analysis Rule for Bounds Checking</title>
-		<link>https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/#comments</comments>
-		
-		<dc:creator><![CDATA[Jordan Maples]]></dc:creator>
-		<pubDate>Tue, 11 May 2021 17:32:50 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<category><![CDATA[Writing Code]]></category>
-		<category><![CDATA[code analysis]]></category>
-		<category><![CDATA[static analysis]]></category>
-		<category><![CDATA[warning]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28054</guid>
-
-					<description><![CDATA[<p>We have added a new experimental static analysis rule in Visual Studio 16.10 version Preview 3 &#8211; C26458, WARNING_PATH_SENSITIVE_USE_GSL_AT. The new warning is a more precise and less noisy version of warning C26446, WARNING_USE_GSL_AT. Both warnings analyse standard containers for unchecked element access and they both share the warning message: “Prefer to use gsl::at() instead of unchecked subscript operator (bounds.4).” This new warning,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/">New Static Analysis Rule for Bounds Checking</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We have added a new experimental static analysis rule in Visual Studio 16.10 version Preview 3 &#8211; C26458, <code>WARNING_PATH_SENSITIVE_USE_GSL_AT</code>. The new warning is a more precise and less noisy version of warning C26446, <code>WARNING_USE_GSL_AT</code>. Both warnings analyse standard containers for unchecked element access and they both share the warning message: “Prefer to use <code>gsl::at()</code> instead of unchecked subscript operator (bounds.4).” This new warning, however, uses path sensitive analysis to track buffer size validation calls to provide a less noisy, more targeted warning compared to C26446.</p>
-<p>Path sensitive analysis is not an inexpensive operation: the complexity and time required to analyze each function depends on the length, number of branching operations, and individual properties that are tracked in each function. The path simulation walks the function and emulates each branch and loop that it encounters, updating an internal state based on various assumptions made in the code. Consider the following code segment:</p>
-<pre class="prettyprint">    int i{};
-    // ...
-    if (i &lt; v.size()) {
-        // ...
-    }
-    // ...
-</pre>
-<p>As the simulation reaches the branch, the analysis forks its state. In one fork it tracks that <code>i</code> is less than <code>v.size()</code>, and in the other <code>i</code> is greater than or equal to <code>v.size()</code>. The analysis does not necessarily know the value of <code>i</code> or the number of elements in <code>v</code>. It will only know the relation between these two due to the comparison. The same branching happens when the analysis encounters a loop.</p>
-<h3 id="example-and-comparison-to-c26446">Example and comparison to C26446:</h3>
-<pre class="prettyprint">void function(std::vector&lt;int&gt;&amp; v)
-{
-    if(v.size())
-        v[0]; // C26446
-    v[0]; // C26446 and C26458
-}
-</pre>
-<p>In the path sensitive check, one branch simulated knows that <code>v</code> is not empty proving that it is safe to access the first element, but in the other, <code>v</code> is empty, which is why the second access issues the warning. C26446, on the other hand, will warn on any <code>operator[]</code> call not made by a <code>gsl::span</code>.</p>
-<h3 id="why-is-this-check-in-experimental-and-what-can-it-not-do">Why is this check in experimental and what can it not do?</h3>
-<p>Currently, C26458 does not track expansion of the container. Meaning that calls to <code>push_back</code>, <code>emplace</code>, <code>insert</code>, etc. are not yet supported. Nor does it track removal of elements. However, unlike the expansion of the container, reduction requires full revalidation of the containers bounds. Support for expansion/reduction of containers will be added in a future update.</p>
-<pre class="prettyprint">void function(std::vector&lt;int&gt;&amp; v)
-{
-    if (v.size() &gt; 2)
-    {
-        v[2]; // C26446
-
-        v.push_back(0);
-        v[2]; // C26446
-        v[3]; // C26446 &amp; C26458
-
-        v.erase(v.begin()); // element removal currently removes all assumptions for the container
-        v[2]; // 26446 &amp; C26458
-    }
-}
-</pre>
-<h2 id="how-to-enable-c26458">How to enable C26458</h2>
-<h3 id="enabling-the-rule-in-visual-studio">Enabling the rule in Visual Studio:</h3>
-<p>In the Project Properties page: Navigate to Configuration Properties -&gt; Code Analysis -&gt; Microsoft and select C++ Core Guidelines Experimental Rules.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Picture1.png"><img class="alignnone wp-image-28055 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Picture1.png" alt="Image Picture1" width="624" height="389" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Picture1.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Picture1-300x187.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>Alternatively, you can configure your current ruleset to include C26458.</p>
-<p>We recommend that users disable C26446 when using C26458 to avoid duplicate warnings.</p>
-<h2 id="feedback-and-follow-up">Feedback and follow up:</h2>
-<p>Let us know your experience with the new checker, we are eager to hear back from all of you. Also, let us know if you would like to see more path sensitive rules like this in the future. Please download the latest <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2019</a> and give it a try! Any feedback is welcome. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a>, <a href="mailto:visualcpp@microsoft.com">email</a>, and <a href="https://twitter.com/visualc">Twitter</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/">New Static Analysis Rule for Bounds Checking</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
