@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 23 Jun 2021 15:08:51 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 30 Jun 2021 16:17:45 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,9 +28,104 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Customized Warning Levels and Code Analysis for External Headers</title>
+		<link>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/#comments</comments>
+		
+		<dc:creator><![CDATA[Will Buik]]></dc:creator>
+		<pubDate>Wed, 30 Jun 2021 16:17:45 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28162</guid>
+
+					<description><![CDATA[<p>If you have tried to keep your code clean by selecting strict compiler warning levels or code analysis rulesets, you likely know how frustrating it can be to see these warnings for headers that are not part of your project. To alleviate this,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">Customized Warning Levels and Code Analysis for External Headers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>If you have tried to keep your code clean by selecting strict compiler warning levels or code analysis rulesets, you likely know how frustrating it can be to see these warnings for headers that are not part of your project. To alleviate this, we’ve made it easy to mark headers as external to your project in the latest <a href="https://visualstudio.microsoft.com/vs/preview/">preview Visual Studio 2019</a>. This is something we have been working on for a while with help and feedback from the community. Some of you may remember our previous post, <a href="https://devblogs.microsoft.com/cppblog/broken-warnings-theory/">Broken Warnings Theory</a>, when we added experimental external header support to the Microsoft C++ Compiler. I’m happy to announce that, thanks to this feedback, external headers are now officially supported by the compiler, code analysis, and integrated into the IDE.</p>
+<p>These external headers can have their own compiler warning level, code analysis, and template diagnostics settings. This leaves you free to choose stricter settings for your project’s code to enforce code quality without getting bogged down with warnings from headers that are beyond your control.</p>
+<h2 id="adding-external-headers-to-your-projects">Adding External Headers to Your Projects</h2>
+<p>You can find a new “External Include Directories” property for your projects under “VC++ Directories” which can be used to designate any include directory as containing external headers. This external include directory will be added to the include search path as normal, but every header that in that directory or a subdirectory of it will be treated as external. From a compilation standpoint, you won’t notice any differences, but you can choose a different set of warning levels and other analysis settings for headers in these directories.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/VCpp-Directories-External-Includes-Annotated.png"><img class="size-full wp-image-28164 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/VCpp-Directories-External-Includes-Annotated.png" alt="Specify “External Include Directories” in the project properties “VC++ Directories” tab." width="786" height="544" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/VCpp-Directories-External-Includes-Annotated.png 786w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/VCpp-Directories-External-Includes-Annotated-300x208.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/VCpp-Directories-External-Includes-Annotated-768x532.png 768w" sizes="(max-width: 786px) 100vw, 786px" /></a></p>
+<p>By default, all headers from the toolset and the Windows SDK are included as external headers. However, you can add any other include directories (such as 3<sup>rd</sup> party libraries) to this new property, separated by a semicolon as well.</p>
+<p>Keep in mind that this new property will be ignored by earlier versions of the toolset. If you want to ensure that the project builds properly with earlier versions, you will need to make sure that any “External Include Directories” are also listed in the “Include Directories” property or they will not be found by the compiler. In Visual Studio 2019, we will continue to also include the toolset and Windows SDK headers in the existing “Include Directories” property for backwards compatibility, but in the next major release of Visual Studio this will be removed.</p>
+<h2 id="customizing-warning-levels-external-headers">Customizing Warning Levels External Headers</h2>
+<p>You can customize the way external headers are treated in the project properties “C/C++ &gt; External Includes” tab.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Cpp-Settings-External-Inlcudes.png"><img class="size-full wp-image-28165 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Cpp-Settings-External-Inlcudes.png" alt="Set the warning level, code analysis, and other settings for external header in the project properties “C/C++ &gt; External Includes” tab." width="786" height="544" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Cpp-Settings-External-Inlcudes.png 786w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Cpp-Settings-External-Inlcudes-300x208.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Cpp-Settings-External-Inlcudes-768x532.png 768w" sizes="(max-width: 786px) 100vw, 786px" /></a></p>
+<h2 id="customizing-code-analysis-settings-for-external-headers">Customizing Code Analysis Settings for External Headers</h2>
+<p>Being able to mark certain headers as external to the project will make Code Analysis much easier to use. The examples below show some of the ways you can leverage this new feature to get the most out of Code Analysis.</p>
+<h3 id="migration-from-undocumented-caexcludepath-to-external-and-analyzeexternal-options">Migration from undocumented CAExcludePath to /external:* and /analyze:external* options</h3>
+<p>To support one of the most common requirements of suppressing code analysis warnings for defects in library headers over which developers have no control, we created a temporary solution to use a special environment variable (“CAExcludePath”), that can be used to specify directories for which code analysis will not report any warnings.</p>
+<p>We now have a better solution to control code analysis behavior for external files. While we decided to leave “CAExcludePath” option as is, we strongly recommend to switch to the /external:* and /analyze:external* options. With these options, code analysis of external headers can be turned off, or use a separate ruleset from the rest of the codebase. These come with even better usability and maintainability as they are all available through the VS IDE.</p>
+<h3 id="using-analyzeexternal-with-external">Using /analyze:external- with /external:*</h3>
+<p>Consider the following header and source files, with no meaningful functionality but intentionally injected bugs:</p>
+<p><strong>Header File (externallib.h)</strong></p>
+<pre class="prettyprint">#pragma once
+ 
+#include &lt;Windows.h&gt;
+ 
+#pragma warning (disable:26440 26497)
+namespace ExternalLib
+{
+#pragma warning(disable:4700)
+    int GetValue()
+    {
+        int arr[2];
+        return arr[2];
+    }
+ 
+    template &lt;typename T&gt;
+    T GetValue(T, _In_range_(0, sizeof(T) - 1) int)
+    {
+        T arr[4];
+        return arr[sizeof(T)];
+    };
+}</pre>
+<p><strong>Source File (MyApp1.cpp)</strong></p>
+<pre class="prettyprint">#include &lt;externallib.h&gt;
+ 
+using namespace ExternalLib;
+ 
+void foo()
+{
+    auto sum = GetValue(3ll, 4);
+    sum += GetValue(3, 3);
+    sum += GetValue(L'a', 2);
+    sum += GetValue('a', 1);
+}</pre>
+<p>When analyzed with default options we get code analysis warnings for functions from both the header file and source file:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External.png"><img class="size-full wp-image-28167 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External.png" alt="Errors without /External" width="1081" height="369" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External.png 1081w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External-300x102.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External-1024x350.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/1-Errors-without-External-768x262.png 768w" sizes="(max-width: 1081px) 100vw, 1081px" /></a></p>
+<p>Now, if we add the directory for the externallib.h to the “External Include Directories” as follows:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/2-Add-Include-to-External.png"><img class="size-full wp-image-28168 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/2-Add-Include-to-External.png" alt="Add Include to External" width="750" height="519" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/2-Add-Include-to-External.png 750w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/2-Add-Include-to-External-300x208.png 300w" sizes="(max-width: 750px) 100vw, 750px" /></a></p>
+<p>And then set the “Disable Code Analysis for External Headers” to “Yes (/analyze:external-)” as follows:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/3-Disable-Code-Analysis-for-External.png"><img class="size-full wp-image-28169 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/3-Disable-Code-Analysis-for-External.png" alt="Disable Code Analysis for External" width="750" height="522" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/3-Disable-Code-Analysis-for-External.png 750w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/3-Disable-Code-Analysis-for-External-300x209.png 300w" sizes="(max-width: 750px) 100vw, 750px" /></a></p>
+<p>Executing “Run Code Analysis” will no longer report any Code Analysis warnings from the external header file:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only.png"><img class="size-full wp-image-28170 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only.png" alt="Errors from Source File Only" width="1100" height="144" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only.png 1100w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only-300x39.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only-1024x134.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/4-Internal-Errors-Only-768x101.png 768w" sizes="(max-width: 1100px) 100vw, 1100px" /></a></p>
+<p>Some templates may have bugs depending on the template arguments. If you want to analyze templates even if they are in the external files, you can set the “Template Diagnostics in External Headers” option to “Yes (/external:templates-)”. Now, executing “Run Code Analysis” will report Code Analysis warnings for the template functions even if they are in the external header file:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors.png"><img class="size-full wp-image-28171 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors.png" alt="Errors from External Templates" width="1103" height="234" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors.png 1103w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors-300x64.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors-1024x217.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/5-Template-Errors-768x163.png 768w" sizes="(max-width: 1103px) 100vw, 1103px" /></a></p>
+<h3 id="using-analyzeexternalruleset-with-external">Using /analyze:external:ruleset with /external:*</h3>
+<p>Instead of turning off code analysis for external files, it is now possible to analyze external files with a different ruleset from the rest of the codebase by specifying a different ruleset file with the “Analysis Ruleset for External Headers” option.</p>
+<p>For this example, I have created a custom ruleset “ExternalHeaderRules” that enables only two rules, C6021 and C6385, as warnings. Then I selected it for the “Analysis Ruleset for External Headers” option:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/6-Custom-Ruleset.png"><img class="size-full wp-image-28172 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/6-Custom-Ruleset.png" alt="Custom Ruleset for External Headers" width="750" height="522" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/6-Custom-Ruleset.png 750w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/6-Custom-Ruleset-300x209.png 300w" sizes="(max-width: 750px) 100vw, 750px" /></a></p>
+<p>Please note that the “Disable Code Analysis for External Headers” option is set to “No”, enabling code analysis on the external headers. With this change, code analysis will now analyze functions from external files using the custom “ExternalHeaderRules” ruleset, and report following warnings:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors.png"><img class="size-full wp-image-28173 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors.png" alt="Errors from Custom Ruleset" width="1097" height="226" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors.png 1097w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors-300x62.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors-1024x211.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/7-Custom-Ruleset-Errors-768x158.png 768w" sizes="(max-width: 1097px) 100vw, 1097px" /></a></p>
+<p>Currently, the &#8220;Template Diagnostics in External Headers” option is ignored if “Analysis Ruleset for External Headers” is used. We plan to change the behavior to honor the option and treat templates as non-external and apply the general ruleset instead of the ruleset for external headers.</p>
+<h3 id="bonus-even-better-code-analysis-performance">Bonus: Even Better Code Analysis Performance</h3>
+<p>While we were working on this feature, we realized some of the built-in checkers were not really skipping functions from the files that are excluded through “CAExcludePath” environment variable. Instead, they were analyzed just like others and the resultant warnings from those functions were simply filtered out. As we add support for the /external:* option, we updated them to honor “CAExcludePath” as well as /external:* and /analyze:external- options, and to skip analysis of functions from excluded or external files. This resulted in observed performance improvements in our production codebase, ranging from 25% to 30%. Actual performance improvements will vary depending on how much of the codebase is from excluded or external header files, and how much of the project uses PCH, etc.</p>
+<h2 id="external-headers-and-the-microsoft-c-compiler">External Headers and the Microsoft C++ Compiler</h2>
+<p>Several new flags have been added to the Microsoft C++ Compiler to specify external include directories and their warning and code analysis settings. You can learn more about the behavior of these flags on our <a href="https://docs.microsoft.com/en-us/cpp/build/reference/external-external-headers-diagnostics?view=msvc-160">compiler documentation pages</a>.</p>
+<h2 id="send-us-feedback">Send Us Feedback</h2>
+<p>Please grab a copy of the <a href="https://visualstudio.microsoft.com/downloads/">latest Visual Studio 2019 preview</a> and try it out. We would love to hear your feedback about Visual Studio. If you have feedback, suggestions, or any other comments please submit them to <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">Customized Warning Levels and Code Analysis for External Headers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>STL Visualizers on GitHub</title>
 		<link>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/#respond</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/#comments</comments>
 		
 		<dc:creator><![CDATA[Anju Del Moral Gonzalez]]></dc:creator>
 		<pubDate>Wed, 23 Jun 2021 15:06:37 +0000</pubDate>
@@ -59,7 +154,7 @@ A visualizer is a file with .natvis extension that allows you to manipulate the 
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -483,7 +578,7 @@ int main() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp20s-extensions-to-chrono-available-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -723,220 +818,6 @@ We have steadily been adding to vcpkg over the years.</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Microsoft C++ Code Analysis supports SARIF 2.1</title>
-		<link>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/#respond</comments>
-		
-		<dc:creator><![CDATA[Hwi-sung Im]]></dc:creator>
-		<pubDate>Thu, 13 May 2021 19:40:53 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<category><![CDATA[code analysis]]></category>
-		<category><![CDATA[Rule Action]]></category>
-		<category><![CDATA[Ruleset]]></category>
-		<category><![CDATA[SARIF]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28068</guid>
-
-					<description><![CDATA[<p>Starting with Visual Studio 16.8, MSVC Code Analysis officially supports SARIF 2.1.0 standard. SARIF is an industry standard for representing static analysis logs and we&#8217;ve been one of the earliest collaborators with the SARIF Technical Committee. Behind the scenes, analysis log files in the SARIF format powers Visual Studio IDE to provide a richer experience that was not possible with the legacy XML logs.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">Microsoft C++ Code Analysis supports SARIF 2.1</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="none">Starting with Visual Studio 16.8, MSVC Code Analysis officially supports SARIF 2.1.0 standard. SARIF is an industry standard for representing static analysis logs and we&#8217;ve been one of the earliest collaborators with the SARIF Technical Committee.</span><span data-contrast="auto"> Behind the scenes, analysis log files in the SARIF format powers Visual Studio IDE to provide a richer experience that was not possible with the legacy XML logs. In this blog post we will present one of those enhanced experiences – </span><span data-contrast="auto">code analysis defects with different severity levels </span><span data-contrast="auto">in Error List and </span><span data-contrast="auto">color-coded squiggles </span><span data-contrast="auto">for offending code segments.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="what-is-sarif"><span data-contrast="none">What is SARIF?</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">SARIF is an acronym for the Static Analysis Results Interchange Format, which is a standard, JSON-based format for the output of static analysis tools. SARIF provides a rich format intended to meet the needs of a wide range of analysis tools, both sophisticated and simple ones. It also provides an extensibility mechanism to allow tool authors to store custom data that the SARIF format doesn&#8217;t directly support.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">You can find more information on SARIF at </span><a href="https://sarifweb.azurewebsites.net/#:~:text=The%20Static%20Analysis%20Results%20Interchange,approved%20as%20an%20OASIS%20standard"><span data-contrast="none">this</span></a><span data-contrast="auto"> introductory page. The latest SARIF standard is available at </span><a href="https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=sarif"><span data-contrast="none">this</span></a><span data-contrast="auto"> page.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="c-code-analysis-and-sarif"><span data-contrast="none">C++ Code Analysis and SARIF</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">MSVC Code Analysis has been using a custom XML log format to report defects it finds during code analysis. While this has served customers well for the last decade, we decided to support SARIF for richer capability such as logging list of files analyzed, configuration overrides for analysis, location where defects are suppressed if logging suppressed warnings, etc.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="none">We have been supporting SARIF in VS for quite some time, even the earliest drafts of the specification. 16.8 is the release that MSVC Code Analysis supports SARIF 2.1 standard.</span><span data-contrast="auto"> With this update, MSVC Code Analysis provided some enhanced experience that many readers may already know, including but not limited to:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Background code analysis</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Green squiggles for code analysis defects</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="4" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Fix-it for automatic recommendations to fix defects</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<p><span data-contrast="auto">To add more improvements to code analysis, we have updated MSVC Code Analysis to support the latest SARIF 2.1.0 standard. At the same time, it has been updated to provide options to record more information to the SARIF log file:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">List of files analyzed </span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Configurations used for code analysis, including command-line options</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="2" aria-setsize="-1" data-aria-posinset="16" data-aria-level="1"><span data-contrast="auto">Rule actions for each of the active rules for which defects are reported</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<p><span data-contrast="auto">While we were updating MSVC Code Analysis to add more information to SARIF log files, we also added new capabilities to it:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="17" data-aria-level="1"><span data-contrast="auto">Ability to log compiler warnings in addition to code analysis warnings</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Ability to log suppressed warnings with location of suppression</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:720,&quot;335559737&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259,&quot;335559991&quot;:360}"> </span></li>
-</ul>
-<h1 aria-level="1" aria-level="1" id="rule-actions-in-visual-studio"><span data-contrast="none">Rule Actions in Visual Studio</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">As we update MSVC Code Analysis with support of the latest SARIF standard and additional information on analysis and defects, we also updated Visual Studio to enhance the code analysis experience. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">In the following sections, let’s look at an enhanced code analysis experience in Visual Studio IDE.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h2 aria-level="1" aria-level="1" id="ruleset-and-rule-actions"><span data-contrast="none">Ruleset and Rule Actions</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h2>
-<p><span data-contrast="auto">MSVC Code Analysis can be used with one or more ruleset files that can enable or disable selected rules. Rules that are enabled in the ruleset are checked and reported by the analysis tools. Rules that are disabled in a ruleset will be ignored by MSVC Code Analysis and will not be checked or reported. More information on rulesets can be found </span><a href="https://docs.microsoft.com/en-us/visualstudio/code-quality/using-rule-sets-to-group-code-analysis-rules"><span data-contrast="none">here</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Each of the rules in the ruleset file can be assigned with one of the following “Rule Action” values:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<table data-tablestyle="MsoTableGrid" data-tablelook="1184" aria-rowcount="7">
-<tbody>
-<tr aria-rowindex="1">
-<td data-celllook="65536"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="65536"><b><span data-contrast="auto">Description</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="2">
-<td data-celllook="0"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">Do not check or report</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="3">
-<td data-celllook="0"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">May check, but do not report</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="4">
-<td data-celllook="0"><span data-contrast="auto">Default</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">Inherit default action from &lt;Include&gt; or &lt;IncludeAll&gt;</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="5">
-<td data-celllook="0"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">Report as Informational</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="6">
-<td data-celllook="0"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">Report as Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="7">
-<td data-celllook="0"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">Report as Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-</tbody>
-</table>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Until we added support for SARIF, MSVC Code Analysis could only map these rule actions simply to “enabled” or “disabled” states, and either reported or ignored until it was added with the support for SARIF. Visual Studio build used ruleset files directly and could differentiate rules with “Error” Rule Action from the reset of the enabled rules, which were considered as “Warning” regardless of their Rule Action values. Visual Studio IDE did not honor the Rule Action values, and treated everything as “Warning”.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">With the support of SARIF, MSVC Code Analysis now maps these rule actions to the SARIF’s level property in the log file as follows:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<table data-tablestyle="MsoTableGrid" data-tablelook="1184" aria-rowcount="6">
-<tbody>
-<tr aria-rowindex="1">
-<td data-celllook="65536"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="65536"><b><span data-contrast="auto">SARIF level property</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="2">
-<td data-celllook="0"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="3">
-<td data-celllook="0"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="4">
-<td data-celllook="0"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">note</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="5">
-<td data-celllook="0"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-<tr aria-rowindex="6">
-<td data-celllook="0"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-<td data-celllook="0"><span data-contrast="auto">error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:259}"> </span></td>
-</tr>
-</tbody>
-</table>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">A rule with Rule Action value of “default” will be assigned with one of the other Rule Action values before mapped to the SARIF’s level.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h2 aria-level="1" aria-level="1" id="rule-actions-in-action"><span data-contrast="none">Rule Actions in Action</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h2>
-<p><span data-contrast="auto">Let’s look at how Visual Studio now uses the Rule Action values in the ruleset to improve the code analysis experience. As an example, let’s consider a custom ruleset with the following content:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint">&lt;?xml version="1.0" encoding="utf-8"?&gt; 
-&lt;RuleSet Name="Copy of Microsoft Native Recommended Rules" Description="My custom rules" ToolsVersion="16.0"&gt; 
-  &lt;Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native"&gt; 
-    &lt;Rule Id="C6001" Action="Warning" /&gt; 
-    &lt;Rule Id="C6011" Action="Error" /&gt; 
-    &lt;Rule Id="C6201" Action="None" /&gt; 
-    &lt;Rule Id="C6385" Action="Info" /&gt; 
-    &lt;Rule Id="C6386" Action="Info" /&gt; 
-  &lt;/Rules&gt; 
-&lt;/RuleSet&gt;</pre>
-<p><span data-contrast="auto">And a *.cpp file with following test code:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
-<pre class="prettyprint">#pragma warning(disable:4700)
-  
-void foo()
-{ 
-    int arr[4]{}; 
-    int v = arr[4]; // C6201, C6385 
-    arr[4] = 2;     // C6201, C6386 
-
-    int x; 
-    int* py = nullptr; 
-    int y = *py;    // C6011 
-    y += x;         // C6001 
-}</pre>
-<p><span data-contrast="auto">When configured to use the above custom ruleset for analysis, analyzing the test code in Visual Studio produces results as shown in below screenshot:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1.png"><img class="alignnone wp-image-28070" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-300x173.png" alt="Image Untitled" width="791" height="456" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-300x173.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-1024x592.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1-768x444.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/Untitled-1.png 1293w" sizes="(max-width: 791px) 100vw, 791px" /></a></p>
-<p><span data-contrast="auto">Please note how the defects are listed in the Error List window, and how their corresponding code segments are highlighted in the text editor window:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">In the Error List window, C6011 is listed as an Error, C6001 as a Warning,  and C6385 and C6386 as Messages.</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="3" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">In the text editor window, code segment for C6011 is highlighted with red squiggle, C6001 with green squiggle, and C6385 and C6386 with gray squiggles (dots)</span><span data-ccp-props="{&quot;134233279&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<p><span data-contrast="auto">As you can see in the above example, rule actions in the ruleset maps to Visual Studio build output, Error List, and text editor display through the level property of SARIF as follows:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<table data-tablestyle="MsoNormalTable" data-tablelook="1184" aria-rowcount="7">
-<tbody>
-<tr aria-rowindex="1">
-<td data-celllook="69905"><b><span data-contrast="auto">Rule Action</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="69905"><b><span data-contrast="auto">SARIF level</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="69905"><b><span data-contrast="auto">Build Output</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="69905"><b><span data-contrast="auto">Error List</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="69905"><b><span data-contrast="auto">Editor Display</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="2">
-<td data-celllook="4369"><span data-contrast="auto">Error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">error</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Errors</span></i><span data-contrast="auto"> in the output window. These cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Errors</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a red squiggle and marked by a small red box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="3">
-<td data-celllook="4369"><span data-contrast="auto">Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the output window. These do not cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a green squiggle and marked by a small green box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="4">
-<td data-celllook="4369"><span data-contrast="auto">Info</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">note</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Warnings</span></i><span data-contrast="auto"> in the build output. These do not cause the build to fail.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Appear as </span><i><span data-contrast="auto">Messages</span></i><span data-contrast="auto"> in the Error List.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Offending code is underlined with a gray squiggle and marked by a small gray box in the scroll bar.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="5">
-<td data-celllook="4369"><span data-contrast="auto">Hidden</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="6">
-<td data-celllook="4369"><span data-contrast="auto">None</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">none</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-contrast="auto">Not reported</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-<tr aria-rowindex="7">
-<td data-celllook="4369"><span data-contrast="auto">Default</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td data-celllook="4369"><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-<td colspan="3" data-celllook="4369"><span data-contrast="auto">Corresponds to the default action of the rule.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:240}"> </span></td>
-</tr>
-</tbody>
-</table>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Please note that rules with Rule Action value of “Info” is also reported as “Warning” in the Visual Studio build output window. This has been the behavior before the adoption of SARIF log format. Following our guiding principle of keeping minimal friction for our customers during Visual Studio upgrades, we kept this behavior as is to not change the build behavior of existing projects. Please share your feedback on this for future improvements – whether it should be updated to honor the Rule Action value of “Info” and reported as “Note” or something like that.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="send-us-feedback"><span data-contrast="none">Send Us Feedback</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="none">Please download </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">the latest Visual Studio 2019</span></a><span data-contrast="none"> and give it a try! Any feedback is welcome. We can be reached via the comments below, </span><a href="https://developercommunity.visualstudio.com/spaces/8/index.html"><span data-contrast="none">Developer Community</span></a><span data-contrast="none">, email (</span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none">), and Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">Microsoft C++ Code Analysis supports SARIF 2.1</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
