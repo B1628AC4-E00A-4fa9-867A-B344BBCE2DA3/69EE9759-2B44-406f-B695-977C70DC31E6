@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2021-07-04T02:22:20+00:00</dc:date>
+<dc:date>2021-07-04T04:15:16+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,7 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://hardware.srad.jp/story/21/07/04/0020250/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/21/07/04/0010256/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/21/07/03/0824230/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/21/07/03/078203/" />
@@ -37,7 +38,6 @@
   <rdf:li rdf:resource="https://srad.jp/story/21/07/02/0057246/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/21/07/02/0022242/" />
   <rdf:li rdf:resource="https://security.srad.jp/story/21/07/02/009207/" />
-  <rdf:li rdf:resource="https://developers.srad.jp/story/21/07/02/0116257/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,104 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://hardware.srad.jp/story/21/07/04/0020250/">
+<title>Windows の Print Spooler で見つかった脆弱性、研究者の勘違いでゼロデイに</title>
+<link>https://hardware.srad.jp/story/21/07/04/0020250/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/printer_64.png"&gt;Windows の Print Spooler サービスで最近見つかったゼロデイ脆弱性「PrintNightmare」について、Microsoftがセキュリティアドバイザリーを公開している(CVE-2021-34527、 The Verge の記事、 BleepingComputer の記事、 BetaNews の記事)。
+
+PrintNightmare は Print Spooler サービスが特権のあるファイル操作を適切に処理しないことが原因で、リモートから SYSTEM の権限で任意コード実行が可能になるというもの。発見した中国・Sangfor Technologies のセキュリティ研究者は 8 月の Black Hat 2021 USA での発表を予定している。しかし、6月の月例更新で修正された Print Spooler サービスのリモートコード実行脆弱性 (CVE-2021-1675) をこの脆弱性と取り違え、修正済みだと思ってPoCを公開してしまったのだという。研究者は間違いに気付いて PoC を削除したものの、既にアクティブな攻撃が行われているようだ。
+
+影響を受けるのは現在サポートされるすべての Windows バージョンで、Windows 7 SP1 / Server 2008 / 2008 R2 も含まれる。現時点で更新プログラムの提供時期は示されておらず、回避策として Print Spooler サービスの停止および無効化(対策1)と、グループポリシー(コンピューターの構成 → 管理用テンプレート → プリンター)の「印刷スプーラーにクライアント接続の受け入れを許可する」を無効に設定(対策2)の2つの方法が示されている。なお、対策1を適用するとローカル・リモートともに印刷ができなくなる。一方、対策2を適用したシステムはプリントサーバーとしては動作しなくなるが、ローカルでの印刷は可能だ。
+
+サードパーティパッチを提供する 0patch は特に影響が大きい Windows Server 2008 R2 / 2012 / 2016 / 2019 向けマイクロパッチの提供を開始している。0patch によれば Windows 10 への攻撃はドメイン環境で成功せず、非ドメイン環境ではローカルユーザーの認証情報が必要だったという。Windows 7 には影響しないように見えるが、さらなるテストが必要とのこと。2020 年 1 月の更新を適用した Windows Server 2008 R2 も影響を受けるとのことで、脆弱性は少なくとも 1 年半以上前から存在したようだ(0patch Blog の記事)。&lt;p&gt; &lt;a href="https://hardware.srad.jp/story/21/07/04/0020250/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/printers"&gt;プリンター&lt;/a&gt; | &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/humor"&gt;変なモノ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/windows"&gt;Windows&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/21/07/04/0020250/&amp;amp;text=Windows%20%E3%81%AE%20Print%20Spooler%20%E3%81%A7%E8%A6%8B%E3%81%A4%E3%81%8B%E3%81%A3%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%81%E7%A0%94%E7%A9%B6%E8%80%85%E3%81%AE%E5%8B%98%E9%81%95%E3%81%84%E3%81%A7%E3%82%BC%E3%83%AD%E3%83%87%E3%82%A4%E3%81%AB" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/21/07/04/0020250/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/21/07/04/0020250/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/21/07/04/0020250/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/06/26/0558239"&gt;Google、連続殺人犯に関するナレッジパネルに同姓同名の別人の写真を掲載&lt;/a&gt; &lt;small&gt;2021年06月26日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/21/06/12/045257"&gt;Google Chrome、アドレスボックスにドメイン名のみを表示する計画を取りやめ&lt;/a&gt; &lt;small&gt;2021年06月12日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/03/16/2027237"&gt;Microsoft、特定のプリンター使用時にブルースクリーンが出る問題に対処。更新プログラム提供へ&lt;/a&gt; &lt;small&gt;2021年03月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://mobile.srad.jp/story/21/03/14/187249"&gt;Windows 10の月例パッチに問題、特定のプリンター使用時にブルースクリーンが発生&lt;/a&gt; &lt;small&gt;2021年03月15日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/12/26/2116241"&gt;GoogleのProject Zero、6月の更新プログラムで完全に修正されていなかったWindows 10の脆弱性を公表&lt;/a&gt; &lt;small&gt;2020年12月27日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/01/0317226"&gt;GoogleのProject Zero、Windowsカーネルのゼロデイ脆弱性を公表&lt;/a&gt; &lt;small&gt;2020年11月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/09/17/2331223"&gt;オーストラリア・メルボルン市政府、駐車料金支払いアプリで「0」と「O」を取り違えて入力して駐車違反となったケースで反則金を返金へ&lt;/a&gt; &lt;small&gt;2020年09月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/06/19/206219"&gt;Windows 10 Insider Preview、初の20H2ビルドが登場&lt;/a&gt; &lt;small&gt;2020年06月20日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/19/1326252"&gt;Windowsで印刷不能になる不具合、これを修正する更新プログラムがリリースされる&lt;/a&gt; &lt;small&gt;2020年06月19日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/03/30/1519231"&gt;勾配降下法を使用する機械学習モデルに、誤った識別をさせるような入力を作成することが可能な問題&lt;/a&gt; &lt;small&gt;2020年03月31日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/01/18/2137249"&gt;Microsoft、Internet Explorerのゼロデイ脆弱性を公表&lt;/a&gt; &lt;small&gt;2020年01月19日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/19/04/05/0652240"&gt;カメラやセンサーを騙すことでTeslaのAutopilotを混乱させる攻撃&lt;/a&gt; &lt;small&gt;2019年04月05日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/19/03/10/023223"&gt;Google、Chromeのゼロデイ脆弱性と組み合わせて攻撃に使われていたWindowsのゼロデイ脆弱性を公表&lt;/a&gt; &lt;small&gt;2019年03月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/17/05/05/1947230"&gt;Microsoft Edgeで特定のPDFファイルを印刷すると一部違う内容が出力される問題が見つかる&lt;/a&gt; &lt;small&gt;2017年05月06日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/17/03/04/1939254"&gt;Googleの有害コメント判定ツールを混乱させる方法&lt;/a&gt; &lt;small&gt;2017年03月05日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/17/02/09/057211"&gt;Windowsをクラッシュさせるゼロデイ・エクスプロイトコードがGitHubで公開&lt;/a&gt; &lt;small&gt;2017年02月10日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>headless</dc:creator>
+<dc:date>2021-07-04T02:44:00+00:00</dc:date>
+<dc:subject>printers</dc:subject>
+<slash:department>研究者を混乱させる攻撃</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>2</slash:comments>
+<slash:hit_parade>2,2,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/printer_64.png"&gt;Windows の Print Spooler サービスで最近見つかったゼロデイ脆弱性「PrintNightmare」について、Microsoftがセキュリティアドバイザリーを公開している(&lt;a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34527"&gt;CVE-2021-34527&lt;/a&gt;、 &lt;a href="https://www.theverge.com/2021/7/2/22560435/microsoft-printnightmare-windows-print-spooler-service-vulnerability-exploit-0-day"&gt;The Verge の記事&lt;/a&gt;、 &lt;a href="https://www.bleepingcomputer.com/news/security/microsoft-shares-mitigations-for-windows-printnightmare-zero-day-bug/"&gt;BleepingComputer の記事&lt;/a&gt;、 &lt;a href="https://betanews.com/2021/07/02/0patch-comes-to-the-rescue-with-free-micropatches-for-windows-printnightmare-vulnerability/"&gt;BetaNews の記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+PrintNightmare は Print Spooler サービスが特権のあるファイル操作を適切に処理しないことが原因で、リモートから SYSTEM の権限で任意コード実行が可能になるというもの。発見した中国・Sangfor Technologies のセキュリティ研究者は 8 月の &lt;a href="https://www.blackhat.com/us-21/briefings/schedule/#diving-into-spooler-discovering-lpe-and-rce-vulnerabilities-in-windows-printer-23315"&gt;Black Hat 2021 USA での発表を予定&lt;/a&gt;している。しかし、6月の月例更新で修正された Print Spooler サービスのリモートコード実行脆弱性 (&lt;a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-1675"&gt;CVE-2021-1675&lt;/a&gt;) をこの脆弱性と取り違え、修正済みだと思って&lt;a href="https://www.theregister.com/2021/06/30/windows_print_spool_vuln_rce/"&gt;PoCを公開してしまった&lt;/a&gt;のだという。研究者は&lt;a href="https://twitter.com/edwardzpeng/status/1409810304091889669"&gt;間違いに気付いて PoC を削除&lt;/a&gt;したものの、既にアクティブな攻撃が行われているようだ。&lt;br&gt;
+&lt;br&gt;
+影響を受けるのは現在サポートされるすべての Windows バージョンで、Windows 7 SP1 / Server 2008 / 2008 R2 も含まれる。現時点で更新プログラムの提供時期は示されておらず、回避策として Print Spooler サービスの停止および無効化(対策1)と、グループポリシー(コンピューターの構成 → 管理用テンプレート → プリンター)の「印刷スプーラーにクライアント接続の受け入れを許可する」を無効に設定(対策2)の2つの方法が示されている。なお、対策1を適用するとローカル・リモートともに印刷ができなくなる。一方、対策2を適用したシステムはプリントサーバーとしては動作しなくなるが、ローカルでの印刷は可能だ。&lt;br&gt;
+&lt;br&gt;
+サードパーティパッチを提供する 0patch は特に影響が大きい Windows Server 2008 R2 / 2012 / 2016 / 2019 向けマイクロパッチの提供を開始している。0patch によれば Windows 10 への攻撃はドメイン環境で成功せず、非ドメイン環境ではローカルユーザーの認証情報が必要だったという。Windows 7 には影響しないように見えるが、さらなるテストが必要とのこと。2020 年 1 月の更新を適用した Windows Server 2008 R2 も影響を受けるとのことで、脆弱性は少なくとも 1 年半以上前から存在したようだ(&lt;a href="https://blog.0patch.com/2021/07/free-micropatches-for-printnightmare.html"&gt;0patch Blog の記事&lt;/a&gt;)。&lt;p&gt;
+	&lt;a href="https://hardware.srad.jp/story/21/07/04/0020250/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/printers"&gt;プリンター&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/humor"&gt;変なモノ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/windows"&gt;Windows&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/21/07/04/0020250/&amp;amp;text=Windows%20%E3%81%AE%20Print%20Spooler%20%E3%81%A7%E8%A6%8B%E3%81%A4%E3%81%8B%E3%81%A3%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%81%E7%A0%94%E7%A9%B6%E8%80%85%E3%81%AE%E5%8B%98%E9%81%95%E3%81%84%E3%81%A7%E3%82%BC%E3%83%AD%E3%83%87%E3%82%A4%E3%81%AB" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/21/07/04/0020250/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/21/07/04/0020250/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/21/07/04/0020250/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/06/26/0558239"&gt;Google、連続殺人犯に関するナレッジパネルに同姓同名の別人の写真を掲載&lt;/a&gt;
+			&lt;small&gt;2021年06月26日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/21/06/12/045257"&gt;Google Chrome、アドレスボックスにドメイン名のみを表示する計画を取りやめ&lt;/a&gt;
+			&lt;small&gt;2021年06月12日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/03/16/2027237"&gt;Microsoft、特定のプリンター使用時にブルースクリーンが出る問題に対処。更新プログラム提供へ&lt;/a&gt;
+			&lt;small&gt;2021年03月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://mobile.srad.jp/story/21/03/14/187249"&gt;Windows 10の月例パッチに問題、特定のプリンター使用時にブルースクリーンが発生&lt;/a&gt;
+			&lt;small&gt;2021年03月15日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/12/26/2116241"&gt;GoogleのProject Zero、6月の更新プログラムで完全に修正されていなかったWindows 10の脆弱性を公表&lt;/a&gt;
+			&lt;small&gt;2020年12月27日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/11/01/0317226"&gt;GoogleのProject Zero、Windowsカーネルのゼロデイ脆弱性を公表&lt;/a&gt;
+			&lt;small&gt;2020年11月01日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/09/17/2331223"&gt;オーストラリア・メルボルン市政府、駐車料金支払いアプリで「0」と「O」を取り違えて入力して駐車違反となったケースで反則金を返金へ&lt;/a&gt;
+			&lt;small&gt;2020年09月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/06/19/206219"&gt;Windows 10 Insider Preview、初の20H2ビルドが登場&lt;/a&gt;
+			&lt;small&gt;2020年06月20日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/19/1326252"&gt;Windowsで印刷不能になる不具合、これを修正する更新プログラムがリリースされる&lt;/a&gt;
+			&lt;small&gt;2020年06月19日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/03/30/1519231"&gt;勾配降下法を使用する機械学習モデルに、誤った識別をさせるような入力を作成することが可能な問題&lt;/a&gt;
+			&lt;small&gt;2020年03月31日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/01/18/2137249"&gt;Microsoft、Internet Explorerのゼロデイ脆弱性を公表&lt;/a&gt;
+			&lt;small&gt;2020年01月19日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/19/04/05/0652240"&gt;カメラやセンサーを騙すことでTeslaのAutopilotを混乱させる攻撃&lt;/a&gt;
+			&lt;small&gt;2019年04月05日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/19/03/10/023223"&gt;Google、Chromeのゼロデイ脆弱性と組み合わせて攻撃に使われていたWindowsのゼロデイ脆弱性を公表&lt;/a&gt;
+			&lt;small&gt;2019年03月10日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/17/05/05/1947230"&gt;Microsoft Edgeで特定のPDFファイルを印刷すると一部違う内容が出力される問題が見つかる&lt;/a&gt;
+			&lt;small&gt;2017年05月06日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/17/03/04/1939254"&gt;Googleの有害コメント判定ツールを混乱させる方法&lt;/a&gt;
+			&lt;small&gt;2017年03月05日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/17/02/09/057211"&gt;Windowsをクラッシュさせるゼロデイ・エクスプロイトコードがGitHubで公開&lt;/a&gt;
+			&lt;small&gt;2017年02月10日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://it.srad.jp/story/21/07/04/0010256/">
 <title>米連邦地裁、ソーシャルメディアの政治家排除を禁ずるフロリダ州法に事前差止命令</title>
 <link>https://it.srad.jp/story/21/07/04/0010256/</link>
@@ -63,8 +161,8 @@
 <dc:subject>doj</dc:subject>
 <slash:department>差止</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>4</slash:comments>
-<slash:hit_parade>4,4,0,0,0,0,0</slash:hit_parade>
+<slash:comments>11</slash:comments>
+<slash:hit_parade>11,10,1,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/court_64.png"&gt;米フロリダ北部地区連邦地裁の Robert L. Hinkle 判事は 6 月 30 日、ソーシャルメディアプラットフォームに対する規制を強化するフロリダ州法に事前差止を命じた(&lt;a href="https://storage.courtlistener.com/recap/gov.uscourts.flnd.371253/gov.uscourts.flnd.371253.113.0_1.pdf"&gt;裁判所文書: PDF&lt;/a&gt; 、 &lt;a href="https://www.theverge.com/2021/6/30/22558086/florida-social-media-theme-park-law-preliminary-injunction-lawsuit"&gt;The Verge の記事&lt;/a&gt;、 &lt;a href="https://arstechnica.com/tech-policy/2021/07/judge-tears-floridas-social-media-law-to-shreds-for-violating-first-amendment/"&gt;Ars Technica の記事&lt;/a&gt;、 &lt;a href="https://thenextweb.com/news/florida-court-deplatforming-social-media-law-block"&gt;The Next Web の記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 &lt;a href="https://www.flsenate.gov/Session/Bill/2021/7072/"&gt;法案 SB 7072&lt;/a&gt; として 5 月に可決・成立したこの州法は、ソーシャルメディアプラットフォームに選挙戦を戦う候補者の排除を禁ずる内容だ。対象からディズニーを除外するため、&lt;a href="https://idle.srad.jp/story/21/05/02/0427222/"&gt;テーマパークまたはエンターテインメント複合施設を所有・運営する企業によるサービスを含まないという条項が採決の直前に追加&lt;/a&gt;されている。&lt;br&gt;
@@ -136,8 +234,8 @@
 <dc:subject>usa</dc:subject>
 <slash:department>複雑</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>91</slash:comments>
-<slash:hit_parade>91,89,21,4,0,0,0</slash:hit_parade>
+<slash:comments>99</slash:comments>
+<slash:hit_parade>99,97,23,8,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/usa_64.png"&gt;米国務省は 6 月 30 日、男性 (M)・女性 (F) 以外の性別を記載したパスポートや米国外出生証明書 (CRBA) の発行を可能にすべく作業を進めていることを明らかにした(&lt;a href="https://www.state.gov/proposing-changes-to-the-departments-policies-on-gender-on-u-s-passports-and-consular-reports-of-birth-abroad/"&gt;プレスリリース&lt;/a&gt;、 &lt;a href="https://travel.state.gov/content/travel/en/passports/need-passport/selecting-your-gender-marker.html"&gt;Selecting your Gender Marker&lt;/a&gt; 、 &lt;a href="https://www.whitehouse.gov/briefing-room/statements-releases/2021/06/30/fact-sheet-biden-harris-administration-advances-equality-for-transgender-americans/"&gt;ホワイトハウスの記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 長期的には&lt;a href="https://science.srad.jp/story/19/11/10/0111201/"&gt;ノンバイナリー&lt;/a&gt;の人やインターセックスの人、ジェンダーに従わない人がパスポートや CRBA を申請する際に指定可能な性別マーカーを追加することを目指す。性別の追加は技術的に大きな複雑さを伴い、システムの改修には時間がかかるとみられる。このようなパスポートで旅行する場合に問題が発生しないよう、他の省庁とも共同で作業を進めているそうだ。&lt;br&gt;
@@ -192,8 +290,8 @@
 <dc:subject>twitter</dc:subject>
 <slash:department>独立</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>13</slash:comments>
-<slash:hit_parade>13,13,2,0,0,0,0</slash:hit_parade>
+<slash:comments>14</slash:comments>
+<slash:hit_parade>14,14,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/twitter_64.png"&gt;Twitter は 6 月 30 日、セキュリティキーのみで 2 要素認証 (2FA) が利用可能になったと発表した( &lt;a href="https://blog.twitter.com/en_us/topics/product/2020/stronger-security-for-your-twitter-account"&gt;Twitter のブログ記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 以前は &lt;a href="https://it.srad.jp/story/19/11/23/2143216/"&gt;Web 版でのみ 2FAに利用可能だったセキュリティキー&lt;/a&gt;だが、&lt;a href="https://twitter.com/TwitterSupport/status/1334229117978497024"&gt;昨年 12 月には Android/iOS アプリでもセキュリティキーを 2FA に利用できる&lt;/a&gt;ようになっている。&lt;a href="https://twitter.com/TwitterSupport/status/1371510300973875201"&gt;今年 3 月には複数のセキュリティキーが登録可能&lt;/a&gt;になり、複数人で管理するアカウントでの 2FA 利用が容易になった。&lt;br&gt;
@@ -245,8 +343,8 @@ AAB は APK に代わる Android の新しいアプリ公開フォーマット�
 <dc:subject>android</dc:subject>
 <slash:department>新型</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>9</slash:comments>
-<slash:hit_parade>9,9,0,0,0,0,0</slash:hit_parade>
+<slash:comments>10</slash:comments>
+<slash:hit_parade>10,10,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/android_64.png"&gt;Google は 6 月 29 日、Google Play ストアで 8 月以降に新規公開するアプリについて &lt;a href="https://developer.android.com/platform/technology/app-bundle"&gt;Android App Bundle&lt;/a&gt; (AAB) 形式での公開を必須にする計画を発表した(&lt;a href="https://android-developers.googleblog.com/2021/06/the-future-of-android-app-bundles-is.html"&gt;Android Developers Blog の記事&lt;/a&gt;、 &lt;a href="https://www.theverge.com/2021/6/30/22557390/google-apk-app-bundles-package-format-play-store"&gt;The Verge の記事&lt;/a&gt;、 &lt;a href="https://www.slashgear.com/android-app-bundles-are-replacing-apks-why-it-matters-29680485/"&gt;SlashGear の記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 AAB は APK に代わる Android の新しいアプリ公開フォーマットで、APK と比較してリリース管理の効率が向上し、アプリサイズの縮小や機能配信のカスタマイズが可能といったメリットもある。AAB 形式でリリースされているアプリは既に 100 万本を超えており、 &lt;a href="https://developer.android.com/stories/apps/adobe-app-bundle"&gt;Adobe&lt;/a&gt; や &lt;a href="https://developer.android.com/stories/apps/duolingo"&gt;Duolingo&lt;/a&gt; 、 &lt;a href="https://developer.android.com/stories/games/gameloft-pad"&gt;Gameloft&lt;/a&gt; 、 &lt;a href="https://developer.android.com/stories/apps/twitter"&gt;Twitter&lt;/a&gt; を含むGoogle Play でトップ 1000 アプリ・ゲームの大半が AAB 形式を使用しているという。APK から AAB へ移行するにはビルド時のオプションを変更するだけでよく、主要なビルドツールがサポートしているとのことだ。&lt;p&gt;
@@ -317,8 +415,8 @@ Microsoft はデジタルプラットフォームによるアプリストア独�
 <dc:subject>google</dc:subject>
 <slash:department>敵対</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>7</slash:comments>
-<slash:hit_parade>7,7,1,0,0,0,0</slash:hit_parade>
+<slash:comments>8</slash:comments>
+<slash:hit_parade>8,8,1,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/google_64.png"&gt;Microsoft と Google の非敵対協定が 4 月に期限切れになっていたと報じられている(&lt;a href="https://www.bloomberg.com/news/articles/2021-06-30/google-microsoft-truce-crumbles-amid-feud-over-cloud-ad-tech"&gt;Bloomberg の記事&lt;/a&gt;、 &lt;a href="https://arstechnica.com/tech-policy/2021/06/google-and-microsoft-ditch-non-aggression-pact-rev-up-rivalry-again/"&gt;Ars Technica の記事&lt;/a&gt;、 &lt;a href="https://www.windowscentral.com/microsoft-and-google-are-ready-wage-legal-war-each-other"&gt;Windows Central の記事&lt;/a&gt;、 &lt;a href="https://www.theverge.com/2021/6/30/22557595/microsoft-google-six-year-legal-truce-end-scroogled-battles"&gt;The Verge の記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
 2013年には Microsoft が Google のプライバシー侵害を批判する &lt;a href="https://it.srad.jp/story/13/02/12/0511254/"&gt;Scroogled キャンペーン&lt;/a&gt;を実施するなど対立していた両社だが、&lt;a href="https://srad.jp/story/14/02/05/0549207/"&gt;2014年にサティア・ナデラ氏が Microsoft CEO に就任&lt;/a&gt;し、&lt;a href="https://it.srad.jp/story/15/08/11/180240/"&gt;2015年に Alphabet の子会社となった Google&lt;/a&gt; の CEO にスンダー・ピチャイ氏が就任してからは状況が変わる。両社は &lt;a href="https://www.bbc.com/news/technology-34409077"&gt;2015 年に 18 件の特許訴訟をすべて取り下げ&lt;/a&gt;、特許関連で協力していくことを発表しており、2016 年 4 月にはお互いに敵対するロビー活動を行わないことなどを含む書面による協定を正式に締結していたそうだ。&lt;br&gt;
@@ -496,8 +594,8 @@ Bluetooth 接続設定画面は通常の Bluetooth 搭載機器と同様で、�
 <dc:subject>japan</dc:subject>
 <slash:department>都市部は在宅率が増減しやすい</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>91</slash:comments>
-<slash:hit_parade>91,91,6,2,0,0,0</slash:hit_parade>
+<slash:comments>92</slash:comments>
+<slash:hit_parade>92,92,6,2,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/japan_64.png"&gt;国土交通省は毎年4月と10月に定期的に宅配便の再配達率のサンプル調査を実施している。6月26日に発表された調査結果によれば、2021年4月の宅配便の再配達率は全国の平均では約11.2％だったそうだ。これは前年同月の約8.5％よりも約2.7％増加した結果となった（&lt;a href="https://www.mlit.go.jp/report/press/tokatsu01_hh_000561.html"&gt;国土交通省&lt;/a&gt;、&lt;a href="https://ecnomikata.com/ecnews/30997/"&gt;ECのミカタ&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 再配達率が増加した理由として、前年同月は緊急事態宣が出ており在宅率が高かったのに対し、今年は在宅時間が減少したことが影響したと見られる。それでも一昨年の2019年の再配達率約16.0％と比較すると減少傾向にある。なお、都市部では2019年4月が18.0％、2020年4月が8.2％、2021年4月は12.0％と増減の幅が大きいのに対して、地方ではは2019年4月が12.4％、2020年4月が10.1％、2021年4月は10.2％とコロナ禍の影響による増減の幅は少なめとなっている。&lt;p&gt;
@@ -547,8 +645,8 @@ Bluetooth 接続設定画面は通常の Bluetooth 搭載機器と同様で、�
 <dc:subject>biotech</dc:subject>
 <slash:department>バイオ肉</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>81</slash:comments>
-<slash:hit_parade>81,81,10,4,1,0,0</slash:hit_parade>
+<slash:comments>82</slash:comments>
+<slash:hit_parade>82,82,10,4,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/biotech_64.png"&gt;イスラエルの企業「Future Meat」は6月23日、世界初の産業用培養肉生産施設を開設したと発表した。この施設では、1日に500キログラムの培養製品を生産する能力があり、この量は5,000個のハンバーガーに相当するそうだ（&lt;a href="https://www.prnewswire.com/news-releases/future-meat-technologies-launches-worlds-first-industrial-cultured-meat-production-facility-301317975.html"&gt;PRNewswire&lt;/a&gt;、&lt;a href="https://foodtech-japan.com/2021/06/24/future-meat-3/"&gt;Foovo&lt;/a&gt;、&lt;a href="https://gigazine.net/news/20210628-worlds-first-industrial-cultured-meat-production-facility/"&gt;GIGAZINE&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 この施設では、動物の血清や遺伝子組み換え材料を使用せずに鶏肉、豚肉、子羊の培養物を生産できるという。その上、従来の畜産設備の約20倍の高速生産が可能になるとしている。同社の最初の製品では、培養肉が45から60％、植物性タンパク質が40から55％の割合の培養ハイブリッド肉となる予定だとしている。&lt;br&gt; &lt;br&gt;
@@ -654,60 +752,6 @@ Bluetooth 接続設定画面は通常の Bluetooth 搭載機器と同様で、�
 		
 			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/27/2152256"&gt;米国でテレワーカーをターゲットにした詐欺が横行。偽VPNページにアクセスさせて情報搾取&lt;/a&gt;
 			&lt;small&gt;2020年08月28日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://developers.srad.jp/story/21/07/02/0116257/">
-<title>ゲーム中の扉の開発は武器やスキルシステムより時間が掛かる</title>
-<link>https://developers.srad.jp/story/21/07/02/0116257/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;4Gamer.netの記事によれば、ゲームに使われるドアは開発が複雑すぎるのだそうだ。インディ開発者のStephan Hövelbrinks氏のTwitterでの発言がきっかけで、開発者の間で議論が活発化した模様。「CONTROL」のリードゲームプレイデザイナーであるSergey Mohov氏は、武器やスキルシステムの開発時間より扉の開発にかかる時間の方が長いと話しているそうだ。こうした意見に賛同する開発者も多かった模様（4Gamer.net、游研社）。&lt;p&gt; &lt;a href="https://developers.srad.jp/story/21/07/02/0116257/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://developers.srad.jp/"&gt;デベロッパーセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/programming"&gt;プログラミング&lt;/a&gt; | &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://developers.srad.jp/story/21/07/02/0116257/&amp;amp;text=%E3%82%B2%E3%83%BC%E3%83%A0%E4%B8%AD%E3%81%AE%E6%89%89%E3%81%AE%E9%96%8B%E7%99%BA%E3%81%AF%E6%AD%A6%E5%99%A8%E3%82%84%E3%82%B9%E3%82%AD%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E3%82%88%E3%82%8A%E6%99%82%E9%96%93%E3%81%8C%E6%8E%9B%E3%81%8B%E3%82%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://developers.srad.jp/story/21/07/02/0116257/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://developers.srad.jp/story/21/07/02/0116257/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://developers.srad.jp/story/21/07/02/0116257/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://idle.srad.jp/story/21/06/30/1738233"&gt;サクラ革命、機能限定版の開発に手間取りサービス終了日を延期する結果に&lt;/a&gt; &lt;small&gt;2021年07月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/21/06/24/168210"&gt;発売直後のSwitch用「はじめてゲームプログラミング」でマリオやパックマンが速攻で再現される&lt;/a&gt; &lt;small&gt;2021年06月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/06/15/0058251"&gt;アピリッツ、けものフレンズ3をセガから運営移管すると発表&lt;/a&gt; &lt;small&gt;2021年06月16日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/05/13/1724210"&gt;ゲーム開発者が自分の給与を公開する「#GameDevPaidMe」ハッシュタグが広がる&lt;/a&gt; &lt;small&gt;2021年05月14日&lt;/small&gt; &lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/05/05/0229232"&gt;Microsoft、Xboxゲームでも手数料率引き下げを計画していた&lt;/a&gt; &lt;small&gt;2021年05月05日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/05/02/0555229"&gt;Google、ユーザーをミスリードするアプリをPlayストアから減らすべくポリシー変更へ&lt;/a&gt; &lt;small&gt;2021年05月02日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/04/03/2049241"&gt;リコー将棋AI棋譜記録システム、「HEROZ Kishin Eye」と改称してHEROZが運用開始&lt;/a&gt; &lt;small&gt;2021年04月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/21/04/02/015221"&gt;セガ、ただのゲーム情報サイトにDMCA通知を送って削除させる。のちに誤解と判明し謝罪文を公開&lt;/a&gt; &lt;small&gt;2021年04月03日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2021-07-02T20:35:00+00:00</dc:date>
-<dc:subject>games</dc:subject>
-<slash:department>いろんなバグを誘因するそう</slash:department>
-<slash:section>developers</slash:section>
-<slash:comments>34</slash:comments>
-<slash:hit_parade>34,34,8,3,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;4Gamer.netの記事によれば、ゲームに使われるドアは開発が複雑すぎるのだそうだ。インディ開発者の&lt;a href="https://twitter.com/talecrafter/status/1369153361270935554"&gt;Stephan Hövelbrinks氏のTwitterでの発言&lt;/a&gt;がきっかけで、開発者の間で議論が活発化した模様。「CONTROL」のリードゲームプレイデザイナーであるSergey Mohov氏は、武器やスキルシステムの開発時間より扉の開発にかかる時間の方が長いと話しているそうだ。こうした意見に賛同する開発者も多かった模様（&lt;a href="https://www.4gamer.net/games/999/G999905/20210617086/"&gt;4Gamer.net&lt;/a&gt;、&lt;a href="https://www.yystv.cn/p/7800"&gt;游研社&lt;/a&gt;）。&lt;p&gt;
-	&lt;a href="https://developers.srad.jp/story/21/07/02/0116257/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://developers.srad.jp/"&gt;デベロッパーセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/programming"&gt;プログラミング&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://developers.srad.jp/story/21/07/02/0116257/&amp;amp;text=%E3%82%B2%E3%83%BC%E3%83%A0%E4%B8%AD%E3%81%AE%E6%89%89%E3%81%AE%E9%96%8B%E7%99%BA%E3%81%AF%E6%AD%A6%E5%99%A8%E3%82%84%E3%82%B9%E3%82%AD%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E3%82%88%E3%82%8A%E6%99%82%E9%96%93%E3%81%8C%E6%8E%9B%E3%81%8B%E3%82%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://developers.srad.jp/story/21/07/02/0116257/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://developers.srad.jp/story/21/07/02/0116257/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://developers.srad.jp/story/21/07/02/0116257/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://idle.srad.jp/story/21/06/30/1738233"&gt;サクラ革命、機能限定版の開発に手間取りサービス終了日を延期する結果に&lt;/a&gt;
-			&lt;small&gt;2021年07月01日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/21/06/24/168210"&gt;発売直後のSwitch用「はじめてゲームプログラミング」でマリオやパックマンが速攻で再現される&lt;/a&gt;
-			&lt;small&gt;2021年06月25日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/21/06/15/0058251"&gt;アピリッツ、けものフレンズ3をセガから運営移管すると発表&lt;/a&gt;
-			&lt;small&gt;2021年06月16日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/05/13/1724210"&gt;ゲーム開発者が自分の給与を公開する「#GameDevPaidMe」ハッシュタグが広がる&lt;/a&gt;
-			&lt;small&gt;2021年05月14日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/21/05/05/0229232"&gt;Microsoft、Xboxゲームでも手数料率引き下げを計画していた&lt;/a&gt;
-			&lt;small&gt;2021年05月05日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/05/02/0555229"&gt;Google、ユーザーをミスリードするアプリをPlayストアから減らすべくポリシー変更へ&lt;/a&gt;
-			&lt;small&gt;2021年05月02日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/04/03/2049241"&gt;リコー将棋AI棋譜記録システム、「HEROZ Kishin Eye」と改称してHEROZが運用開始&lt;/a&gt;
-			&lt;small&gt;2021年04月04日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/21/04/02/015221"&gt;セガ、ただのゲーム情報サイトにDMCA通知を送って削除させる。のちに誤解と判明し謝罪文を公開&lt;/a&gt;
-			&lt;small&gt;2021年04月03日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
