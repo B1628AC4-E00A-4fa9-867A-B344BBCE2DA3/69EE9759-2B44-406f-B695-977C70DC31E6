@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 19 Jul 2021 17:08:29 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 21 Jul 2021 18:31:46 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,189 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</title>
+		<link>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Wed, 21 Jul 2021 18:31:46 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[compiler command line]]></category>
+		<category><![CDATA[modules]]></category>
+		<category><![CDATA[MSVC]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28323</guid>
+
+					<description><![CDATA[<p>In this three-part series we will explore how to build modules and header units from the command line as well as how to use/reference them.<br />
+The goal of this post is to serve as a brief tour of compiling and using primary module interfaces from the command line and the options we use.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/">Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In this three-part series we will explore how to build modules and header units from the command line as well as how to use/reference them.</p>
+<p>The goal of this post is to serve as a brief tour of compiling and using primary module interfaces from the command line and the options we use.</p>
+<p><em>Note:</em> This tutorial will focus primarily on dealing with IFC and object file output. Other types of compiler output such as PDB info are not mentioned.</p>
+<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#summary">Summary of C++ modules options.</a></li>
+<li><a href="#interface-basics">Basics of building a module interface.</a></li>
+<li><a href="#module-dependencies">Modules with interface dependencies.</a></li>
+</ul>
+<h4><span id="summary">Summary of C++ modules options</span></h4>
+<table>
+<tbody>
+<tr>
+<th>Option</th>
+<th>Brief Description</th>
+</tr>
+<tr>
+<td id="interface"><code>/interface</code></td>
+<td>Tells the compiler that the input file is a module interface unit.</td>
+</tr>
+<tr>
+<td><code>/internalPartition</code></td>
+<td>Tells the compiler that the input file is an <a href="https://devblogs.microsoft.com/cppblog/c-modules-conformance-improvements-with-msvc-in-visual-studio-2019-16-5/#module-partitions">internal partition unit</a>.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/module-reference?view=msvc-160">/reference</a></code></td>
+<td>Provides the compiler with an IFC file to reference for the nominated module interface name.</td>
+</tr>
+<tr>
+<td id="ifc-search-dir"><code>/ifcSearchDir</code></td>
+<td>When the compiler falls back to implicit module interface search, directories specified by this option will be used.</td>
+</tr>
+<tr>
+<td><code>/ifcOutput</code></td>
+<td>Tells the compiler where the IFC resulting from compilation should go. If that destination is a directory the compiler will generate a name based on the interface name or the header unit name.</td>
+</tr>
+<tr>
+<td><code>/ifcOnly</code></td>
+<td>Instructs the compiler to only produce an IFC as the result of compilation. No other outputs will be produced as the result of compilation even if other options are specified.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/module-exportheader?view=msvc-160">/exportHeader</a></code></td>
+<td>Instructs the compiler to create a header unit from the input.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/headername?view=msvc-160">/headerName</a></code></td>
+<td>Tells the compiler that the input designates the name of a header.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/translateinclude?view=msvc-160">/translateInclude</a></code></td>
+<td>Instructs the compiler to perform <code>#include</code> -&gt; <code>import</code> translation if the header-name nominates an importable header.</td>
+</tr>
+<tr>
+<td><code>/showResolvedHeader</code></td>
+<td>When building a header unit, show the fully resolved path to that header unit after compilation.</td>
+</tr>
+<tr>
+<td><code>/validateIfcChecksum[-]</code></td>
+<td>Off by default. Specifying this switch will enforce an extra security check using the stored content hash in the IFC.</td>
+</tr>
+</tbody>
+</table>
+<h4><span id="interface-basics">Basics of building a module interface</span></h4>
+<p>For the content in this section, we will assume that you have an appropriate compiler environment command prompt set up and that you have navigated to the directory with your test files.</p>
+<p>Let&#8217;s look at the most basic scenario we can for starters:</p>
+<p><code>m.ixx</code>:</p>
+<pre class="">export module MyModule;
+
+export
+void f() { }</pre>
+<p><code>main.cpp</code>:</p>
+<pre class="">import MyModule;
+
+int main() {
+  f();
+}</pre>
+<p>The simplest way to build this sample is the following:</p>
+<pre>$ cl /c /std:c++latest m.ixx
+$ cl /std:c++latest /reference MyModule=MyModule.ifc main.cpp m.obj
+$ .\main.exe</pre>
+<p>One quick note about the name of file <code>m.ixx</code> above, the <code>.ixx</code> extension is the default module interface extension for MSVC. If you wish to use a different extension then you must use <a href="#interface"><code>/interface</code></a> along with <a href="https://docs.microsoft.com/en-us/cpp/build/reference/tc-tp-tc-tp-specify-source-file-type?view=msvc-160"><code>/TP</code></a> in order to compile the input as both C++ and as a module interface. Here&#8217;s a quick example of compiling the module interface if the name were <code>my-module.cppm</code>:</p>
+<pre>$ cl /c /std:c++latest /interface /TP my-module.cppm</pre>
+<p>In the first line we compile the module interface, and two things happen implicitly:</p>
+<ol>
+<li>The compiler will derive a name for the resulting object file based on the <a href="https://docs.microsoft.com/en-us/cpp/build/reference/specifying-the-pathname?view=msvc-160">base name of the input file</a>. The resulting object file in this case is derived from <code>m.ixx</code> transformed into <code>m.obj</code>.</li>
+<li>The compiler will derive a name for the resulting IFC file based on the <em>module interface name</em>. The resulting IFC in this case is derived from the module name <code>MyModule</code> transformed into <code>MyModule.ifc</code>. Note that the name of the input file has no bearing on the exported module interface name, they are completely orthogonal to each other so if this file were named <code>foobar.ixx</code> the generated IFC name would still be <code>MyModule.ifc</code>.</li>
+</ol>
+<p>If we take away the two implicit points above, we will end up with a command line which looks like this:</p>
+<pre>$ cl /c /std:c++latest m.ixx /ifcOutput MyModule.ifc /Fom.obj</pre>
+<p>On the import side we could take advantage of the compiler&#8217;s implicit lookup behavior to find the module interface:</p>
+<pre>$ cl /std:c++latest main.cpp m.obj
+$ .\main.exe</pre>
+<p>Whoa! Hold on there! What happened? Well, in MSVC the compiler implements a well-coordinated lookup to find the module interface implicitly. Because the compiler generates a module interface IFC based on the module name it can safely be assumed that if there is no direct <code>/reference</code> option on the command line then there could be an IFC somewhere on disk which is named after the module interface name. In the scenario above we are trying to import a module interface named <code>MyModule</code> so there might be a <code>MyModule.ifc</code> on disk, and indeed there is! It is worth pointing out that this implicit lookup behavior will search the current directory along with any directory added using <a href="#ifc-search-dir"><code>/ifcSearchDir</code></a>.</p>
+<p>Let&#8217;s consider a scenario where the destination for the resulting IFC is not in the immediate directory. Consider the following directory structure:</p>
+<pre>./
+├─ src/
+│  ├─ m.ixx
+│  ├─ main.cpp
+├─ bin/</pre>
+<p>And let&#8217;s assume that our compiler command prompt is rooted at <code>./</code> and that we want all output to go into the <code>bin\</code> folder. Here&#8217;s what the fully explicit command lines look like:</p>
+<pre>$ cl /c /std:c++latest src\m.ixx /Fobin\m.obj /ifcOutput bin\MyModule.ifc
+$ cl /std:c++latest /reference MyModule=bin\MyModule.ifc src\main.cpp /Fobin\m.obj /Febin\main.exe bin\m.obj</pre>
+<p>There are a lot of things going on so let&#8217;s narrow the scope of noise to just the command line options required to compile <code>main.cpp</code> and not link it.</p>
+<pre>$ cl /c /std:c++latest /reference MyModule=bin\MyModule.ifc src\main.cpp /Fobin\m.obj</pre>
+<p><em>Note:</em> The <a href="https://docs.microsoft.com/en-us/cpp/build/reference/fo-object-file-name?view=msvc-160"><code>/Fo</code></a> tells the compiler where to put the resulting object file. Further, in order to ensure that the compiler can properly detect that the destination is a directory, please append the trailing &#8216;<code>\</code>&#8216; at the end of the argument.</p>
+<p>If we wanted to take advantage of the compiler&#8217;s implicit naming mechanisms the command lines would be the following:</p>
+<pre>$ cl /c /std:c++latest src\m.ixx /Fobin\ /ifcOutput bin\
+$ cl /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\m.obj</pre>
+<p>Notice that the difference here is we simply provide a directory as the argument to each of our command line options.</p>
+<h4><span id="module-dependencies">Modules with interface dependencies</span></h4>
+<p>Often, we don&#8217;t want to build a single module interface and call it a day, it is frequently the case that sufficiently large projects will be composed of many module interfaces which describe various parts of the system. In this section we&#8217;ll explore how to build translation units which depend on one or more interfaces.</p>
+<p>Let&#8217;s consider a slightly more sophisticated directory layout:</p>
+<pre>./
+├─ src/
+│  ├─ types/
+│  │  ├─ types.ixx
+│  ├─ util/
+│  │  ├─ util.ixx
+│  ├─ shop/
+│  │  ├─ shop.ixx
+│  │  ├─ shop-unit.cpp
+│  ├─ main.cpp
+├─ bin/</pre>
+<p>The code for these files can be found <a href="https://gist.github.com/cdacamar/8226c1893dd8c8a81974c939be52809f">here</a>.</p>
+<p>As you explore the code you will find that many of these modules/source files contain references to module interfaces and those interfaces may reference yet another interface. At its core, the most basic dependency graph looks like the following:</p>
+<pre>   types.ixx
+   /       \
+util.ixx  shop.ixx
+  \        /
+shop-unit.cpp
+      |
+   main.cpp</pre>
+<p>Without further ado, here are the explicit command lines in all their glory:</p>
+<pre>$ cl /c /EHsc /std:c++latest src\types\types.ixx /Fobin\types.obj /ifcOutput bin\types.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc src\util\util.ixx /Fobin\util.obj /ifcOutput bin\util.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc src\shop\shop.ixx /Fobin\shop.obj /ifcOutput bin\shop.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc /reference util=bin\util.ifc /reference shop=bin\shop.ifc src\shop\shop-unit.cpp /Fobin\shop-unit.obj
+$ cl /EHsc /std:c++latest /reference shop=bin\shop.ifc /reference types=bin\types.ifc src\main.cpp /Fobin\main.obj /Febin\main.exe bin\types.obj bin\util.obj bin\shop.obj bin\shop-unit.obj</pre>
+<p>That is quite a mouthful. One thing you might notice is that when we built <code>src\shop\shop-unit.cpp</code> we needed a reference to both <code>types</code> and <code>shop</code> even though there&#8217;s no explicit import of either interface. The reason for this is because <code>util</code> has an implicit dependency on <code>types</code> to resolve <code>Product</code> properly and because it is a module unit the line <code>module shop;</code> implicitly imports the module interface <code>shop</code>, this behavior is defined by the C++ standard.</p>
+<p>Applying some techniques learned above we can drastically reduce the noise by using implicit naming/lookup:</p>
+<pre>$ cl /c /EHsc /std:c++latest src\types\types.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\util\util.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\shop\shop.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\shop\shop-unit.cpp /Fobin\
+$ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\types.obj bin\util.obj bin\shop.obj bin\shop-unit.obj</pre>
+<p>This is looking much better. We can take it a step further by taking advantage of the fact that <code>cl.exe</code> will process each source file in a linear sequence:</p>
+<pre>$ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\types\types.ixx src\util\util.ixx src\shop\shop.ixx src\shop\shop-unit.cpp src\main.cpp /Fobin\ /Febin\main.exe /ifcOutput bin\</pre>
+<p>The command above uses implicit naming/lookup along with <code>cl.exe</code>&#8216;s linear source processing behavior.</p>
+<p><em>Note:</em> the above command line will <strong>not</strong> work if the option <a href="https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes?view=msvc-160"><code>/MP</code></a> is used (compiling multiple inputs in parallel).</p>
+<p>Just to be complete, we could also use explicit naming for our module interfaces in the single command line above:</p>
+<pre>$ cl /EHsc /std:c++latest /reference shop=bin\shop.ifc /reference types=bin\types.ifc /reference util=bin\util.ifc src\types\types.ixx src\util\util.ixx src\shop\shop.ixx src\shop\shop-unit.cpp src\main.cpp /Fobin\ /Febin\main.exe /ifcOutput bin\</pre>
+<p>The reason either of these command lines work is that the compiler will not try to do anything special with a <code>/reference</code> option unless the name designating the IFC is used and there is no extra cost to add <code>/reference</code> options for a command line if you know the module will be generated at some point in the input sequence.</p>
+<h4 id="closing">Closing</h4>
+<p>In part 2 we will cover how to handle module interface partitions. Finally, in part 3 we will cover how to handle header units.</p>
+<p>We urge you to go out and try using Visual Studio 2019/2022 with Modules. Both Visual Studio 2019 and Visual Studio 2022 Preview are available through the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads</a> page!</p>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow me on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/">Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/#respond</comments>
@@ -754,72 +937,6 @@ Erika introduced CMake Presets and why you should use them, this post will focus
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/preview-of-using-cmake-presets-for-azure-sphere-development/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>C++20 Ranges are complete in Visual Studio 2019 version 16.10</title>
-		<link>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/#comments</comments>
-		
-		<dc:creator><![CDATA[Casey Carter]]></dc:creator>
-		<pubDate>Wed, 26 May 2021 17:21:00 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=26348</guid>
-
-					<description><![CDATA[<p>We are proud to announce completion of our implementation of C++20 Ranges in the Standard Library in the VS2019 v16.10 release under/std:c++latest. We announced the first useful user-visible parts of Ranges in VS 2019 v16.6 in mid 2020, the trickle accelerated into a gushing stream,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/">C++20 Ranges are complete in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are proud to announce completion of our implementation of C++20 Ranges in the Standard Library in the VS2019 v16.10 release under<code>/std:c++latest</code>. We <a href="https://devblogs.microsoft.com/cppblog/initial-support-for-c20-ranges/">announced the first useful user-visible parts of Ranges in VS 2019 v16.6 in mid 2020</a>, the trickle accelerated into a gushing stream, and the final parts are now in place. This represents a huge body of work with input from multiple open-source contributors over the last two years.</p>
-<p>Ironically enough, ranges are nothing new to the Standard Library. STL algorithms have always operated on ranges of elements whose bounds are denoted by an iterator that denotes the first element and an iterator pointing past the end of the sequence of elements subject to a computation. The novelty in C++20 Ranges is that we recognize the expressive power that comes from passing ranges around directly as abstractions instead of passing iterator pairs – eliminating passing iterators into different ranges as a source of errors – and that operations on ranges can compose more easily than operations on their elements.</p>
-<h2 id="what-components-comprise-the-c20-ranges-design">What components comprise the C++20 Ranges design?</h2>
-<p>Ranges first relaxes the old C++ iterator-pair design by allowing the sentinel that denotes the end of a sequence of elements to have a different type than the iterator that denotes the beginning. This enables expression of simple notions like a range bounded by a pointer-to-character and a delimiter sentinel that compares equal to a pointer-to-character when the pointer points to <code>'\0'</code>. A Range is then any expression <code>meow</code> such that <code>std::ranges::begin(meow)</code> and <code>std::ranges::end(meow)</code> return an iterator and a sentinel.</p>
-<p>The Ranges library expresses predicates over types (“is this a bidirectional iterator?”) and relationships between types (“is this a valid iterator-and-sentinel pair?”) using C++ Concepts. Ranges is the first use – and quite an extensive use, at that – of the new Concepts language feature in the C++ Standard Library. Concepts are nicely expressive in that they allow the specification of type requirements, and to a lesser extent preconditions on the values of arguments, to appear directly in code as syntax instead of appearing in documentation as English prose. (See <a href="https://devblogs.microsoft.com/cppblog/c20-concepts-are-here-in-visual-studio-2019-version-16-3/">“C++20 Concepts Are Here in Visual Studio 2019 version 16.3”</a> for more discussion of C++ Concepts.)</p>
-<p>Ranges adds a set of algorithms – mirrors of the algorithms defined in namespace <code>std</code> – in namespace <code>std::ranges</code>. These algorithms are constrained with Concepts, and unlike their siblings in <code>std</code> accept both range arguments, and iterator-sentinel pair arguments where the sentinel and iterator types differ.</p>
-<p>Ranges also unsurprisingly adds a slew of ranges to the Standard Library. The Standard splits these out into factories that create ranges:</p>
-<ul>
-<li><code>std::views::iota(0, 42)</code> is the range of integers from 0 up to but not including 42,</li>
-<li><code>std::views::istream_view&lt;int&gt;(std::cin)</code> is a range of whitespace-delimited integers read from <code>std::cin</code>,</li>
-</ul>
-<p>and adaptors that transform the elements of an underlying range into a new range:</p>
-<ul>
-<li><code>std::views::filter(my_vec, [](const auto&amp; x) { return x % 2 == 0; })</code> is a range of only the even elements of <code>my_vec</code>,</li>
-<li><code>std::views::transform(my_vec, [](const auto&amp; x) { return 3 * x; })</code> is a range of elements with value 3k where k is the value of the corresponding element of <code>my_vec</code>.</li>
-</ul>
-<p>The range adaptors are often best thought of as lazy, composable algorithms since they do no work until you begin to iterate over them and they are functions from ranges to ranges. We could compose the above two examples into:</p>
-<pre class="prettyprint">auto r1 = std::views::filter(my_vec, [](const auto&amp; x) { return x % 2 == 0; });
-auto r2 = std::views::transform(r1, [](const auto&amp; x) { return 3 * x; });
-</pre>
-<p>for example, to get a range consisting of elements whose value is three times the value of the even elements of <code>my_vec</code>. The design even provides a pipeline syntax to facilitate this composition, using <code>|</code> to provide a left-hand range as input to a right-hand range adaptor:</p>
-<pre class="prettyprint">auto r = my_vec
-       | std::views::filter([](const auto&amp; x) { return x % 2 == 0; })
-       | std::views::transform([](const auto&amp; x) { return 3 * x; });
-</pre>
-<p>Doing the equivalent work with algorithms would require storing intermediate and final results in some kind of container, which an adaptor composition like this avoids by working element-at-a-time.</p>
-<h2 id="where-did-this-implementation-come-from">Where did this implementation come from?</h2>
-<p>A typical STL feature is described by a 10-20 page proposal that WG21 polishes into a specification to merge into the C++ Standard. <a href="https://wg21.link/p0896r4">P0896R4 “The One Ranges Proposal”</a> was around 230 pages. As if that weren’t enough, <a href="https://github.com/microsoft/STL/issues/39">our tracking issue for Ranges implementation</a> documents a litany of 22 follow-up proposals (design changes) and 35 LWG issues (bug fixes) that are covered in the Ranges implementation. <a href="https://github.com/microsoft/STL/issues/39#issuecomment-599807825">Our implementation plan</a> broke the work down into bitesize pieces starting with “Implement common_reference and common_type change” from May 13 2019, one of four internal PRs from before the STL became open-source, through another <a href="https://github.com/microsoft/STL/pulls?q=is%3Apr+label%3Aranges">99 GitHub pull requests</a> ending in <a href="https://github.com/microsoft/STL/pull/1748">“Define __cpp_lib_ranges [feature-test macro]” on Mar 18 2021</a>. While we certainly drew from experience prototyping the library for the Ranges Technical Specification to provide guidance, the STL implementation was almost entirely a full rewrite reusing only some test cases.</p>
-<p>This is certainly the largest single Standard Library feature to-date, and we can’t express enough how much we appreciate all the work from the many members of the C++ community that helped bring it to life. We’d like to personally thank <a href="https://github.com/AdamBucior/">AdamBucior</a>, <a href="https://github.com/ahanamuk/">ahanamuk</a>, <a href="https://github.com/barcharcraz/">barcharcraz</a>, <a href="https://github.com/BillyONeal/">BillyONeal</a>, <a href="https://github.com/bkentel/">bkentel</a>, <a href="https://github.com/CaseyCarter/">CaseyCarter</a>, <a href="https://github.com/cbezault/">cbezault</a>, <a href="https://github.com/cpplearner/">cpplearner</a>, <a href="https://github.com/fsb4000/">fsb4000</a>, <a href="https://github.com/futuarmo/">futuarmo</a>, <a href="https://github.com/MahmoudGSaleh/">MahmoudGSaleh</a>, <a href="https://github.com/miscco/">miscco</a>, <a href="https://github.com/mnatsuhara/">mnatsuhara</a>, <a href="https://github.com/statementreply/">statementreply</a>, <a href="https://github.com/StephanTLavavej/">StephanTLavavej</a>, <a href="https://github.com/SuperWig/">SuperWig</a>, and <a href="https://github.com/timsong-cpp/">timsong-cpp</a>, each of whom contributed either code, code review comments, or issue reports for MSVC Ranges. On a personal note, my Ranges journey started six years ago this month at the WG21 meeting in Lenexa, Kansas. As an unemployed enthusiast C++ aficionado very excited about the design in <a href="https://wg21.link/n4128">Eric Niebler’s N4128 “Ranges for the Standard Library,”</a> I never would have believed that I’d spend the next six years working on that design through the standardization process right up through today’s shipping product.</p>
-<h2 id="can-i-try-it-today">Can I try it today?</h2>
-<p>Yes, that’s the point! Please give the available components a try, and we’ll keep them coming. Don’t forget to download (or update to) <a href="https://visualstudio.microsoft.com/vs/">Visual Studio 2019 version 16.10</a>; some but not all of the Ranges design is present in earlier releases. Be aware that WG21 is <a href="https://github.com/cplusplus/LEWG/wiki/Backports">processing some breaking changes for C++20</a>, three of which have bearing directly on Ranges. You can expect changes to (1)<code> std::ranges::split_view</code> / <code>std::views::split</code>, which WG21 has largely redesigned since publishing C++20, (2) <code>std::ranges::join_view</code> / <code>std::views::join</code>, which has been tweaked to be usable in more cases, and (3) the <code>std::ranges::view</code> concept itself will lose its requirement for default construction allowing range adaptors to more efficiently adapt underlying ranges that aren’t default constructible by producing a result view that is not default constructible.</p>
-<p>We love to hear your feedback and suggestions. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). For issues and questions specific to the STL or our Ranges implementation, the best way to reach is by <a href="https://github.com/microsoft/STL/issues">filing an issue on GitHub</a>.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/">C++20 Ranges are complete in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
 		
 		
