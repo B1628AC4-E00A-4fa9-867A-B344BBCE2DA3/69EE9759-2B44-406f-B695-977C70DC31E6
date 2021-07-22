@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 19 Jul 2021 17:08:29 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 30 Jun 2021 16:17:45 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,116 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/#respond</comments>
-		
-		<dc:creator><![CDATA[Erika]]></dc:creator>
-		<pubDate>Wed, 14 Jul 2021 18:58:54 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Linux]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28300</guid>
-
-					<description><![CDATA[<p>Visual Studio 2022 introduces a native WSL 2 toolset for C++ development. This toolset is available now in Visual Studio 2022 version 17.0 Preview 2. WSL 2 is the new, recommended version of the Windows Subsystem for Linux (WSL) architecture that provides better Linux file system performance,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/">Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><div style="text-align:center"><a class="cta_button_link" href="https://aka.ms/vs2022preview" style="text-transform: titlecase; display: inline-block; background-color: #5C2D91; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Download Visual Studio 2022 Preview</a></div>
-Visual Studio 2022 introduces a native WSL 2 toolset for C++ development. This toolset is available now in <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/">Visual Studio 2022 version 17.0 Preview 2</a>. WSL 2 is the new, recommended version of the <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux (WSL)</a> architecture that provides better Linux file system performance, GUI support, and full system call compatibility. Visual Studio’s WSL 2 toolset allows you to build and debug C++ code on WSL 2 distros from Visual Studio without ever adding an SSH connection. You can already build and debug C++ code on WSL 1 distros using the <a href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-2019-and-windows-subsystem-for-linux-wsl/">native WSL 1 toolset</a> introduced in Visual Studio 2019 version 16.1.</p>
-<div style="text-align: center;"><iframe src="//www.youtube.com/embed/IKI2w75aAow" width="560" height="314" allowfullscreen="allowfullscreen"></iframe></div>
-<p>&nbsp;</p>
-<p>Visual Studio’s WSL 2 toolset supports both CMake and MSBuild-based Linux projects. However, CMake is our recommendation for all C++ cross-platform development with Visual Studio because it allows you to build and debug the same project on Windows, WSL, and remote systems.</p>
-<h4 id="how-does-the-wsl-2-toolset-work">How does the WSL 2 toolset work?</h4>
-<p>Our C++ cross-platform support in Visual Studio assumes that all source files originate in the Windows file system. When targeting a WSL 2 distro, Visual Studio will execute a local rsync copy to copy files from the Windows file system to the WSL file system. This local rsync copy will occur automatically when Visual Studio detects that you are using a WSL 2 distro and will require no user intervention. See <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions">Comparing WSL 1 and WSL 2</a> to learn more about the differences between WSL 1 and WSL 2.</p>
-<p>Continue reading for a step-by-step guide on getting started with CMake and WSL 2 and an overview of our MSBuild-based WSL 2 support.</p>
-<h4 id="cross-platform-cmake-development-with-a-wsl-2-distro">Cross-platform CMake development with a WSL 2 distro</h4>
-<p>The WSL 2 toolset is supported by our CMake Presets integration in Visual Studio. You can learn more about CMake Presets in our <a href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">announcement blog post</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">documentation</a>. Follow the instructions below to build and debug a CMake project on a WSL 2 distro.</p>
-<p>1. Install WSL and a WSL 2 distro with the <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux Installation Guide for Windows 10</a>.</p>
-<p>2. Install the required build tools on your WSL 2 distro. You will need a C++ compiler, gdb, CMake, an underlying build system generator, rsync, and zip. You can install these dependencies on distros that use apt with the following commands:</p>
-<div style="text-align: center;">
-<pre class="prettyprint">sudo apt update
-sudo apt install g++ gdb make ninja-build rsync zip</pre>
-</div>
-<p>In this tutorial I’ll use GCC and Ninja on Ubuntu. I will install a recent version of CMake using Visual Studio’s CMake binary deployment in step 9.</p>
-<p>3. Open a CMake project in Visual Studio 2022 version 17.0 Preview 2 or later. Visual Studio defines a CMake project as a folder with a CMakeLists.txt file at the project root. You can either clone a CMake repository (like <a href="https://github.com/esweet431/bullet3">bullet3</a>), open a local CMake project, or create a new CMake project with the CMake Project template. In this tutorial I’m going to create a new CMake project with the CMake Project template.
-<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png"><img class="aligncenter size-full wp-image-28301" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png" alt="The &quot;Get started&quot; menu in the Visual Studio Installer. Options are &quot;Clone a repository&quot;, &quot;Open a project or solution&quot;, &quot;Open a local folder&quot;, or &quot;Create a new project&quot;." width="384" height="417" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png 384w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started-276x300.png 276w" sizes="(max-width: 384px) 100vw, 384px" /></a>
-4. Enable Visual Studio’s CMake Presets integration. You can add a CMakePresets.json file to the root of the project or enable the integration globally in <strong>Tools &gt; Options &gt; CMake &gt; General</strong>. You must close and reopen the folder in Visual Studio to activate the integration. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#enable-cmakepresetsjson-integration-in-visual-studio-2019">Enable CMake Presets integration</a> for more information.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png"><img class="aligncenter size-full wp-image-28302" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png" alt="An image of the checkbox to enable CMake Presets integration in Tools &gt; Options &gt; CMake &gt; General in Visual Studio. The option to &quot;Prefer using CMake Presets for CMake configure, build, and test&quot; is checked and highlighted red." width="732" height="248" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png 732w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets-300x102.png 300w" sizes="(max-width: 732px) 100vw, 732px" /></a></p>
-<p>5. You should now see three dropdowns across the menu bar. Use the dropdown on the left to select your active Target System. This is the system where CMake will be invoked to configure and build the project. Visual Studio queries for WSL installations with <strong>wsl -l -v</strong>. In the example below, my Target System is <strong>WSL2: Ubuntu-20.04.</strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png"><img class="aligncenter size-full wp-image-28303" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png" alt="An image of the Target System dropdown in Visual Studio. The options are &quot;Local Machine&quot;, &quot;172.26.1.64&quot;, &quot;WSL2: Ubuntu-20.04&quot; and &quot;WSL1: Debian&quot;. &quot;WSL2: Ubuntu-20.04&quot; is selected." width="737" height="165" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png 737w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system-300x67.png 300w" sizes="(max-width: 737px) 100vw, 737px" /></a></p>
-<p>Note: If Visual Studio starts to configure your project automatically, read step 9 to manage CMake binary deployment and then return to step 6. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#modify-automatic-configuration-and-cache-notifications">Modify automatic configuration and cache notifications</a> to customize this behavior.</p>
-<p>6. Use the dropdown in the middle to select your active Configure Preset. Configure Presets tell Visual Studio how to invoke CMake and generate the underlying build system. In the example in Step 5 (above), my active Configure Preset is the <strong>linux-default</strong> Preset created by Visual Studio. If you want to create a custom Configure Preset, select <strong>Manage Configurations…</strong>. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#select-a-configure-preset">Select a Configure Preset</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#edit-presets">Edit Presets</a> for more information.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manage-configs.png"><img class="aligncenter size-full wp-image-28304" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manage-configs.png" alt="An image of the Configure Preset dropdown. The only option is &quot;linux-default&quot;, which is selected." width="210" height="92" /></a></p>
-<p>7. Use the dropdown on the right to select your active Build Preset. Build Presets tell Visual Studio how to invoke build. In the example in Step 5 (above), my active Build Preset is the <strong>Default </strong>Preset created by Visual Studio. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#select-a-build-preset">Select a Build Preset</a> for more information.</p>
-<p>8. Configure the project on WSL 2. If project generation does not start automatically, then you can manually invoke configure with <strong>Project &gt; Configure &lt;project-name&gt;</strong>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png"><img class="aligncenter size-full wp-image-28305" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png" alt="An image of the Project menu in Visual Studio. &quot;Configure CMakeProject&quot; is selected." width="307" height="223" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png 307w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation-300x218.png 300w" sizes="(max-width: 307px) 100vw, 307px" /></a></p>
-<p>9. If you do not have a supported version of CMake installed on your WSL 2 distro, then Visual Studio will prompt you to deploy a recent version of CMake. Select “Yes” to deploy CMake binaries to your WSL 2 distro.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png"><img class="aligncenter size-full wp-image-28306" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png" alt="Image binary deployment" width="757" height="95" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png 757w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment-300x38.png 300w" sizes="(max-width: 757px) 100vw, 757px" /></a></p>
-<p>10. Confirm that the configure step has completed and that you can see the <strong>CMake generation finished</strong> message in the CMake pane of the Output Window. Note that build files are written to a directory in the WSL 2 distro’s file system.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png"><img class="aligncenter size-full wp-image-28307" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png" alt="The CMake pane of the Output Window is open in Visual Studio. The last line of output reads &quot;CMake generation finished.&quot;" width="1118" height="309" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png 1118w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-300x83.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-1024x283.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-768x212.png 768w" sizes="(max-width: 1118px) 100vw, 1118px" /></a></p>
-<p>11. Select the active debug target. The debug dropdown menu lists all the CMake targets available to the project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debug-drop.png"><img class="aligncenter size-full wp-image-28308" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debug-drop.png" alt="An image of the debug dropdown menu in Visual Studio. The CMake target &quot;CMakeProject&quot; is selected." width="300" height="144" /></a></p>
-<p>12. Set a breakpoint. Expand the project subfolder in the Solution Explorer and in the .cpp file set a breakpoint in main(). You can also navigate to CMake Targets View by selecting the View Picker button in the Solution Explorer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png"><img class="aligncenter size-full wp-image-28309" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png" alt="Image targets view" width="356" height="137" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png 356w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view-300x115.png 300w" sizes="(max-width: 356px) 100vw, 356px" /></a></p>
-<p>13. Now click “Start” (Debug &gt; Start) or press F5. Your project will build, the executable will launch on your WSL 2 distro, and you will hit your breakpoint. You can see the output of your program (in this case, “Hello CMake.”) in the Linux Console Window.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png"><img class="aligncenter size-full wp-image-28310" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png" alt="CMakeProject.cpp is open and running under the debugger. A breakpoint is set and hit at line 11. The Linux Console Window is open and reads &quot;Hello CMake.&quot;" width="1170" height="832" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png 1170w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-300x213.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-1024x728.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-768x546.png 768w" sizes="(max-width: 1170px) 100vw, 1170px" /></a></p>
-<h4 id="msbuild-based-linux-development-with-a-wsl-2-distro">MSBuild-based Linux development with a WSL 2 distro</h4>
-<p>CMake is our recommendation for all C++ cross-platform development with Visual Studio because it allows you to build and debug the same project on Windows, WSL, and remote systems. If you are already using a MSBuild-based Linux project, then you can upgrade to the WSL 2 toolset in <strong>Property Pages &gt; General &gt; Platform Toolset</strong>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png"><img class="aligncenter size-full wp-image-28311" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png" alt="Property Pages are open in a MSBuild-based Linux project. The &quot;Platform Toolset&quot; option is selected, and &quot;WSL2 Toolset&quot; is the selected value." width="558" height="162" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png 558w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild-300x87.png 300w" sizes="(max-width: 558px) 100vw, 558px" /></a></p>
-<h4 id="talk-to-us">Talk to us!</h4>
-<p>Our native WSL 2 toolset and CMake Presets integration are still in preview. We’ll continue to address your feedback in future releases of Visual Studio. The best way to file a bug or suggest a feature is with the <strong>Send Feedback</strong> button in the upper right-hand corner of the IDE. See <a href="https://docs.microsoft.com/en-us/visualstudio/ide/feedback-options?view=vs-2019#:~:text=In%20Visual%20Studio%2C%20choose%20the%20feedback%20icon%20in,information%2C%20see%20Suggest%20a%20feature%20for%20Visual%20Studio.">Visual Studio feedback options</a> for more information.</p>
-<p>We’d love to learn how your team is adopting our support for WSL 2. If you have feedback or a success story to share, you can contact us at vcpp-linux@microsoft.com. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/">Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Code Scanning C++ with GitHub Actions</title>
-		<link>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/#comments</comments>
-		
-		<dc:creator><![CDATA[Nick Uhlenhuth]]></dc:creator>
-		<pubDate>Wed, 07 Jul 2021 15:25:27 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28264</guid>
-
-					<description><![CDATA[<p>Last year, GitHub released code scanning, which enables developers to incorporate security checks into their CI/CD environment and developer workflow. This post demonstrates the basics of using CodeQL, the analysis engine behind code scanning, with GitHub Actions.<br />
-What is CodeQL?<br />
-CodeQL is an analysis engine that automates security checks by running queries against a database generated from your codebase.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">Code Scanning C++ with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Last year, GitHub <a href="https://github.blog/2020-09-30-code-scanning-is-now-available/">released code scanning</a>, which enables developers to incorporate security checks into their CI/CD environment and developer workflow. This post demonstrates the basics of using CodeQL, the analysis engine behind code scanning, with GitHub Actions.</p>
-<h1 id="what-is-codeql">What is CodeQL?</h1>
-<p><a href="https://codeql.github.com/docs/codeql-overview/">CodeQL</a> is an analysis engine that automates security checks by running queries against a database generated from your codebase. This CodeQL database is created during the build process and represents the source code in relational form. By default, code scanning runs standard CodeQL queries written by GitHub researchers and the community, but you can also author your own custom queries.</p>
-<p>The default set includes queries such as “Pointer overflow check”, “Potentially overflowing call to snprintf”, “Uncontrolled format string”, and more.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg"><img class="alignnone size-full wp-image-28274" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg" alt="Image Capture" width="2366" height="1274" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg 2366w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-300x162.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-1024x551.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-768x414.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-1536x827.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-2048x1103.jpg 2048w" sizes="(max-width: 2366px) 100vw, 2366px" /></a></p>
-<h1 id="setting-up-codeql-with-github-actions">Setting up CodeQL with GitHub Actions</h1>
-<p>Code scanning with CodeQL is free for public repositories, and is part of GitHub Advanced Security for GitHub Enterprise. Here are instructions for the quick, <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository">4-click setup process</a>. Alternatively, I’ve included a gif of the steps below:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/codeqlsetup.gif"><img class="alignnone size-full wp-image-28267" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/codeqlsetup.gif" alt="Image codeqlsetup" width="2080" height="1342" /></a></p>
-<p>And just like that, you’re off to the races! The default CodeQL analysis workflow is configured to analyze your code each time you push a chance or raise a pull request against the default branch. This means code scanning automatically happened after I committed the new file directly to the main branch.</p>
-<p>You can <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository#viewing-the-logging-output-from-code-scanning">view the logging output</a> of the scan under the Actions tab, and you can <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/managing-code-scanning-alerts-for-your-repository">view/manage any code scanning alerts</a> under the Security tab.</p>
-<h1 id="baselining">Baselining</h1>
-<p>Sometimes, especially for large legacy codebases, the number of alerts can be overwhelming. For that reason, CodeQL only shows new/fixed alerts in pull requests. If you want to manage existing alerts, you can do so in the “Code scanning alerts” section under the “Security” tab.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg"><img class="alignnone size-full wp-image-28275" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg" alt="Image Capture2" width="2500" height="1138" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg 2500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-300x137.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-1024x466.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-768x350.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-1536x699.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-2048x932.jpg 2048w" sizes="(max-width: 2500px) 100vw, 2500px" /></a></p>
-<p>It’s important to understand the distinction between <em>Dismiss </em>and <em>Delete</em>. One key distinction is that by <em>Dismissing </em>an alert, the same code won’t regenerate the alert. By <em>Deleting</em> an alert, the same code will generate the same alert the next time it is scanned. In the case that you want to bulk-dismiss alerts, you can do this from the summary of alerts (after filtering the list to whatever set of alerts you’d like to dismiss).</p>
-<h1 id="feedback">Feedback</h1>
-<p>This post just scratches the surface of code scanning in your CI/CD environment. Once you get the understand the basics, you may choose to author your own custom CodeQL queries or adjust the frequency of scanning. We hope you give code scanning with GitHub Actions a try, and we look forward to your feedback.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">Code Scanning C++ with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>Customized Warning Levels and Code Analysis for External Headers</title>
 		<link>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/#comments</comments>
@@ -228,7 +118,7 @@ void foo()
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/feed/</wfw:commentRss>
-			<slash:comments>5</slash:comments>
+			<slash:comments>4</slash:comments>
 		
 		
 			</item>
@@ -264,7 +154,7 @@ A visualizer is a file with .natvis extension that allows you to manipulate the 
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -611,7 +501,7 @@ string format(string_view fmt, const Args&amp;... args);</pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
-			<slash:comments>26</slash:comments>
+			<slash:comments>27</slash:comments>
 		
 		
 			</item>
@@ -821,6 +711,113 @@ auto r2 = std::views::transform(r1, [](const auto&amp; x) { return 3 * x; });
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c20-ranges-are-complete-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>How to start using registries with vcpkg</title>
+		<link>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/#respond</comments>
+		
+		<dc:creator><![CDATA[Nicole Mazzuca]]></dc:creator>
+		<pubDate>Mon, 24 May 2021 18:46:41 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28108</guid>
+
+					<description><![CDATA[<p>For many users of vcpkg, the built-in repository of packages is completely sufficient. If you only need public, non-experimental libraries, the default vcpkg registry is completely fine. However, once you go outside of this world &#8211; once you have company-internal libraries,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/">How to start using registries with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>For many users of vcpkg, the built-in repository of packages is completely sufficient. If you only need public, non-experimental libraries, the default vcpkg registry is completely fine. However, once you go outside of this world &#8211; once you have company-internal libraries, or you want to use experimental libraries, the recommended solution is to use a registry.</p>
+<p>Quite a few people have already set up their own registries, and if you want to learn to set up your own, you can check out the <a href="https://devblogs.microsoft.com/cppblog/registries-bring-your-own-libraries-to-vcpkg/">last blogpost</a>. However, if you want to use an existing registry, this tutorial is for you.</p>
+<p>We also have <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">reference documentation in the vcpkg repository</a>.</p>
+<p>&nbsp;</p>
+<h3 id="getting-started">Getting Started</h3>
+<p>Before anything else, you&#8217;ll need a vcpkg installation, and you&#8217;ll need to decide whether you&#8217;re using manifest mode or classic mode (in other words, installing packages manually using the command line). The use of registries is the same either way.</p>
+<p>You&#8217;ll want to create a <code>vcpkg-configuration.json</code> file; in manifest mode, you&#8217;d place it alongside your <code>vcpkg.json</code> file, while in classic mode you&#8217;d place it in the vcpkg root directory. There are two important keys in this file: <code>"default-registry"</code>, and <code>"registries"</code>.</p>
+<p><code>"default-registry"</code> allows you to set the fallback registry, for packages that aren&#8217;t covered by any of the registries in the <code>"registries"</code> array. <code>"registries"</code> allows you to set up registries for specific packages.</p>
+<p>&nbsp;</p>
+<h3 id="example-north-wind-traders">Example: North Wind Traders</h3>
+<p>Your company, North Wind Traders, has decided to mirror the default vcpkg registry (from <a href="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</a>) in order to ensure business continuity and control of sources for purposes of security, and you&#8217;ve set it up as your default registry so that it&#8217;s used for every package that isn&#8217;t explicitly listed in a package registry. Your <code>vcpkg-configuration.json</code> file should look like this:</p>
+<pre><code>{
+  "default-registry": {
+    "kind": "git",
+    "repository": "https://github.com/northwindtraders/vcpkg-mirror",
+    "baseline": "eefee7408133f3a0fef711ef9c6a3677b7e06fd7"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/northwindtraders/vcpkg-registry",
+      "baseline": "dacf4de488094a384ca2c202b923ccc097956e0c",
+      "packages": [ "beison", "beicode" ]
+    }
+  ]
+}
+</code></pre>
+<p>You also depend on your private registry for two of your internal libraries: beison and beicode. These libraries are neither open source nor public, but they are still managed via vcpkg, and you don&#8217;t have to be concerned about different processes for different libraries (at least at the consumption side). With manifests, you write your dependencies down, and the CMake or MSBuild integration will install all of those dependencies into your project, whether from the default, built-in registry, or from third-party registries. Private dependencies are exactly the same as public dependencies, as far as vcpkg is concerned. For classic mode, you tell vcpkg to install the packages you need from the command line. vcpkg will install them into the vcpkg git repository you’ve cloned, and you can access them either via direct usage or via the CMake and MSBuild integration. These existing use cases all &#8220;just work&#8221;, without any extra work from you on top of existing workflows. All you need is a configuration file.</p>
+<p>&nbsp;</p>
+<h3 id="give-us-your-feedback">Give us your feedback!</h3>
+<p>Try out vcpkg by visiting our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>.</p>
+<p>This is a relatively new feature, and the user experience is still being actively worked on. We want to create the best and simplest experience possible for our users, and so we welcome your feedback on this new feature in our <a href="https://github.com/microsoft/vcpkg/issues/new">issue tracker</a>!</p>
+<p>The current up-to-date documentation on using registries can be found in <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">our GitHub repository</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/">How to start using registries with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/how-to-start-using-registries-with-vcpkg/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>All vcpkg enterprise features now generally available: versioning, binary caching, manifests and registries</title>
+		<link>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/#comments</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Wed, 19 May 2021 23:38:07 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28092</guid>
+
+					<description><![CDATA[<p>We are announcing today that all major vcpkg enterprise features are no longer experimental. The latest vcpkg release makes versioning, binary caching, manifests and registries generally available to any developer, team or enterprise.<br />
+We have steadily been adding to vcpkg over the years.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/">All vcpkg enterprise features now generally available: versioning, binary caching, manifests and registries</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><!--StartFragment --></p>
+<p><span class="cf0">We are announcing today that <strong>all major vcpkg enterprise features are no longer experimental</strong>. The latest vcpkg release makes versioning, binary caching, manifests and registries generally available to any developer, team or enterprise. </span></p>
+<p>We have steadily been adding to vcpkg over the years. What started as a small open source project to migrate developers to newer versions of Visual Studio has expanded into a cross-platform C/C++ library manager with over 1600 libraries that can be used in a wide variety of environments to serve the entire C/C++ ecosystem.</p>
+<p>In this blog post, we go over the latest vcpkg product announcements, particularly for those of you who missed them at the <a href="https://www.youtube.com/watch?v=tiWYy2EsSNU">Pure Virtual C++ conference</a> earlier this month. We are <strong>announcing the general availability of vcpkg versioning and registries</strong>, which, combined with our earlier release of manifests and binary caching, comprise our solution for <strong>vcpkg in the enterprise space</strong>. These features are free and are now on by default in the tool, no longer requiring feature flags to be manually turned on to opt in.</p>
+<p>While we believe all developers can benefit from these four features, we believe they will be especially useful to professional developers who previously would have avoided adopting vcpkg without them.</p>
+<p>Lastly, we are happy to announce that vcpkg has a new website and mark!</p>
+<p>&nbsp;</p>
+<h3 id="versioning-and-registries-no-longer-experimental">Versioning and Registries No Longer Experimental</h3>
+<p>The vcpkg team has also been expanding the capabilities of the tool in response to popular user feedback. Most recently, we announced four new features:</p>
+<ol>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/binarycaching.md"><strong>Binary caching</strong></a>, to save copies of prebuilt library binaries that can be restored on demand from a network file share, NuGet feed, or cloud binary storage solution. With this feature, you can build your dependencies once, and only once, then cache them for faster subsequent acquisition on other machines, containers, or continuous integration runs.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/manifests.md"><strong>Manifests</strong></a>, making it possible to declare dependencies in a vcpkg.json file that can be maintained in source control and that automatically integrates with MSBuild and CMake projects. Simply run an MSBuild compilation or generate a CMake cache to automatically restore missing dependencies.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/versioning.md"><strong>Versioning</strong></a>, to set libraries to be acquired at specific versions and lock them there.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md"><strong>Registries</strong></a>, to bring your own libraries to vcpkg, whether they are forks of open source libraries available in the public catalog or other custom libraries (including private organization-only dependencies).</li>
+</ol>
+<p>When we announced versioning and registries, we pointed out that the features were considered experimental, as we wanted to take some more time to check the quality and listen to user feedback. Now, we are ready to state that <strong>versioning and registries are no longer experimental</strong>. While we will continue improving the features described above, we are confident enough to recommend using them in production environments. Please continue to submit feedback to us in the form of bug reports as <a href="https://github.com/microsoft/vcpkg/issues">GitHub Issues</a> and feature suggestions by starting a <a href="https://github.com/microsoft/vcpkg/discussions">GitHub Discussion</a>.</p>
+<p>&nbsp;</p>
+<h3 id="new-vcpkg-website-and-mark">New vcpkg Website and Mark</h3>
+<p>We are proud to <strong>announce </strong><a href="https://vcpkg.io/"><strong>vcpkg.io</strong></a><strong>, our new website</strong>!</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-website.png"><img class="alignnone size-full wp-image-28094" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-website.png" alt="vcpkg.io website homepage" width="936" height="570" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-website.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-website-300x183.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-website-768x468.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
+<p>You can use the website to learn about vcpkg and how to get started, browse our documentation, and even explore available packages on our package search page:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-browse-packages-page.png"><img class="alignnone size-full wp-image-28095" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-browse-packages-page.png" alt="vcpkg.io browse packages page" width="936" height="450" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-browse-packages-page.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-browse-packages-page-300x144.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg.io-browse-packages-page-768x369.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
+<p>On the website, you will notice our new, freshly-designed <strong>vcpkg product mark</strong>!</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg-product-mark.png"><img class="size-full wp-image-28096 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg-product-mark.png" alt="Image vcpkg product mark" width="278" height="278" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg-product-mark.png 278w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/05/vcpkg-product-mark-150x150.png 150w" sizes="(max-width: 278px) 100vw, 278px" /></a></p>
+<p>Lovingly referred to by our team as the “potato chip logo”, this mark will be used to identify vcpkg wherever it goes on the web.</p>
+<p>&nbsp;</p>
+<h3 id="vcpkg-2021-04-30-and-2021-05-12-releases">vcpkg 2021.04.30 and 2021.05.12 Releases</h3>
+<p>We completed <a href="https://github.com/microsoft/vcpkg/releases">two releases on GitHub for vcpkg</a> in the past few weeks. Our overall port count increased to 1,667, and we updated over 800 ports since our last release. We also added substantial new documentation, including for versioning, registries, manifests, and binary caching. We also <strong>turned registries and versioning on by default</strong>, so you no longer need to specify a feature flag to use them.</p>
+<p>&nbsp;</p>
+<h3 id="we-want-your-feedback">We Want Your Feedback!</h3>
+<p>If you depend on C or C++ libraries for your project, you should give vcpkg a try by visiting our website, <a href="https://vcpkg.io/">vcpkg.io</a>. You can use vcpkg to install libraries from source, whether they are your own or popular open source projects You can follow the project and engage with us on the <a href="https://github.com/microsoft/vcpkg/releases">vcpkg GitHub repo</a>. The features discussed in this post were made possible thanks to your feedback, and we are always interested to hear what you think!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/">All vcpkg enterprise features now generally available: versioning, binary caching, manifests and registries</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/all-vcpkg-enterprise-features-now-generally-available-versioning-binary-caching-manifests-and-registries/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
 		
 		
 			</item>
