@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 29 Jul 2021 15:55:01 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 10 Aug 2021 19:45:49 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,423 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>ARM64EC Support in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Moyo Okeremi]]></dc:creator>
+		<pubDate>Tue, 10 Aug 2021 19:45:49 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28369</guid>
+
+					<description><![CDATA[<p>ARM64EC (“Emulation Compatible”) is a new application binary interface (ABI) for building apps for Windows 11 on ARM. With ARM64EC, you can build new native apps that can run on ARM or incrementally transition existing x64 apps to native performance on ARM.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/">ARM64EC Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>ARM64EC (“Emulation Compatible”) is a new application binary interface (ABI) for building apps for Windows 11 on ARM. With ARM64EC, you can build new native apps that can run on ARM or incrementally transition existing x64 apps to native performance on ARM. For more information about ARM64EC, check out the <a href="https://aka.ms/arm64ecannounceblog">Windows Developer blog</a>.</p>
+<h2 id="why-should-developers-target-arm64ec">Why Should Developers Target ARM64EC?</h2>
+<p>Applications that are built to run on ARM, give customers the benefit of a great native experience that unlocks the full power of the ARM device. However, from a developer perspective, porting an app to run on ARM can be all-or-nothing, since <strong>all</strong> the binaries within a process need to be rebuilt as ARM before a customer can enjoy the benefits.</p>
+<p>With ARM64EC, you can choose to start small and build incrementally. Once you identify the part of your codebase that would benefit most from native performance, you can simply rebuild it as ARM64EC. The rest of the app will remain fully functional as emulated x64, but the recompiled ARM64EC parts will now have native speed.</p>
+<p>In addition, the ability to mix and match x64 and ARM64EC makes it possible to build an app on ARM even if it depends on x64 code outside of your control. For example, projects with third-party dependencies that don’t support ARM can leave them as x64. Also, apps with an in-proc plugin ecosystem can build as ARM64EC to get native speed on ARM, while continuing to load and use x64 plugins.</p>
+<h2 id="how-to-target-arm64ec-in-visual-studio">How to Target ARM64EC in Visual Studio</h2>
+<p>To start using Visual Studio to build your projects as ARM64EC, you&#8217;ll need to install these prerequisites:</p>
+<ul>
+<li>The latest <a href="https://aka.ms/windowsinsidersdk">Windows Insider SDK build</a> which is available through the Windows Insider program.</li>
+<li>The latest <a href="https://visualstudio.microsoft.com/vs/preview/" target="_blank" rel="noopener">Visual Studio 2019 Preview</a> or <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/" target="_blank" rel="noopener">Visual Studio 2022 Preview</a></li>
+<li>The ARM64EC tools from the Visual Studio Installer:</li>
+</ul>
+<p style="padding-left: 40px;"><img width="713" height="275" class="wp-image-28370" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email.png" alt="Graphical user interface, text, application, email Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email.png 713w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email-300x116.png 300w" sizes="(max-width: 713px) 100vw, 713px" /></p>
+<p>Once you have installed all the prerequisites, you can now target ARM64EC in your MSBuild and CMake Projects as explained in the following sections.</p>
+<h3 id="msbuild-projects">MSBuild Projects</h3>
+<p>Open your C++ project or solution in Visual Studio. If you don’t have one yet, create a new one by navigating to: <strong>Create a new project &gt; C++ Console App</strong>:</p>
+<p><img class="wp-image-28371" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer Description automatically generated with medium confidence" width="858" height="371" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica.png 2552w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-300x130.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1024x443.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-768x332.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1536x664.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-2048x885.png 2048w" sizes="(max-width: 858px) 100vw, 858px" /></p>
+<p>Open up the configuration manager by navigating to the tool bar and clicking <strong>build &gt; configuration manager</strong>:</p>
+<p><img class="wp-image-28372" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" width="409" height="362" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1.png 1118w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-300x266.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-1024x908.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-768x681.png 768w" sizes="(max-width: 409px) 100vw, 409px" /></p>
+<p>In the Active solution platform box, select <strong>&lt;New…&gt;</strong> to create a new platform:</p>
+<p><img class="wp-image-28373" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word.png" alt="Graphical user interface, text, application, Word, email Description automatically generated" width="683" height="261" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word.png 1709w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-300x115.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-1024x391.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-768x293.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-1536x587.png 1536w" sizes="(max-width: 683px) 100vw, 683px" /></p>
+<p>Select <strong>ARM64EC</strong>, Copy settings from <strong>x64</strong>, check the <strong>Create new project platforms</strong> checkbox and click <strong>OK</strong>:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1.png"><img class="alignnone wp-image-28383" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1-300x220.png" alt="Image Picture1" width="378" height="277" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1-300x220.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1.png 624w" sizes="(max-width: 378px) 100vw, 378px" /></a></p>
+<p>Finally, ensuring that ARM64EC is the active solution configuration, select <strong>Build </strong>from the menu to successfully build your ARM64EC project.</p>
+<p><strong>Note</strong>: By design, not all projects in the ARM64EC solution need to be targeting ARM64EC as they can target x64 instead. Ensure that you configure those x64 projects in the configuration manager to target x64 under the ARM64EC solution build:</p>
+<p><img class="wp-image-28375" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description.png" alt="Graphical user interface, application Description automatically generated" width="884" height="345" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description.png 1664w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-300x117.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-1024x399.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-768x300.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-1536x599.png 1536w" sizes="(max-width: 884px) 100vw, 884px" /></p>
+<p>For more information on working with MSBuild C++ Projects, see our documentation on <a href="https://docs.microsoft.com/en-us/cpp/build/creating-and-managing-visual-cpp-projects?view=msvc-160">Visual Studio Projects &#8211; C++ | Microsoft Docs</a> and <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Remote Debug a C++ Project &#8211; Visual Studio (Windows) | Microsoft Docs</a></p>
+<h3 id="cmake-projects">CMake Projects</h3>
+<p>If you haven’t already, install the CMake Build tools from the Visual Studio Installer:</p>
+<p><img class="wp-image-28376" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr.png" alt="Graphical user interface, text, application Description automatically generated" width="425" height="238" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr.png 800w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-768x430.png 768w" sizes="(max-width: 425px) 100vw, 425px" /></p>
+<p>Open your C++ CMake project in Visual Studio. If you don’t have one yet, create a new one by navigating to: <strong>Create a new project &gt; CMake Project</strong>:</p>
+<p><img class="wp-image-28377" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall.png" alt="Graphical user interface Description automatically generated" width="704" height="342" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall.png 2468w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-300x146.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-1024x497.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-768x373.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-1536x746.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-2048x994.png 2048w" sizes="(max-width: 704px) 100vw, 704px" /></p>
+<p>With <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">CMakePresets.json</a> integration in Visual Studio, the default active configuration of the new project will be the Windows default which targets configuring and building on the local Windows Machine. This is the scenario we are interested in.</p>
+<p><img class="wp-image-28378" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1.png" alt="Graphical user interface, text, application Description automatically generated" width="673" height="158" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1.png 1975w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-300x70.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-1024x241.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-768x180.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-1536x361.png 1536w" sizes="(max-width: 673px) 100vw, 673px" /></p>
+<p>Open up the CMakePresets.json file by going to the active configuration dropdown and selecting <strong>Manage Configurations</strong>:</p>
+<p><img class="wp-image-28379" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa.png" alt="Graphical user interface, text Description automatically generated" width="717" height="230" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa.png 1175w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-300x96.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-1024x329.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-768x246.png 768w" sizes="(max-width: 717px) 100vw, 717px" /></p>
+<p>Modify the architecture property under the windows configuration you want for ARM64EC:</p>
+<pre class="prettyprint"> "architecture": { 
+    "value": "arm64ec", 
+    "strategy": "external"
+ }</pre>
+<p><strong>Note: </strong>The default generator is Ninja. If using the visual studio generator (2019 or 2022), change the strategy field to<strong> set.</strong></p>
+<p>If using Ninja generator, you’ll also need to set some environment variables by adding the <strong>environment </strong> object to your CMakePresets configuration:</p>
+<pre class="prettyprint"> "environment": { 
+    "CXXFLAGS": "/arm64EC",
+    "CFLAGS": "/arm64EC" 
+ }</pre>
+<p>Save the CMakePresets file and make sure the active configuration is set to the arm64ec configuration. From the menu bar, select <strong>project menu, </strong>then select<strong> Configure &lt;Project Name&gt; </strong>in order to generate your CMake cache.</p>
+<p>Build your CMake Project targeting ARM64EC like any other CMake project: navigate to the <strong>Build Menu </strong>and select <strong>build all</strong>.</p>
+<p>For more information on working with CMake projects and CMakePresets, see our documentation on  <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160">CMake projects in Visual Studio | Microsoft Docs</a> , <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">Configure and build with CMake Presets | Microsoft Docs</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160">Tutorial: Debug a CMake project on a remote Windows machine | Microsoft Docs</a>.</p>
+<h2 id="give-us-your-feedback">Give us your feedback</h2>
+<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/&quot; \t &quot;_blank">Visual Studio 2019 Preview</a> or <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/" target="_blank" rel="noopener">Visual Studio 2022 Preview</a>  today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html" target="_blank" rel="noopener">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/">ARM64EC Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Moving a project to C++ named Modules</title>
+		<link>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/#comments</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Tue, 10 Aug 2021 17:23:41 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[modules]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28553</guid>
+
+					<description><![CDATA[<p>There is a lot of hype (and perhaps restraint) to using modules in projects. The general blocker tends to be build support, but even with good build support there is a distinct lack of useful resources for practices around moving projects to using named modules (not just header units).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/">Moving a project to C++ named Modules</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>There is a lot of hype (and perhaps restraint) to using modules in projects. The general blocker tends to be build support, but even with good build support there is a distinct lack of useful resources for practices around moving projects to using named modules (not just header units). In this blog we will take a small project I created, analyze its components, draft up a plan for modularizing it, and execute that plan.</p>
+<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#tools-used">Tools used.</a></li>
+<li><a href="#project-description">Project description.</a></li>
+<li><a href="#cpp-today">Ball Pit! in C++ without modules.</a></li>
+<li><a href="#ungluing">Ungluing from <code>#include</code></a>
+<ul>
+<li><a href="#starting-small">Starting small&#8230;</a></li>
+<li><a href="#visibility">Choosing visibility</a></li>
+<li><a href="#3rd-party-pain">3rd party pain.</a></li>
+<li><a href="#polish">Polishing with modules.</a></li>
+</ul>
+</li>
+<li><a href="#all-together">All together now.</a></li>
+</ul>
+<h4><span id="tools-used">Tools used</span></h4>
+<p>For the purposes of this project, we will be using the following tools:</p>
+<ul>
+<li>CMake &#8211; Version: <code>3.20.21032501-MSVC_2</code>. <em>Note:</em> this is the installed version of CMake which comes with Visual Studio 2019.</li>
+<li>Visual Studio 2019 &#8211; Version: <code>16.11</code>.</li>
+</ul>
+<h4><span id="project-description">Project description</span></h4>
+<p>I remember when I was younger, I used to love doing kid things like eating terrible fast food, but going to these restaurants had an additional perk: the play places! One of my favorite things to do was go to the ball pit, dive in, and make a giant splash of color.</p>
+<p><a style="display: block; margin-left: auto; margin-right: auto; width: 50%;" title="Rachmaninoff, CC BY-SA 4.0 &lt;https://creativecommons.org/licenses/by-sa/4.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Ball_pit_with_playground_slide.jpg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Ball_pit_with_playground_slide.jpg/512px-Ball_pit_with_playground_slide.jpg" alt="Ball pit with playground slide" width="512" /></a></p>
+<p>I shudder to think of going into one nowadays, but I have not forgotten how much fun they were. I have also recently become very inspired by OneLoneCoder on YouTube and his <a href="https://www.youtube.com/watch?v=LPzyNOHY3A4">series on programming simple physics engines</a>. I decided I would try to take this simple physics engine and make something a little bit fun and a lot more colorful, introducing &#8220;Ball Pit!&#8221;:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/ball-pit.gif"><img class="aligncenter size-full wp-image-28558" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/ball-pit.gif" alt="Image ball pit" width="320" height="240" /></a></p>
+<p>&#8220;Ball Pit!&#8221; is a quite simple program built using the following discrete components:</p>
+<ul>
+<li>OneLoneCoder <a href="https://github.com/OneLoneCoder/olcPixelGameEngine">PixelGameEngine</a> (PGE) &#8211; Drives graphics.</li>
+<li>A simple physics engine for managing all the objects on screen.</li>
+<li>A data structure related to handling collisions between objects, a <a href="https://en.wikipedia.org/wiki/Quadtree">quad-tree</a>.</li>
+<li>A world object to contain our beautiful orbs.</li>
+<li>Utilities such as common types and functions on those types.</li>
+<li>The main game object which is responsible for the primary game loop and polling user input.</li>
+</ul>
+<h4><span id="cpp-today">Ball Pit! in C++ without modules</span></h4>
+<p>Since we established a basic design layout in the previous section, let us see what we can produce using C++20 without any modules whatsoever. Without further ado, here is the code in all its <code>#include</code> glory: <a href="https://github.com/cdacamar/ball_pit/tree/ce90e45245bf7981fd797d992389693bdd586c0b">Ball Pit! Without modules</a>. The easiest way to build this project is to  use <a href="https://docs.microsoft.com/en-us/cpp/build/open-folder-projects-cpp?view=msvc-160">Visual Studio&#8217;s open folder</a> support.</p>
+<p>Alternatively you can do the following (in a VS2019 developer command prompt):</p>
+<pre>$ mkdir build &amp; cd build &amp; cmake -G"Visual Studio 16 2019" -Ax64 ..\</pre>
+<p>Once CMake has generated the solution for you can open it using Visual Studio 2019, use the familiar F5 loop and off you go!</p>
+<h5 id="traditional-c-structure">Traditional C++ Structure</h5>
+<p>Let us talk briefly about the traditional project structure of this code. We have the following, familiar, breakdown:</p>
+<pre>ball_pit/
+├─ include/
+├─ src/</pre>
+<p>As you might expect the <code>include/</code> directory is almost a mirror of some files under <code>src/</code>. You also end up with a sizeable set of includes in our primary <code>ball-pit.cpp</code> to pull all the pieces together:</p>
+<pre>#include "bridges/pge-bridge.h"
+
+#include "physics/physics-ball.h"
+#include "physics/physics-engine.h"
+#include "physics/quad-tree.h"
+#include "util/basic-types.h"
+#include "util/enum-utils.h"
+#include "util/random-generator.h"
+#include "world/world.h"</pre>
+<p>You might notice that these includes directly reflect the design we set out to have:</p>
+<ul>
+<li>PGE for graphics: <code>"bridges/pge-bridge.h"</code></li>
+<li>Physics engine: <code>"physics/physics-engine.h"</code></li>
+<li>Quad-tree: <code>"physics/quad-tree.h"</code></li>
+<li>World object: <code>"world/world.h"</code></li>
+<li>Utilities: <code>"util/*</code></li>
+<li>Main game: (the current source file: <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/src/ball-pit.cpp"><code>ball-pit.cpp</code></a>)</li>
+</ul>
+<p>Since we made the decision to use header files you will notice that we get some declarations like this:</p>
+<pre>inline RandomNumberGenerator&amp; random_generator()</pre>
+<p>Where there is a strong desire not to implement this simple function in its own <code>.cpp</code> file for simplicity&#8217;s sake, but if you forget the critical <code>inline</code> keyword or, even worse, mark it as <code>static</code> you will not get the behavior you expect from this function.</p>
+<p>Another thing which I like to do on my projects is separate 3rd party headers from the rest of the project using these &#8220;bridge&#8221; header files. The reason is so that I can easily control warning suppression/isolated requirements for that header. The PGE header is isolated into its own bridge called <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/bridges/pge-bridge.h"><code>pge-bridge.h</code></a>.</p>
+<p>Finally, for projects which utilize <code>#include</code> as a code sharing mechanism, I like to employ the idea that each header file should stand completely on its own, meaning that if a header uses something like <code>std::vector</code> it cannot rely on that container being introduced through some other header, it must include it itself. This is good practice; it makes maintaining headers minimal as you move them around and use them in more places.</p>
+<h4><span id="ungluing">Ungluing from <code>#include</code></span></h4>
+<p>At the beginning it was mentioned that we are using CMake as our configuration system but, as of publishing, CMake&#8217;s support for modules is still experimental. What we <em>can</em> do is generate build system output for a build system which <em>does</em> support modules: MSBuild&#8217;s! All we need to do is tell MSBuild that there are module interfaces in this project and &#8220;Presto!&#8221; we have a modules-compatible project! By default, MSBuild will key off any source files with a <code>.ixx</code> extension to automatically support named modules—exactly what we want! Now, how do we get there?</p>
+<p>If we examine the <code>include/</code> tree we get a surprisingly promising idea of what module interfaces we need:</p>
+<pre>ball_pit/
+├─ include/
+│  ├─ bridges/
+│  │  ├─ pge-bridge.h
+│  ├─ physics/
+│  │  ├─ physics-ball.h
+│  │  ├─ physics-engine.h
+│  │  ├─ physics-utils.h
+│  │  ├─ quad-tree.h
+│  ├─ util/
+│  │  ├─ basic-types.h
+│  │  ├─ enum-utils.h
+│  │  ├─ random-generator.h
+│  │  ├─ stopwatch.h
+│  ├─ world/
+│  │  ├─ world.h</pre>
+<p>It is common for mature projects to have a similar structure and breakdown of components and it makes sense for maintainability reasons. As a goal for modularizing this project let us aim to remove the entire directory tree of <code>include/</code> and take advantage of modules as much as possible. Let us do exactly that by introducing some new files into the directory tree which reflects our header file layout (making them empty for now):</p>
+<pre>ball_pit/
+├─ modules/
+│  ├─ bridges/
+│  │  ├─ pge-bridge.ixx
+│  ├─ physics/
+│  │  ├─ physics-ball.ixx
+│  │  ├─ physics-engine.ixx
+│  │  ├─ physics-utils.ixx
+│  │  ├─ quad-tree.ixx
+│  ├─ util/
+│  │  ├─ basic-types.ixx
+│  │  ├─ enum-utils.ixx
+│  │  ├─ random-generator.ixx
+│  │  ├─ stopwatch.ixx
+│  ├─ world/
+│  │  ├─ world.ixx</pre>
+<p>Now the process of moving everything over to using modules begins!</p>
+<h5><span id="starting-small">Starting small&#8230;</span></h5>
+<p>When tackling a project of any size you want to start as small as you possibly can. In the case of &#8220;Ball Pit!&#8221; I started with <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/util/enum-utils.h"><code>include/util/enum-utils.ixx</code></a> because it did not depend on anything besides a STL header. The first thing you need to do is add the content to your module interface:</p>
+<pre>module;
+#include &lt;type_traits&gt;
+export module Util.EnumUtils;
+
+template &lt;typename T&gt;
+concept Enum = std::is_enum_v&lt;T&gt;;
+
+template &lt;Enum E&gt;
+using PrimitiveType = std::underlying_type_t&lt;E&gt;;
+
+template &lt;Enum E&gt;
+constexpr auto rep(E e) { return PrimitiveType&lt;E&gt;(e); }</pre>
+<p>This is <em>almost</em> a 1-to-1 copy-paste of the header but with the following exceptions:</p>
+<ul>
+<li>Our STL headers are injected into the <a href="https://docs.microsoft.com/en-us/cpp/cpp/modules-cpp?view=msvc-160#modules-and-header-files">global module fragment</a> (the region between <code>module;</code> and <code>export module ...)</code>.</li>
+<li>We have given a proper name to our module: <code>Util.EnumUtils</code>. <em>Note:</em> the <code>.</code> separated names do not indicate any filesystem structure.</li>
+<li>We no longer need header include guards.</li>
+</ul>
+<p>There is one last thing missing: we did not actually export anything! Since all these names are used around the project, we need to export everything, and the easiest way to export lots of declarations at once is to use the <code>export { ... }</code> syntax. Take a look:</p>
+<pre>module;
+#include &lt;type_traits&gt;
+export module Util.EnumUtils;
+
+export
+{
+
+template &lt;typename T&gt;
+concept Enum = std::is_enum_v&lt;T&gt;;
+
+template &lt;Enum E&gt;
+using PrimitiveType = std::underlying_type_t&lt;E&gt;;
+
+template &lt;Enum E&gt;
+constexpr auto rep(E e) { return PrimitiveType&lt;E&gt;(e); }
+
+} // export</pre>
+<p>The next logical step for us is to replace any instance of <code>#include "util/enum-utils.h"</code> with <code>import Util.EnumUtils;</code>. This part is largely mechanical and to play off <a href="https://docs.microsoft.com/en-us/cpp/cpp/import-export-module?view=msvc-160#import">guidance around mixing <code>import</code> and <code>#include</code></a> I ensured to place any <code>import</code> after any <code>#include</code>&#8216;s. Finally, we add this new interface to the <code>CMakeLists.txt</code> <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/CMakeLists.txt#L27">here</a>, configure, build and run again. Things should run the same as before except that we are one step closer to modularizing the project!</p>
+<h5><span id="visibility">Choosing visibility</span></h5>
+<p>Named modules are all about defining the surface area of your API. Now that we have a tool which allows us to hide implementation details that would otherwise be unnecessary for consumers, we can start to think about what the accessible parts of the API should be. Let us look at modularizing <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/util/random-generator.h"><code>include/util/random-generator.h</code></a>. In this file we have the following declarations:</p>
+<pre>enum class RandomSeed : decltype(std::random_device{}()) { };
+
+template &lt;std::integral I&gt;
+using IntDistribution = std::uniform_int_distribution&lt;I&gt;;
+
+template &lt;std::floating_point I&gt;
+using RealDistribution = std::uniform_real_distribution&lt;I&gt;;
+
+class RandomNumberGenerator
+{
+   ...
+};
+
+inline RandomNumberGenerator&amp; random_generator()
+{
+   ...
+}</pre>
+<p>Of these declarations the ones we use outside of the header are <code>IntDistribution</code>, <code>RealDistribution</code>, and <code>random_generator()</code> (not even the class name directly). As such we can define the module like so:</p>
+<pre>export module Util.RandomGenerator;
+
+import Util.EnumUtils;
+
+enum class RandomSeed : decltype(std::random_device{}()) { };
+
+export
+template &lt;std::integral I&gt;
+using IntDistribution = std::uniform_int_distribution&lt;I&gt;;
+
+export
+template &lt;std::floating_point I&gt;
+using RealDistribution = std::uniform_real_distribution&lt;I&gt;;
+
+class RandomNumberGenerator
+{
+    ...
+};
+
+export
+RandomNumberGenerator&amp; random_generator()
+{
+    ...
+}</pre>
+<p>Notice that we do not even need to export the declaration of the class <code>RandomNumberGenerator</code>. We do not need its name; we only need its functionality, and we can prevent users from creating extra instances of it by allowing its use through <code>random_generator()</code> only.</p>
+<p>Furthermore, we no longer need <code>random_generator()</code> to be marked as <code>inline</code> because there is now only one definition in any given translation unit. Do not be afraid to put compiled code in an interface, it is its own translation unit and obeys the rules of compiled code.</p>
+<h5><span id="3rd-party-pain">3rd party pain</span></h5>
+<p>In C++ we deal with sharing code all the time and a lot of the time that code has a distinctive style, compiler requirements, default warning settings, etc. When we move code into a modules world, and in particular 3rd party code, we need to take some things into consideration: what part of the library do we want to expose? What runtime requirements are in the library if it is header only? Do we want to &#8220;seal&#8221; off bad parts of the library? With modules we start to have answers to these questions based on the requirements of our project. Integrating 3rd party library functionality into modularized projects is one of the most interesting parts of using modules because modules give us tools we never had before to deal with ODR (One Definition Rule) and name resolution. In this section we will focus on modularizing the <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/bridges/pge-bridge.h"><code>include/bridges/pge-bridge.h</code></a>.</p>
+<p>The OneLoneCoder PixelGameEngine is a nice library if you are just starting out exploring games programming. It is easy to integrate into projects (because it is a single header file) and the interfaces are simple&#8211;which plays to our advantage in deciding what parts of the library we want to expose. In &#8220;Ball Pit!&#8221; we use the following functionality from PGE:</p>
+<ul>
+<li><code>olc::PixelGameEngine</code> &#8212; For the main program.</li>
+<li><code>olc::Key</code> &#8212; For user input.</li>
+<li><code>olc::Pixel</code> &#8212; For coloring pixels.</li>
+<li><code>olc::vf2d</code>/<code>olc::vi2d</code> &#8212; Standard vector classes (<code>float</code> and <code>int</code> respectively).</li>
+<li><code>olc::BLACK</code>, <code>olc::WHITE</code>, <code>olc::BLUE</code>, and <code>olc::RED</code> &#8212; Color constants.</li>
+</ul>
+<p>We can, by default, export each of the above with a using-declaration:</p>
+<pre>module;
+#pragma warning(push)
+#pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
+#pragma warning(disable: 4245) // 'argument': conversion from 'int' to 'uint8_t', possible loss of data
+#include "olcPixelGameEngine.h"
+#pragma warning(pop)
+export module Bridges.PGE;
+
+export
+namespace olc
+{
+    // For game.
+    using olc::PixelGameEngine;
+    using olc::Key;
+
+    // For basic types.
+    using olc::Pixel;
+    using olc::vf2d;
+    using olc::vi2d;
+
+    // Allow using the multiply operator from olc::v2d_generic.
+    using olc::operator*;
+}</pre>
+<p>The reason we use a using-declaration is because we do not want the module to own all these objects/functions. By injecting the names through a using-declaration their linkage remains tied to the global module so we can separately compile them in <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/src/3rd_party/olcPixelGameEngine.cpp"><code>src/3rd_party/olcPixelGameEngine.cpp</code></a> as before.</p>
+<p>You will immediately notice that the color constants are mysteriously missing. This is because these constants are defined with <code>static</code> linkage in the header file so we cannot export them directly and the reason is <a href="http://eel.is/c%2B%2Bdraft/basic.link#18">buried in standardese</a>. It is simpler to remember that you cannot export an internal linkage entity (i.e. one declared <code>static</code>). The way to get around this is wrap them in a function which has module linkage:</p>
+<pre>export
+namespace olc
+{
+    ...
+    // Note: Because these color constants are defined to be static in the header they cannot be
+    // directly exported.  Instead we export their values through a module-owned variable.
+    namespace ModuleColors
+    {
+        auto Black()
+        {
+            return olc::BLACK;
+        }
+
+        auto White()
+        {
+            return olc::WHITE;
+        }
+
+        auto Blue()
+        {
+            return olc::BLUE;
+        }
+
+        auto Red()
+        {
+            return olc::RED;
+        }
+    }
+    ...
+}</pre>
+<p>Once we have these functions, we need to replace any instance of <code>olc::COLOR</code> with its respective call to our exported color function.</p>
+<p>And that is it! We have successfully exported exactly what we need from PGE for our &#8220;Ball Pit!&#8221; app! Just as before, you add this to the <code>CMakeLists.txt</code>, replace <code>#include "bridges/pge-bridge.h"</code> with <code>import Bridges.PGE;</code>.</p>
+<h5><span id="polish">Polishing with modules</span></h5>
+<p>Once you have gone through the exercise of modularizing more and more of the project you might find that your main program begins to reflect the header file version:</p>
+<pre>import Bridges.PGE;
+
+import Physics.Ball;
+import Physics.Engine;
+import Physics.QuadTree;
+import Util.BasicTypes;
+import Util.EnumUtils;
+import Util.RandomGenerator;
+import World;</pre>
+<p>Dandy! Modules also give us similar tools as header files do in that we can group common sets of modules together into a &#8220;package&#8221;. To understand what I am talking about let us look at a header file equivalent of grouping common functionality. Here is what a grouping of all the headers under <code>include/physics/*</code> might look like:</p>
+<p><code>include/physics/physics.h</code></p>
+<pre>#ifndef PHYSICS_H
+#define PHYSICS_H
+
+#include "physics/physics-ball.h"
+#include "physics/physics-engine.h"
+#include "physics/physics-utils.h"
+#include "physics/quad-tree.h"
+
+#endif PHYSICS_H</pre>
+<p>The problem, of course, is while this is convenient and you do not need to think about which specific file to include for your current project, you end up paying the cost of every header file in the package regardless of if you use it or not. It flies in the face of C++&#8217;s core concept: pay for what you use. With the introduction of C++20 modules we no longer have this problem because modules do next to zero work when you import them, so we can safely create the following interface without negatively impacting the compile time of consumers:</p>
+<p><code>modules/physics/physics.ixx</code></p>
+<pre>export module Physics;
+
+export import Physics.Ball;
+export import Physics.Engine;
+export import Physics.QuadTree;
+export import Physics.Utils;</pre>
+<p>We can also do the same for anything under <code>Util.*</code>. This leads us to a rather, I think, respectable looking <code>ball-pit.cpp</code>:</p>
+<pre>import Bridges.PGE;
+
+import Physics;
+import Util;
+import World;</pre>
+<h4><span id="all-together">All together now</span></h4>
+<p>It was a little bit of a journey getting here, and there are learnings along the way. I will not dillydally any further, here is the complete, modularized, version of &#8220;Ball Pit!&#8221;: <a href="https://github.com/cdacamar/ball_pit/tree/565e3bff28b78b84ac3765d6c786e96980177867"><code>ball_pit</code></a>. You can check out the code, configure, and build it the same as we <a href="#cpp-today">covered earlier</a> using Visual Studio 2019 version 16.11.</p>
+<p>There is one thing I want to mention, because I can all but guarantee it is on everybody&#8217;s mind: what is the build throughput? With modules there is an up-front cost in building our interfaces. With the old inclusion model, we did not have to build our include files explicitly (only implicitly). We end up building more up front, but the result is that we can <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">REPL</a> our main program and its components much, much faster. Here is a snapshot of the difference:</p>
+<p>Compiling <code>ball-pit.cpp</code>:</p>
+<table>
+<tbody>
+<tr>
+<td>Without modules</td>
+<td>With modules</td>
+</tr>
+<tr>
+<td>3.55275s</td>
+<td>0.15413s</td>
+</tr>
+</tbody>
+</table>
+<p><em>Note:</em> these times were an average of 10 runs. You can see the results yourself by observing the <code>c1xx.dll</code> in the build log (left in for comparisons).</p>
+<p>Yep, that is a real ~23x speedup difference. That kind of compile time if you&#8217;re developing a game can make a dramatic difference if you are wanting to quickly test changes to your game or make mistakes, like I often do :).</p>
+<h4 id="closing">Closing</h4>
+<p>The process of using named modules in complex projects can be time consuming, but this type of refactor pays off in both reducing development costs associated with recompiling and code hygiene. Named modules give us so much more than simply better compile times and in the above we have only scratched the surface of what is possible. Stay tuned for more modules educational content from us in the future!</p>
+<p>We urge you to go out and try using Visual Studio 2019/2022 with Modules. Both Visual Studio 2019 and Visual Studio 2022 Preview are available through the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads</a> page!</p>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow me on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/">Moving a project to C++ named Modules</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Edit Your C++ Code while Debugging with Hot Reload in Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/#respond</comments>
@@ -650,227 +1067,6 @@ int main()
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</title>
-		<link>https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/</link>
-		
-		<dc:creator><![CDATA[Jordan Maples]]></dc:creator>
-		<pubDate>Thu, 10 Jun 2021 16:00:10 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[cppcorecheck]]></category>
-		<category><![CDATA[static analysis]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28184</guid>
-
-					<description><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the  C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the  <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the compilation of improvements and bug fixes that were made from Visual Studio 2019 versions 16.9 to 16.10 for <a href="https://docs.microsoft.com/en-us/cpp/build/reference/analyze-code-analysis">code analysis</a> and <a href="https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers">CppCoreCheck</a>.</p>
-<h2 id="new-features">New features:</h2>
-<ul>
-<li><a href="https://aka.ms/cpp/warnings/C26479">C26479</a> is a new warning that supports <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#f48-dont-return-stdmovelocal">F.48</a>, don’t return a local variable with <code>std::move</code>.</li>
-<li><a href="https://aka.ms/cpp/warnings/C26458">C26458</a> is a new warning that serves as a path-sensitive version of <a href="https://aka.ms/cpp/warnings/C26446">C26446</a>. C26458 had a dedicated blog post in mid-May. In case you missed it, you can read more about the new warning <a href="https://devblogs.microsoft.com/cppblog/new-static-analysis-rule-for-bounds-checking/">here</a>.</li>
-<li><a href="https://aka.ms/cpp/warnings/C26800">C26800</a>, which is used to detect if a variable is used after it has been moved from, is no longer an experimental rule and is now a part of the default rule set.</li>
-<li>The lifetime warnings <a href="https://aka.ms/cpp/warnings/C26810">C26810</a> and <a href="https://aka.ms/cpp/warnings/C26811">C26811</a>, originally introduced in 16.2 and discussed <a href="https://devblogs.microsoft.com/cppblog/new-code-analysis-checks-in-visual-studio-2019-use-after-move-and-coroutine/">here</a>, are no longer experimental and can be used by selecting the default ruleset or <code>“CppCoreCheckLifetimeRules”</code>.</li>
-<li>Sarif suppression properties will only be populated when <code>/analyze:log:includesuppressed</code> is specified. This can be useful for auditing the rules that are suppressed in a codebase.</li>
-</ul>
-<h2 id="analysis-crash-fixes">Analysis crash fixes:</h2>
-<ul>
-<li>Fixed a crash in the analysis engine caused by an empty brace initializer in an initializer list.</li>
-</ul>
-<pre class="prettyprint">struct TestStruct {
-public:
-    enum TestEnum : char { Dummy };
-
-    TestEnum m1 : 1;
-    TestEnum m2 : 1;
-    short m3;
-};
-
-TestStruct Test2()
-{
-    return{ TestStruct::Dummy, TestStruct::Dummy, {} };
-}</pre>
-<ul>
-<li>Fixed analysis engine crash when using the drivers plugin from the WDK.</li>
-</ul>
-<h2 id="bug-fixes-and-optimizations">Bug fixes and optimizations:</h2>
-<ul>
-<li><a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c35-a-base-class-destructor-should-be-either-public-and-virtual-or-protected-and-non-virtual">C.35</a> no longer is issued on functions marked override in classes that are marked <code>final</code>.</li>
-<li>The message string for <a href="https://aka.ms/cpp/warnings/C26434">C26434</a> has been updated to remove the reference to <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c128-virtual-functions-should-specify-exactly-one-of-virtual-override-or-final">C.128</a>. This warning does not align to C.128 but is still a helpful warning to prevent hiding member functions.</li>
-<li>Fix false negative for <a href="https://aka.ms/cpp/warnings/C26414">C26414</a> for some unique pointers returned from <code>std::make_unique</code> where no arguments are passed to <code>std::make_unique</code></li>
-</ul>
-<pre class="prettyprint">#include &lt;memory&gt;
-struct struct_1
-{
-    void method_1();
-};
-void c26414()
-{
-    auto ptr = std::make_unique&lt;struct_1&gt;(); //now issues C26414
-    ptr-&gt;method_1();
-}</pre>
-<ul>
-<li><a href="https://aka.ms/cpp/warnings/C26800">C26800</a> – Use of a moved from object.
-<ul>
-<li>Prevent analysis in function bodies where called functions do not have rvalue reference parameters.</li>
-<li>Fixed false positive that appeared when using coroutines.</li>
-</ul>
-</li>
-<li>Improved the detection of <a href="https://aka.ms/cpp/warnings/C26812">C26812</a>, “prefer <code>enum class</code> over <code>enum</code>”</li>
-<li>Fixed false positive for <a href="https://aka.ms/cpp/warnings/C6285">C6285</a> and <a href="https://aka.ms/cpp/warnings/C6237">C6237</a> when code contains <code>if constexpr</code>.</li>
-</ul>
-<pre class="prettyprint">constexpr void f1()
-{
-    constexpr int val1 = false;
-    constexpr int val2 = false;
-    if constexpr (val1 == true || val2 == true)
-    {
-        //...
-    }
-    if (val1 == true || val2 == true) // C6285
-    {
-        //...
-    }
-}
-
-constexpr bool foo()
-{
-    return false;
-}
-constexpr bool bar()
-{
-    return true;
-}
-constexpr void f2()
-{
-    constexpr bool fooVal = foo();
-    if constexpr (fooVal &amp;&amp; bar())
-    {
-        //...
-    }
-    if (fooVal &amp;&amp; bar()) //C6237
-    {
-        //...
-    }
-}</pre>
-<ul>
-<li>Improvements for the coroutine checks:
-<ul>
-<li>Fixed problem that caused warnings to be issued against an incorrect line.</li>
-<li>Improved detection for cases using rvalue references.</li>
-<li>Fixed a false positive in code using <code>std::suspend_never</code></li>
-</ul>
-</li>
-<li>Fixed false positive in local lifetime check caused by use of <code>std::optional</code></li>
-</ul>
-<pre class="prettyprint">void assignToReferenceArg( std::optional&lt;double&gt;&amp; x )
-{
-    x = 1.0; // Used to produce false positive
-}</pre>
-<ul>
-<li>Fixed bounds warning for code in <code>if constexpr</code> block.</li>
-</ul>
-<pre class="prettyprint">constexpr void test_constexpr()
-{
-    int arr[] = {1,2,3};
-    constexpr int index = -1;
-
-    if constexpr (index != -1)
-    {
-        arr[index]; //No C6201
-    }
-
-    if constexpr (index == -1)
-    {
-        arr[index]; //C6201
-    }
-}</pre>
-<ul>
-<li>Fixed analysis failure for file paths that contained non-ASCII characters.</li>
-<li>General improvements to the <code>uninit</code> check. See this <a href="https://devblogs.microsoft.com/cppblog/ignoring-automatic-initialization-for-code-analysis/">post</a> for more information on how this
-affects analysis.</li>
-</ul>
-<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
-<p>The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static-analysis-fixes-improvements-and-updates-in-visual-studio-2019-version-16-10/">Static Analysis Fixes, Improvements, and Updates in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>&#060;format&#062; in Visual Studio 2019 version 16.10</title>
-		<link>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/#comments</comments>
-		
-		<dc:creator><![CDATA[Charlie Barto]]></dc:creator>
-		<pubDate>Wed, 09 Jun 2021 16:00:28 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28122</guid>
-
-					<description><![CDATA[<p>C++20 adds a new text formatting facility to the standard library, designed primarily to replace snprintf and friends with a fast and type safe interface. The standardized library is based on the existing {fmt} library, so users of that library will feel at home.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/">&lt;format&gt; in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>C++20 adds a new text formatting facility to the standard library, designed primarily to replace <code>snprintf</code> and friends with a fast and type safe interface. The standardized library is based on the existing <a href="https://github.com/fmtlib/fmt">{fmt}</a> library, so users of that library will feel at home.</p>
-<p>Before diving into how <code>std::format</code> works I want to thank Victor Zverovich, Elnar Dakeshov, Casey Carter, and miscco, all of whom made <a href="https://github.com/microsoft/STL/pulls?q=is:pr+label:format+">substantial contributions</a> to this feature, and were the reason why we could complete it so quickly.</p>
-<h2 id="overview">Overview</h2>
-<p>To start using <code>&lt;format&gt;</code> you just need to be using Visual Studio 2019 version 16.10 or later and you need to be compiling with <code>/std:c++latest</code>. You can get the latest Visual Studio preview <a href="https://visualstudio.microsoft.com/vs/preview/">here</a>.</p>
-<p>The simplest and most common way to use <code>&lt;format&gt;</code> is to call:</p>
-<pre class="prettyprint">template&lt;class... Args&gt;
-string format(string_view fmt, const Args&amp;... args);</pre>
-<p><code>fmt</code> is the format-string and <code>args</code> are the things you’d like to format. The format string consists of some text interspersed with curly brace delimited replacement fields. For example: <code>"Format arguments: {} {}!"</code> is a format string for formatting two arguments. Each replacement field corresponds to the next argument passed. So <code>std::format("Format arguments {} {}!", 2, 1)</code> would produce the string <code>"Format arguments 2 1!"</code></p>
-<p>Format strings can also contain numbered replacement fields, for example <code>"Format arguments {1} {0}!"</code>. These refer to the numbered argument passed in, starting from zero. Numbered and un-numbered (automatic) replacement fields can not be mixed in the same format string.</p>
-<p>There are all sorts of modifiers you can use to change the way a particular parameter is formatted. These are called “format specifiers” and are specified in the replacement field like so: <code>std::format("{:&lt;specifiers&gt;}", &lt;arg&gt;)</code>. Let’s look at an example that has one of everything.</p>
-<pre class="prettyprint"><code>std::format("{:&#x1f431;^+#12.4La}", 4.f);</code></pre>
-<p>This returns the string <code>“&#x1f431;+1.0000p+2&#x1f431;”</code> (printing this string out to the console on Windows can be a bit difficult). Let’s go through what each component of the above string told <code>std::format</code> to do. First we have<code> “&#x1f431;^”</code> the “fill and align” part of the format specifiers, saying we’d like our output center aligned and padded with cat emojis. Next we have <code>“+”</code>, meaning we’d like a sign character no matter what (the default is <code>“-”</code> to only print the<code> “-”</code> sign for negatives, and you can also use a space to ask for a minus sign or a space). After that we specify <code>“#”</code>, meaning “alternate form”. For floats the alternate form causes format to always insert a decimal point. Next we specify <code>“12.4”</code> to get a width of 12 and a precision of 4. That means format will use the “fill” and “alignment” settings to make sure our output is at least 12 characters wide and the float itself will be printed to 4 digits of precision. Next the <code>“L”</code> specifier causes format to use locale specific formatting to print things like decimal separators. Finally <code>“a”</code> causes the output to be in hexfloat format. More detailed information about the possible format specifications can be found at <a href="https://en.cppreference.com/w/cpp/utility/format/formatter#Standard_format_specification">cppreference</a>.</p>
-<p>For width and precision specifiers you may reference a format argument instead of using a literal value like so:</p>
-<pre class="prettyprint">std::format("{0:{1}.{2}}", 4.2f, 4, 5);</pre>
-<p>This results in a width of 4 and a precision of 5. The rules for mixing automatic and manual indexing (don’t do it) still apply, but you can use automatic indexing to reference width and precision as in:</p>
-<pre class="prettyprint">std::format("{:{}.{}}", 4.2f, 4, 5);</pre>
-<p>The assignment of automatic indices is performed left to right, so the above two examples are equivalent.</p>
-<h2 id="performance">Performance</h2>
-<p>In general <code>std::format</code> performance should be in the same ballpark as <code>fmt::format</code> and <code>snprintf</code> if you compile your code with the <code>/utf-8</code> <a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8?view=msvc-160"> </a>. If you don’t use the <code>/utf-8</code> option then performance can be significantly degraded because we need to retrieve your system locale to correctly parse the format string. While we’re working to improve performance for this case in a future release we recommend you use <code>/utf-8</code> for the best experience.</p>
-<h2 id="unicode">Unicode</h2>
-<p><code>std::format</code> doesn’t do any transcoding between different text encodings, however it is aware of the “execution character set” and uses it to interpret the format string. The versions of <code>std::format</code> taking a wide (<code>wchar_t</code>) format string are <em>always</em> interpreted as UTF-16. The versions of <code>std::format</code> taking a narrow (char) format string interpret the format string as UTF-8 if we detect the<code> /utf-8</code> (or <code>/execution-charset:utf-8</code>) option. Otherwise we interpret the format string as being encoded in the active system codepage. This means that if you compile your code with a non-UTF-8 execution charset it may not run correctly on systems with a different system codepage setting. There’s also a <em>significant</em> performance cost to figuring out the system codepage, so for best performance we recommend you compile with<code> /utf-8</code>. We’re working to improve the performance of format in non-UTF execution character sets in future releases.</p>
-<p>Unicode also comes into play when dealing with width and precision specification for strings. When we interpret the format string as UTF-8 or UTF-16 we compute the “estimated width” of a string taking into account a rough estimate of the size of each code-point. If we’re interpreting the format string as a non-Unicode encoding we just estimate the width as the number of code units (not code points) in the string. In a future release we’ll add grapheme clusterization to the width computations for Unicode encodings.</p>
-<h2 id="locales">Locales</h2>
-<p>While we always parse the <em>format string</em> according to the rules above, the locale used for things like decimal separator positions can be customized. By default no locale is used. If you use the <code>L</code> specifier then some locale specific formatting may be used. By default it’s the current global locale as returned by a default constructed <code>std::locale</code>, however each formatting function has a version allowing you to pass in your own <code>std::locale</code> object to override that behavior.</p>
-<h2 id="future-work">Future work</h2>
-<p>Over the next few Visual Studio releases we’ll be improving the performance of <code>std::format</code>, and fixing bugs. Additionally C++23 will likely add compile time format checking to format literals and we may implement that before 2023 (for code you want to work great in C++23 don’t rely on catching <code>std::format_errors</code> from invalid format strings!). C++23 will also make a small change to the definitions of <code>std::vformat_to</code> and <code>std::format_to</code> that reduces code size but can be observable, for forward compatibility make sure any custom formatters work with all output iterators. More information on these changes can be found in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html">p2216r3</a>. C++23 may also bring additional functionality like <code>std::print</code> and better ways to handle Unicode text.</p>
-<h2 id="differences-from-fmt-not-exhaustive">Differences from {fmt} (not exhaustive)</h2>
-<p>For those familiar with <code>{fmt}</code>, a quick list of differences from the standardized version of the library:</p>
-<ul>
-<li>Named arguments are not supported.</li>
-<li>None of the miscellaneous formatting functions like <code>fmt::print</code> or <code>fmt::printf</code> are supported.</li>
-<li>Format strings are not checked at compile time</li>
-<li>There is no support for automatically formatting types with an <code>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const T&amp;)</code> overload</li>
-<li>The behavior of some format specifiers is slightly different (for example the default alignment for <code>void*</code>, and allowing sign specifiers for unsigned types)</li>
-</ul>
-<h2 id="give-us-feedback">Give us feedback</h2>
-<p>Try out format in your own code, and file any bugs on our <a href="https://github.com/microsoft/STL/issues">out GitHub issue tracker</a>.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/">&lt;format&gt; in Visual Studio 2019 version 16.10</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/format-in-visual-studio-2019-version-16-10/feed/</wfw:commentRss>
-			<slash:comments>28</slash:comments>
 		
 		
 			</item>
