@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 10 Aug 2021 19:45:49 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 11 Aug 2021 16:40:19 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,61 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Attach to a Remote Process with LLDB in Visual Studio 2022 Preview 3</title>
+		<link>https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/#respond</comments>
+		
+		<dc:creator><![CDATA[Erika]]></dc:creator>
+		<pubDate>Wed, 11 Aug 2021 16:21:30 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Clang]]></category>
+		<category><![CDATA[Linux]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28613</guid>
+
+					<description><![CDATA[<p>You can now use Attach to Process to remote debug processes with GDB or LLDB in Visual Studio. The ability to attach to a process running on a remote system with GDB was added in Visual Studio 2019. The ability to attach to a process with LLDB is new in Visual Studio 2022 Preview 3.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/">Attach to a Remote Process with LLDB in Visual Studio 2022 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>You can now use <strong>Attach to Process</strong> to remote debug processes with GDB or LLDB in Visual Studio. The ability to attach to a process running on a remote system with GDB was added in Visual Studio 2019. The ability to attach to a process with LLDB is new in Visual Studio 2022 Preview 3.</p>
+<p>Remote debugging in Visual Studio is especially valuable for teams who write cross-platform C++ code that runs on Windows and Linux or macOS. For example, if you use Windows + Visual Studio as your primary development environment, then you may need to occasionally debug code running on Linux or macOS. Rather than switching platforms and using GDB or LLDB from the command line, you can use Visual Studio to remote debug processes running on Linux and macOS. Visual Studio’s remote C++ support assumes that your source code is located in the Windows file system.</p>
+<p>While a native, command driven workflow may be the best choice for your team, we know that some teams:</p>
+<ul>
+<li>Are unfamiliar with platform specific tools, especially if they use Windows + the Visual Studio debugger as their primary development environment.</li>
+<li>Prefer Visual Studio&#8217;s graphical interface and feature set over a command line interface.</li>
+<li>Find it unproductive to switch between platforms for native debugging.</li>
+<li>Rely on a subset of developers who are comfortable with command line tools to debug all non-Windows errors and are looking to democratize that process.</li>
+</ul>
+<p>Follow the steps below to get started debugging a remote process with LLDB and Visual Studio 2022.</p>
+<h4 id="getting-started-instructions">Getting started instructions</h4>
+<p>1. On Windows, <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/">Install Visual Studio 2022 Preview 3 or later.</a></p>
+<p>2. On your remote system, acquire LLDB and LLDB-mi. On macOS you can install LLDB with XCode or the XCode Command Line Tools. You can install a build of LLDB-mi maintained by the C/C++ Extension for VS Code.</p>
+<p><div style="text-align:center"><a class="cta_button_link" href="https://go.microsoft.com/fwlink/?linkid=2154927" style="text-transform: titlecase; display: inline-block; background-color: #5C2D91; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Install LLDB-mi for macOS</a></div></p>
+<p>We don’t currently maintain a LLDB-mi binary for Linux. You can install LLDB and LLDB-mi with the instructions in <a href="https://github.com/microsoft/vscode-cpptools/issues/5415#issuecomment-662603085">this comment</a> from iamWing in the C/C++ Extension for VS Code repository.</p>
+<p>3. On your remote system, start SSH (<a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160#set-up-the-ssh-server-on-the-remote-system">instructions</a>) and the process that you want to debug.</p>
+<p>4. On Windows, open Visual Studio 2022 and select <strong>Debug &gt; Attach to Process…</strong></p>
+<ul>
+<li>Set the <strong>Connection type</strong> to SSH.</li>
+<li>Set the <strong>Connection target. </strong>You can select any system that you have added to the Visual Studio <a href="https://docs.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-160">Connection Manager</a>, or you can provide a new address with the format <strong>user@host </strong>(e.g., demo@121.121.2.11). You can also add new connections to the Visual Studio Connection Manager with our <a href="https://docs.microsoft.com/en-us/cpp/linux/connectionmanager-reference?view=msvc-160">command line tool</a>.</li>
+<li>Set the <strong>code type </strong>to Native (LLDB). If you are remote debugging with GDB, then set the code type to Native (GDB).</li>
+</ul>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/select-code-type.png"><img class="aligncenter size-full wp-image-28614" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/select-code-type.png" alt="The Visual Studio dialog is labeled &quot;Select Code Type.&quot; The option &quot;Debug these code types&quot; is selected and followed by two options: Native (GDB) and Native (LLDB). Native (LLDB) is selected." width="488" height="383" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/select-code-type.png 488w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/select-code-type-300x235.png 300w" sizes="(max-width: 488px) 100vw, 488px" /></a></p>
+<ul>
+<li>The <strong>list of available processes</strong> will list all processes running on your remote system by process name and ID. Select the process that you want to remote debug and press “Attach” to launch the debugger.</li>
+</ul>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/attach-to-process-1.png"><img class="aligncenter size-full wp-image-28625" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/attach-to-process-1.png" alt="The Visual Studio dialog is labeled &quot;Attach to Process.&quot; The connection type is SSH, the connection target is &quot;erika@localhost&quot;, and the code type is &quot;Native (LLDB) code&quot;. A list of 3 processes is displayed under &quot;Available processes&quot;, and process &quot;CMakeProject&quot; is selected." width="853" height="604" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/attach-to-process-1.png 853w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/attach-to-process-1-300x212.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/attach-to-process-1-768x544.png 768w" sizes="(max-width: 853px) 100vw, 853px" /></a></p>
+<p>5. Visual Studio will attach LLDB to the selected process and start a debugging session. You can pause the debugger to see the current execution point. All the debug windows support by Visual Studio will be populated with data from the remote process.</p>
+<h4 id="talk-to-us">Talk to us!</h4>
+<p>Attach to Process is the first remote debugging scenario supported by LLDB in Visual Studio. Try it out and give us your feedback, or let us know if there are other remote debugging features that you want to see. The best way to file a bug or suggest a feature is with the <strong>Send Feedback</strong> button in the upper right-hand corner of the IDE. See <a href="https://docs.microsoft.com/en-us/visualstudio/ide/feedback-options?view=vs-2019#:~:text=In%20Visual%20Studio%2C%20choose%20the%20feedback%20icon%20in,information%2C%20see%20Suggest%20a%20feature%20for%20Visual%20Studio.">Visual Studio feedback options</a> for more information.</p>
+<p>We’d love to learn how your team is adopting our support for LLDB. If you have feedback or a success story to share, you can contact us at <a href="mailto:vcpp-linux@microsoft.com">vcpp-linux@microsoft.com</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/">Attach to a Remote Process with LLDB in Visual Studio 2022 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>ARM64EC Support in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/#comments</comments>
@@ -96,7 +151,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>3</slash:comments>
 		
 		
 			</item>
@@ -440,7 +495,7 @@ import World;</pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/feed/</wfw:commentRss>
-			<slash:comments>9</slash:comments>
+			<slash:comments>10</slash:comments>
 		
 		
 			</item>
@@ -944,129 +999,6 @@ A visualizer is a file with .natvis extension that allows you to manipulate the 
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/stl-visualizers-on-github/feed/</wfw:commentRss>
 			<slash:comments>6</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Address Sanitizer Now in “Early Release” for Xbox Developers</title>
-		<link>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/#respond</comments>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Tue, 22 Jun 2021 17:29:43 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[address sanitizer]]></category>
-		<category><![CDATA[debugging]]></category>
-		<category><![CDATA[dump]]></category>
-		<category><![CDATA[memory]]></category>
-		<category><![CDATA[xbox]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28236</guid>
-
-					<description><![CDATA[<p>The following blog post is authored by Tad Swift, a Principal Software Engineer on the Xbox Advanced Technology Group (ATG).<br />
-Introduction<br />
-Address Sanitizer (ASan) is a valuable tool for lighting up hard-to-find memory bugs. Since the MSVC release in Visual Studio version 16.9,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/">Address Sanitizer Now in “Early Release” for Xbox Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png"><img class="aligncenter size-full wp-image-28237" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png" alt="Image Xbox 2020 horz Grn RGB" width="1659" height="793" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB.png 1659w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-300x143.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-1024x489.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-768x367.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Xbox_2020_horz_Grn_RGB-1536x734.png 1536w" sizes="(max-width: 1659px) 100vw, 1659px" /></a></p>
-<p><strong>The following blog post is authored by Tad Swift, a Principal Software Engineer on the Xbox Advanced Technology Group (ATG). </strong></p>
-<h1 id="introduction">Introduction</h1>
-<p><strong>Address Sanitizer</strong> (<a href="https://devblogs.microsoft.com/cppblog/addresssanitizer-asan-for-windows-with-msvc/">ASan</a>) is a valuable tool for lighting up hard-to-find memory bugs. Since the MSVC release in <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-for-msvc-now-generally-available/">Visual Studio version 16.9</a>, we&#8217;ve been working with our partners to bring ASan to the Xbox platform.</p>
-<p>With the recent release of the June Xbox GDK, we are happy to announce Address Sanitizer is available in <em>&#8220;early release&#8221;</em> form.</p>
-<p>In this blog post, we will showcase how to get ASan working with the Xbox platform.</p>
-<h1 id="building-with-address-sanitizer">Building with Address Sanitizer</h1>
-<p>Setting up an Xbox project for ASan should follow the same guidelines as the PC version, with the Address Sanitizer being integrated into the usual Visual Studio debugging experience. However, there are some specific use-cases for Xbox developers that were not supported by default under ASan.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png"><img class="aligncenter size-full wp-image-27733" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png" alt="Image ASan example" width="1428" height="949" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-300x199.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-1024x681.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/03/ASan-example-768x510.png 768w" sizes="(max-width: 1428px) 100vw, 1428px" /></a></p>
-<p>Modern games consist of highly complicated, multi-threaded code whose goal is to run as fast as possible while holding a target frame rate. This means that the code is tested frequently through development by means of an automated build and test setup. These server machines may build the code, deploy it to a console, and run the game without a debugger connection meaning that they might miss any ASan error reports shown in the debug output. Ideally, the test server could collect crash dumps from any Asan errors, but due to differences in the Xbox GDK, extra steps must be taken to extract Address Sanitizer crash dump information from automated runs.</p>
-<h1 id="enhanced-debugger-support">Enhanced Debugger Support</h1>
-<p><a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan-offline-crash-dumps?view=msvc-160">MSVC’s ASan implementation</a> can create a crash dump with detailed exception information, but this could only be enabled from an environment variable which isn’t supported on Xbox. To get crash dumps on Xbox, developers must specify a function in their code to supply the dump filename.</p>
-<p>Here are two examples of what the function looks like:</p>
-<pre class="prettyprint">extern "C" const wchar_t* __vcasan_save_dumps()
-{
-    return L"myCrashDump.dmp";
-}</pre>
-<pre class="prettyprint">extern "C" const WCHAR* __vcasan_save_dumps()
-{
-    // Choose to create a crash dump based on a runtime flag
-    if ( gCollectCrashDumps )
-    {
-        return L"myCrashDump.dmp";
-    }
-    else
-    {
-        // Returning NULL stops ASan creating a crash dump
-        return NULL;
-    };
-}
-</pre>
-<p>There are no specific requirements around the name returned by this function, but it must be a valid filepath on the target device where the code is being run.</p>
-<p>Now that we can support crash dumps on Xbox, we also decided to give developers more flexibility around the type of crash dump that is produced. There are instances where a simple “Triage” dump is sufficient to see the callstack of where the process failed, but within games, there is usually the requirements to see more of the surrounding memory when the issue occurred. To this end, we have provided three configurable crash dump types that are supported by the Xbox platform and match the crash dumps developers expect from their Xbox consoles.</p>
-<p><strong><em><u>Note:</u></em></strong> As with the previous function, this override is <strong><em>optional</em></strong> on Xbox, but it is highly recommended if you want to use crash dumps to collect ASan information without a debugger attached.  If you provide the dump filename but <strong><em>not</em></strong> a dumptype override, then it will fail to generate a valid crash dump on Xbox.</p>
-<p>This callback returns a number to indicate the dump type required. Valid types are shown in the example below:</p>
-<pre class="prettyprint">extern "C" const signed int __vcasan_override_dumptype()
-{
-    // The current valid values are:
-    // 0 : Triage Dump
-    // 1 : Mini Dump
-    // 2 : Heap Dump
-    // Values outside this range are defaulted to 2 (Full Heap)
-
-    // This example uses Heap Dumps which give the most information
-    return 2;
-}
-</pre>
-<p>Both callback functions are available as part of 16.9.8, 16.10.2 or a future 16.11 preview release of Visual Studio.</p>
-<h1 id="example-code">Example code</h1>
-<p>This code demonstrates how easily these functions can be added into an existing codebase and adapted as required:</p>
-<pre class="prettyprint">#include &lt;cstdio&gt;
- 
-extern "C" const wchar_t* __vcasan_save_dumps()
-{
-    // Specify dump filename
-    return L"myCrashDump.dmp";
-}
- 
-extern "C" const signed int __vcasan_override_dumptype()
-{
-    // Full Heap dump requested
-    return 2;
-}
- 
-static const int arraySize = 8;
-static int asanArray[arraySize];
-static int asanAccumulator = 0;
- 
-int main()
-{
-    // ASan should use the callback functions that we have provided
-    for (int loop = 0; loop &lt;= arraySize; loop++)
-    {
-        // We don’t really care about accumulating the values
-        // We just want to access outside the array causing an ASan error
-        asanAccumulator += asanArray[loop];
-    }
- 
-    // If we get here, we have failed as ASAN should have caught the error above
-    printf("fail");
- 
-    return 0;
-}
-</pre>
-<p>Compile the code via this command line:</p>
-<pre class="prettyprint">cl /nologo /fsanitize=address /Zi AsanTest.cpp</pre>
-<p>This code, when run should throw an ASan exception and produce a crash dump as specified by our functions above. You can integrate these functions into existing code and generate crash dumps of your choosing.</p>
-<h1 id="summary">Summary<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg"><img class="aligncenter size-full wp-image-28247" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg" alt="Xbox Eco System " width="1920" height="1080" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65.jpg 1920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/XBOXecoVS65-1536x864.jpg 1536w" sizes="(max-width: 1920px) 100vw, 1920px" /></a></h1>
-<p>With Address Sanitizer now being available on Xbox, developers can leverage this powerful technology to help debug memory issues in their titles.  Combined with the crash dump changes detailed here, it should provide all the flexibility required to support your automated tests suites and enable you to find issues quickly and easily.  We welcome any feedback on these changes and would ask you to raise any issues through the Xbox forums in the usual way.</p>
-<p>Further references for more information:</p>
-<ul>
-<li>Detailed information regarding the setup and available options in the Microsoft documentation: <a href="https://docs.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-160">Address Sanitizer | Microsoft Docs</a></li>
-<li>Discussion around where this technology has been useful: <a href="https://devblogs.microsoft.com/cppblog/finding-bugs-with-addresssanitizer-msvc-compiler/">Finding Bugs with AddressSanitizer: Patterns from Open Source Projects</a></li>
-</ul>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/">Address Sanitizer Now in “Early Release” for Xbox Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-now-in-early-release-for-xbox-developers/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
