@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 31 Aug 2021 14:32:18 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 02 Sep 2021 21:20:36 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,181 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC C++20 and the /std:c++20 Switch</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#comments</comments>
+		
+		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
+		<pubDate>Thu, 02 Sep 2021 21:18:28 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28674</guid>
+
+					<description><![CDATA[<p>We are excited to announce that in Visual Studio 2019 version 16.11, we have added the /std:c++20 switch to the set of language mode switches available. The addition of this switch indicates that we’ve reached a point of sufficient stabilization of the MSVC C++20 feature set for it be used in production,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">MSVC C++20 and the /std:c++20 Switch</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are excited to announce that in Visual Studio 2019 version 16.11, we have added the <code>/std:c++20</code> switch to the set of language mode switches available. The addition of this switch indicates that we’ve reached a point of sufficient stabilization of the MSVC C++20 feature set for it be used in production, with full support in VS servicing updates.</p>
+<p>This blog post focuses on describing our level of C++20 feature support, compiler-supported extensions, and the remaining feature set differences between MSVC and the ISO C++ standard as of Visual Studio 2019 version 16.11 and Visual Studio 2022 version 17.0</p>
+<h2 id="c-language-modes-and-compatibility-guarantees"><span style="font-size: 18pt;">C++ Language Modes and Compatibility Guarantees</span></h2>
+<p>First <a href="https://devblogs.microsoft.com/cppblog/standards-version-switches-in-the-compiler/">introduced in Visual Studio 2015</a>, the MSVC compiler has included C++ language mode switches to indicate the targeted level of standard conformance and we now support three stable language modes: <code>/std:c++14</code>, <code>/std:c++17</code>, <code>/std:c++20</code> (as of VS 2019 v16.11) and one preview mode (<code>/std:c++latest</code>).</p>
+<p>The stable modes indicate that features under those modes are ready for production use and have ABI compatibility guarantees. The <code>/std:c++latest</code> mode contains ISO C++ features without strong guarantees for compatibility, allowing iteration based upon issues identified in testing, ISO C++ standard changes, and community feedback which may impact ABI stability of those features. Once stabilized, features under /std:c++latest will be moved under an applicable stable mode.</p>
+<table>
+<tbody>
+<tr>
+<td width="105"><strong>Language Mode</strong></td>
+<td width="219"><strong>Language Mode enables strict-conformance (/permissive-)</strong></td>
+<td width="91"><strong>ABI Stable</strong></td>
+<td width="208"><strong>Notes</strong></td>
+</tr>
+<tr>
+<td width="105">/std:c++14</td>
+<td width="219">No</td>
+<td width="91">Yes</td>
+<td width="208">See <strong>**<em>Note A</em></strong></td>
+</tr>
+<tr>
+<td width="105">/std:c++17</td>
+<td width="219">No</td>
+<td width="91">Yes</td>
+<td width="208">See <strong>**<em>Note A</em></strong></td>
+</tr>
+<tr>
+<td width="105">/std:c++20</td>
+<td width="219">Yes</td>
+<td width="91">Yes</td>
+<td width="208">See <strong>**<em>Note B</em></strong></td>
+</tr>
+<tr>
+<td width="105">/std:c++latest</td>
+<td width="219">Yes</td>
+<td width="91">No</td>
+<td width="208">See <strong>**<em>Note B</em></strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>**</em></strong><strong><em>Note A</em></strong><em>: Strict conformance mode is opt-in via the /permissive- compiler switch</em></p>
+<p><strong><em>**Note B</em></strong><em>: Some functionality such as C++20 Modules require strict-conformance mode to be enabled due to strong dependency on ISO C++ semantic behaviors. Compatibility mode (/permissive) is supported as an opt-in switch  with some C++20 functionality disabled.</em></p>
+<h2 id="c20-features-added-in-vs-2019-v16-9-and-later"><span style="font-size: 18pt;">C++20 Features added in VS 2019 v16.9 and later</span></h2>
+<p>Below is a summary of language and library C++20 features implemented since the last feature update.</p>
+<p>A more detailed <a href="https://github.com/microsoft/STL/wiki/Changelog">changelog</a> is available for <a href="https://github.com/microsoft/STL">the STL on its GitHub repo</a> including information on the awesome community contributors who have provided feature implementations and bug fixes to the STL</p>
+<h3 id="vs-2019-v16-9"><span style="font-size: 14pt;">VS 2019 v16.9</span></h3>
+<p>C++20 Language Features</p>
+<ul>
+<li>Implemented <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0634r3.html">P0634R3</a> Down with typename!</li>
+<li>Implemented <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0840r2.html">P0840R2</a> [[no_unique_address]] attribute (<em>please see below for more details</em>)</li>
+<li>Implemented <a href="https://wg21.link/P1064R0">P1064R0</a> Allowing virtual function calls in constant expressions</li>
+<li>Implemented <a href="https://wg21.link/P1141R2">P1141R2</a> Yet another approach for constrained declarations</li>
+<li>Implemented <a href="https://wg21.link/P1327R1">P1327R1</a> Allowing dynamic_cast, polymorphic typeid in constant expressions</li>
+<li>Implemented <a href="https://wg21.link/P1668R1">P1668R1</a> Permitting unevaluated inline assembly in constexpr functions</li>
+<li>Implemented <a href="https://wg21.link/P0784R7">P0784R7</a> More constexpr containers</li>
+</ul>
+<p>C++20 Library Features</p>
+<ul>
+<li>Implemented <a href="https://wg21.link/P0339R6">P0339R6</a> polymorphic_allocator&lt;&gt;</li>
+<li>Implemented <a href="https://wg21.link/P0660R10">P0660R10</a> &lt;stop_token&gt; And jthread</li>
+<li>Implemented <a href="https://wg21.link/P0768R1">P0768R1</a> Library Support For The Spaceship Comparison Operator &lt;=&gt;</li>
+<li>Implemented <a href="https://wg21.link/P1007R3">P1007R3</a> assume_aligned()</li>
+<li>Implemented <a href="https://wg21.link/P1020R1">P1020R1</a> Smart Pointer Creation With Default Initialization</li>
+<li>Implemented <a href="https://wg21.link/P1771R1">P1771R1</a> [[nodiscard]] For Constructors</li>
+</ul>
+<h3 id="vs-2019-v16-10-v16-11"><span style="font-size: 14pt;">VS 2019 v16.10 &amp; v16.11</span></h3>
+<p>C++20 Language Features</p>
+<ul>
+<li>Implemented <a href="https://wg21.link/P1073R3">P1073R3</a> Immediate functions</li>
+<li>Implemented <a href="https://wg21.link/P1143R2">P1143R2</a> constinit</li>
+<li>Implemented <a href="https://wg21.link/P1353R0">P1353R0</a> Missing feature-test macros</li>
+</ul>
+<p>C++20 Library Features</p>
+<ul>
+<li>Implemented <a href="https://wg21.link/P0053R7">P0053R7</a>&lt;syncstream&gt;</li>
+<li>Implemented <a href="https://wg21.link/P0355R7">P0355R7</a>&lt;chrono&gt; Calendars And Time Zones</li>
+<li>Implemented <a href="https://wg21.link/P0408R7">P0408R7</a> Efficient Access To basic_stringbuf&#8217;s Buffer</li>
+<li>Implemented <a href="https://wg21.link/P0466R5">P0466R5</a> Layout-Compatibility And Pointer-Interconvertibility Traits</li>
+<li>Implemented <a href="https://wg21.link/P0475R1">P0475R1</a> Guaranteed Copy Elision For Piecewise Construction</li>
+<li>Implemented <a href="https://wg21.link/P0591R4">P0591R4</a> Utility Functions For Uses-Allocator Construction</li>
+<li>Implemented <a href="https://wg21.link/P0608R3">P0608R3</a> Improving variant&#8217;s Converting Constructor/Assignment</li>
+<li>Implemented <a href="https://wg21.link/P0645R10">P0645R10</a> &lt;format&gt; Text Formatting</li>
+<li>Implemented <a href="https://wg21.link/P0784R7">P0784R7</a> Library Support For More constexpr Containers</li>
+<li>Implemented <a href="https://wg21.link/P0896R4">P0896R4</a> Ranges</li>
+<li>Implemented <a href="https://wg21.link/P0980R1">P0980R1</a> constexpr std::string</li>
+<li>Implemented <a href="https://wg21.link/P1004R2">P1004R2</a> constexpr std::vector</li>
+<li>Implemented <a href="https://wg21.link/P1208R6">P1208R6</a> &lt;source_location&gt;</li>
+<li>Implemented <a href="https://wg21.link/P1502R1">P1502R1</a> Standard Library Header Units</li>
+<li>Implemented <a href="https://wg21.link/P1614R2">P1614R2</a> Adding Spaceship &lt;=&gt; To The Library</li>
+</ul>
+<h2 id="vs-2022-17-0-still-in-preview"><span style="font-size: 14pt;">VS 2022 17.0 (still in Preview)</span></h2>
+<p>C++20 Language Features</p>
+<ul>
+<li>Completed implementation of <a href="https://wg21.link/P0734R0">P0734R0</a> Concepts</li>
+</ul>
+<p>C++20 Library DRs</p>
+<ul>
+<li>Implemented <a href="https://wg21.link/P2325R3">P2325R3</a> Views Should Not Be Required To Be Default Constructible</li>
+</ul>
+<h2 id="iso-c20-continuing-work-defect-reports-and-clarifications"><span style="font-size: 18pt;">ISO C++20  Continuing Work, Defect Reports, and Clarifications</span></h2>
+<p>As part of implementing C++20, there were some late discoveries which required changes to the ISO C++20 standard via the standard committee’s Defect Report (DR) process. This included Existing implementations (pre-DR) for these features are available under the <code>/std:c++latest</code> switch.  We’re also tracking the DRs and are implementing those issue resolutions under <code>/std:c++latest</code>. Our plan is to make these capabilities available under the <code>/std:c++20</code> switch after implementation of the full set of Standard Library DRs has completed. Progress on these features can be tracked on the <a href="https://github.com/microsoft/STL">MSVC STL GitHub site</a> through its <a href="https://github.com/microsoft/STL/projects/9">C++20 DRs project</a>.</p>
+<p>In the compiler, we are working with ISO C++ and other toolchain vendors to clarify expectations around allowing virtual functions to be <code>constexpr</code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1064r0.html">P1064R0</a>). There are a couple of possibilities for implementation, which have significant ABI implications as to whether this is implemented via vtable entry. In the interim, we have implemented two modes, under <code>/experimental:constevalVfuncVtable</code> and <code>/experimental:constevalVfuncNoVtable</code>, which implement the most likely resolutions to this ambiguity. Once a decision is made on how to proceed, we’ll bring that capability under <code>/std:c++20</code> and <code>/std:c++latest</code>.</p>
+<p>Additionally, there were some feature areas that were unintentionally partially implemented. We are working to get those areas filled. For VS 2022 v17.0, we have implemented the requires-expression portion of the Concepts feature (<a href="https://wg21.link/P0734R0">P0734R0</a>), which is scheduled to ship in VS 2022 v17.0.  We’re also working to complete implementation of <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0859r0.html">Core Issue 1581</a>: “When are constexpr member functions defined?,” which is tracking towards inclusion in a VS 2022 update after v17.0.</p>
+<h2 id="msvc-extensions-and-abi"><span style="font-size: 18pt;">MSVC Extensions and ABI</span></h2>
+<h3 id="c20-no_unique_address"><span style="font-size: 14pt;">C++20 <code>[[no_unique_address]]</code></span></h3>
+<p>Implementation of C++20 <code>[[no_unique_address]]</code> included a couple of additional challenges due to the ABI-breaking impact (changing object layout) of applying this optimization. This is problematic due to the MSVC compiler ignoring attributes that are not known, as allowed by the standard, resulting in scenarios where MSVC ABI compatibility guarantees would be broken for standard C++ code:</p>
+<ul>
+<li>Compiling the same header/source under <code>/std:c++17</code> and <code>/std:c++20</code> would result in link-time incompatibilities due to object layout differences resulting in ODR violations.</li>
+<li>Linking static libraries built with an older version of the MSVC compiler (VS 2015 through VS 2019 v16.8), within the v14x ABI-compatible family, would result in ODR violations and break our compatibility guarantees.</li>
+</ul>
+<p>It was decided to hold-off on enabling the optimization for the <code>[[no_unique_address]]</code> attribute in the MSVC compiler until our next ABI breaking revision of the MSVC toolset, where it will be enabled across all language modes.</p>
+<p>However, we do recognize that there are some customers who are in a position to take advantage of this optimization without worrying about linking binaries across versions of the MSVC toolset.  For this audience, we have made this optimization available in VS 2019 v16.9 and later through an extension attribute that affects optimization across all compiler language modes, <code>[[msvc::no_unique_address]]</code>.</p>
+<ul>
+<li>There are portability concerns for customers who require ABI-compatiblity between MSVC and Clang for the STL. Please see <a href="https://github.com/microsoft/STL/issues/1364">https://github.com/microsoft/STL/issues/1364</a> for more details.</li>
+<li>This extension attribute enables this optimization under all C++ language modes (e. <code>/std:c++14</code>, <code>/std:c++17</code>, <code>/std:c++20</code>, <code>/std:c++latest</code>.</li>
+<li>We strongly recommend that any usage of this attribute is guarded by an MSVC version-check as demonstrated in the below example:</li>
+</ul>
+<pre class="prettyprint">#include &lt;iostream&gt;
+
+#if _MSC_VER &gt;= 1929 // VS2019 v16.10 and later (_MSC_FULL_VER &gt;= 192829913 for VS 2019 v16.9)
+// Works with /std:c++14 and /std:c++17, and performs optimization
+
+#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+
+#else
+
+// no-op in MSVC v14x ABI
+#define NO_UNIQUE_ADDRESS /* [[no_unique_address]] */
+
+#endif
+
+
+struct Empty {};
+
+struct A
+{
+    int a;
+    NO_UNIQUE_ADDRESS Empty b;
+};
+
+int main()
+{
+    A inst{ 0 };
+
+    // [[msvc::no_unique_address]] : sizeof(inst) == 4.
+    // [[no_unique_address]] : sizeof(inst) == 8.
+    std::cout &lt;&lt; sizeof(inst) &lt;&lt; "\n";
+}</pre>
+<h3 id="c20-coroutine-support-for-c14-c17-awaitstrict"><span style="font-size: 14pt;">C++20 Coroutine support for C++14/C++17 (<code>/await:strict</code>)</span></h3>
+<p>The <code>/await:strict</code> option can be used in place of <code>/await</code> for C++20 compatible coroutine support in projects that build in C++14 or C++17 mode. In <code>/await:strict</code> mode library support is provided in <code>&lt;coroutine&gt;</code> and in the std namespace. For full clarity, this behavior is on-by-default under <code>/std:c++20</code> without any <code>/await*</code> switch usage.</p>
+<p>Strict mode disables language extensions present in <code>/await</code> that were not adopted into the C++20 standard. Use  of such features with <code>/await:strict</code> will result in a compiler error. Strict mode also implements coroutine behaviors such as promise parameter preview that are not available under <code>/await</code> due to binary compatibility issues with older releases.</p>
+<p>Note: coroutine state objects obtained from <code>coroutine_handle&lt;T&gt;::address()</code> are not compatible between <code>/await</code> and <code>/await:strict</code> modes. Using <code>coroutine_handle&lt;T&gt;::from_address()</code> on an address obtained from a coroutine handle created in an incompatible mode will result in undefined behavior.</p>
+<h2 id="more-information"><span style="font-size: 18pt;">More Information</span></h2>
+<p>For Visual Studio changes (beyond the C++ toolset) and download links, see the <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">VS 2019 Release Notes</a> and  <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-preview">VS 2022 Preview Release Notes</a>. You can report bugs through <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Developer Community</a>, and you can also report STL bugs via <a href="https://github.com/microsoft/STL/issues">microsoft/STL GitHub issues</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">MSVC C++20 and the /std:c++20 Switch</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++20 Coroutine Improvements in Visual Studio 2019 version 16.11</title>
 		<link>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/#comments</comments>
@@ -91,7 +266,7 @@ We last blogged about coroutine support in Visual Studio 2019 version 16.8. In t
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -897,7 +1072,6 @@ $ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\ty
 		<item>
 		<title>Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/#respond</comments>
 		
 		<dc:creator><![CDATA[Erika Sweet]]></dc:creator>
 		<pubDate>Wed, 14 Jul 2021 18:58:54 +0000</pubDate>
@@ -959,48 +1133,6 @@ sudo apt install g++ gdb make ninja-build rsync zip</pre>
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/">Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Code Scanning C++ with GitHub Actions</title>
-		<link>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/#comments</comments>
-		
-		<dc:creator><![CDATA[Nick Uhlenhuth]]></dc:creator>
-		<pubDate>Wed, 07 Jul 2021 15:25:27 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28264</guid>
-
-					<description><![CDATA[<p>Last year, GitHub released code scanning, which enables developers to incorporate security checks into their CI/CD environment and developer workflow. This post demonstrates the basics of using CodeQL, the analysis engine behind code scanning, with GitHub Actions.<br />
-What is CodeQL?<br />
-CodeQL is an analysis engine that automates security checks by running queries against a database generated from your codebase.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">Code Scanning C++ with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Last year, GitHub <a href="https://github.blog/2020-09-30-code-scanning-is-now-available/">released code scanning</a>, which enables developers to incorporate security checks into their CI/CD environment and developer workflow. This post demonstrates the basics of using CodeQL, the analysis engine behind code scanning, with GitHub Actions.</p>
-<h1 id="what-is-codeql">What is CodeQL?</h1>
-<p><a href="https://codeql.github.com/docs/codeql-overview/">CodeQL</a> is an analysis engine that automates security checks by running queries against a database generated from your codebase. This CodeQL database is created during the build process and represents the source code in relational form. By default, code scanning runs standard CodeQL queries written by GitHub researchers and the community, but you can also author your own custom queries.</p>
-<p>The default set includes queries such as “Pointer overflow check”, “Potentially overflowing call to snprintf”, “Uncontrolled format string”, and more.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg"><img class="alignnone size-full wp-image-28274" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg" alt="Image Capture" width="2366" height="1274" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture.jpg 2366w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-300x162.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-1024x551.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-768x414.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-1536x827.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture-2048x1103.jpg 2048w" sizes="(max-width: 2366px) 100vw, 2366px" /></a></p>
-<h1 id="setting-up-codeql-with-github-actions">Setting up CodeQL with GitHub Actions</h1>
-<p>Code scanning with CodeQL is free for public repositories, and is part of GitHub Advanced Security for GitHub Enterprise. Here are instructions for the quick, <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository">4-click setup process</a>. Alternatively, I’ve included a gif of the steps below:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/codeqlsetup.gif"><img class="alignnone size-full wp-image-28267" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/codeqlsetup.gif" alt="Image codeqlsetup" width="2080" height="1342" /></a></p>
-<p>And just like that, you’re off to the races! The default CodeQL analysis workflow is configured to analyze your code each time you push a chance or raise a pull request against the default branch. This means code scanning automatically happened after I committed the new file directly to the main branch.</p>
-<p>You can <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository#viewing-the-logging-output-from-code-scanning">view the logging output</a> of the scan under the Actions tab, and you can <a href="https://docs.github.com/en/code-security/secure-coding/automatically-scanning-your-code-for-vulnerabilities-and-errors/managing-code-scanning-alerts-for-your-repository">view/manage any code scanning alerts</a> under the Security tab.</p>
-<h1 id="baselining">Baselining</h1>
-<p>Sometimes, especially for large legacy codebases, the number of alerts can be overwhelming. For that reason, CodeQL only shows new/fixed alerts in pull requests. If you want to manage existing alerts, you can do so in the “Code scanning alerts” section under the “Security” tab.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg"><img class="alignnone size-full wp-image-28275" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg" alt="Image Capture2" width="2500" height="1138" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-scaled.jpg 2500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-300x137.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-1024x466.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-768x350.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-1536x699.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/06/Capture2-2048x932.jpg 2048w" sizes="(max-width: 2500px) 100vw, 2500px" /></a></p>
-<p>It’s important to understand the distinction between <em>Dismiss </em>and <em>Delete</em>. One key distinction is that by <em>Dismissing </em>an alert, the same code won’t regenerate the alert. By <em>Deleting</em> an alert, the same code will generate the same alert the next time it is scanned. In the case that you want to bulk-dismiss alerts, you can do this from the summary of alerts (after filtering the list to whatever set of alerts you’d like to dismiss).</p>
-<h1 id="feedback">Feedback</h1>
-<p>This post just scratches the surface of code scanning in your CI/CD environment. Once you get the understand the basics, you may choose to author your own custom CodeQL queries or adjust the frequency of scanning. We hope you give code scanning with GitHub Actions a try, and we look forward to your feedback.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">Code Scanning C++ with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
