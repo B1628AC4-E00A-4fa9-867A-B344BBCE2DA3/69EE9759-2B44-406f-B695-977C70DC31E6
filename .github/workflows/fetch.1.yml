@@ -28,6 +28,7 @@ jobs:
           wget --progress=dot -O - https://dengekionline.com/ | gawk -f dengekionline.com.awk > generated/dengekionline.xml
           wget --progress=dot -O - http://weathernews.jp/s/topics/json/list_s.json | jq -r ".tpinfo[] | [.edit_tm, .start_tm, .tpid, .title, .top_comment, .description] | @tsv" | gawk -f weathernews-j.awk > generated/weathernews.jp.lists_s.xml
           wget -S --method=HEAD https://aka.ms/vs/16/release/channel  2>&1 | gawk -f aka-ms.awk "http://aka.ms/vs/16/release/channel" "Visual Studio 2019 (c) Microsoft" > generated/aka-ms-vs-16-release-channel.xml
+          wget -S --method=HEAD https://aka.ms/vs/17/pre/channel  2>&1 | gawk -f aka-ms.awk "https://aka.ms/vs/17/pre/channel" "Visual Studio 2021 (c) Microsoft" > generated/aka-ms-vs-17-pre-channel.xml
           ) 2>wget.2.out &
           wait
           set -e
