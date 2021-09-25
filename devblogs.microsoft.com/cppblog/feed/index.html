@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 13 Sep 2021 09:14:54 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 02 Sep 2021 21:20:36 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,76 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>Static Analysis Fixes in Visual Studio 2019 version 16.11</title>
-		<link>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Mon, 13 Sep 2021 15:00:24 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28697</guid>
-
-					<description><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. </p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/">Static Analysis Fixes in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community page</a>. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the compilation of bug fixes that were made from Visual Studio 2019 version 16.10 to 16.11 for code analysis.  Note that 16.11 is the last non-servicing release of Visual Studio 2019, so the focus was on stabilization and minor improvements rather than new features (stay tuned for updates in 17.0). We also found time to improve the performance of certain checks. The changes are summarized below:</p>
-<ul>
-<li>Clarified the warning message for <a href="https://aka.ms/cpp/warnings/C26445">C26445</a>. The old message implied that there is a lifetime problem. The new message is: “Do not assign <code>gsl::span</code> or <code>std::string_view</code> to a reference. They are cheap to construct and are not owners of the underlying data. (gsl.view)”</li>
-<li>Fixed false positive due to not considering lifetime extension rules in <a href="https://aka.ms/cpp/warnings/C26444">C26444</a>. See the code example below:</li>
-</ul>
-<pre class="prettyprint">struct MyStruct { int i; }; 
-void example() { 
-  const MyStruct&amp; s = {}; // Previously, false positive C26444 was emitted. 
-}</pre>
-<ul>
-<li>Fixed using <code>ALL_CPPCORECHECK_WARNINGS</code> in suppression would not suppress <a href="https://aka.ms/cpp/warnings/C26457">C26457</a>.</li>
-<li>Fixed a problem where certain control flows could trick Concurrency Check into emitting false positive warnings.</li>
-<li>Fixed a false positive in Concurrency Check due to incorrect modelling of unwinding paths (for exceptions). This fixed the false positive below. Previously, analysis would proceed along the exception path of the constructor call (no lock is acquired in the exception path), leading to a false warning.</li>
-</ul>
-<pre class="prettyprint">mutex mtx; 
-mutex&amp; mutexRef() { return mtx; } 
-void test() { 
-  lock_guard&lt;mutex&gt; lock(mutexRef()); // No C26110 (failing to hold lock) 
-}</pre>
-<ul>
-<li>Fixed a compilation failure of code snippets relying on guaranteed copy elision during code analysis.</li>
-</ul>
-<pre class="prettyprint">struct S { 
-  S(const S&amp; o) = delete; 
-  S&amp; operator=(const S&amp; o) = delete; 
-  S(const S&amp;&amp; o) = delete; 
-  S&amp; operator=(const S&amp;&amp; o) = delete; 
-  static const S foo(); 
-};
-
-void bar() {
-  S s = S::foo(); // Used to trigger compilation failure.
-}
-
-</pre>
-<ul>
-<li>Fixed a <a href="https://developercommunity.visualstudio.com/t/Codeanalysis-warning-C6285-in-STL-functi/1429721">bug</a> that caused the <a href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">/external</a> options for specifying external headers to override CAExcludePath and generate warnings for external files.</li>
-<li>Performance improvements to the checker that reports warnings on misuse of `VARIANT`s (warnings <a href="https://docs.microsoft.com/cpp/code-quality/c33001?view=msvc-160">C33001</a>, <a href="https://docs.microsoft.com/cpp/code-quality/c33004?view=msvc-160">C33004</a>, and <a href="https://docs.microsoft.com/cpp/code-quality/c33005?view=msvc-160">C33005</a>). Please refer to &#8220;<a href="https://devblogs.microsoft.com/cppblog/new-safety-rules-in-c-code-analysis/">New Safety Rules for in C++ Code Analysis</a>&#8221; for more information on these warnings.</li>
-<li>Performance improvements to the checker that reports warnings on misuse of enum values as an index (warnings <a href="https://docs.microsoft.com/cpp/code-quality/c33010?view=msvc-160">C33010</a> and <a href="https://docs.microsoft.com/cpp/code-quality/c33011?view=msvc-160">C33011</a>). Please refer to “<a href="https://devblogs.microsoft.com/cppblog/even-more-new-safety-rules-in-c-code-analysis/">Even More Safety Rules in C++ Code Analysis</a>” for more information on these warnings. Improved the performance of pointer safety related C++ Core Guidelines checks. See <code>OWNER_POINTER</code>, <code>RAW_POINTER</code>, <code>UNIQUE_POINTER</code>, and <code>SHARED_POINTER</code> groups here.</li>
-<li>Fixed some memory leaks in some checks when multiple translation units are analyzed in a single compiler invocation.</li>
-</ul>
-<h2 id="fixes-in-16-11-1-to-16-11-3-servicing-releases">Fixes in 16.11.1 to 16.11.3 servicing releases</h2>
-<ul>
-<li>Fixed a crash when <code>__uuidof </code>was used in a template argument a certain way.</li>
-<li>Fixed a rare crash when SAL annotations refer to fields of unnamed <code>struct</code>s.</li>
-</ul>
-<h2 id="try-it-out%e2%80%afand-let-us-know-what-you-think">Try it out and let us know what you think</h2>
-<p>The work that we do is heavily influenced by feedback we receive on <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check.   Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or @VisualC on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/">Static Analysis Fixes in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>MSVC C++20 and the /std:c++20 Switch</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#comments</comments>
@@ -336,7 +266,7 @@ We last blogged about coroutine support in Visual Studio 2019 version 16.8. In t
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -529,7 +459,7 @@ __declspec(allocate(".CRT$XCV")) type i2 = f2;
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
+			<slash:comments>7</slash:comments>
 		
 		
 			</item>
@@ -873,7 +803,7 @@ import World;</pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/feed/</wfw:commentRss>
-			<slash:comments>18</slash:comments>
+			<slash:comments>16</slash:comments>
 		
 		
 			</item>
@@ -1136,6 +1066,73 @@ $ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\ty
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</title>
+		<link>https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/</link>
+		
+		<dc:creator><![CDATA[Erika Sweet]]></dc:creator>
+		<pubDate>Wed, 14 Jul 2021 18:58:54 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<category><![CDATA[Linux]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28300</guid>
+
+					<description><![CDATA[<p>Visual Studio 2022 introduces a native WSL 2 toolset for C++ development. This toolset is available now in Visual Studio 2022 version 17.0 Preview 2. WSL 2 is the new, recommended version of the Windows Subsystem for Linux (WSL) architecture that provides better Linux file system performance,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/">Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><div style="text-align:center"><a class="cta_button_link" href="https://aka.ms/vs2022preview" style="text-transform: titlecase; display: inline-block; background-color: #5C2D91; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Download Visual Studio 2022 Preview</a></div>
+Visual Studio 2022 introduces a native WSL 2 toolset for C++ development. This toolset is available now in <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/">Visual Studio 2022 version 17.0 Preview 2</a>. WSL 2 is the new, recommended version of the <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux (WSL)</a> architecture that provides better Linux file system performance, GUI support, and full system call compatibility. Visual Studio’s WSL 2 toolset allows you to build and debug C++ code on WSL 2 distros from Visual Studio without ever adding an SSH connection. You can already build and debug C++ code on WSL 1 distros using the <a href="https://devblogs.microsoft.com/cppblog/c-with-visual-studio-2019-and-windows-subsystem-for-linux-wsl/">native WSL 1 toolset</a> introduced in Visual Studio 2019 version 16.1.</p>
+<div style="text-align: center;"><iframe src="//www.youtube.com/embed/IKI2w75aAow" width="560" height="314" allowfullscreen="allowfullscreen"></iframe></div>
+<p>&nbsp;</p>
+<p>Visual Studio’s WSL 2 toolset supports both CMake and MSBuild-based Linux projects. However, CMake is our recommendation for all C++ cross-platform development with Visual Studio because it allows you to build and debug the same project on Windows, WSL, and remote systems.</p>
+<h4 id="how-does-the-wsl-2-toolset-work">How does the WSL 2 toolset work?</h4>
+<p>Our C++ cross-platform support in Visual Studio assumes that all source files originate in the Windows file system. When targeting a WSL 2 distro, Visual Studio will execute a local rsync copy to copy files from the Windows file system to the WSL file system. This local rsync copy will occur automatically when Visual Studio detects that you are using a WSL 2 distro and will require no user intervention. See <a href="https://docs.microsoft.com/en-us/windows/wsl/compare-versions">Comparing WSL 1 and WSL 2</a> to learn more about the differences between WSL 1 and WSL 2.</p>
+<p>Continue reading for a step-by-step guide on getting started with CMake and WSL 2 and an overview of our MSBuild-based WSL 2 support.</p>
+<h4 id="cross-platform-cmake-development-with-a-wsl-2-distro">Cross-platform CMake development with a WSL 2 distro</h4>
+<p>The WSL 2 toolset is supported by our CMake Presets integration in Visual Studio. You can learn more about CMake Presets in our <a href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">announcement blog post</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">documentation</a>. Follow the instructions below to build and debug a CMake project on a WSL 2 distro.</p>
+<p>1. Install WSL and a WSL 2 distro with the <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux Installation Guide for Windows 10</a>.</p>
+<p>2. Install the required build tools on your WSL 2 distro. You will need a C++ compiler, gdb, CMake, an underlying build system generator, rsync, and zip. You can install these dependencies on distros that use apt with the following commands:</p>
+<div style="text-align: center;">
+<pre class="prettyprint">sudo apt update
+sudo apt install g++ gdb make ninja-build rsync zip</pre>
+</div>
+<p>In this tutorial I’ll use GCC and Ninja on Ubuntu. I will install a recent version of CMake using Visual Studio’s CMake binary deployment in step 9.</p>
+<p>3. Open a CMake project in Visual Studio 2022 version 17.0 Preview 2 or later. Visual Studio defines a CMake project as a folder with a CMakeLists.txt file at the project root. You can either clone a CMake repository (like <a href="https://github.com/esweet431/bullet3">bullet3</a>), open a local CMake project, or create a new CMake project with the CMake Project template. In this tutorial I’m going to create a new CMake project with the CMake Project template.
+<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png"><img class="aligncenter size-full wp-image-28301" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png" alt="The &quot;Get started&quot; menu in the Visual Studio Installer. Options are &quot;Clone a repository&quot;, &quot;Open a project or solution&quot;, &quot;Open a local folder&quot;, or &quot;Create a new project&quot;." width="384" height="417" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started.png 384w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/get-started-276x300.png 276w" sizes="(max-width: 384px) 100vw, 384px" /></a>
+4. Enable Visual Studio’s CMake Presets integration. You can add a CMakePresets.json file to the root of the project or enable the integration globally in <strong>Tools &gt; Options &gt; CMake &gt; General</strong>. You must close and reopen the folder in Visual Studio to activate the integration. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#enable-cmakepresetsjson-integration-in-visual-studio-2019">Enable CMake Presets integration</a> for more information.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png"><img class="aligncenter size-full wp-image-28302" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png" alt="An image of the checkbox to enable CMake Presets integration in Tools &gt; Options &gt; CMake &gt; General in Visual Studio. The option to &quot;Prefer using CMake Presets for CMake configure, build, and test&quot; is checked and highlighted red." width="732" height="248" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets.png 732w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/enable-cmakepresets-300x102.png 300w" sizes="(max-width: 732px) 100vw, 732px" /></a></p>
+<p>5. You should now see three dropdowns across the menu bar. Use the dropdown on the left to select your active Target System. This is the system where CMake will be invoked to configure and build the project. Visual Studio queries for WSL installations with <strong>wsl -l -v</strong>. In the example below, my Target System is <strong>WSL2: Ubuntu-20.04.</strong></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png"><img class="aligncenter size-full wp-image-28303" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png" alt="An image of the Target System dropdown in Visual Studio. The options are &quot;Local Machine&quot;, &quot;172.26.1.64&quot;, &quot;WSL2: Ubuntu-20.04&quot; and &quot;WSL1: Debian&quot;. &quot;WSL2: Ubuntu-20.04&quot; is selected." width="737" height="165" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system.png 737w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/target-system-300x67.png 300w" sizes="(max-width: 737px) 100vw, 737px" /></a></p>
+<p>Note: If Visual Studio starts to configure your project automatically, read step 9 to manage CMake binary deployment and then return to step 6. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#modify-automatic-configuration-and-cache-notifications">Modify automatic configuration and cache notifications</a> to customize this behavior.</p>
+<p>6. Use the dropdown in the middle to select your active Configure Preset. Configure Presets tell Visual Studio how to invoke CMake and generate the underlying build system. In the example in Step 5 (above), my active Configure Preset is the <strong>linux-default</strong> Preset created by Visual Studio. If you want to create a custom Configure Preset, select <strong>Manage Configurations…</strong>. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#select-a-configure-preset">Select a Configure Preset</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#edit-presets">Edit Presets</a> for more information.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manage-configs.png"><img class="aligncenter size-full wp-image-28304" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manage-configs.png" alt="An image of the Configure Preset dropdown. The only option is &quot;linux-default&quot;, which is selected." width="210" height="92" /></a></p>
+<p>7. Use the dropdown on the right to select your active Build Preset. Build Presets tell Visual Studio how to invoke build. In the example in Step 5 (above), my active Build Preset is the <strong>Default </strong>Preset created by Visual Studio. See <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160#select-a-build-preset">Select a Build Preset</a> for more information.</p>
+<p>8. Configure the project on WSL 2. If project generation does not start automatically, then you can manually invoke configure with <strong>Project &gt; Configure &lt;project-name&gt;</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png"><img class="aligncenter size-full wp-image-28305" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png" alt="An image of the Project menu in Visual Studio. &quot;Configure CMakeProject&quot; is selected." width="307" height="223" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation.png 307w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/manual-generation-300x218.png 300w" sizes="(max-width: 307px) 100vw, 307px" /></a></p>
+<p>9. If you do not have a supported version of CMake installed on your WSL 2 distro, then Visual Studio will prompt you to deploy a recent version of CMake. Select “Yes” to deploy CMake binaries to your WSL 2 distro.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png"><img class="aligncenter size-full wp-image-28306" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png" alt="Image binary deployment" width="757" height="95" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment.png 757w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/binary-deployment-300x38.png 300w" sizes="(max-width: 757px) 100vw, 757px" /></a></p>
+<p>10. Confirm that the configure step has completed and that you can see the <strong>CMake generation finished</strong> message in the CMake pane of the Output Window. Note that build files are written to a directory in the WSL 2 distro’s file system.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png"><img class="aligncenter size-full wp-image-28307" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png" alt="The CMake pane of the Output Window is open in Visual Studio. The last line of output reads &quot;CMake generation finished.&quot;" width="1118" height="309" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output.png 1118w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-300x83.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-1024x283.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/output-768x212.png 768w" sizes="(max-width: 1118px) 100vw, 1118px" /></a></p>
+<p>11. Select the active debug target. The debug dropdown menu lists all the CMake targets available to the project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debug-drop.png"><img class="aligncenter size-full wp-image-28308" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debug-drop.png" alt="An image of the debug dropdown menu in Visual Studio. The CMake target &quot;CMakeProject&quot; is selected." width="300" height="144" /></a></p>
+<p>12. Set a breakpoint. Expand the project subfolder in the Solution Explorer and in the .cpp file set a breakpoint in main(). You can also navigate to CMake Targets View by selecting the View Picker button in the Solution Explorer.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png"><img class="aligncenter size-full wp-image-28309" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png" alt="Image targets view" width="356" height="137" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view.png 356w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/targets-view-300x115.png 300w" sizes="(max-width: 356px) 100vw, 356px" /></a></p>
+<p>13. Now click “Start” (Debug &gt; Start) or press F5. Your project will build, the executable will launch on your WSL 2 distro, and you will hit your breakpoint. You can see the output of your program (in this case, “Hello CMake.”) in the Linux Console Window.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png"><img class="aligncenter size-full wp-image-28310" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png" alt="CMakeProject.cpp is open and running under the debugger. A breakpoint is set and hit at line 11. The Linux Console Window is open and reads &quot;Hello CMake.&quot;" width="1170" height="832" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging.png 1170w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-300x213.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-1024x728.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/debugging-768x546.png 768w" sizes="(max-width: 1170px) 100vw, 1170px" /></a></p>
+<h4 id="msbuild-based-linux-development-with-a-wsl-2-distro">MSBuild-based Linux development with a WSL 2 distro</h4>
+<p>CMake is our recommendation for all C++ cross-platform development with Visual Studio because it allows you to build and debug the same project on Windows, WSL, and remote systems. If you are already using a MSBuild-based Linux project, then you can upgrade to the WSL 2 toolset in <strong>Property Pages &gt; General &gt; Platform Toolset</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png"><img class="aligncenter size-full wp-image-28311" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png" alt="Property Pages are open in a MSBuild-based Linux project. The &quot;Platform Toolset&quot; option is selected, and &quot;WSL2 Toolset&quot; is the selected value." width="558" height="162" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild.png 558w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/msbuild-300x87.png 300w" sizes="(max-width: 558px) 100vw, 558px" /></a></p>
+<h4 id="talk-to-us">Talk to us!</h4>
+<p>Our native WSL 2 toolset and CMake Presets integration are still in preview. We’ll continue to address your feedback in future releases of Visual Studio. The best way to file a bug or suggest a feature is with the <strong>Send Feedback</strong> button in the upper right-hand corner of the IDE. See <a href="https://docs.microsoft.com/en-us/visualstudio/ide/feedback-options?view=vs-2019#:~:text=In%20Visual%20Studio%2C%20choose%20the%20feedback%20icon%20in,information%2C%20see%20Suggest%20a%20feature%20for%20Visual%20Studio.">Visual Studio feedback options</a> for more information.</p>
+<p>We’d love to learn how your team is adopting our support for WSL 2. If you have feedback or a success story to share, you can contact us at vcpp-linux@microsoft.com. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/build-and-debug-c-with-wsl-2-distributions-and-visual-studio-2022/">Build and Debug C++ with WSL 2 Distributions and Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
 		
 		
 			</item>
