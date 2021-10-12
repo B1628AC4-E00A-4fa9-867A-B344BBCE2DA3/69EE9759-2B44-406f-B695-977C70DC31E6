@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 08 Oct 2021 18:50:59 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 13 Sep 2021 09:14:54 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,117 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>Improved Null Pointer Dereference Detection in Visual Studio 2022 version 17.0 Preview 4</title>
-		<link>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Fri, 08 Oct 2021 18:50:59 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29173</guid>
-
-					<description><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/">Improved Null Pointer Dereference Detection in Visual Studio 2022 version 17.0 Preview 4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of a new experimental <a href="https://docs.microsoft.com/cpp/build/reference/analyze-code-analysis">code analysis</a> check that can detect null pointer dereference errors, along with a comparison to an existing check that has the same purpose.</p>
-<h2 id="overview">Overview</h2>
-<p>Internally, we have multiple analysis engines. This is opaque from the users’ point of view; warnings are surfaced identically regardless of the engine we used to implement them. One of our code analysis tools, has a number of checks to catch null pointer dereference errors. These include <a href="https://aka.ms/cpp/warnings/C6011">C6011</a>, <a href="https://aka.ms/cpp/warnings/C6387">C6387</a>, and <a href="https://aka.ms/cpp/warnings/C28196">C28196</a>. While these warnings have historically been successful and prevented many errors, they do not work well with some aspects of modern C++. Moreover, the data flow framework they are written in has its limitations. EspXEngine was created to solve most of these problems. We already ship many analyses that are based on EspXEngine’s powerful path-sensitive data flow analysis including <a href="https://devblogs.microsoft.com/cppblog/concurrency-code-analysis-in-visual-studio-2019/">Concurrency Check</a> and <a href="https://devblogs.microsoft.com/cppblog/new-code-analysis-checks-in-visual-studio-2019-use-after-move-and-coroutine/">Use After Move Check</a>. The success of these checks convinced us to port null pointer analysis to EspXEngine. We are excited to make the new version available to try which introduces many improvements compared to the old one. The rest of the blog post is an in-depth overview of some of the improvements and gives some hints how to use power-user features like annotations.</p>
-<h2 id="path-sensitive-analysis">Path-sensitive analysis</h2>
-<p>Both analysis engines are capable of path-sensitive analysis. Let’s consider the example below to understand what this means:</p>
-<pre><code class="language-c++">void path_sensitive(int *p, bool cond) { 
-    int state = 0; 
-
-    // branch 1  
-    if (p != nullptr) { 
-        state = 1; 
-    } 
-
-    // branch 2 
-    if (cond) { 
-        state = 2; 
-        p = nullptr; 
-    } 
-
-    // branch 3 
-    if (state == 1) { 
-        *p = 42; // Null dereference? 
-    } 
-} </code></pre>
-<p>The code above has multiple branches. Some of those branches are correlated, but flow-sensitive analyses will not reason about these correlations. For instance, a flow-sensitive analysis might conclude that the code is unsafe due to a potential null-dereference, since <code>p</code> is set to <code>nullptr</code> in branch 2, and then dereferenced in branch 3. However, this would be a false positive because branch 3 <strong>cannot</strong> be reached if branch 2 has been taken. Path-sensitive analyses, on the other hand, do reason about these types of reachability conditions, and would therefore conclude that the code above is safe. As a result, path-sensitive analyses are more precise. But, this precision comes at the cost of analysis time and memory. Both engines have identical behavior on this code snippet.</p>
-<h2 id="local-analysis">Local analysis</h2>
-<p>Both engines are doing intraprocedural analysis. They cannot see across function boundaries and rely on types, type extensions, models and contracts to bridge the gap.</p>
-<pre><code class="language-c++">void local_analysis(int *p, int *q, bool cond) { 
-    if (p == nullptr) 
-        return; 
-    q = nullptr; 
-    std::swap(p, q); 
-    *p = 42; // Null dereference 
-} </code></pre>
-<p>The code above has a bug. The pointer <code>p</code> is <code>nullptr</code> due to the call to swap. This bug is not found by the current check. However, EspXEngine models some common APIs. As a result, it can figure out the bug and report a warning to the user.</p>
-<p>Unfortunately, when we call our own APIs, EspXEngine will not know the semantics of the called function. In those cases, we can use types or <a href="https://docs.microsoft.com/cpp/code-quality/understanding-sal?view=msvc-160">SAL annotations</a> to describe the pre- and postconditions of our functions:</p>
-<pre><code class="language-c++">_Notnull_ int *get_my_ptr(); 
-gsl::not_null&lt;int *&gt; get_my_ptr2(); 
-void local_analysis(int *p) { 
-    _Analysis_assume_(p != nullptr); 
-    *p = 42; 
-} </code></pre>
-<p>In the code above, we use the <code>_Notnull_</code> and <code>_Analysis_assume_</code> SAL annotations to describe the constraints on the values of some pointers. This is supported by both engines. A more modern approach is to use rich types to express these contracts. This is only supported in EspXEngine. Moreover, it will flag code where a null pointer is stored into a <a href="https://github.com/microsoft/GSL"><code>gsl::not_null</code></a> pointer:</p>
-<pre><code class="language-c++">void assign_to_gsl_notnull() { 
-    int* p = nullptr; 
-    auto q = gsl::make_not_null(p); // C26822 warning 
-} </code></pre>
-<p>While types are great to encode our expectations, SAL has the power to express a wider range of contracts. Consider the example below:</p>
-<pre><code class="language-c++">void postcondition_conditional(bool b, _When_(b == true, _Outptr_) int** p)  { 
-    if (b == true) 
-        *p = nullptr; // C26824 warning 
-} </code></pre>
-<p>This function has a complex postcondition. Whenever the first argument is true, the value at location <code>*p</code> must be not-<code>null</code> when the function exists. These contracts are understood by both engines (although the support in EspXEngine is more sophisticated) and many Windows APIs are annotated to describe their behavior. We would love to use a standard language facility, but the contracts proposal was not accepted for C++20 and we need a solution that work both for C and C++ APIs.</p>
-<h2 id="some-problems-with-our-existing-null-pointer-checks">Some problems with our existing null pointer checks</h2>
-<p>I wanted to showcase some examples where the null pointer check based on EspXEngine has better behavior than the current one. First of all, there are some low easy to catch null pointer dereferences that are not found by the current checks:</p>
-<pre><code class="language-c++">void nullptr_constant_dereference() { 
-    *(int*)nullptr = 5; // Previously, it was not found. 
-} </code></pre>
-<p>There are also cases where they were noisier:</p>
-<pre><code class="language-c++">struct Node { 
-    int number; 
-    Node* next; 
-}; 
-
-void add_number(Node*&amp; head, Node*&amp; tail, int data) { 
-    if (head != nullptr) { 
-        tail-&gt;next = (Node*)malloc(sizeof(Node)); 
-        tail = tail-&gt;next; 
-    } else { 
-        head = (Node*)malloc(sizeof(Node)); 
-        tail = head; 
-    } 
-    tail-&gt;number = data; // C6011 warning 
-    tail-&gt;next = nullptr; 
-} </code></pre>
-<p>In the code above the current version will give a null pointer dereference warning on the line with the comment. Technically, this warning could be a true positive when <code>malloc</code> fails and returns a <code>nullptr</code>. This is a scenario that is irrelevant for many applications. EspXEngine has both low and high confidence warnings and will only emit a low confidence warning in this case. Most users are probably only interested in the high confidence warnings that are expected to have less noise and turn the low confidence warnings off.</p>
-<p>Moreover, we decided to make EspXEngine stricter detecting various undefined behavior:</p>
-<pre><code class="language-c++">void method_null_dereference(Foo* p, Foo* q) { 
-    if (p || q) 
-        return; 
-
-    p-&gt;method();            // C26822 warning 
-    q-&gt;static_method(42);   // OK, not UB.  
-} </code></pre>
-<p>In the code above, contrary to EspXEngine, the current warning will not warn when we call a method on a null pointer. Strictly speaking, this code has undefined behavior, but many implementations will work fine when <code>method</code> does not dereference the <code>this</code> pointer.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>The upcoming Visual Studio 2022 17.0 Preview 4 will feature new, experimental checks to find null pointer dereference errors. These checks are intended to be better versions of the current ones with improved precision and additional features. These new checks are doing in-depth analysis and are expected to increase the analysis time. They are off by default and can be enabled by using the <code>CppCoreCheckExperimentalRules</code> ruleset.</p>
-<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
-<p>The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/">Improved Null Pointer Dereference Detection in Visual Studio 2022 version 17.0 Preview 4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>Static Analysis Fixes in Visual Studio 2019 version 16.11</title>
 		<link>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/#comments</comments>
@@ -1061,6 +950,189 @@ Hot Reload for C++, powered by Edit and Continue, is a new way of editing your c
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/feed/</wfw:commentRss>
 			<slash:comments>11</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</title>
+		<link>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/#comments</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Wed, 21 Jul 2021 18:31:46 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[compiler command line]]></category>
+		<category><![CDATA[modules]]></category>
+		<category><![CDATA[MSVC]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28323</guid>
+
+					<description><![CDATA[<p>In this three-part series we will explore how to build modules and header units from the command line as well as how to use/reference them.<br />
+The goal of this post is to serve as a brief tour of compiling and using primary module interfaces from the command line and the options we use.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/">Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In this three-part series we will explore how to build modules and header units from the command line as well as how to use/reference them.</p>
+<p>The goal of this post is to serve as a brief tour of compiling and using primary module interfaces from the command line and the options we use.</p>
+<p><em>Note:</em> This tutorial will focus primarily on dealing with IFC and object file output. Other types of compiler output such as PDB info are not mentioned.</p>
+<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#summary">Summary of C++ modules options.</a></li>
+<li><a href="#interface-basics">Basics of building a module interface.</a></li>
+<li><a href="#module-dependencies">Modules with interface dependencies.</a></li>
+</ul>
+<h4><span id="summary">Summary of C++ modules options</span></h4>
+<table>
+<tbody>
+<tr>
+<th>Option</th>
+<th>Brief Description</th>
+</tr>
+<tr>
+<td id="interface"><code>/interface</code></td>
+<td>Tells the compiler that the input file is a module interface unit.</td>
+</tr>
+<tr>
+<td><code>/internalPartition</code></td>
+<td>Tells the compiler that the input file is an <a href="https://devblogs.microsoft.com/cppblog/c-modules-conformance-improvements-with-msvc-in-visual-studio-2019-16-5/#module-partitions">internal partition unit</a>.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/module-reference?view=msvc-160">/reference</a></code></td>
+<td>Provides the compiler with an IFC file to reference for the nominated module interface name.</td>
+</tr>
+<tr>
+<td id="ifc-search-dir"><code>/ifcSearchDir</code></td>
+<td>When the compiler falls back to implicit module interface search, directories specified by this option will be used.</td>
+</tr>
+<tr>
+<td><code>/ifcOutput</code></td>
+<td>Tells the compiler where the IFC resulting from compilation should go. If that destination is a directory the compiler will generate a name based on the interface name or the header unit name.</td>
+</tr>
+<tr>
+<td><code>/ifcOnly</code></td>
+<td>Instructs the compiler to only produce an IFC as the result of compilation. No other outputs will be produced as the result of compilation even if other options are specified.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/module-exportheader?view=msvc-160">/exportHeader</a></code></td>
+<td>Instructs the compiler to create a header unit from the input.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/headername?view=msvc-160">/headerName</a></code></td>
+<td>Tells the compiler that the input designates the name of a header.</td>
+</tr>
+<tr>
+<td><code><a href="https://docs.microsoft.com/en-us/cpp/build/reference/translateinclude?view=msvc-160">/translateInclude</a></code></td>
+<td>Instructs the compiler to perform <code>#include</code> -&gt; <code>import</code> translation if the header-name nominates an importable header.</td>
+</tr>
+<tr>
+<td><code>/showResolvedHeader</code></td>
+<td>When building a header unit, show the fully resolved path to that header unit after compilation.</td>
+</tr>
+<tr>
+<td><code>/validateIfcChecksum[-]</code></td>
+<td>Off by default. Specifying this switch will enforce an extra security check using the stored content hash in the IFC.</td>
+</tr>
+</tbody>
+</table>
+<h4><span id="interface-basics">Basics of building a module interface</span></h4>
+<p>For the content in this section, we will assume that you have an appropriate compiler environment command prompt set up and that you have navigated to the directory with your test files.</p>
+<p>Let&#8217;s look at the most basic scenario we can for starters:</p>
+<p><code>m.ixx</code>:</p>
+<pre class="">export module MyModule;
+
+export
+void f() { }</pre>
+<p><code>main.cpp</code>:</p>
+<pre class="">import MyModule;
+
+int main() {
+  f();
+}</pre>
+<p>The simplest way to build this sample is the following:</p>
+<pre>$ cl /c /std:c++latest m.ixx
+$ cl /std:c++latest /reference MyModule=MyModule.ifc main.cpp m.obj
+$ .\main.exe</pre>
+<p>One quick note about the name of file <code>m.ixx</code> above, the <code>.ixx</code> extension is the default module interface extension for MSVC. If you wish to use a different extension then you must use <a href="#interface"><code>/interface</code></a> along with <a href="https://docs.microsoft.com/en-us/cpp/build/reference/tc-tp-tc-tp-specify-source-file-type?view=msvc-160"><code>/TP</code></a> in order to compile the input as both C++ and as a module interface. Here&#8217;s a quick example of compiling the module interface if the name were <code>my-module.cppm</code>:</p>
+<pre>$ cl /c /std:c++latest /interface /TP my-module.cppm</pre>
+<p>In the first line we compile the module interface, and two things happen implicitly:</p>
+<ol>
+<li>The compiler will derive a name for the resulting object file based on the <a href="https://docs.microsoft.com/en-us/cpp/build/reference/specifying-the-pathname?view=msvc-160">base name of the input file</a>. The resulting object file in this case is derived from <code>m.ixx</code> transformed into <code>m.obj</code>.</li>
+<li>The compiler will derive a name for the resulting IFC file based on the <em>module interface name</em>. The resulting IFC in this case is derived from the module name <code>MyModule</code> transformed into <code>MyModule.ifc</code>. Note that the name of the input file has no bearing on the exported module interface name, they are completely orthogonal to each other so if this file were named <code>foobar.ixx</code> the generated IFC name would still be <code>MyModule.ifc</code>.</li>
+</ol>
+<p>If we take away the two implicit points above, we will end up with a command line which looks like this:</p>
+<pre>$ cl /c /std:c++latest m.ixx /ifcOutput MyModule.ifc /Fom.obj</pre>
+<p>On the import side we could take advantage of the compiler&#8217;s implicit lookup behavior to find the module interface:</p>
+<pre>$ cl /std:c++latest main.cpp m.obj
+$ .\main.exe</pre>
+<p>Whoa! Hold on there! What happened? Well, in MSVC the compiler implements a well-coordinated lookup to find the module interface implicitly. Because the compiler generates a module interface IFC based on the module name it can safely be assumed that if there is no direct <code>/reference</code> option on the command line then there could be an IFC somewhere on disk which is named after the module interface name. In the scenario above we are trying to import a module interface named <code>MyModule</code> so there might be a <code>MyModule.ifc</code> on disk, and indeed there is! It is worth pointing out that this implicit lookup behavior will search the current directory along with any directory added using <a href="#ifc-search-dir"><code>/ifcSearchDir</code></a>.</p>
+<p>Let&#8217;s consider a scenario where the destination for the resulting IFC is not in the immediate directory. Consider the following directory structure:</p>
+<pre>./
+├─ src/
+│  ├─ m.ixx
+│  ├─ main.cpp
+├─ bin/</pre>
+<p>And let&#8217;s assume that our compiler command prompt is rooted at <code>./</code> and that we want all output to go into the <code>bin\</code> folder. Here&#8217;s what the fully explicit command lines look like:</p>
+<pre>$ cl /c /std:c++latest src\m.ixx /Fobin\m.obj /ifcOutput bin\MyModule.ifc
+$ cl /std:c++latest /reference MyModule=bin\MyModule.ifc src\main.cpp /Fobin\m.obj /Febin\main.exe bin\m.obj</pre>
+<p>There are a lot of things going on so let&#8217;s narrow the scope of noise to just the command line options required to compile <code>main.cpp</code> and not link it.</p>
+<pre>$ cl /c /std:c++latest /reference MyModule=bin\MyModule.ifc src\main.cpp /Fobin\m.obj</pre>
+<p><em>Note:</em> The <a href="https://docs.microsoft.com/en-us/cpp/build/reference/fo-object-file-name?view=msvc-160"><code>/Fo</code></a> tells the compiler where to put the resulting object file. Further, in order to ensure that the compiler can properly detect that the destination is a directory, please append the trailing &#8216;<code>\</code>&#8216; at the end of the argument.</p>
+<p>If we wanted to take advantage of the compiler&#8217;s implicit naming mechanisms the command lines would be the following:</p>
+<pre>$ cl /c /std:c++latest src\m.ixx /Fobin\ /ifcOutput bin\
+$ cl /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\m.obj</pre>
+<p>Notice that the difference here is we simply provide a directory as the argument to each of our command line options.</p>
+<h4><span id="module-dependencies">Modules with interface dependencies</span></h4>
+<p>Often, we don&#8217;t want to build a single module interface and call it a day, it is frequently the case that sufficiently large projects will be composed of many module interfaces which describe various parts of the system. In this section we&#8217;ll explore how to build translation units which depend on one or more interfaces.</p>
+<p>Let&#8217;s consider a slightly more sophisticated directory layout:</p>
+<pre>./
+├─ src/
+│  ├─ types/
+│  │  ├─ types.ixx
+│  ├─ util/
+│  │  ├─ util.ixx
+│  ├─ shop/
+│  │  ├─ shop.ixx
+│  │  ├─ shop-unit.cpp
+│  ├─ main.cpp
+├─ bin/</pre>
+<p>The code for these files can be found <a href="https://gist.github.com/cdacamar/8226c1893dd8c8a81974c939be52809f">here</a>.</p>
+<p>As you explore the code you will find that many of these modules/source files contain references to module interfaces and those interfaces may reference yet another interface. At its core, the most basic dependency graph looks like the following:</p>
+<pre>   types.ixx
+   /       \
+util.ixx  shop.ixx
+  \        /
+shop-unit.cpp
+      |
+   main.cpp</pre>
+<p>Without further ado, here are the explicit command lines in all their glory:</p>
+<pre>$ cl /c /EHsc /std:c++latest src\types\types.ixx /Fobin\types.obj /ifcOutput bin\types.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc src\util\util.ixx /Fobin\util.obj /ifcOutput bin\util.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc src\shop\shop.ixx /Fobin\shop.obj /ifcOutput bin\shop.ifc
+$ cl /c /EHsc /std:c++latest /reference types=bin\types.ifc /reference util=bin\util.ifc /reference shop=bin\shop.ifc src\shop\shop-unit.cpp /Fobin\shop-unit.obj
+$ cl /EHsc /std:c++latest /reference shop=bin\shop.ifc /reference types=bin\types.ifc src\main.cpp /Fobin\main.obj /Febin\main.exe bin\types.obj bin\util.obj bin\shop.obj bin\shop-unit.obj</pre>
+<p>That is quite a mouthful. One thing you might notice is that when we built <code>src\shop\shop-unit.cpp</code> we needed a reference to both <code>types</code> and <code>shop</code> even though there&#8217;s no explicit import of either interface. The reason for this is because <code>util</code> has an implicit dependency on <code>types</code> to resolve <code>Product</code> properly and because it is a module unit the line <code>module shop;</code> implicitly imports the module interface <code>shop</code>, this behavior is defined by the C++ standard.</p>
+<p>Applying some techniques learned above we can drastically reduce the noise by using implicit naming/lookup:</p>
+<pre>$ cl /c /EHsc /std:c++latest src\types\types.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\util\util.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\shop\shop.ixx /Fobin\ /ifcOutput bin\
+$ cl /c /EHsc /std:c++latest /ifcSearchDir bin\ src\shop\shop-unit.cpp /Fobin\
+$ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\main.cpp /Fobin\ /Febin\ bin\types.obj bin\util.obj bin\shop.obj bin\shop-unit.obj</pre>
+<p>This is looking much better. We can take it a step further by taking advantage of the fact that <code>cl.exe</code> will process each source file in a linear sequence:</p>
+<pre>$ cl /EHsc /std:c++latest /ifcSearchDir bin\ src\types\types.ixx src\util\util.ixx src\shop\shop.ixx src\shop\shop-unit.cpp src\main.cpp /Fobin\ /Febin\main.exe /ifcOutput bin\</pre>
+<p>The command above uses implicit naming/lookup along with <code>cl.exe</code>&#8216;s linear source processing behavior.</p>
+<p><em>Note:</em> the above command line will <strong>not</strong> work if the option <a href="https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes?view=msvc-160"><code>/MP</code></a> is used (compiling multiple inputs in parallel).</p>
+<p>Just to be complete, we could also use explicit naming for our module interfaces in the single command line above:</p>
+<pre>$ cl /EHsc /std:c++latest /reference shop=bin\shop.ifc /reference types=bin\types.ifc /reference util=bin\util.ifc src\types\types.ixx src\util\util.ixx src\shop\shop.ixx src\shop\shop-unit.cpp src\main.cpp /Fobin\ /Febin\main.exe /ifcOutput bin\</pre>
+<p>The reason either of these command lines work is that the compiler will not try to do anything special with a <code>/reference</code> option unless the name designating the IFC is used and there is no extra cost to add <code>/reference</code> options for a command line if you know the module will be generated at some point in the input sequence.</p>
+<h4 id="closing">Closing</h4>
+<p>In part 2 we will cover how to handle module interface partitions. Finally, in part 3 we will cover how to handle header units.</p>
+<p>We urge you to go out and try using Visual Studio 2019/2022 with Modules. Both Visual Studio 2019 and Visual Studio 2022 Preview are available through the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads</a> page!</p>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow me on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/">Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
 		
 		
 			</item>
