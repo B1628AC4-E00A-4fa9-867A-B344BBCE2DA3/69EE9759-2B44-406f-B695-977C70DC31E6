@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 15 Oct 2021 10:42:32 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 08 Oct 2021 18:50:59 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,227 +28,6 @@
 	<height>32</height>
 </image> 
 	<item>
-		<title>A Race Condition in .NET Finalization and its Mitigation for C++/CLI</title>
-		<link>https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/#comments</comments>
-		
-		<dc:creator><![CDATA[Tanveer Gani]]></dc:creator>
-		<pubDate>Fri, 15 Oct 2021 15:00:12 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28733</guid>
-
-					<description><![CDATA[<p>Abstract<br />
-There is a dormant race condition in .NET which affects even single threaded code when finalizers are executed. The cause is primarily the fact that finalizers are called on a separate thread by .NET and may access objects which have already been garbage collected due to aggressive lifetime determination by the .NET JIT compiler in newer versions of the .NET runtime.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/">A Race Condition in .NET Finalization and its Mitigation for C++/CLI</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h2 id="abstract">Abstract</h2>
-<blockquote><p>There is a dormant race condition in <code>.NET</code> which affects even single threaded code when finalizers are executed. The cause is primarily the fact that finalizers are called on a separate thread by <code>.NET</code> and may access objects which have already been garbage collected due to aggressive lifetime determination by the <code>.NET</code> JIT compiler in newer versions of the <code>.NET</code> runtime.
-A solution for this problem, in the form of automatic generation of calls to <code>System::GC::KeepAlive</code>, has been implemented in the Microsoft C++ compiler and is available in version 16.10 and later.</p></blockquote>
-<h2 id="introduction">Introduction</h2>
-<p>C++/CLI is primarily meant to be an interop language bridging the native
-and <code>.NET</code> worlds efficiently. Consequently, a frequently occuring code
-pattern is wrapping of native pointers in managed classes. E.g.</p>
-<pre><code class="language-cpp">class NativeClass { ... };
-ref class ManagedClass {
-    ...
-private:
-    NativeClass* ptr;
-};</code></pre>
-<p>Often, the managed wrapper class will <code>new</code> an instance of
-<code>NativeClass</code>, which controls and accesses a system resource (e.g. a
-file), uses the resources and to make sure that the resource is properly
-released back, delegates this task to the finalizer. Elaborating the
-above example, we could have code like:</p>
-<pre><code class="language-cpp"> 1  using Byte = System::Byte;
- 2  using String = System::String^;
- 3  using Char = System::Char;
- 4
- 5  class File {
- 6      FILE*   fp;
- 7  public:
- 8      explicit File(const Char* path, const Char* mode)
- 9      {
-10          fp = _wfopen(path, mode);
-11      }
-12      void Read() { ... }
-13      void Write(const void*, size_t) { ... }
-14      void Seek() { ... }
-15      void Close()
-16      {
-17          if (fp) {
-18              fclose(fp); fp = nullptr;
-19          }
-20      }
-21      ~File() { Close(); }
-22  };
-
-26   ref class DataOnDisk
-27   {
-28   public:
-29       DataOnDisk(String path, String mode)
-30       {
-31           cli::pin_ptr&lt;const Char&gt; path_ptr = PtrToStringChars(path);
-32           cli::pin_ptr&lt;const Char&gt; mode_ptr = PtrToStringChars(mode);
-33           ptr = new File(path_ptr, mode_ptr);
-34       }
-35       ~DataOnDisk() { this-&gt;!DataOnDisk(); }
-36       !DataOnDisk()
-37       {
-38           if (ptr) {
-39               delete ptr; ptr = nullptr;
-40           }
-41       }
-42       void Close() { this-&gt;!DataOnDisk(); }
-43       void WriteData(array&lt;Byte&gt;^ data) { ... }
-44   private:
-45       File*           ptr;  // Pointer to native implementation class.
-46   };</code></pre>
-<p>In the above code, class <code>File</code> controls the actual file via the native
-C++ interface, while <code>DataOnDisk</code> uses the native class to read/write
-structured data to file (details have been omitted for clarity). While
-<code>Close</code> can be called explicitly when there is no more use for the file,
-the finalizer is meant to do this when the <code>DataOnDisk</code> object is
-collected.</p>
-<p>As we shall see in the following section, while the above code appears
-correct, there is a hidden race condition that can cause program errors.</p>
-<h2 id="race-condition">Race Condition</h2>
-<p>Let us define the member <code>WriteData</code> from the above code</p>
-<pre><code class="language-cpp">49  void DataOnDisk::WriteData(array&lt;Byte&gt;^ buffer)
-50  {
-51      pin_ptr&lt;Byte&gt; buffer_ptr = &amp;buffer[0];
-52      this-&gt;ptr-&gt;Write(buffer_ptr, buffer-&gt;Length);
-53  } </code></pre>
-<p>This function itself might be called in this context:</p>
-<pre><code class="language-cpp">55  void test_write()
-56  {
-57      DataOnDisk^ dd = gcnew DataOnDisk(...);
-58      array&lt;Byte&gt;^ buf = make_test_data();
-59      dd-&gt;WriteData(buf);
-60  } </code></pre>
-<p>So far, nothing catches the eye or looks remotely dangerous. Starting
-from <code>test_write</code>, let us examine what happens in detail.</p>
-<ol>
-<li>A <code>DataOnDisk</code> object is created (line 57), some test data is
-created and <code>WriteData</code> is called to write this data to file (line
-59).</li>
-<li>The <code>WriteData</code> carefully pins the buffer array object (line 51)
-before taking the address of an element and calling the <code>Write</code>
-member function of the underlying native <code>File</code> object. The pinning
-is important because we don&#8217;t want <code>.NET</code> to move the buffer bytes
-while the write is happening.</li>
-<li>However, since the <code>.NET</code> garbage collector knows nothing about
-native types, the <code>ptr</code> field of <code>DataOnDisk</code> is just a bit pattern
-with no other meaning attached. The <code>.NET</code> JIT compiler has analyzed
-the code and determined that the last use of the <code>dd</code> object is to
-access <code>ptr</code> (line 52), before its value is passed as the implicit
-object parameter of <code>File::Write</code>. Following this reasoning by the
-JIT compiler, once the value of <code>ptr</code> is fetched from the object,
-<em>the object <code>dd</code> is no longer needed</em> and becomes eligible for
-garbage collection.The fact that <code>ptr</code> points to a live native
-object is opaque to <code>.NET</code> because it does not track native
-pointers.</li>
-<li>From here onward, things can go wrong. The object <code>dd</code> is scheduled
-for collection and as part of the process, the finalizer is run,
-typically on a second thread. Now, we have potentially two things
-happening at the same time without any ordering between them, a
-classic race condition: the <code>Write</code> member function is executing and
-the finalizer <code>!DataOnDisk</code> is executing as well, the latter will
-<code>delete</code> the file object referenced by <code>ptr</code> <em>while <code>File::Write</code> is
-possibly still running</em>, which can then result in a crash or other
-incorrect behavior.</li>
-</ol>
-<h2 id="wait-wha">Wait &#8212; Wha&#8230;?</h2>
-<p>Several questions immediately come to mind:</p>
-<ul>
-<li><em>Is this a new bug?</em> Yes &#8212; and no. The issue has potentially been
-around since <code>.NET</code> 2.0.</li>
-<li><em>What changed?</em> The <code>.NET</code> JIT compiler started being aggressive
-with lifetime determination in <code>.NET</code> 4.8. From the perspective of
-managed code, it is doing the right thing.</li>
-<li><em>But, this affects a core C++/CLI native interop scenario. What can
-be done?</em> Read on.</li>
-</ul>
-<h2 id="solutions">Solutions</h2>
-<p>It is easy to see that when the call to <code>Write</code> happens (line 52), if
-<code>this</code> is kept alive, the race condition disappears since <code>dd</code> will no
-longer be collected before the call to <code>Write</code> returns. This could be
-done in several different ways:</p>
-<ul>
-<li><em>Treat the change in the behavior of the JIT compiler as a bug and
-revert back to old behavior.</em> Doing this requires a system update
-for <code>.NET</code> and potentially disables optimizations. Freezing the
-<code>.NET</code> framework at version 4.7 is also an option but not one that
-will work in the longer term, especially since the same JIT behavior
-can happen in <code>.NET</code> <code>Core</code> as well.</li>
-<li><em>Manually insert <code>System::GC::KeepAlive(this)</code> calls where needed</em>.
-This works but is error prone and requires examining the user source
-and changing it, so this is not a viable solution for large source
-bases.</li>
-<li><em>Have the compiler inject <code>System::GC::KeepAlive(this)</code> calls, when
-needed</em>. This is the solution we have implemented in the Microsoft
-C++ compiler.</li>
-</ul>
-<h2 id="details">Details</h2>
-<p>We could brute-force a solution by issuing a call to <code>KeepAlive</code> every
-time we see a call to native function, but for performance reasons we
-want to be more clever. We want to issue such calls where there is a
-possibility of a race condition but nowhere else. The following is the
-algorithm that the Microsoft C++ compiler follows to determine if an
-implicit <code>KeepAlive</code> call is to be issued at a point in the code where:</p>
-<ul>
-<li>We are at a return statement or implicit return from a member
-function of a managed class;</li>
-<li>The managed class has a member of type &#8216;reference or pointer to
-unmanaged type&#8217;, including members in its direct or indirect base
-classes, or embedded in members of class-types occuring anywhere in
-the class hierarchy;</li>
-<li>A call to a function <code>FUNC</code> is found in the current (managed member)
-function, which satisfies one or more of these conditions:</p>
-<ol>
-<li><code>FUNC</code> doesn&#8217;t have a <code>__clrcall</code> calling convention, or</li>
-<li><code>FUNC</code> doesn&#8217;t take <code>this</code> either as an implicit or explicit
-argument, or</li>
-<li>A reference to <code>this</code> doesn&#8217;t follow the call to <code>FUNC</code></li>
-</ol>
-</li>
-</ul>
-<p>In essence, we are looking for indicators that show <code>this</code> is in no
-danger of getting garbage collected during the call to <code>FUNC</code>. Hence, if
-the above conditions are satisfied, we insert a
-<code>System::GC::KeepAlive(this)</code> call immediately following the call to
-<code>FUNC</code>. Even though a call to <code>KeepAlive</code> looks very much like a
-function call in the generated MSIL, the JIT compiler treats it as a
-directive to consider the current object alive at that point.</p>
-<h2 id="how-to-get-the-fix">How to get the fix</h2>
-<p>The above Microsoft C++ compiler behavior is <strong>on by default</strong> in Visual
-Studio <strong>version 16.10</strong> and up but in in cases where unforeseen
-problems occur due to the new implicit emission of <code>KeepAlive</code> calls,
-the Microsoft C++ compiler provides two escape hatches:</p>
-<ul>
-<li>the driver switch <code>/clr:implicitKeepAlive-</code>, which turns off all
-such calls in the translation unit. This switch is not available in
-project system settings but must be added explicitly to the
-command-line option list
-(<code>Property Pages &gt; Command Line &gt; Additional Options</code>).</li>
-<li><code>#pragma implicit_keepalive</code>, which provides fine-grained control
-over the emission of such calls at the function level.</li>
-</ul>
-<h2 id="a-final-nit">A Final Nit</h2>
-<p>The astute reader will have noted that there is still a possible race
-condition at line 39. To see why, imagine that both the finalizer thread
-and user code call the finalizer at the same time. The possibility of a
-double-delete in this case is obvious. Fixing this requires a critical
-section but is beyond the scope of this article and left to the reader
-as an exercise.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/">A Race Condition in .NET Finalization and its Mitigation for C++/CLI</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
 		<title>Improved Null Pointer Dereference Detection in Visual Studio 2022 version 17.0 Preview 4</title>
 		<link>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/#comments</comments>
@@ -355,7 +134,7 @@ void add_number(Node*&amp; head, Node*&amp; tail, int data) {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
+			<slash:comments>1</slash:comments>
 		
 		
 			</item>
@@ -1240,6 +1019,48 @@ Hot Reload for C++, powered by Edit and Continue, is a new way of editing your c
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/">Edit Your C++ Code while Debugging with Hot Reload in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
+		
+		
+			</item>
+		<item>
+		<title>Visual Studio Code C++ July 2021 Update: Disassembly View, Macro Expansion and Windows ARM64 Debugging</title>
+		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/#comments</comments>
+		
+		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
+		<pubDate>Wed, 28 Jul 2021 16:00:32 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28441</guid>
+
+					<description><![CDATA[<p>The July 2021 update of the C++ extension for Visual Studio Code is here, bringing you brand new features— such as a Disassembly View while debugging, inline macro expansions, and debug support for Windows ARM64 architecture—along with a bunch of enhancements and bug fixes.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/">Visual Studio Code C++ July 2021 Update: Disassembly View, Macro Expansion and Windows ARM64 Debugging</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The July 2021 update of <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">the C++ extension for Visual Studio Code</a> is here, bringing you brand new features— such as a Disassembly View while debugging, inline macro expansions, and debug support for Windows ARM64 architecture—along with a bunch of enhancements and bug fixes. To find out more about all the enhancements, check out our <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.5.0">release notes on GitHub.</a></p>
+<h2 id="disassembly-view">Disassembly View</h2>
+<p>We’re excited to announce that Disassembly View— our #1 upvoted GitHub issue (<a href="https://github.com/microsoft/vscode-cpptools/issues/206">#206</a>)— is publicly available in VS Code Insiders! Disassembly View allows you to debug assembly code corresponding to the instructions created by your compiler. It’ll be available in the 1.59 release of Visual Studio Code in August, but in the meantime you can <a href="https://code.visualstudio.com/insiders/">download VS Code Insiders</a> and try it out!</p>
+<p>To open Disassembly View while debugging, right click your source code and select <strong>Open Disassembly View. </strong></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1.png"><img class="alignnone size-full wp-image-28452" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1.png" alt="Image showing the right-click menu option to Open Disassembly View" width="3101" height="1999" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1.png 3101w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1-300x193.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1-1024x660.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1-768x495.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1-1536x990.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/open-disassembly-view-1-2048x1320.png 2048w" sizes="(max-width: 3101px) 100vw, 3101px" /></a></p>
+<p>In the Disassembly View, the yellow hollow marker represents the current instruction. For each instruction, you’ll see the memory address (left column) and the machine language instructions displayed as hex (middle column) and as assembly language (right column). You can navigate between instructions, step over (<strong>F10</strong>) and step in to (<strong>F11</strong>) instructions.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1.png"><img class="alignnone size-full wp-image-28451" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1.png" alt="Image showing the Disassembly View opened side by side with source code" width="3105" height="1929" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1.png 3105w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1-300x186.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1-1024x636.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1-768x477.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1-1536x954.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-side-by-side-1-2048x1272.png 2048w" sizes="(max-width: 3105px) 100vw, 3105px" /></a></p>
+<p>To set a breakpoint in the Disassembly View, hover over the instruction and click the red filled circle that appears to the left of the memory address.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1.png"><img class="alignnone wp-image-28450" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1.png" alt="Image showing the red filled circle that appears on hover to set a breakpoint at an instruction in Disassembly View" width="889" height="203" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1.png 1265w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1-300x69.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1-1024x234.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-set-breakpoint-1-768x175.png 768w" sizes="(max-width: 889px) 100vw, 889px" /></a></p>
+<p>Unset the breakpoint by clicking the red dot again, or by unchecking the box in the Breakpoints section of the Debug pane.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-check-breakpoint-1.png"><img class="alignnone size-full wp-image-28449" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-check-breakpoint-1.png" alt="Image showing the Breakpoints section of the Debug pane, where users can enable and disable breakpoints" width="530" height="184" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-check-breakpoint-1.png 530w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-check-breakpoint-1-300x104.png 300w" sizes="(max-width: 530px) 100vw, 530px" /></a></p>
+<p>Check out this GIF to see Disassembly View in action:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-view-sidey-by-side.gif"><img class="alignnone size-full wp-image-28447" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/disassembly-view-sidey-by-side.gif" alt="GIF showing how to open Disassembly View while debugging, navigate between instructions and set breakpoints" width="3116" height="1954" /></a></p>
+<h2 id="macro-expansion">Macro Expansion</h2>
+<p>With this latest release of the C++ extension, you can expand macros inline (GitHub issue <a href="https://github.com/microsoft/vscode-cpptools/issues/4183">#4183</a>), making it easier to read and understand your code. To expand a macro inline, click on it, select the lightbulb, and then click <strong>Inline macro.</strong></p>
+<p><strong><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/macro-expansion.gif"><img class="alignnone size-full wp-image-28448" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/macro-expansion.gif" alt="GIF showing how to expand a macro inline" width="586" height="280" /></a></strong></p>
+<h2 id="windows-arm64-debugging">Windows ARM64 Debugging</h2>
+<p>Last year, we announced support for running the C++ extension on Windows ARM64 architecture, giving Surface Pro X users access to C++ IntelliSense, code navigation, and build support. With the July 2021 update of the C++ extension, you can debug projects on Windows ARM64, completing the end-to-end Surface Pro X C++ development experience in VS Code.</p>
+<h2 id="what-do-you%e2%80%afthink">What do you think?</h2>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>. You can also join our Insiders program and get access to early builds of our release by going to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and under <strong>Extensions</strong> &gt; <strong>C/C++,</strong> change the “<strong>C_Cpp: Update Channel</strong>” to “<strong>Insiders</strong>.” Then under <strong>Features </strong>&gt; <strong>Extensions</strong>, enable “<strong>Extensions</strong>:<strong> Auto Update</strong>.”</p>
+<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/">Visual Studio Code C++ July 2021 Update: Disassembly View, Macro Expansion and Windows ARM64 Debugging</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-july-2021-update-disassembly-view-macro-expansion-and-windows-arm64-debugging/feed/</wfw:commentRss>
+			<slash:comments>11</slash:comments>
 		
 		
 			</item>
