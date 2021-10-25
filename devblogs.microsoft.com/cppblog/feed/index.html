@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 15 Oct 2021 10:42:32 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 25 Oct 2021 13:53:40 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,115 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</title>
+		<link>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/#respond</comments>
+		
+		<dc:creator><![CDATA[David Li]]></dc:creator>
+		<pubDate>Mon, 25 Oct 2021 13:53:40 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[gamedev]]></category>
+		<category><![CDATA[Intellisense]]></category>
+		<category><![CDATA[unreal engine]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29655</guid>
+
+					<description><![CDATA[<p>With Visual Studio, we want to build the best tools to empower game developers. We joined forces with Epic Games to bring faster semantic highlighting and IntelliSense ready to Visual Studio 2022 for Unreal Engine developers. In this blog post, we will detail how we worked with the Unreal Engine team to significantly speed up the time it takes IntelliSense to start when a new file is opened in the editor by an order of 18x.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/">18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>With Visual Studio, we want to build the best tools to empower game developers. We joined forces with Epic Games to bring faster semantic highlighting and IntelliSense ready to Visual Studio 2022 for Unreal Engine developers. In this blog post, we will detail how we worked with the Unreal Engine team to significantly speed up the time it takes IntelliSense to start when a new file is opened in the editor by an order of <strong>18x</strong>.</p>
+<p><strong><em>&#8220;We&#8217;ve always struggled with Intellisense performance in the Unreal Engine solution, but these changes are a night-and-day improvement. Faster feedback and less waiting help devs stay focused on making amazing games.&#8221;</em></strong> – Ben Marsh, Lead Programmer at Epic Games</p>
+<p><strong>The changes are available for Unreal Engine 4.27.1 projects using the latest Visual Studio 2022 Preview.</strong></p>
+<h1 id=""><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHOld30s.gif"><img class="aligncenter size-full wp-image-29684" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHOld30s.gif" alt="Image UnrealPCHOld30s" width="1200" height="675" /></a></h1>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHNew15s.gif"><img class="aligncenter size-full wp-image-29685" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHNew15s.gif" alt="Image UnrealPCHNew15s" width="1200" height="675" /></a></p>
+<h2 id="testing-methodology">Testing Methodology</h2>
+<p>We tested using an Unreal Engine 4.27.1 sample project on a desktop with Intel Core i7-9700 @ 3Ghz, 64GB RAM, and an SSD. The tests took place on Visual Studio 2019 16.11.5 and Visual Studio 2022 Preview 6. The results were averaged over 4 runs.</p>
+<h2 id="results">Results</h2>
+<p>When opening a file on Visual Studio 2019, it took <strong>11.0</strong> seconds for IntelliSense to be ready and semantic code colorization to show up. Opening a different file took the same amount of time to get to the same state. Closing and reopening the same file took <strong>1.0</strong> seconds for the ready state.</p>
+<p>In comparison, Visual Studio 2022 took <strong>7.2</strong> seconds for the first file to be ready and <strong>0.4</strong> seconds for any subsequent files.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png"><img class="aligncenter size-full wp-image-29671" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png" alt="Image UnrealPCH" width="2273" height="1393" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png 2273w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-300x184.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-1024x628.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-768x471.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-1536x941.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-2048x1255.png 2048w" sizes="(max-width: 2273px) 100vw, 2273px" /></a></p>
+<h2 id="analysis">Analysis</h2>
+<p>Prior to the change, each translation unit, the C++ and header files in your project, started from scratch with no state reuse between them. Reopening the same file took 1 second; however, because PCHs were not shared between files, opening any file for the first time took the same amount of time for semantic highlighting to show up and IntelliSense to be ready.</p>
+<p>In Unreal Engine 4.27.1 projects using Visual Studio 2022, the generated project files are updated to configure IntelliSense to share compilation state across translation units. As a result, the semantic code colorization and IntelliSense completion will be available drastically quicker (<strong>0.4 seconds</strong>) when switching files in Visual Studio.</p>
+<p>In addition, C++ IntelliSense improvements in VS2022 were able to bring down ready time by a factor of <strong>1.5x</strong> from 11 seconds to 7.4 seconds. This change will benefit all C++ developers using IntelliSense, not only Unreal Engine developers.</p>
+<h2 id="applying-the-change-to-your-project">Applying The Change to Your Project</h2>
+<p>Currently, you will need to manually make an update in the Unreal Engine Editor to apply the changes.</p>
+<ol>
+<li>Click Edit -&gt; Editor Preferences -&gt; Source Code</li>
+<li>Change Source Code Editor to “Visual Studio 2022”</li>
+<li>Click File -&gt; Refresh Visual Studio 2022 Project</li>
+<li>Click File -&gt; Open Visual Studio 2022 to open the project in Visual Studio</li>
+</ol>
+<p><em>If you use GenerateProjectFiles.bat when working with Unreal Engine source code, use “GenerateProjectFiles.bat -2022” to generate project files with changes.</em></p>
+<h2 id="feedback-wanted">Feedback Wanted!</h2>
+<p>We received feedback about various ways of making the game developer experiences even better in Visual Studio. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like the one detailed in this blogpost.</p>
+<p>How will these productivity enhancements impact you as a game developer? What other enhancements do you wish to see in Visual Studio? Talk to us in the comments below, on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
+<h2 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h2>
+<p><strong><a href="https://visualstudio.microsoft.com/launch/">Visual Studio 2022</a> </strong>will be available on November 8, 2021. <strong><a href="https://visualstudio.microsoft.com/vs/preview/">Download the latest VS2022 Preview</a> </strong>to take advantage of these productivity benefits today.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/">18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Microsoft C++ Team at CppCon 2021</title>
+		<link>https://devblogs.microsoft.com/cppblog/microsoft-cpp-team-at-cppcon-2021/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/microsoft-cpp-team-at-cppcon-2021/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Mon, 25 Oct 2021 11:45:06 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29688</guid>
+
+					<description><![CDATA[<p>The Microsoft C++ team has an exciting lineup of sessions at CppCon 2021. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-team-at-cppcon-2021/">Microsoft C++ Team at CppCon 2021</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><img class="size-full wp-image-24953 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png" alt="Microsoft @ CppCon" width="760" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png 760w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp-300x184.png 300w" sizes="(max-width: 760px) 100vw, 760px" /></p>
+<p>The Microsoft C++ team has an exciting lineup of sessions at <a href="https://cppcon.org/">CppCon 2021</a>. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks, products, or anything else! You can also join the <a href="https://aka.ms/cppcon/discord">#visual_studio channel on the CppCon Discord</a> to talk to us.</p>
+<p>We’re also running a survey on the C++ ecosystem. If you have a moment, <a href="https://aka.ms/cppcon" target="_blank" rel="noopener noreferrer">please take our survey</a>, it&#8217;s quick.</p>
+<p>Here’s the lineup:</p>
+<h1 id="monday-october-25th">Monday, October 25<sup>th</sup></h1>
+<p><strong>15:15 – 16:15 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv1r/implementing-c-modules-lessons-learned-lessons-abandoned">Implementing C++ Modules: Lessons Learned, Lessons Abandoned</a> by Gabriel Dos Reis and Cameron DaCamara</p>
+<h1 id="tuesday-october-26th">Tuesday, October 26<sup>th</sup></h1>
+<p><strong>10:30 – 11:30 (MDT):</strong></p>
+<p><a id="37d29d70768539d44c325dcb13429b97" class="name" href="https://cppcon2021.sched.com/event/nv4b/documentation-in-the-era-of-concepts-and-ranges">Documentation in the Era of Concepts and Ranges</a> by Sy Brand and Christopher Di Bella (Google)</p>
+<p><a href="https://cppcon2021.sched.com/event/o66J/extending-and-simplifying-c-thoughts-on-pattern-matching-using-is-and-as">Extending and Simplifying C++: Thoughts on Pattern Matching using <code>is</code> and <code>as</code></a> by Herb Sutter</p>
+<p><strong>15:15 – 16:15 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv4x/static-analysis-and-program-safety-in-c-making-it-real">Static Analysis and Program Safety in C++: Making it Real</a> by Sunny Chatterjee</p>
+<p><strong>16:45 – 17:45 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv55/in-memory-and-persistent-representations-of-c">In-memory and Persistent Representations of C++</a> (on-site edition) by Gabriel Dos Reis</p>
+<h1 id="wednesday-october-27th">Wednesday, October 27<sup>th</sup></h1>
+<p><strong>12:30 – 13:30 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv55/in-memory-and-persistent-representations-of-c">In-memory and Persistent Representations of C++</a> (online edition) by Gabriel Dos Reis</p>
+<p><strong>15:15 – 16:15 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nvBW/whats-new-in-visual-studio-64-bit-ide-c20-wsl-2-and-more">What&#8217;s New in Visual Studio: 64-bit IDE, C++20, WSL 2, and more</a> by Sy Brand and Marian Luparu</p>
+<h1 id="thursday-october-28th">Thursday, October 28<sup>th</sup></h1>
+<p><strong>10:30 – 11:30 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nvCA/c20s-dyachronodyagg-calendars-and-time-zones-in-msvc">C++20’s &lt;chrono&gt; Calendars and Time Zones in MSVC</a> by Miya Natsuhara</p>
+<p><strong>14:00 – 15:00 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nvCL/an-editor-can-do-that-debugging-assembly-language-and-gpu-kernels-in-visual-studio-code">An Editor Can Do That? Debugging Assembly Language and GPU Kernels in Visual Studio Code</a> by Julia Reid</p>
+<p><strong>15:15 – 16:15 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nvCV/why-does-stdformat-do-that">Why does std::format do that?</a> by Charlie Barto</p>
+<p><strong>16:45 – 17:45 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv7V/finding-bugs-using-path-sensitive-static-analysis">Finding Bugs Using Path-Sensitive Static Analysis</a> (in-person edition) by Gabor Horvath</p>
+<h1 id="friday-october-29th">Friday, October 29<sup>th</sup></h1>
+<p><strong>12:00 – 13:00 (MDT):</strong></p>
+<p><a href="https://cppcon2021.sched.com/event/nv7V/finding-bugs-using-path-sensitive-static-analysis">Finding Bugs Using Path-Sensitive Static Analysis</a> (online edition) by Gabor Horvath</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-team-at-cppcon-2021/">Microsoft C++ Team at CppCon 2021</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-cpp-team-at-cppcon-2021/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>A Race Condition in .NET Finalization and its Mitigation for C++/CLI</title>
 		<link>https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/a-race-condition-in-net-finalization-and-its-mitigation-for-cpp-cli/#comments</comments>
@@ -862,384 +971,6 @@ __declspec(allocate(".CRT$XCV")) type i2 = f2;
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>8</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Moving a project to C++ named Modules</title>
-		<link>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/#comments</comments>
-		
-		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
-		<pubDate>Tue, 10 Aug 2021 17:23:41 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<category><![CDATA[C++ language]]></category>
-		<category><![CDATA[C++20]]></category>
-		<category><![CDATA[modules]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28553</guid>
-
-					<description><![CDATA[<p>There is a lot of hype (and perhaps restraint) to using modules in projects. The general blocker tends to be build support, but even with good build support there is a distinct lack of useful resources for practices around moving projects to using named modules (not just header units).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/">Moving a project to C++ named Modules</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>There is a lot of hype (and perhaps restraint) to using modules in projects. The general blocker tends to be build support, but even with good build support there is a distinct lack of useful resources for practices around moving projects to using named modules (not just header units). In this blog we will take a small project I created, analyze its components, draft up a plan for modularizing it, and execute that plan.</p>
-<h2 id="overview">Overview</h2>
-<ul>
-<li><a href="#tools-used">Tools used.</a></li>
-<li><a href="#project-description">Project description.</a></li>
-<li><a href="#cpp-today">Ball Pit! in C++ without modules.</a></li>
-<li><a href="#ungluing">Ungluing from <code>#include</code></a>
-<ul>
-<li><a href="#starting-small">Starting small&#8230;</a></li>
-<li><a href="#visibility">Choosing visibility</a></li>
-<li><a href="#3rd-party-pain">3rd party pain.</a></li>
-<li><a href="#polish">Polishing with modules.</a></li>
-</ul>
-</li>
-<li><a href="#all-together">All together now.</a></li>
-</ul>
-<h4><span id="tools-used">Tools used</span></h4>
-<p>For the purposes of this project, we will be using the following tools:</p>
-<ul>
-<li>CMake &#8211; Version: <code>3.20.21032501-MSVC_2</code>. <em>Note:</em> this is the installed version of CMake which comes with Visual Studio 2019.</li>
-<li>Visual Studio 2019 &#8211; Version: <code>16.11</code>.</li>
-</ul>
-<h4><span id="project-description">Project description</span></h4>
-<p>I remember when I was younger, I used to love doing kid things like eating terrible fast food, but going to these restaurants had an additional perk: the play places! One of my favorite things to do was go to the ball pit, dive in, and make a giant splash of color.</p>
-<p><a style="display: block; margin-left: auto; margin-right: auto; width: 50%;" title="Rachmaninoff, CC BY-SA 4.0 &lt;https://creativecommons.org/licenses/by-sa/4.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Ball_pit_with_playground_slide.jpg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Ball_pit_with_playground_slide.jpg/512px-Ball_pit_with_playground_slide.jpg" alt="Ball pit with playground slide" width="512" /></a></p>
-<p>I shudder to think of going into one nowadays, but I have not forgotten how much fun they were. I have also recently become very inspired by OneLoneCoder on YouTube and his <a href="https://www.youtube.com/watch?v=LPzyNOHY3A4">series on programming simple physics engines</a>. I decided I would try to take this simple physics engine and make something a little bit fun and a lot more colorful, introducing &#8220;Ball Pit!&#8221;:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/ball-pit.gif"><img class="aligncenter size-full wp-image-28558" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/ball-pit.gif" alt="Image ball pit" width="320" height="240" /></a></p>
-<p>&#8220;Ball Pit!&#8221; is a quite simple program built using the following discrete components:</p>
-<ul>
-<li>OneLoneCoder <a href="https://github.com/OneLoneCoder/olcPixelGameEngine">PixelGameEngine</a> (PGE) &#8211; Drives graphics.</li>
-<li>A simple physics engine for managing all the objects on screen.</li>
-<li>A data structure related to handling collisions between objects, a <a href="https://en.wikipedia.org/wiki/Quadtree">quad-tree</a>.</li>
-<li>A world object to contain our beautiful orbs.</li>
-<li>Utilities such as common types and functions on those types.</li>
-<li>The main game object which is responsible for the primary game loop and polling user input.</li>
-</ul>
-<h4><span id="cpp-today">Ball Pit! in C++ without modules</span></h4>
-<p>Since we established a basic design layout in the previous section, let us see what we can produce using C++20 without any modules whatsoever. Without further ado, here is the code in all its <code>#include</code> glory: <a href="https://github.com/cdacamar/ball_pit/tree/ce90e45245bf7981fd797d992389693bdd586c0b">Ball Pit! Without modules</a>. The easiest way to build this project is to  use <a href="https://docs.microsoft.com/en-us/cpp/build/open-folder-projects-cpp?view=msvc-160">Visual Studio&#8217;s open folder</a> support.</p>
-<p>Alternatively you can do the following (in a VS2019 developer command prompt):</p>
-<pre>$ mkdir build &amp; cd build &amp; cmake -G"Visual Studio 16 2019" -Ax64 ..\</pre>
-<p>Once CMake has generated the solution for you can open it using Visual Studio 2019, use the familiar F5 loop and off you go!</p>
-<h5 id="traditional-c-structure">Traditional C++ Structure</h5>
-<p>Let us talk briefly about the traditional project structure of this code. We have the following, familiar, breakdown:</p>
-<pre>ball_pit/
-├─ include/
-├─ src/</pre>
-<p>As you might expect the <code>include/</code> directory is almost a mirror of some files under <code>src/</code>. You also end up with a sizeable set of includes in our primary <code>ball-pit.cpp</code> to pull all the pieces together:</p>
-<pre>#include "bridges/pge-bridge.h"
-
-#include "physics/physics-ball.h"
-#include "physics/physics-engine.h"
-#include "physics/quad-tree.h"
-#include "util/basic-types.h"
-#include "util/enum-utils.h"
-#include "util/random-generator.h"
-#include "world/world.h"</pre>
-<p>You might notice that these includes directly reflect the design we set out to have:</p>
-<ul>
-<li>PGE for graphics: <code>"bridges/pge-bridge.h"</code></li>
-<li>Physics engine: <code>"physics/physics-engine.h"</code></li>
-<li>Quad-tree: <code>"physics/quad-tree.h"</code></li>
-<li>World object: <code>"world/world.h"</code></li>
-<li>Utilities: <code>"util/*</code></li>
-<li>Main game: (the current source file: <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/src/ball-pit.cpp"><code>ball-pit.cpp</code></a>)</li>
-</ul>
-<p>Since we made the decision to use header files you will notice that we get some declarations like this:</p>
-<pre>inline RandomNumberGenerator&amp; random_generator()</pre>
-<p>Where there is a strong desire not to implement this simple function in its own <code>.cpp</code> file for simplicity&#8217;s sake, but if you forget the critical <code>inline</code> keyword or, even worse, mark it as <code>static</code> you will not get the behavior you expect from this function.</p>
-<p>Another thing which I like to do on my projects is separate 3rd party headers from the rest of the project using these &#8220;bridge&#8221; header files. The reason is so that I can easily control warning suppression/isolated requirements for that header. The PGE header is isolated into its own bridge called <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/bridges/pge-bridge.h"><code>pge-bridge.h</code></a>.</p>
-<p>Finally, for projects which utilize <code>#include</code> as a code sharing mechanism, I like to employ the idea that each header file should stand completely on its own, meaning that if a header uses something like <code>std::vector</code> it cannot rely on that container being introduced through some other header, it must include it itself. This is good practice; it makes maintaining headers minimal as you move them around and use them in more places.</p>
-<h4><span id="ungluing">Ungluing from <code>#include</code></span></h4>
-<p>At the beginning it was mentioned that we are using CMake as our configuration system but, as of publishing, CMake&#8217;s support for modules is still experimental. What we <em>can</em> do is generate build system output for a build system which <em>does</em> support modules: MSBuild&#8217;s! All we need to do is tell MSBuild that there are module interfaces in this project and &#8220;Presto!&#8221; we have a modules-compatible project! By default, MSBuild will key off any source files with a <code>.ixx</code> extension to automatically support named modules—exactly what we want! Now, how do we get there?</p>
-<p>If we examine the <code>include/</code> tree we get a surprisingly promising idea of what module interfaces we need:</p>
-<pre>ball_pit/
-├─ include/
-│  ├─ bridges/
-│  │  ├─ pge-bridge.h
-│  ├─ physics/
-│  │  ├─ physics-ball.h
-│  │  ├─ physics-engine.h
-│  │  ├─ physics-utils.h
-│  │  ├─ quad-tree.h
-│  ├─ util/
-│  │  ├─ basic-types.h
-│  │  ├─ enum-utils.h
-│  │  ├─ random-generator.h
-│  │  ├─ stopwatch.h
-│  ├─ world/
-│  │  ├─ world.h</pre>
-<p>It is common for mature projects to have a similar structure and breakdown of components and it makes sense for maintainability reasons. As a goal for modularizing this project let us aim to remove the entire directory tree of <code>include/</code> and take advantage of modules as much as possible. Let us do exactly that by introducing some new files into the directory tree which reflects our header file layout (making them empty for now):</p>
-<pre>ball_pit/
-├─ modules/
-│  ├─ bridges/
-│  │  ├─ pge-bridge.ixx
-│  ├─ physics/
-│  │  ├─ physics-ball.ixx
-│  │  ├─ physics-engine.ixx
-│  │  ├─ physics-utils.ixx
-│  │  ├─ quad-tree.ixx
-│  ├─ util/
-│  │  ├─ basic-types.ixx
-│  │  ├─ enum-utils.ixx
-│  │  ├─ random-generator.ixx
-│  │  ├─ stopwatch.ixx
-│  ├─ world/
-│  │  ├─ world.ixx</pre>
-<p>Now the process of moving everything over to using modules begins!</p>
-<h5><span id="starting-small">Starting small&#8230;</span></h5>
-<p>When tackling a project of any size you want to start as small as you possibly can. In the case of &#8220;Ball Pit!&#8221; I started with <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/util/enum-utils.h"><code>include/util/enum-utils.ixx</code></a> because it did not depend on anything besides a STL header. The first thing you need to do is add the content to your module interface:</p>
-<pre>module;
-#include &lt;type_traits&gt;
-export module Util.EnumUtils;
-
-template &lt;typename T&gt;
-concept Enum = std::is_enum_v&lt;T&gt;;
-
-template &lt;Enum E&gt;
-using PrimitiveType = std::underlying_type_t&lt;E&gt;;
-
-template &lt;Enum E&gt;
-constexpr auto rep(E e) { return PrimitiveType&lt;E&gt;(e); }</pre>
-<p>This is <em>almost</em> a 1-to-1 copy-paste of the header but with the following exceptions:</p>
-<ul>
-<li>Our STL headers are injected into the <a href="https://docs.microsoft.com/en-us/cpp/cpp/modules-cpp?view=msvc-160#modules-and-header-files">global module fragment</a> (the region between <code>module;</code> and <code>export module ...)</code>.</li>
-<li>We have given a proper name to our module: <code>Util.EnumUtils</code>. <em>Note:</em> the <code>.</code> separated names do not indicate any filesystem structure.</li>
-<li>We no longer need header include guards.</li>
-</ul>
-<p>There is one last thing missing: we did not actually export anything! Since all these names are used around the project, we need to export everything, and the easiest way to export lots of declarations at once is to use the <code>export { ... }</code> syntax. Take a look:</p>
-<pre>module;
-#include &lt;type_traits&gt;
-export module Util.EnumUtils;
-
-export
-{
-
-template &lt;typename T&gt;
-concept Enum = std::is_enum_v&lt;T&gt;;
-
-template &lt;Enum E&gt;
-using PrimitiveType = std::underlying_type_t&lt;E&gt;;
-
-template &lt;Enum E&gt;
-constexpr auto rep(E e) { return PrimitiveType&lt;E&gt;(e); }
-
-} // export</pre>
-<p>The next logical step for us is to replace any instance of <code>#include "util/enum-utils.h"</code> with <code>import Util.EnumUtils;</code>. This part is largely mechanical and to play off <a href="https://docs.microsoft.com/en-us/cpp/cpp/import-export-module?view=msvc-160#import">guidance around mixing <code>import</code> and <code>#include</code></a> I ensured to place any <code>import</code> after any <code>#include</code>&#8216;s. Finally, we add this new interface to the <code>CMakeLists.txt</code> <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/CMakeLists.txt#L27">here</a>, configure, build and run again. Things should run the same as before except that we are one step closer to modularizing the project!</p>
-<h5><span id="visibility">Choosing visibility</span></h5>
-<p>Named modules are all about defining the surface area of your API. Now that we have a tool which allows us to hide implementation details that would otherwise be unnecessary for consumers, we can start to think about what the accessible parts of the API should be. Let us look at modularizing <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/util/random-generator.h"><code>include/util/random-generator.h</code></a>. In this file we have the following declarations:</p>
-<pre>enum class RandomSeed : decltype(std::random_device{}()) { };
-
-template &lt;std::integral I&gt;
-using IntDistribution = std::uniform_int_distribution&lt;I&gt;;
-
-template &lt;std::floating_point I&gt;
-using RealDistribution = std::uniform_real_distribution&lt;I&gt;;
-
-class RandomNumberGenerator
-{
-   ...
-};
-
-inline RandomNumberGenerator&amp; random_generator()
-{
-   ...
-}</pre>
-<p>Of these declarations the ones we use outside of the header are <code>IntDistribution</code>, <code>RealDistribution</code>, and <code>random_generator()</code> (not even the class name directly). As such we can define the module like so:</p>
-<pre>export module Util.RandomGenerator;
-
-import Util.EnumUtils;
-
-enum class RandomSeed : decltype(std::random_device{}()) { };
-
-export
-template &lt;std::integral I&gt;
-using IntDistribution = std::uniform_int_distribution&lt;I&gt;;
-
-export
-template &lt;std::floating_point I&gt;
-using RealDistribution = std::uniform_real_distribution&lt;I&gt;;
-
-class RandomNumberGenerator
-{
-    ...
-};
-
-export
-RandomNumberGenerator&amp; random_generator()
-{
-    ...
-}</pre>
-<p>Notice that we do not even need to export the declaration of the class <code>RandomNumberGenerator</code>. We do not need its name; we only need its functionality, and we can prevent users from creating extra instances of it by allowing its use through <code>random_generator()</code> only.</p>
-<p>Furthermore, we no longer need <code>random_generator()</code> to be marked as <code>inline</code> because there is now only one definition in any given translation unit. Do not be afraid to put compiled code in an interface, it is its own translation unit and obeys the rules of compiled code.</p>
-<h5><span id="3rd-party-pain">3rd party pain</span></h5>
-<p>In C++ we deal with sharing code all the time and a lot of the time that code has a distinctive style, compiler requirements, default warning settings, etc. When we move code into a modules world, and in particular 3rd party code, we need to take some things into consideration: what part of the library do we want to expose? What runtime requirements are in the library if it is header only? Do we want to &#8220;seal&#8221; off bad parts of the library? With modules we start to have answers to these questions based on the requirements of our project. Integrating 3rd party library functionality into modularized projects is one of the most interesting parts of using modules because modules give us tools we never had before to deal with ODR (One Definition Rule) and name resolution. In this section we will focus on modularizing the <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/include/bridges/pge-bridge.h"><code>include/bridges/pge-bridge.h</code></a>.</p>
-<p>The OneLoneCoder PixelGameEngine is a nice library if you are just starting out exploring games programming. It is easy to integrate into projects (because it is a single header file) and the interfaces are simple&#8211;which plays to our advantage in deciding what parts of the library we want to expose. In &#8220;Ball Pit!&#8221; we use the following functionality from PGE:</p>
-<ul>
-<li><code>olc::PixelGameEngine</code> &#8212; For the main program.</li>
-<li><code>olc::Key</code> &#8212; For user input.</li>
-<li><code>olc::Pixel</code> &#8212; For coloring pixels.</li>
-<li><code>olc::vf2d</code>/<code>olc::vi2d</code> &#8212; Standard vector classes (<code>float</code> and <code>int</code> respectively).</li>
-<li><code>olc::BLACK</code>, <code>olc::WHITE</code>, <code>olc::BLUE</code>, and <code>olc::RED</code> &#8212; Color constants.</li>
-</ul>
-<p>We can, by default, export each of the above with a using-declaration:</p>
-<pre>module;
-#pragma warning(push)
-#pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
-#pragma warning(disable: 4245) // 'argument': conversion from 'int' to 'uint8_t', possible loss of data
-#include "olcPixelGameEngine.h"
-#pragma warning(pop)
-export module Bridges.PGE;
-
-export
-namespace olc
-{
-    // For game.
-    using olc::PixelGameEngine;
-    using olc::Key;
-
-    // For basic types.
-    using olc::Pixel;
-    using olc::vf2d;
-    using olc::vi2d;
-
-    // Allow using the multiply operator from olc::v2d_generic.
-    using olc::operator*;
-}</pre>
-<p>The reason we use a using-declaration is because we do not want the module to own all these objects/functions. By injecting the names through a using-declaration their linkage remains tied to the global module so we can separately compile them in <a href="https://github.com/cdacamar/ball_pit/blob/ce90e45245bf7981fd797d992389693bdd586c0b/src/3rd_party/olcPixelGameEngine.cpp"><code>src/3rd_party/olcPixelGameEngine.cpp</code></a> as before.</p>
-<p>You will immediately notice that the color constants are mysteriously missing. This is because these constants are defined with <code>static</code> linkage in the header file so we cannot export them directly and the reason is <a href="http://eel.is/c%2B%2Bdraft/basic.link#18">buried in standardese</a>. It is simpler to remember that you cannot export an internal linkage entity (i.e. one declared <code>static</code>). The way to get around this is wrap them in a function which has module linkage:</p>
-<pre>export
-namespace olc
-{
-    ...
-    // Note: Because these color constants are defined to be static in the header they cannot be
-    // directly exported.  Instead we export their values through a module-owned variable.
-    namespace ModuleColors
-    {
-        auto Black()
-        {
-            return olc::BLACK;
-        }
-
-        auto White()
-        {
-            return olc::WHITE;
-        }
-
-        auto Blue()
-        {
-            return olc::BLUE;
-        }
-
-        auto Red()
-        {
-            return olc::RED;
-        }
-    }
-    ...
-}</pre>
-<p>Once we have these functions, we need to replace any instance of <code>olc::COLOR</code> with its respective call to our exported color function.</p>
-<p>And that is it! We have successfully exported exactly what we need from PGE for our &#8220;Ball Pit!&#8221; app! Just as before, you add this to the <code>CMakeLists.txt</code>, replace <code>#include "bridges/pge-bridge.h"</code> with <code>import Bridges.PGE;</code>.</p>
-<h5><span id="polish">Polishing with modules</span></h5>
-<p>Once you have gone through the exercise of modularizing more and more of the project you might find that your main program begins to reflect the header file version:</p>
-<pre>import Bridges.PGE;
-
-import Physics.Ball;
-import Physics.Engine;
-import Physics.QuadTree;
-import Util.BasicTypes;
-import Util.EnumUtils;
-import Util.RandomGenerator;
-import World;</pre>
-<p>Dandy! Modules also give us similar tools as header files do in that we can group common sets of modules together into a &#8220;package&#8221;. To understand what I am talking about let us look at a header file equivalent of grouping common functionality. Here is what a grouping of all the headers under <code>include/physics/*</code> might look like:</p>
-<p><code>include/physics/physics.h</code></p>
-<pre>#ifndef PHYSICS_H
-#define PHYSICS_H
-
-#include "physics/physics-ball.h"
-#include "physics/physics-engine.h"
-#include "physics/physics-utils.h"
-#include "physics/quad-tree.h"
-
-#endif PHYSICS_H</pre>
-<p>The problem, of course, is while this is convenient and you do not need to think about which specific file to include for your current project, you end up paying the cost of every header file in the package regardless of if you use it or not. It flies in the face of C++&#8217;s core concept: pay for what you use. With the introduction of C++20 modules we no longer have this problem because modules do next to zero work when you import them, so we can safely create the following interface without negatively impacting the compile time of consumers:</p>
-<p><code>modules/physics/physics.ixx</code></p>
-<pre>export module Physics;
-
-export import Physics.Ball;
-export import Physics.Engine;
-export import Physics.QuadTree;
-export import Physics.Utils;</pre>
-<p>We can also do the same for anything under <code>Util.*</code>. This leads us to a rather, I think, respectable looking <code>ball-pit.cpp</code>:</p>
-<pre>import Bridges.PGE;
-
-import Physics;
-import Util;
-import World;</pre>
-<h4><span id="all-together">All together now</span></h4>
-<p>It was a little bit of a journey getting here, and there are learnings along the way. I will not dillydally any further, here is the complete, modularized, version of &#8220;Ball Pit!&#8221;: <a href="https://github.com/cdacamar/ball_pit/tree/565e3bff28b78b84ac3765d6c786e96980177867"><code>ball_pit</code></a>. You can check out the code, configure, and build it the same as we <a href="#cpp-today">covered earlier</a> using Visual Studio 2019 version 16.11.</p>
-<p>There is one thing I want to mention, because I can all but guarantee it is on everybody&#8217;s mind: what is the build throughput? With modules there is an up-front cost in building our interfaces. With the old inclusion model, we did not have to build our include files explicitly (only implicitly). We end up building more up front, but the result is that we can <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">REPL</a> our main program and its components much, much faster. Here is a snapshot of the difference:</p>
-<p>Compiling <code>ball-pit.cpp</code>:</p>
-<table>
-<tbody>
-<tr>
-<td>Without modules</td>
-<td>With modules</td>
-</tr>
-<tr>
-<td>3.55275s</td>
-<td>0.15413s</td>
-</tr>
-</tbody>
-</table>
-<p><em>Note:</em> these times were an average of 10 runs. You can see the results yourself by observing the <code>c1xx.dll</code> in the build log (left in for comparisons).</p>
-<p>Yep, that is a real ~23x speedup difference. That kind of compile time if you&#8217;re developing a game can make a dramatic difference if you are wanting to quickly test changes to your game or make mistakes, like I often do :).</p>
-<h4 id="closing">Closing</h4>
-<p>The process of using named modules in complex projects can be time consuming, but this type of refactor pays off in both reducing development costs associated with recompiling and code hygiene. Named modules give us so much more than simply better compile times and in the above we have only scratched the surface of what is possible. Stay tuned for more modules educational content from us in the future!</p>
-<p>We urge you to go out and try using Visual Studio 2019/2022 with Modules. Both Visual Studio 2019 and Visual Studio 2022 Preview are available through the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads</a> page!</p>
-<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow me on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
-<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/">Moving a project to C++ named Modules</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/feed/</wfw:commentRss>
-			<slash:comments>19</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Edit Your C++ Code while Debugging with Hot Reload in Visual Studio 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/</link>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Thu, 29 Jul 2021 15:59:04 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[debug]]></category>
-		<category><![CDATA[debugging]]></category>
-		<category><![CDATA[edit and continue]]></category>
-		<category><![CDATA[hot reload]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28456</guid>
-
-					<description><![CDATA[<p>Hot Reload support for C++ Applications<br />
-In Visual Studio 2022 Preview 2, we are happy to announce that Hot Reload is now supported for C++.<br />
-Hot Reload for C++, powered by Edit and Continue, is a new way of editing your code while actively debugging.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/">Edit Your C++ Code while Debugging with Hot Reload in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h1 id="hot-reload-support-for-c-applications">Hot Reload support for C++ Applications</h1>
-<p>In Visual Studio 2022 Preview 2, we are happy to announce that Hot Reload is now supported for C++.</p>
-<p>Hot Reload for C++, powered by Edit and Continue, is a new way of editing your code while actively debugging. Hot Reload allows you to apply code changes without stopping at a breakpoint or restarting your app.</p>
-<p><span style="font-size: 14pt;"><em>Currently, Hot Reload is only supported for MSBuild C++ projects, but we are working on enabling support for CMake projects in an upcoming preview.</em> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/HRShort.gif"><img class="aligncenter size-full wp-image-28481" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/HRShort.gif" alt="Image Hot reload changing cube spin speed" width="1200" height="675" /></a></p>
-<p>To learn more about Hot Reload, please refer to the Visual Studio Blog post: <a href="https://devblogs.microsoft.com/visualstudio/speed-up-your-dotnet-and-cplusplus-development-with-hot-reload-in-visual-studio-2022">Speed up your .NET and C++ development with Hot Reload in Visual Studio 2022</a></p>
-<h1 id="we-want-your-feedback-survey">We Want Your Feedback: Survey</h1>
-<p>As we are looking at these experiences, please let us know how Hot Reload and/or Edit and Continue support for C++ can be further enhanced to improve your day-to-day productivity. We’re looking forward to your feedback.</p>
-<p><strong>Please participate in this 3-minute <a href="https://www.surveymonkey.com/r/B7GRLF6">Hot Reload for C++ Survey</a>.</strong></p>
-<p>You can also reach us on Twitter (@VisualC).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/edit-your-c-code-while-debugging-with-hot-reload-in-visual-studio-2022/">Edit Your C++ Code while Debugging with Hot Reload in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
