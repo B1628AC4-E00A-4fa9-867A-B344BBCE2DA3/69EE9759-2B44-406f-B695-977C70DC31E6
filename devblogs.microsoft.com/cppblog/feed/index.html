@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 25 Oct 2021 13:53:40 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 26 Oct 2021 11:23:10 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,9 +28,54 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Microsoft C++ Code Analysis with GitHub Actions</title>
+		<link>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/#comments</comments>
+		
+		<dc:creator><![CDATA[Daniel Winsor]]></dc:creator>
+		<pubDate>Tue, 26 Oct 2021 11:23:10 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29701</guid>
+
+					<description><![CDATA[<p>We previously talked about GitHub Code Scanning capabilities which enabled developers to incorporate security checks into their CI/CD environment and developer workflow. CodeQL is the default analysis engine behind Code Scanning. Today we are introducing support for MSVC Code Analysis which will provide a great companion to CodeQL for C++ GitHub repos with Windows workflows.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/">Microsoft C++ Code Analysis with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We previously talked about <a href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">GitHub Code Scanning capabilities</a> which enabled developers to incorporate security checks into their CI/CD environment and developer workflow. <a href="https://codeql.github.com/">CodeQL</a> is the default analysis engine behind Code Scanning. Today we are introducing support for MSVC Code Analysis which will provide a great companion to CodeQL for C++ GitHub repos with Windows workflows.</p>
+<p>This <a href="https://github.com/marketplace/actions/microsoft-c-code-analysis-action">Action</a> will take the variety of Code Quality and Security warnings available in Visual Studio today and process them as alerts, displaying them in the <a href="https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/managing-code-scanning-alerts-for-your-repository">Security view of a GitHub repository</a>. The code scanning alerts produced will power the <a href="https://github.com/features/security/code">existing features</a> available through GitHub. These include highlighting the source code of contributors’ PRs with any warnings they may have introduced or allowing repository owners to view and manage the backlog of alerts under the Security tab.</p>
+<p><img class="alignnone" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/CodeScanning.png" alt="Analysis results annotated in Pull Request UI" width="933" height="557" /></p>
+<p>Alongside the support for analysis alerts inside of GitHub, the results can also be published as workflow artifacts, allowing contributors to download and view them locally in the IDE. This is enabled by our <a href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">support for SARIF</a>, which is a standardized file format for analysis tooling. This format can be viewed inside of Visual Studio Code using the <a href="https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer">SARIF Viewer extension</a>. This will provide additional information highlighted on the source code, allowing the developer to easily resolve any problems found.</p>
+<p>The repository will need to support CMake to ensure information about how the project is built can be extracted. We chose CMake because it provides a good abstraction for the varied nature of C++ projects and due to its wide adoption in the open-source community. It also provides an easy path for teams not currently building with the Microsoft Compiler to get analysis setup and see the features it has to offer.</p>
+<h2 id="setup-github-action">Setup GitHub Action</h2>
+<p>To get started using this experience you can find an entry for Microsoft C++ Code Analysis on the Security (tab) -&gt; Setup up code scanning page if C++ is detected in your repository.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/WorkflowSetup.gif"><img class="alignnone wp-image-29704 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/WorkflowSetup.gif" alt="Setting up Code Scanning workflow (GIF)" width="1002" height="592" /></a></p>
+<p>Once you have the template installed you can customize it to adapt to the specific needs of your repository. You can configure options such as ignoring a set of targets used for testing or changing the Ruleset file. The Ruleset file allows you to customize which warnings will be run beyond the default behavior. You can select a predefined ruleset available in a Visual Studio install (inside the ‘Team ToolsStatic Analysis ToolsRule Sets’ directory) or reference a customized file checked-in to the source. For the best results create a custom ruleset that adds/removes warnings from official rulesets in VS. This will ensure you receive updated checks as more are developed. Refer to the <a href="https://docs.microsoft.com/cpp/code-quality/using-rule-sets-to-specify-the-cpp-rules-to-run?view=msvc-160">documentation on rulesets</a> for more information.</p>
+<h3 id="example-ruleset">Example Ruleset</h3>
+<pre><code class="language-xml">&lt;?xml version=”1.0” encoding=”utf-8”?&gt; 
+&lt;RuleSet Name=”Example” Description=”Enable Warnings” ToolsVersion=”10.0”&gt; 
+  &lt;!—- Default rules available in Visual Studio --&gt;
+  &lt;Include Path=”NativeRecommendedRules.ruleset” Action=”Default” /&gt; 
+  &lt;Rules AnalyzerId=”Microsoft.Analyzers.NativeCodeAnalysis”     
+         RuleNamespace=”Microsoft.Rules.Native”&gt; 
+    &lt;Rule Id=”C26440” Action=”None” /&gt; &lt;!—Exclude: Declare noexcept à 
+    &lt;Rule Id=”C26492” Action=”None” /&gt; &lt;!—Include: No const_cast&lt;&gt; à 
+  &lt;/Rules&gt; 
+&lt;/RuleSet&gt; </code></pre>
+<h2 id="feedback">Feedback</h2>
+<p>The action is published under a pre-release status as it is tested on additional GitHub repositories and more features are added. We would love to hear feedback from you on how we can improve the Action to make it compatible with your GitHub projects. If you have a need for Native MSBuild support, please express your interest on the following <a href="https://developercommunity.visualstudio.com/t/Add-Native-MSBuild-support-for-GitHub-Ac/1563225">feature request ticket</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/">Microsoft C++ Code Analysis with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/#respond</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/#comments</comments>
 		
 		<dc:creator><![CDATA[David Li]]></dc:creator>
 		<pubDate>Mon, 25 Oct 2021 13:53:40 +0000</pubDate>
@@ -77,7 +122,7 @@
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
+			<slash:comments>1</slash:comments>
 		
 		
 			</item>
@@ -898,79 +943,6 @@ __declspec(allocate(".CRT$XCV")) type i2 = f2;
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/attach-to-a-remote-process-with-lldb-in-visual-studio-2022-preview-3/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>ARM64EC Support in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Moyo Okeremi]]></dc:creator>
-		<pubDate>Tue, 10 Aug 2021 19:45:49 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28369</guid>
-
-					<description><![CDATA[<p>ARM64EC (“Emulation Compatible”) is a new application binary interface (ABI) for building apps for Windows 11 on ARM. With ARM64EC, you can build new native apps that can run on ARM or incrementally transition existing x64 apps to native performance on ARM.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/">ARM64EC Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>ARM64EC (“Emulation Compatible”) is a new application binary interface (ABI) for building apps for Windows 11 on ARM. With ARM64EC, you can build new native apps that can run on ARM or incrementally transition existing x64 apps to native performance on ARM. For more information about ARM64EC, check out the <a href="https://aka.ms/arm64ecannounceblog">Windows Developer blog</a>.</p>
-<h2 id="why-should-developers-target-arm64ec">Why Should Developers Target ARM64EC?</h2>
-<p>Applications that are built to run on ARM, give customers the benefit of a great native experience that unlocks the full power of the ARM device. However, from a developer perspective, porting an app to run on ARM can be all-or-nothing, since <strong>all</strong> the binaries within a process need to be rebuilt as ARM before a customer can enjoy the benefits.</p>
-<p>With ARM64EC, you can choose to start small and build incrementally. Once you identify the part of your codebase that would benefit most from native performance, you can simply rebuild it as ARM64EC. The rest of the app will remain fully functional as emulated x64, but the recompiled ARM64EC parts will now have native speed.</p>
-<p>In addition, the ability to mix and match x64 and ARM64EC makes it possible to build an app on ARM even if it depends on x64 code outside of your control. For example, projects with third-party dependencies that don’t support ARM can leave them as x64. Also, apps with an in-proc plugin ecosystem can build as ARM64EC to get native speed on ARM, while continuing to load and use x64 plugins.</p>
-<h2 id="how-to-target-arm64ec-in-visual-studio">How to Target ARM64EC in Visual Studio</h2>
-<p>To start using Visual Studio to build your projects as ARM64EC, you&#8217;ll need to install these prerequisites:</p>
-<ul>
-<li>The latest <a href="https://aka.ms/windowsinsidersdk">Windows Insider SDK build</a> which is available through the Windows Insider program.</li>
-<li>The latest <a href="https://visualstudio.microsoft.com/vs/preview/" target="_blank" rel="noopener">Visual Studio 2019 Preview</a> or <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/" target="_blank" rel="noopener">Visual Studio 2022 Preview</a></li>
-<li>The ARM64EC tools from the Visual Studio Installer:</li>
-</ul>
-<p style="padding-left: 40px;"><img width="713" height="275" class="wp-image-28370" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email.png" alt="Graphical user interface, text, application, email Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email.png 713w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-email-300x116.png 300w" sizes="(max-width: 713px) 100vw, 713px" /></p>
-<p>Once you have installed all the prerequisites, you can now target ARM64EC in your MSBuild and CMake Projects as explained in the following sections.</p>
-<h3 id="msbuild-projects">MSBuild Projects</h3>
-<p>Open your C++ project or solution in Visual Studio. If you don’t have one yet, create a new one by navigating to: <strong>Create a new project &gt; C++ Console App</strong>:</p>
-<p><img class="wp-image-28371" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer Description automatically generated with medium confidence" width="858" height="371" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica.png 2552w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-300x130.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1024x443.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-768x332.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1536x664.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-2048x885.png 2048w" sizes="(max-width: 858px) 100vw, 858px" /></p>
-<p>Open up the configuration manager by navigating to the tool bar and clicking <strong>build &gt; configuration manager</strong>:</p>
-<p><img class="wp-image-28372" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" width="409" height="362" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1.png 1118w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-300x266.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-1024x908.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/a-screenshot-of-a-computer-description-automatica-1-768x681.png 768w" sizes="(max-width: 409px) 100vw, 409px" /></p>
-<p>In the Active solution platform box, select <strong>&lt;New…&gt;</strong> to create a new platform:</p>
-<p><img class="wp-image-28373" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word.png" alt="Graphical user interface, text, application, Word, email Description automatically generated" width="683" height="261" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word.png 1709w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-300x115.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-1024x391.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-768x293.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-word-1536x587.png 1536w" sizes="(max-width: 683px) 100vw, 683px" /></p>
-<p>Select <strong>ARM64EC</strong>, Copy settings from <strong>x64</strong>, check the <strong>Create new project platforms</strong> checkbox and click <strong>OK</strong>:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1.png"><img class="alignnone wp-image-28383" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1-300x220.png" alt="Image Picture1" width="378" height="277" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1-300x220.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/Picture1.png 624w" sizes="(max-width: 378px) 100vw, 378px" /></a></p>
-<p>Finally, ensuring that ARM64EC is the active solution configuration, select <strong>Build </strong>from the menu to successfully build your ARM64EC project.</p>
-<p><strong>Note</strong>: By design, not all projects in the ARM64EC solution need to be targeting ARM64EC as they can target x64 instead. Ensure that you configure those x64 projects in the configuration manager to target x64 under the ARM64EC solution build:</p>
-<p><img class="wp-image-28375" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description.png" alt="Graphical user interface, application Description automatically generated" width="884" height="345" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description.png 1664w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-300x117.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-1024x399.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-768x300.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-application-description-1536x599.png 1536w" sizes="(max-width: 884px) 100vw, 884px" /></p>
-<p>For more information on working with MSBuild C++ Projects, see our documentation on <a href="https://docs.microsoft.com/en-us/cpp/build/creating-and-managing-visual-cpp-projects?view=msvc-160">Visual Studio Projects &#8211; C++ | Microsoft Docs</a> and <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/remote-debugging-cpp?view=vs-2019">Remote Debug a C++ Project &#8211; Visual Studio (Windows) | Microsoft Docs</a></p>
-<h3 id="cmake-projects">CMake Projects</h3>
-<p>If you haven’t already, install the CMake Build tools from the Visual Studio Installer:</p>
-<p><img class="wp-image-28376" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr.png" alt="Graphical user interface, text, application Description automatically generated" width="425" height="238" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr.png 800w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-768x430.png 768w" sizes="(max-width: 425px) 100vw, 425px" /></p>
-<p>Open your C++ CMake project in Visual Studio. If you don’t have one yet, create a new one by navigating to: <strong>Create a new project &gt; CMake Project</strong>:</p>
-<p><img class="wp-image-28377" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall.png" alt="Graphical user interface Description automatically generated" width="704" height="342" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall.png 2468w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-300x146.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-1024x497.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-768x373.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-1536x746.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-description-automaticall-2048x994.png 2048w" sizes="(max-width: 704px) 100vw, 704px" /></p>
-<p>With <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">CMakePresets.json</a> integration in Visual Studio, the default active configuration of the new project will be the Windows default which targets configuring and building on the local Windows Machine. This is the scenario we are interested in.</p>
-<p><img class="wp-image-28378" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1.png" alt="Graphical user interface, text, application Description automatically generated" width="673" height="158" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1.png 1975w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-300x70.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-1024x241.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-768x180.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-application-descr-1-1536x361.png 1536w" sizes="(max-width: 673px) 100vw, 673px" /></p>
-<p>Open up the CMakePresets.json file by going to the active configuration dropdown and selecting <strong>Manage Configurations</strong>:</p>
-<p><img class="wp-image-28379" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa.png" alt="Graphical user interface, text Description automatically generated" width="717" height="230" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa.png 1175w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-300x96.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-1024x329.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/07/graphical-user-interface-text-description-automa-768x246.png 768w" sizes="(max-width: 717px) 100vw, 717px" /></p>
-<p>Modify the architecture property under the windows configuration you want for ARM64EC:</p>
-<pre class="prettyprint"> "architecture": { 
-    "value": "arm64ec", 
-    "strategy": "external"
- }</pre>
-<p><strong>Note: </strong>The default generator is Ninja. If using the visual studio generator (2019 or 2022), change the strategy field to<strong> set.</strong></p>
-<p>If using Ninja generator, you’ll also need to set some environment variables by adding the <strong>environment </strong> object to your CMakePresets configuration:</p>
-<pre class="prettyprint"> "environment": { 
-    "CXXFLAGS": "/arm64EC",
-    "CFLAGS": "/arm64EC" 
- }</pre>
-<p>Save the CMakePresets file and make sure the active configuration is set to the arm64ec configuration. From the menu bar, select <strong>project menu, </strong>then select<strong> Configure &lt;Project Name&gt; </strong>in order to generate your CMake cache.</p>
-<p>Build your CMake Project targeting ARM64EC like any other CMake project: navigate to the <strong>Build Menu </strong>and select <strong>build all</strong>.</p>
-<p>For more information on working with CMake projects and CMakePresets, see our documentation on  <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160">CMake projects in Visual Studio | Microsoft Docs</a> , <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-160">Configure and build with CMake Presets | Microsoft Docs</a> and <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-remote-debugging?view=msvc-160">Tutorial: Debug a CMake project on a remote Windows machine | Microsoft Docs</a>.</p>
-<h2 id="give-us-your-feedback">Give us your feedback</h2>
-<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/&quot; \t &quot;_blank">Visual Studio 2019 Preview</a> or <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/" target="_blank" rel="noopener">Visual Studio 2022 Preview</a>  today and give it a try. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html" target="_blank" rel="noopener">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/">ARM64EC Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/arm64ec-support-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
 		
 		
 			</item>
