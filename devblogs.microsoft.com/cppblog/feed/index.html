@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 23 Nov 2021 18:26:37 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 06 Dec 2021 15:23:55 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,77 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</title>
+		<link>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/#respond</comments>
+		
+		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
+		<pubDate>Mon, 06 Dec 2021 15:20:01 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[C++ extension]]></category>
+		<category><![CDATA[compilation database]]></category>
+		<category><![CDATA[compile commands]]></category>
+		<category><![CDATA[compile_commands.json]]></category>
+		<category><![CDATA[CPP]]></category>
+		<category><![CDATA[make]]></category>
+		<category><![CDATA[makefile]]></category>
+		<category><![CDATA[makefile tools]]></category>
+		<category><![CDATA[problem matcher]]></category>
+		<category><![CDATA[vs code]]></category>
+		<category><![CDATA[VSCode]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29854</guid>
+
+					<description><![CDATA[<p>The December 2021 update of the Makefile Tools extension for Visual Studio Code is here, bringing you support for problem matchers (to easily view errors and warnings in the editor), the ability to generate a compile_commands.json file for your project, and a bunch of other enhancements and bug fixes!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/">Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The December 2021 update of <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">the Makefile Tools extension for Visual Studio Code</a> is here, bringing you <a href="https://github.com/microsoft/vscode-makefile-tools/issues/7">support for problem matchers</a> (to easily view errors and warnings in the editor), the ability to <a href="https://github.com/microsoft/vscode-makefile-tools/issues/104">generate a compile_commands.json file</a> for your project, and a bunch of other enhancements and bug fixes! To find out more about all the enhancements, check out our <a href="https://github.com/microsoft/vscode-makefile-tools/releases/tag/v0.3.0">release notes on GitHub.</a></p>
+<h1 id="problem-matchers">Problem matchers</h1>
+<p>If you’ve used the C++ extension for VS Code, you’re probably familiar with the <strong>Problems</strong> panel, where you can navigate through a list of compiler errors and warnings found in your project. VS Code uses a <a href="https://code.visualstudio.com/Docs/editor/tasks#_processing-task-output-with-problem-matchers">problem matcher</a> to display the errors and warnings in the Problems panel.</p>
+<p>For example, if you’re missing a semi-colon in your source file, you’ll see the compiler error in the <strong>Problems</strong> panel. Selecting the problem brings you to the line of code generating the error or warning. To fix the problem, click on the lightbulb and choose from a list of Quick Actions.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png"><img class="alignnone size-full wp-image-29856" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png" alt="A screenshot of the Problems Pane in VS Code, showing errors and warnings found by GCC and make in the project" width="3036" height="2054" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png 3036w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-300x203.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-1024x693.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-768x520.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-1536x1039.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-2048x1386.png 2048w" sizes="(max-width: 3036px) 100vw, 3036px" /></a></p>
+<p>Now, let’s say you don’t have any compiler errors, but make displays a bunch of warnings when you build your project. Until now, there wasn’t a way to see those warnings in the Problems panel. With this latest release of the Makefile Tools extension, you’ll see all of make’s errors and warnings in the Problems panel after you build your program.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png"><img class="alignnone size-full wp-image-29857" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png" alt="A screenshot showing make's warnings in the Problems Pane in VS Code after building a project with Makefile Tools." width="3036" height="2062" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png 3036w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-300x204.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-1024x695.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-768x522.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-1536x1043.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-2048x1391.png 2048w" sizes="(max-width: 3036px) 100vw, 3036px" /></a></p>
+<p>To enable make errors and warnings in the Problems panel, add <strong>&#8220;problemMatchers&#8221;: [&#8220;$gcc&#8221;]</strong> to your makefile configuration in settings.json, like this:</p>
+<pre class="prettyprint">"makefile.configurations": [
+
+        {
+
+            "name": "MyConfiguration",
+
+            "problemMatchers": [
+
+                "$gcc"
+
+            ],
+
+            "makeArgs": ["any", "other", "args", "you", "want"]
+
+        },
+
+]</pre>
+<p>If you’re on Windows using MSVC, set the problemMatcher to <strong>&#8220;$msCompile&#8221;</strong> instead of <strong>&#8220;$gcc&#8221;</strong>. Contributions from the community to support additional problem matchers are welcome! Problem matchers are defined in the extension’s <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/package.json#L198">package.json</a> file.</p>
+<h1 id="generate-compile_commands-json">Generate compile_commands.json</h1>
+<p>As a C++ developer, you might find yourself wanting a compilation database, which is a file that stores compilation instructions for the source files in your project. Compilation databases are used by many <a href="https://clang.llvm.org/docs/ClangTools.html">Clang tools</a> and editors/IDEs. A common compilation database format is compile_commands.json, which contains command objects, one for each translation unit in the project. Each command object specifies the translation unit’s main file, the compile command, and the working directory where the compile command is run.</p>
+<p>With this latest release of the Makefile Tools extension, you can generate a compile_commands.json file for your project. All you have to do is specify the path to the target compile_commands.json file in settings.json, like this:</p>
+<pre class="prettyprint">"makefile.compileCommandsPath": ".vscode/compile_commands.json"</pre>
+<p>Then configure your project to generate compile_commands.json at the specified location.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png"><img class="alignnone size-full wp-image-29855" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png" alt="A screenshot of the contents of a compile_commands.json file generated by the Makefile Tools extension" width="3088" height="1888" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png 3088w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-300x183.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-1024x626.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-768x470.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-1536x939.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-2048x1252.png 2048w" sizes="(max-width: 3088px) 100vw, 3088px" /></a></p>
+<p>Thank you <a href="https://github.com/rapgenic">rapgenic</a> for the request and for contributing to this feature!</p>
+<h1 id="give-it-a-try">Give it a try</h1>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">Download the Makefile Tools extension for Visual Studio Code</a> today, give it a try, and let us know what you think. Check out <a href="https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/">this blog post</a> to learn how to get started with Makefile Tools.</p>
+<p>If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-makefile-tools/issues">Issues section of our GitHub repository</a>. Be sure to check out the <a href="https://github.com/microsoft/vscode-makefile-tools/tree/main/docs">Makefile Tools documentation</a> for troubleshooting tips and a list of tested repositories and their configuration instructions.</p>
+<p>We can be reached via the comments below or in email at <a href="mailto:makefiletools@microsoft.com">makefiletools@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/">Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++ build throughput investigation and tune up</title>
 		<link>https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/#comments</comments>
@@ -292,7 +363,7 @@ Have questions or comments about Visual Studio 2022?</p>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-cross-platform-developers-in-visual-studio-2022/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
+			<slash:comments>5</slash:comments>
 		
 		
 			</item>
@@ -1024,74 +1095,6 @@ int main()
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>C++20 Coroutine Improvements in Visual Studio 2019 version 16.11</title>
-		<link>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/#comments</comments>
-		
-		<dc:creator><![CDATA[Jonathan Emmett]]></dc:creator>
-		<pubDate>Tue, 31 Aug 2021 14:32:18 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Coroutine]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28354</guid>
-
-					<description><![CDATA[<p>This post includes contributions from Terry Mahaffey and Ramkumar Ramesh.<br />
-We last blogged about coroutine support in Visual Studio 2019 version 16.8. In the releases since 16.8 we&#8217;ve introduced several new coroutine features and improvements. This post is a round up of those improvements,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/">C++20 Coroutine Improvements in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><em>This post includes contributions from Terry Mahaffey and Ramkumar Ramesh.</em></p>
-<p>We last blogged about coroutine support in <a href="https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/">Visual Studio 2019 version 16.8</a>. In the releases since 16.8 we&#8217;ve introduced several new coroutine features and improvements. This post is a round up of those improvements, all available in Visual Studio 2019 16.11.</p>
-<div>
-<h2 id="debugging-improvements">Debugging Improvements</h2>
-</div>
-<p>Since Visual Studio 2019 version 16.9, stepping into a coroutine call will now land directly in the coroutine body (unless it is set to initially suspend, in which case the step becomes a “step over”). Stepping over a <code>co_await</code> will land in the logical statement following <code>co_await</code> for the coroutine &#8211; which may be in a completely different execution context (even another thread)! This allows stepping through coroutines to seamlessly match the logical flow of the application and skip intermediate implementation details. For the best debugging experience, implementation details of the coroutine state should be marked as <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/just-my-code?view=vs-2019#BKMK_C___Just_My_Code">non-user code</a>. Stepping through coroutines now also shows function parameters as expected in the Locals window so you can see the state of the application, similar to stepping through synchronous functions.</p>
-<p>Inspecting the state of a suspended coroutine is now easier with some improvements to the debugging visualizers for standard coroutines. The legacy <code>coroutine_handle</code> visualizers could display special indicators for the initial and final suspend points, but only showed a number for other suspend points. This number was not always easy to map back to a particular point in the original coroutine. The visualizer also showed the name of the coroutine but only as a modified, internal name generated by the implementation with no signature information.</p>
-<p><figure id="attachment_28609" aria-describedby="caption-attachment-28609" style="width: 1446px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2.png"><img class="wp-image-28609 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2.png" alt="Image of legacy coroutine handle visualizer shows name as &quot;sample_coroutine$_ResumeCoro$1(void)&quot;" width="1446" height="106" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2.png 1446w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2-300x22.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2-1024x75.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/legacy_handle_visualizer_2-768x56.png 768w" sizes="(max-width: 1446px) 100vw, 1446px" /></a><figcaption id="caption-attachment-28609" class="wp-caption-text">Legacy visualizer shows the name as &#8220;sample_coroutine$_ResumeCoro$1(void)&#8221;</figcaption></figure></p>
-<p>With the new coroutine handle visualizer introduced in Visual Studio 2019 16.10 the function name is now correct and includes full signature information to help distinguish overloaded coroutines. The suspend point information for suspend points other than initial and final suspend also includes the source line number to make it easier to find.</p>
-<p><figure id="attachment_28608" aria-describedby="caption-attachment-28608" style="width: 1205px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2.png"><img class="wp-image-28608 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2.png" alt="Image of new coroutine handle visualizer with name &quot;sample_coroutine(int)&quot; and suspend point line number" width="1205" height="80" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2.png 1205w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2-300x20.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2-1024x68.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/08/new_handle_visualizer_2-768x51.png 768w" sizes="(max-width: 1205px) 100vw, 1205px" /></a><figcaption id="caption-attachment-28608" class="wp-caption-text">New visualizer shows the name as &#8220;sample_coroutine(int)&#8221; and is suspended on line 35</figcaption></figure></p>
-<h2 id="awaitstrict">/await:strict</h2>
-<p><span style="font-size: 1rem;">The <a href="https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/">earlier blog post</a> outlines some issues with legacy await mode and the rationale for keeping the <code>/await</code> switch distinct from C++20 coroutine support in <code>/std:c++latest</code>. Legacy mode is useful for users who were early adopters of C++ coroutines, but they are not standard coroutines. </span></p>
-<div>
-<div>The<code>/await</code> switch predates not only our <code>/std:c++latest</code> and <code>/std:c++20</code> switches but also <code>/std:c++17</code>. Early adopters were able to make use of coroutines long before they became part of the C++ standard. These users could use coroutines without requiring their code to be C++20 conformant or even necessarily C++17 conformant. With standard coroutines available only under C++20 and latest modes, early adopters of coroutines who cannot move their code to a more recent language version were stuck with the legacy implementation of coroutines under<code>/await</code>. They could not take advantage of some new features like symmetric transfer and improved debugger support, even if they were willing to make source changes to the coroutines themselves to bring them in line with the C++20 standard.</div>
-<div>
-<div>
-<div></div>
-<div>Starting in Visual Studio 2019 version 16.10 we introduced a new switch to help early coroutine adopters transition to conformant coroutines and use all features available in standard coroutines: <code>/await:strict</code>. Using this switch instead of <code>/await</code> enables the same C++20 coroutine support as standard mode but without all the other requirements of <code>/std:c++20</code>. This includes support for all standard C++20 coroutine features and debugger integration and disables all the legacy extensions still supported under <code>/await</code>. The only difference between <code>/std:c++20</code> coroutines and <code>/await:strict</code> is the latter does not define the spaceship operator for <code>std::coroutine_handle</code>. Instead, it defines individual relational operators.</div>
-<div></div>
-</div>
-<div>
-<div>
-<div>Migrating from <code>/await</code> to <code>/await:strict</code> may require source changes if your code relies on extensions that were not adopted into C++20. Like Standard mode it uses the <code>&lt;coroutine&gt;</code> header and the <code>std </code>namespace, so your code will be drop-in ready for C++20. Code compiled with <code>/await:strict</code> uses the same coroutine ABI as <code>/std:c++latest</code>, so coroutine objects are compatible between the two modes.</div>
-<div></div>
-</div>
-<div>
-<div>
-<div>We encourage all users of <code>/await</code> to migrate to <code>/await:strict</code>. You can take advantage of all new coroutine features as well as ensure your coroutine code is ready for C++20 when you can move to a C++ language version that officially supports coroutines. We expect to deprecate and remove the  <code>/await</code> switch at some point in the future.</div>
-<div></div>
-</div>
-<div></div>
-</div>
-</div>
-</div>
-<div>
-<h2 id="stability-improvements">Stability Improvements</h2>
-<p>Visual Studio 2019 version 16.11 also includes several important fixes to improve the stability and reliability of coroutines.</p>
-<p>The largest change relates to how the optimizer does what is called “promotion”, which is the algorithm to decide which variables get placed on the coroutine frame and which variables remain on the (traditional) stack. Many coroutine bugs can be traced back to an incorrect decision here. Typically this shows up as a crash, or as a variable having an incorrect or random value after a coroutine resumes execution. This promotion algorithm has been rewritten to be more accurate, and the result is less crashes and a much smaller coroutine frame size overall. The old algorithm is still accessible by passing <code>/d2CoroNewPromotion-</code> to cl.exe.</p>
-<p>A related fix concerns how exception objects are stored. The lifetime rules for exceptions can get complicated, and they need to be handled specifically when it comes time to decide variable promotion.</p>
-<p>A bug was found and fixed related to catch blocks in coroutines. Under certain circumstances (namely, when the only throwing call in a try block was from a user defined awaiter method) the optimizer could erroneously conclude a catch block was dead, and incorrectly remove it. The compiler is now aware that awaiter methods can throw.</p>
-<p>Finally, a serious issue was resolved related to how and when destructors are invoked. This relates to how the construction state is tracked in coroutines for certain objects which are conditionally destroyed when leaving a scope. It comes up most when constructing objects when using the conditional (ternary) operator. The bug manifests itself by a destructor for such temporary objects not being invoked, or in certain cases invoked twice. This has also been fixed in 16.11.</p>
-<h2 id="feedback">Feedback</h2>
-</div>
-<p>We urge you to try out C++ coroutines in Visual Studio, either with C++20 or now with <code>/await:strict</code>, to see how asynchronous functions can help make your code more natural. As always, we welcome feedback on our coroutine implementation either in the comments below, or for bug reports and feature requests directly on <a href="https://developercommunity.visualstudio.com/home">Developer Community</a>.</p>
-</div>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/">C++20 Coroutine Improvements in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp20-coroutine-improvements-in-visual-studio-2019-version-16-11/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
