@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 06 Dec 2021 15:23:55 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 06 Dec 2021 18:09:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,233 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Embedded Software Development in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/#respond</comments>
+		
+		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
+		<pubDate>Mon, 06 Dec 2021 16:29:06 +0000</pubDate>
+				<category><![CDATA[embedded]]></category>
+		<category><![CDATA[IoT]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29828</guid>
+
+					<description><![CDATA[<p>We are happy to announce that we have added new embedded development capabilities to Visual Studio 2022 Preview. Used in conjunction with the new vcpkg artifact capabilities you can quickly bootstrap an embedded development machine and get started.<br />
+In this post we will walk you through Visual Studio installation of the embedded workload,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Embedded Software Development in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that we have added new embedded development capabilities to <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2022 Preview</a>. Used in conjunction with the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifact capabilities</a> you can quickly bootstrap an embedded development machine and get started.</p>
+<p>In this post we will walk you through Visual Studio installation of the embedded workload, how to acquire embedded tool dependencies with vcpkg, then demonstrate edit, build, deploy, and debugging directly in Visual Studio with new peripheral register and RTOS object views. We will demonstrate all of this with an Azure RTOS ThreadX project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded.png"><img class="alignnone wp-image-29829 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded.png" alt="VS embedded development screenshot" width="1712" height="1122" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded.png 1712w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded-300x197.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded-1024x671.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded-768x503.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/VS-embedded-1536x1007.png 1536w" sizes="(max-width: 1712px) 100vw, 1712px" /></a></p>
+<p>Azure RTOS ThreadX is a widely used Real Time Operating System (RTOS) used on billions of microcontrollers (MCUs) in products around the world. We have dedicated pages for Visual Studio usage in the getting started guides for the <a href="https://github.com/azure-rtos/getting-started/blob/master/MXChip/AZ3166/VS.md">Azure IoT DevKit</a>, <a href="https://github.com/azure-rtos/getting-started/blob/master/NXP/MIMXRT1060-EVK/VS.md">NXP 1060</a>, and <a href="https://github.com/azure-rtos/getting-started/blob/master/STMicroelectronics/B-L4S5I-IOT01A/VS.md">STMicro STM32L4_L4+</a> boards. The techniques used for interacting with these boards should be applicable to other targets by changing configuration information.</p>
+<h4 id="installation">Installation</h4>
+<p>To get started install the latest preview release of Visual Studio 2022 and select the Linux and embedded development with C++ workload. The components you need are selected by default.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Install-embedded.png"><img class="alignnone size-full wp-image-29830" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Install-embedded.png" alt="Installation screen for embedded workload" width="910" height="460" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Install-embedded.png 910w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Install-embedded-300x152.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Install-embedded-768x388.png 768w" sizes="(max-width: 910px) 100vw, 910px" /></a></p>
+<p>One of the challenges in embedded development is getting the tools necessary installed and configured. It is not uncommon to have different compilers used for different projects, custom debug tools, etc. This is where the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts">artifact capabilities in vcpkg</a> can help us. Today we’ll demonstrate using vcpkg from a PowerShell prompt to activate our embedded development environment. In a future release this will be integrated into Visual Studio for a more seamless experience.</p>
+<p>From a PowerShell prompt, clone the Azure RTOS getting started repo. This sample will serve as our example project for the remainder of this post.</p>
+<pre class="prettyprint">git clone --recursive https://github.com/azure-rtos/getting-started.git</pre>
+<p>Navigate to the subfolder for the board you are using, here I’m using the Azure IoT DevKit.</p>
+<pre class="prettyprint">cd .\getting-started\MXChip\AZ3166\</pre>
+<p>If you haven’t already, install vcpkg.</p>
+<pre class="prettyprint">iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
+<p>In the project folder, there is a file vcpkg_configuration.json. This manifest file was created with vcpkg and has recorded the tools you need to build and debug this project. See <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts">the vcpkg artifacts post</a> for details on how to create your own manifest. Running the vcpkg activate command will use this file to determine if I have those tools, install them if I do not, then activate them in my environment for use.</p>
+<pre class="prettyprint">vcpkg activate</pre>
+<p>So, in three commands we have cloned our embedded project, installed vcpkg, acquired and activated the necessary tools for building the project.</p>
+<h4 id="using-visual-studio-for-embedded-development">Using Visual Studio for embedded development</h4>
+<p>In the previous section we used vcpkg to acquire the tools for our embedded project. Today vcpkg is not integrated in Visual Studio. So, at present we need to launch Visual Studio from the environment we activated at the command line so those tools are available for its use as well.</p>
+<pre class="prettyprint">Start-Process devenv .</pre>
+<p>Note that if you have more than one version of Visual Studio installed this may not launch the current preview, in that case you will need to use the full path to your preview installation, for example</p>
+<pre class="prettyprint">C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\IDE\devenv</pre>
+<p>Now that we have the project open in Visual Studio it is ready to go as any other CMake project. <a href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">Visual Studio can run the CMake build using the preconfigured CMakePresets file</a> with the compilers vcpkg acquired.</p>
+<p>All the editing power of Visual Studio is now available for use with the embedded project. With this Azure RTOS project we’ll cover code navigation, IntelliSense, build, deploy, debugging. We will also cover new diagnostic capabilities around peripheral registers and RTOS object views.</p>
+<h5 id="code-navigation-and-intellisense">Code Navigation and IntelliSense</h5>
+<p>Use Ctrl + T to open Go to All and type button, select the button_a_callback function to navigate to it. Note on hover that this function expands to TIM3-&gt;CCR1 which is a peripheral register on the board which we’ll inspect while we are debugging.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/isense-func-expnd.png"><img class="alignnone size-full wp-image-29831" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/isense-func-expnd.png" alt="IntelliSense function expansion screenshot" width="763" height="471" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/isense-func-expnd.png 763w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/isense-func-expnd-300x185.png 300w" sizes="(max-width: 763px) 100vw, 763px" /></a></p>
+<h5 id="build-deploy-and-debug-on-hardware">Build, Deploy, and Debug on hardware</h5>
+<p>Set a breakpoint on RGB_LED_SET_R().</p>
+<p>To see how the launch is controlled select view all files in the solution explorer and open <a href="https://docs.microsoft.com/cpp/build/launch-vs-schema-reference-cpp?view=msvc-170">.vs\launch.vs.json</a>. You can see the miDebuggerPath set to use arm-none-eabi-gdb while the debugServerPath is set to invoke openocd with the configuration script in debugServerArgs. The information for describing peripheral registers is provided by the MCU manufacturer in an SVD file that we point to with svdPath. This project is configured to break on entry with the property stopAtConnect.</p>
+<p>Now, with your board plugged into the PC (and <a href="https://www.st.com/en/development-tools/stsw-link009.html">ST-LINK drivers</a> installed), set the debug target to Launch and F5 will work using openocd acquired by vcpkg to flash and debug the attached board. Execution stops at the entry function, so here we see the assembly code for that. We can also view the disassembly by going to the menu Debug &gt; Windows &gt; Disassembly.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/assembly-disassembly.png"><img class="alignnone size-full wp-image-29832" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/assembly-disassembly.png" alt="Assembly source and disassembly screenshot" width="936" height="164" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/assembly-disassembly.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/assembly-disassembly-300x53.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/assembly-disassembly-768x135.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
+<p>Press continue to let execution continue.</p>
+<h5 id="peripheral-registers">Peripheral Registers</h5>
+<p>Now press the A button on the board. This has triggered our breakpoint. We can now go to the menu Debug &gt; Windows &gt; Embedded Registers. This opens the peripheral register view using the information from our SVD file specified in the launch configuration. We can now scroll through this list to find the register we are interested in, here TIM3-&gt;CCR1 which will update when we step over the RGB_LED_SET_R function.</p>
+<p>On break</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-onbreak.png"><img class="alignnone size-full wp-image-29833" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-onbreak.png" alt="Register on break screenshot" width="936" height="349" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-onbreak.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-onbreak-300x112.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-onbreak-768x286.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
+<p>After stepping</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-afterstep.png"><img class="alignnone size-full wp-image-29834" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-afterstep.png" alt="Register after stepping" width="936" height="395" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-afterstep.png 936w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-afterstep-300x127.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/register-afterstep-768x324.png 768w" sizes="(max-width: 936px) 100vw, 936px" /></a></p>
+<h5 id="rtos-object-views">RTOS Object Views</h5>
+<p>The application in the getting started project has several threads, but you won’t see them with the existing threads window.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window.png"><img class="alignnone size-full wp-image-29839" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window.png" alt="Threads window screenshot" width="1348" height="223" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window.png 1348w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window-300x50.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window-1024x169.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/threads-window-768x127.png 768w" sizes="(max-width: 1348px) 100vw, 1348px" /></a></p>
+<p>Why not? A good explanation can be found in this <a href="https://azure.microsoft.com/resources/real-time-operating-system">white paper on Real Time Operating Systems</a>.</p>
+<p>&#8220;A Real-Time Operating System is system software that provides services and manages processor resources for applications. These resources include processor cycles, memory, peripherals, and interrupts. The main purpose of a Real-Time Operating System is to allocate processing time among various duties the embedded software must perform. This typically involves a division of the software into pieces, commonly called “tasks” or “threads,” and creating a run-time environment that provides each thread with its own virtual microprocessor (“Multithreading”). Basically, a virtual microprocessor consists of a virtual set of microprocessor resources, e.g., register set, program counter, stack memory area, and a stack pointer. Only while executing does a thread use the physical microprocessor resources, but each thread retains its own copy of the contents of these resources as if they were its own private resources (the thread”s “context”).&#8221;</p>
+<p>So for embedded development ideally you would have views that could show you information about these RTOS objects. To see the new available RTOS objects views, go to the menu Debug &gt; Windows &gt; RTOS Objects. Here you will see options for the objects that ThreadX provides, here we’ll select Threads.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Debug-RTOS-menu.png"><img class="alignnone size-full wp-image-29840" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Debug-RTOS-menu.png" alt="Debug RTOS menu options" width="325" height="297" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Debug-RTOS-menu.png 325w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/Debug-RTOS-menu-300x274.png 300w" sizes="(max-width: 325px) 100vw, 325px" /></a></p>
+<p>The threads view shows at a glance much of the information you would commonly need during embedded development, thread ids and names, how many times they have run, where the stack starts, ends, and its size as well as the maximum stack usage.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1.png"><img class="alignnone size-full wp-image-29842" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1.png" alt="RTOS threads window" width="1440" height="177" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1.png 1440w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1-300x37.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1-1024x126.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/RTOS-threads-window-1-768x94.png 768w" sizes="(max-width: 1440px) 100vw, 1440px" /></a></p>
+<p>There are other views for additional ThreadX objects like block and byte pools, events, mutexes, queues, and timers. We also have RTOS object views for FreeRTOS though the available objects there differ based on what it supports.</p>
+<h5 id="hardware-breakpoint-limits">Hardware breakpoint limits</h5>
+<p>One last debugging capability to call out is that embedded hardware targets commonly have a limited set of hardware breakpoints available. Setting too many can corrupt the debugger state. As such we have added hardwareBreakpoints to launch.vs.json. For this board that is set to what it supports which is 6. If we set more than that we will see the breakpoint is not set and we get a warning that it won’t be hit. This prevents corrupting the connection to the board and allows us the opportunity to unset some other breakpoints and continue debugging uninterrupted.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/hardware-breakpoint-exceeded-warning.png"><img class="alignnone size-full wp-image-29843" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/hardware-breakpoint-exceeded-warning.png" alt="hardware breakpoint exceeded warning" width="667" height="124" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/hardware-breakpoint-exceeded-warning.png 667w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/hardware-breakpoint-exceeded-warning-300x56.png 300w" sizes="(max-width: 667px) 100vw, 667px" /></a></p>
+<h4 id="send-us-your-feedback">Send us your feedback</h4>
+<p>We hope that these new capabilities will enable you to choose Visual Studio for your embedded development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>If you are on Linux or Mac and looking for similar capabilities, yes, we will be bringing embedded development capabilities to VS Code soon as well. We have provided VS Code getting started guides for Azure RTOS the same boards as VS (<a href="https://github.com/azure-rtos/getting-started/blob/master/MXChip/AZ3166/vscode.md">Azure IoT DevKit</a>, <a href="https://github.com/azure-rtos/getting-started/tree/master/NXP/MIMXRT1060-EVK">NXP 1060</a>, and <a href="https://github.com/azure-rtos/getting-started/blob/master/STMicroelectronics/B-L475E-IOT01A/VS.md">STMicro STM32L4_L4+</a>), though today the capabilities are limited to acquisition with vcpkg, edit, build, deploy, and debug. Similar embedded specific views will be coming in a future extension.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Embedded Software Development in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Bootstrap your dev environment with vcpkg artifacts</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/#respond</comments>
+		
+		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
+		<pubDate>Mon, 06 Dec 2021 16:27:55 +0000</pubDate>
+				<category><![CDATA[New Feature]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29826</guid>
+
+					<description><![CDATA[<p>We are happy to announce a new experience for acquiring artifacts using vcpkg. We define an artifact as a set of packages required for a working development environment. Examples of relevant packages include compilers, linkers, debuggers, build systems, and platform SDKs.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">Bootstrap your dev environment with vcpkg artifacts</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce a new experience for acquiring artifacts using vcpkg. We define an artifact as a set of packages required for a working development environment. Examples of relevant packages include compilers, linkers, debuggers, build systems, and platform SDKs. With this important change, vcpkg can not only download and build your libraries from source, it can also bootstrap the rest of your environment, acquiring pre-built binary dependencies for your projects.</p>
+<p>The experience is in preview and currently focused on embedded developers. We will expand the scope in the future to include any developers targeting Linux, macOS, or Windows.</p>
+<p>This post focuses on using vcpkg artifacts at the command line. Check out the <a href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Embedded Development in Visual Studio blogpost</a> for how the capabilities are used there.</p>
+<p>Here we are going to show how to acquire vcpkg, then activate artifacts for building an embedded project. Following that we’ll cover specific vcpkg capabilities for finding and using artifacts, then how to create a manifest and add artifacts to it. We will also cover how you can use artifacts of your own that are not part of the default artifact registry.</p>
+<h4 id="using-vcpkg-artifacts">Using vcpkg artifacts</h4>
+<p>We’ll look at some embedded development scenarios to understand the new artifact capabilities in vcpkg. Embedded development is particularly known for being difficult to get a new developer machine started. Projects often have specific compiler requirements, special debug tools needed, etc. What we will show here is how through using vcpkg with a manifest you can capture these requirements and easily restore an environment for an embedded project. You do not need a device to follow along as we will not show any device interactivity. These steps except where noted are consistent cross platform.</p>
+<h5 id="acquire-vcpkg">Acquire vcpkg</h5>
+<p>We have also added a new way to acquire vcpkg in a single step without a git clone of the repo. Depending on your platform use one of the following commands to get vcpkg.</p>
+<p>Linux/macOS</p>
+<pre>. &lt;(curl https://aka.ms/vcpkg-init.sh -L)</pre>
+<p>PowerShell</p>
+<pre class="prettyprint">iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
+<p>CMD Shell</p>
+<pre class="prettyprint">-LO https://aka.ms/vcpkg-init.cmd &amp;&amp; .\vcpkg-init.cmd</pre>
+<h5 id="clone-the-example-project">Clone the example project</h5>
+<p>The example project is the Azure RTOS getting started repo, so start by cloning that with this command.</p>
+<pre class="prettyprint">git clone --recursive https://github.com/azure-rtos/getting-started.git</pre>
+<p>This repo has many projects within is, each for a specific board. Use the Azure IoT DevKit by switching to that directory.</p>
+<pre class="prettyprint">cd .\getting-started\MXChip\AZ3166\</pre>
+<h5 id="vcpkg-activate">vcpkg activate</h5>
+<p>In the project folder, there is a file vcpkg-configuration.json. This manifest file has recorded the tools you need to build and debug this project. Running the vcpkg activate command will use this file to determine if those tools have been acquired before, acquire them not, then activate them in your environment for use.</p>
+<pre class="prettyprint">vcpkg activate</pre>
+<p>This is a new vcpkg command that works with artifacts. As this is the first time you are using vcpkg for artifacts it acquires the new vcpkg-ce component on demand. The ce in this component name stands for configure environment. This name was chosen as vcpkg will modify your current environment to use the artifacts in the manifest with your C++ projects.</p>
+<p>To demonstrate that build the project. To do so generate the CMake configuration, then build the project using the preset provided by CMakePresets.json in the project with the following two commands.</p>
+<pre class="prettyprint">cmake --preset arm-gcc-cortex-m4
+cmake --build --preset arm-gcc-cortex-m4</pre>
+<p>So, in just a few commands you have installed vcpkg, cloned an embedded project, acquired and activated the necessary tools for building the project, and successfully compiled it.</p>
+<h5 id="finding-artifacts">Finding artifacts</h5>
+<p>There is a vcpkg search command already that finds ports of libraries in the vcpkg registry. We needed a way to distinguish between the existing vcpkg port concept and the new artifacts concept in areas where the commands could mean either. As such we have introduced a new find command that can be used as find port name, or find artifact name. The existing search command is still present with its existing behavior that only returns ports.</p>
+<p>Try finding an artifact, like CMake, with the following command.</p>
+<pre class="prettyprint">vcpkg find artifact cmake</pre>
+<p>This will output anything that matches the short name used, currently the below.</p>
+<pre class="prettyprint">vcpkg-ce ('configure environment') is experimental and may change at any time.
+ Artifact                       Version  Summary
+ microsoft:tools/kitware/cmake  3.20.1   Kitware's cmake tool
+</pre>
+<h5 id="using-artifacts">Using artifacts</h5>
+<p>Now that you have found an artifact you want to use, you can with the vcpkg use command. Try this command to use CMake.</p>
+<pre class="prettyprint">vcpkg use cmake 
+vcpkg-ce ('configure environment') is experimental and may change at any time.
+ Artifact                           Version    Status     Dependency  Summary
+
+ microsoft:tools/kitware/cmake      3.20.1     installed              Kitware's cmake tool
+
+Activating individual artifacts
+</pre>
+<p>Yes, you can activate more than one artifact at a time. The following command activates gcc, cmake, and ninja, a complete C++ build system in one command. Note this is the Arm GCC compiler as that is the only one presently in the registry.</p>
+<pre class="prettyprint">vcpkg use gcc cmake ninja</pre>
+<h5 id="creating-your-own-manifest">Creating your own manifest</h5>
+<p>The manifest, vcpkg-configuration.json, in the example above was also created with vcpkg. To create a manifest with tools needed for your own use vcpkg new. Make sure to run the subsequent commands in a new directory that is not a subfolder of an existing project.</p>
+<pre class="prettyprint">vcpkg new</pre>
+<h5 id="adding-artifacts-to-your-manifest">Adding artifacts to your manifest</h5>
+<p>Now that we have a manifest and found artifacts we want to use with our project it is simple to add them. Note that the add command requires us to specify an artifact as it can also be used to add ports to a manifest.</p>
+<pre class="prettyprint">vcpkg add artifact cmake
+
+vcpkg-ce ('configure environment') is experimental and may change at any time.
+
+ Artifact                       Version  Status     Dependency  Summary
+
+ microsoft:tools/kitware/cmake  3.20.1   installed  *           Kitware's cmake tool
+
+Project c:\source\newprj activated</pre>
+<p>Now you can check in vcpkg-configuration.json with your source. Anyone else who uses your project can install vcpkg with a single command, then activate the artifacts in your manifest and reproduce the same results locally.</p>
+<h4 id="subsequent-use-of-vcpkg">Subsequent use of vcpkg</h4>
+<p>In the above examples vcpkg was available on the command line after installation. There is a quick way to get it back in new instances of your favorite terminal.</p>
+<p>Linux/macOS</p>
+<pre class="prettyprint">. ~/.vcpkg/vcpkg-init.sh</pre>
+<p>PowerShell</p>
+<pre class="prettyprint">. ~/.vcpkg/vcpkg-init.ps1</pre>
+<p>CMD Shell</p>
+<pre class="prettyprint">%USERPROFILE%\.vcpkg\vcpkg-init.cmd</pre>
+<h4 id="removing-vcpkg">Removing vcpkg</h4>
+<p>That was fun, how do you remove vcpkg installed from your system using the instructions above? Simply delete the .vcpkg folder in your home directory. No other changes have been made to your system through installing or using it.</p>
+<h4 id="using-your-own-registry">Using your own registry</h4>
+<p>The current artifacts in the default registry are limited to the embedded scenarios we have been developing the tool around which focus on Azure RTOS. In the future this set will expand to desktop development scenarios. The default registry can be found here: <a href="https://github.com/microsoft/vcpkg-ce-catalog">https://github.com/microsoft/vcpkg-ce-catalog</a>. Note that we are not taking pull requests of artifact additions to the default registries at this time.</p>
+<p>We fully expect people to have their own artifacts they would like to use, or to provide for others to use.</p>
+<p>As an example, what if you want to use a newer Arm compiler? Our example uses the one set by the example Azure RTOS project so that is the only one we put into the registry. In the steps below I will show how I added a new Arm compiler to my own registry. You can follow the same steps, modified for the artifact you need, to create your own registry of artifacts for use with vcpkg.</p>
+<p>To create a new Arm gcc artifact metadata file I looked at the existing artifact metadata for the gcc compiler in the vcpkg-ce-catalog repo, <a href="https://github.com/microsoft/vcpkg-ce-catalog/blob/main/compilers/arm/gcc/gcc-2020.10.0.yaml">compilers/arm/gcc/ gcc-2020.10.0.yaml</a>.</p>
+<p>On my local machine I copied that file into a folder, myregistry, under the same path for consistency. I then went to Arm’s website to find the latest compilers they provide. I then renamed the metadata file to match, gcc-2021.10.0.yaml. I updated the fields in the file for the version, the artifact urls under install &gt; unzip, and added the sha256 information. Note that Arm only provides md5 sums for their artifacts, this meant I had to download the artifacts manually first to generate my own sha256 sums to use. You can find this file in my personal GitHub repository here, <a href="https://github.com/robotdad/myregistry/blob/main/compilers/arm/gcc/gcc-2021.10.0.yaml">gcc-2021.10.0.yaml</a>.</p>
+<p>Now, to test this I created a test folder and created a manifest with vcpkg new. I then opened this manifest and added a registry section pointing to my local folder with the artifact metadata.</p>
+<pre class="prettyprint">{
+    "registries": [
+      {
+        "name": "myregistry",
+        "location": "c:/source/myregistry",
+        "kind": "artifact"
+      }
+    ]
+}</pre>
+<p>Note that I specified the full path, alias like ~ are not supported.  Now, to find this entry I specified the name as part of the search query.</p>
+<pre class="prettyprint">vcpkg find artifact myregistry:gcc
+
+vcpkg-ce ('configure environment') is experimental and may change at any time.
+Artifact                 Version    Summary
+myregistry:compilers/arm/gcc  2021.10.0  GCC compiler for ARM CPUs.</pre>
+<p>Once verified I added it to the manifest in the same way.</p>
+<pre class="prettyprint">vcpkg add artifact local:gcc
+
+vcpkg-ce ('configure environment') is experimental and may change at any time.
+Artifact                      Version    Status     Dependency Summary
+myregistry:compilers/arm/gcc  2021.10.0  installed  *          GCC compiler for ARM CPUs.
+
+Project c:\source\test activated
+</pre>
+<p>Now my manifest looks like this:</p>
+<pre class="prettyprint">{
+  "registries": [
+    {
+      "name": "myregistry",
+      "location": "c:/source/myregistry",
+      "kind": "artifact"
+    }
+  ],
+  "requires": {
+    "myregistry:compilers/arm/gcc": "* 2021.10.0"
+  }
+}</pre>
+<p>I wouldn’t want to share a manifest with others where a local path was used for a registry. Network paths are supported which works if I am only sharing internally. Note I had to escape the path in the location field.</p>
+<pre class="prettyprint">"location": "\\\\myshare\\folder\\myregistry",</pre>
+<p>I wanted to share my registry on GitHub to support this post which requires a couple of extra steps. The first extra step is to generate an index file. To do so I ran the following experimental command (this is likely to change in the future).</p>
+<pre class="prettyprint">vcpkg z-ce regenerate c:/source/myregistry</pre>
+<p>This generated an index.yaml for all of the artifact metadata files in the specified location.</p>
+<p>To use a registry published in a GitHub repo I needed to specify the endpoint that provides an archive of the repository. This allows vcpkg to acquire all the artifact metadata in a single request. For a GitHub repo this is available at the path /archive/refs/heads/main.zip under the repository. For this example, I published my registry in my personal GitHub account here, <a href="https://github.com/robotdad/myregistry">https://github.com/robotdad/myregistry</a>, the location for that is specified as below in the manifest.</p>
+<pre class="prettyprint">"location": "https://github.com/robotdad/myregistry/archive/refs/heads/main.zip",</pre>
+<h4 id="give-us-your-feedback">Give us your feedback!</h4>
+<p>We are very interested in hearing your thoughts on the new artifact capabilities in vcpkg. We have a separate repo for the component that provides those, <a href="https://github.com/microsoft/vcpkg-ce">vcpkg-ce</a>, where you can file any issues you encounter. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. As capabilities around artifacts in vcpkg evolve, your thoughts are critical to us for creating an excellent developer experience.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">Bootstrap your dev environment with vcpkg artifacts</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</title>
 		<link>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/#respond</comments>
@@ -849,251 +1076,6 @@ void add_number(Node*&amp; head, Node*&amp; tail, int data) {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improved-null-pointer-dereference-detection-in-visual-studio-2022-version-17-0-preview-4/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Static Analysis Fixes in Visual Studio 2019 version 16.11</title>
-		<link>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Mon, 13 Sep 2021 15:00:24 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28697</guid>
-
-					<description><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the C++ Developer Community page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. </p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/">Static Analysis Fixes in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community page</a>. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the compilation of bug fixes that were made from Visual Studio 2019 version 16.10 to 16.11 for code analysis.  Note that 16.11 is the last non-servicing release of Visual Studio 2019, so the focus was on stabilization and minor improvements rather than new features (stay tuned for updates in 17.0). We also found time to improve the performance of certain checks. The changes are summarized below:</p>
-<ul>
-<li>Clarified the warning message for <a href="https://aka.ms/cpp/warnings/C26445">C26445</a>. The old message implied that there is a lifetime problem. The new message is: “Do not assign <code>gsl::span</code> or <code>std::string_view</code> to a reference. They are cheap to construct and are not owners of the underlying data. (gsl.view)”</li>
-<li>Fixed false positive due to not considering lifetime extension rules in <a href="https://aka.ms/cpp/warnings/C26444">C26444</a>. See the code example below:</li>
-</ul>
-<pre class="prettyprint">struct MyStruct { int i; }; 
-void example() { 
-  const MyStruct&amp; s = {}; // Previously, false positive C26444 was emitted. 
-}</pre>
-<ul>
-<li>Fixed using <code>ALL_CPPCORECHECK_WARNINGS</code> in suppression would not suppress <a href="https://aka.ms/cpp/warnings/C26457">C26457</a>.</li>
-<li>Fixed a problem where certain control flows could trick Concurrency Check into emitting false positive warnings.</li>
-<li>Fixed a false positive in Concurrency Check due to incorrect modelling of unwinding paths (for exceptions). This fixed the false positive below. Previously, analysis would proceed along the exception path of the constructor call (no lock is acquired in the exception path), leading to a false warning.</li>
-</ul>
-<pre class="prettyprint">mutex mtx; 
-mutex&amp; mutexRef() { return mtx; } 
-void test() { 
-  lock_guard&lt;mutex&gt; lock(mutexRef()); // No C26110 (failing to hold lock) 
-}</pre>
-<ul>
-<li>Fixed a compilation failure of code snippets relying on guaranteed copy elision during code analysis.</li>
-</ul>
-<pre class="prettyprint">struct S { 
-  S(const S&amp; o) = delete; 
-  S&amp; operator=(const S&amp; o) = delete; 
-  S(const S&amp;&amp; o) = delete; 
-  S&amp; operator=(const S&amp;&amp; o) = delete; 
-  static const S foo(); 
-};
-
-void bar() {
-  S s = S::foo(); // Used to trigger compilation failure.
-}
-
-</pre>
-<ul>
-<li>Fixed a <a href="https://developercommunity.visualstudio.com/t/Codeanalysis-warning-C6285-in-STL-functi/1429721">bug</a> that caused the <a href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">/external</a> options for specifying external headers to override CAExcludePath and generate warnings for external files.</li>
-<li>Performance improvements to the checker that reports warnings on misuse of `VARIANT`s (warnings <a href="https://docs.microsoft.com/cpp/code-quality/c33001?view=msvc-160">C33001</a>, <a href="https://docs.microsoft.com/cpp/code-quality/c33004?view=msvc-160">C33004</a>, and <a href="https://docs.microsoft.com/cpp/code-quality/c33005?view=msvc-160">C33005</a>). Please refer to &#8220;<a href="https://devblogs.microsoft.com/cppblog/new-safety-rules-in-c-code-analysis/">New Safety Rules for in C++ Code Analysis</a>&#8221; for more information on these warnings.</li>
-<li>Performance improvements to the checker that reports warnings on misuse of enum values as an index (warnings <a href="https://docs.microsoft.com/cpp/code-quality/c33010?view=msvc-160">C33010</a> and <a href="https://docs.microsoft.com/cpp/code-quality/c33011?view=msvc-160">C33011</a>). Please refer to “<a href="https://devblogs.microsoft.com/cppblog/even-more-new-safety-rules-in-c-code-analysis/">Even More Safety Rules in C++ Code Analysis</a>” for more information on these warnings. Improved the performance of pointer safety related C++ Core Guidelines checks. See <code>OWNER_POINTER</code>, <code>RAW_POINTER</code>, <code>UNIQUE_POINTER</code>, and <code>SHARED_POINTER</code> groups here.</li>
-<li>Fixed some memory leaks in some checks when multiple translation units are analyzed in a single compiler invocation.</li>
-</ul>
-<h2 id="fixes-in-16-11-1-to-16-11-3-servicing-releases">Fixes in 16.11.1 to 16.11.3 servicing releases</h2>
-<ul>
-<li>Fixed a crash when <code>__uuidof </code>was used in a template argument a certain way.</li>
-<li>Fixed a rare crash when SAL annotations refer to fields of unnamed <code>struct</code>s.</li>
-</ul>
-<h2 id="try-it-out%e2%80%afand-let-us-know-what-you-think">Try it out and let us know what you think</h2>
-<p>The work that we do is heavily influenced by feedback we receive on <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check.   Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or @VisualC on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/">Static Analysis Fixes in Visual Studio 2019 version 16.11</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/static%e2%80%afanalysis-fixes-in-visual-studio-2019-version-16-11/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC C++20 and the /std:c++20 Switch</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#comments</comments>
-		
-		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
-		<pubDate>Thu, 02 Sep 2021 21:18:28 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=28674</guid>
-
-					<description><![CDATA[<p>We are excited to announce that in Visual Studio 2019 version 16.11, we have added the /std:c++20 switch to the set of language mode switches available. The addition of this switch indicates that we’ve reached a point of sufficient stabilization of the MSVC C++20 feature set for it be used in production,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">MSVC C++20 and the /std:c++20 Switch</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are excited to announce that in Visual Studio 2019 version 16.11, we have added the <code>/std:c++20</code> switch to the set of language mode switches available. The addition of this switch indicates that we’ve reached a point of sufficient stabilization of the MSVC C++20 feature set for it be used in production, with full support in VS servicing updates.</p>
-<p>This blog post focuses on describing our level of C++20 feature support, compiler-supported extensions, and the remaining feature set differences between MSVC and the ISO C++ standard as of Visual Studio 2019 version 16.11 and Visual Studio 2022 version 17.0</p>
-<h2 id="c-language-modes-and-compatibility-guarantees"><span style="font-size: 18pt;">C++ Language Modes and Compatibility Guarantees</span></h2>
-<p>First <a href="https://devblogs.microsoft.com/cppblog/standards-version-switches-in-the-compiler/">introduced in Visual Studio 2015</a>, the MSVC compiler has included C++ language mode switches to indicate the targeted level of standard conformance and we now support three stable language modes: <code>/std:c++14</code>, <code>/std:c++17</code>, <code>/std:c++20</code> (as of VS 2019 v16.11) and one preview mode (<code>/std:c++latest</code>).</p>
-<p>The stable modes indicate that features under those modes are ready for production use and have ABI compatibility guarantees. The <code>/std:c++latest</code> mode contains ISO C++ features without strong guarantees for compatibility, allowing iteration based upon issues identified in testing, ISO C++ standard changes, and community feedback which may impact ABI stability of those features. Once stabilized, features under /std:c++latest will be moved under an applicable stable mode.</p>
-<table>
-<tbody>
-<tr>
-<td width="105"><strong>Language Mode</strong></td>
-<td width="219"><strong>Language Mode enables strict-conformance (/permissive-)</strong></td>
-<td width="91"><strong>ABI Stable</strong></td>
-<td width="208"><strong>Notes</strong></td>
-</tr>
-<tr>
-<td width="105">/std:c++14</td>
-<td width="219">No</td>
-<td width="91">Yes</td>
-<td width="208">See <strong>**<em>Note A</em></strong></td>
-</tr>
-<tr>
-<td width="105">/std:c++17</td>
-<td width="219">No</td>
-<td width="91">Yes</td>
-<td width="208">See <strong>**<em>Note A</em></strong></td>
-</tr>
-<tr>
-<td width="105">/std:c++20</td>
-<td width="219">Yes</td>
-<td width="91">Yes</td>
-<td width="208">See <strong>**<em>Note B</em></strong></td>
-</tr>
-<tr>
-<td width="105">/std:c++latest</td>
-<td width="219">Yes</td>
-<td width="91">No</td>
-<td width="208">See <strong>**<em>Note B</em></strong></td>
-</tr>
-</tbody>
-</table>
-<p><strong><em>**</em></strong><strong><em>Note A</em></strong><em>: Strict conformance mode is opt-in via the /permissive- compiler switch</em></p>
-<p><strong><em>**Note B</em></strong><em>: Some functionality such as C++20 Modules require strict-conformance mode to be enabled due to strong dependency on ISO C++ semantic behaviors. Compatibility mode (/permissive) is supported as an opt-in switch  with some C++20 functionality disabled.</em></p>
-<h2 id="c20-features-added-in-vs-2019-v16-9-and-later"><span style="font-size: 18pt;">C++20 Features added in VS 2019 v16.9 and later</span></h2>
-<p>Below is a summary of language and library C++20 features implemented since the last feature update.</p>
-<p>A more detailed <a href="https://github.com/microsoft/STL/wiki/Changelog">changelog</a> is available for <a href="https://github.com/microsoft/STL">the STL on its GitHub repo</a> including information on the awesome community contributors who have provided feature implementations and bug fixes to the STL</p>
-<h3 id="vs-2019-v16-9"><span style="font-size: 14pt;">VS 2019 v16.9</span></h3>
-<p>C++20 Language Features</p>
-<ul>
-<li>Implemented <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0634r3.html">P0634R3</a> Down with typename!</li>
-<li>Implemented <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0840r2.html">P0840R2</a> [[no_unique_address]] attribute (<em>please see below for more details</em>)</li>
-<li>Implemented <a href="https://wg21.link/P1064R0">P1064R0</a> Allowing virtual function calls in constant expressions</li>
-<li>Implemented <a href="https://wg21.link/P1141R2">P1141R2</a> Yet another approach for constrained declarations</li>
-<li>Implemented <a href="https://wg21.link/P1327R1">P1327R1</a> Allowing dynamic_cast, polymorphic typeid in constant expressions</li>
-<li>Implemented <a href="https://wg21.link/P1668R1">P1668R1</a> Permitting unevaluated inline assembly in constexpr functions</li>
-<li>Implemented <a href="https://wg21.link/P0784R7">P0784R7</a> More constexpr containers</li>
-</ul>
-<p>C++20 Library Features</p>
-<ul>
-<li>Implemented <a href="https://wg21.link/P0339R6">P0339R6</a> polymorphic_allocator&lt;&gt;</li>
-<li>Implemented <a href="https://wg21.link/P0660R10">P0660R10</a> &lt;stop_token&gt; And jthread</li>
-<li>Implemented <a href="https://wg21.link/P0768R1">P0768R1</a> Library Support For The Spaceship Comparison Operator &lt;=&gt;</li>
-<li>Implemented <a href="https://wg21.link/P1007R3">P1007R3</a> assume_aligned()</li>
-<li>Implemented <a href="https://wg21.link/P1020R1">P1020R1</a> Smart Pointer Creation With Default Initialization</li>
-<li>Implemented <a href="https://wg21.link/P1771R1">P1771R1</a> [[nodiscard]] For Constructors</li>
-</ul>
-<h3 id="vs-2019-v16-10-v16-11"><span style="font-size: 14pt;">VS 2019 v16.10 &amp; v16.11</span></h3>
-<p>C++20 Language Features</p>
-<ul>
-<li>Implemented <a href="https://wg21.link/P1073R3">P1073R3</a> Immediate functions</li>
-<li>Implemented <a href="https://wg21.link/P1143R2">P1143R2</a> constinit</li>
-<li>Implemented <a href="https://wg21.link/P1353R0">P1353R0</a> Missing feature-test macros</li>
-</ul>
-<p>C++20 Library Features</p>
-<ul>
-<li>Implemented <a href="https://wg21.link/P0053R7">P0053R7</a>&lt;syncstream&gt;</li>
-<li>Implemented <a href="https://wg21.link/P0355R7">P0355R7</a>&lt;chrono&gt; Calendars And Time Zones</li>
-<li>Implemented <a href="https://wg21.link/P0408R7">P0408R7</a> Efficient Access To basic_stringbuf&#8217;s Buffer</li>
-<li>Implemented <a href="https://wg21.link/P0466R5">P0466R5</a> Layout-Compatibility And Pointer-Interconvertibility Traits</li>
-<li>Implemented <a href="https://wg21.link/P0475R1">P0475R1</a> Guaranteed Copy Elision For Piecewise Construction</li>
-<li>Implemented <a href="https://wg21.link/P0591R4">P0591R4</a> Utility Functions For Uses-Allocator Construction</li>
-<li>Implemented <a href="https://wg21.link/P0608R3">P0608R3</a> Improving variant&#8217;s Converting Constructor/Assignment</li>
-<li>Implemented <a href="https://wg21.link/P0645R10">P0645R10</a> &lt;format&gt; Text Formatting</li>
-<li>Implemented <a href="https://wg21.link/P0784R7">P0784R7</a> Library Support For More constexpr Containers</li>
-<li>Implemented <a href="https://wg21.link/P0896R4">P0896R4</a> Ranges</li>
-<li>Implemented <a href="https://wg21.link/P0980R1">P0980R1</a> constexpr std::string</li>
-<li>Implemented <a href="https://wg21.link/P1004R2">P1004R2</a> constexpr std::vector</li>
-<li>Implemented <a href="https://wg21.link/P1208R6">P1208R6</a> &lt;source_location&gt;</li>
-<li>Implemented <a href="https://wg21.link/P1502R1">P1502R1</a> Standard Library Header Units</li>
-<li>Implemented <a href="https://wg21.link/P1614R2">P1614R2</a> Adding Spaceship &lt;=&gt; To The Library</li>
-</ul>
-<h2 id="vs-2022-17-0-still-in-preview"><span style="font-size: 14pt;">VS 2022 17.0 (still in Preview)</span></h2>
-<p>C++20 Language Features</p>
-<ul>
-<li>Completed implementation of <a href="https://wg21.link/P0734R0">P0734R0</a> Concepts</li>
-</ul>
-<p>C++20 Library DRs</p>
-<ul>
-<li>Implemented <a href="https://wg21.link/P2325R3">P2325R3</a> Views Should Not Be Required To Be Default Constructible</li>
-</ul>
-<h2 id="iso-c20-continuing-work-defect-reports-and-clarifications"><span style="font-size: 18pt;">ISO C++20  Continuing Work, Defect Reports, and Clarifications</span></h2>
-<p>As part of implementing C++20, there were some late discoveries which required changes to the ISO C++20 standard via the standard committee’s Defect Report (DR) process. This included Existing implementations (pre-DR) for these features are available under the <code>/std:c++latest</code> switch.  We’re also tracking the DRs and are implementing those issue resolutions under <code>/std:c++latest</code>. Our plan is to make these capabilities available under the <code>/std:c++20</code> switch after implementation of the full set of Standard Library DRs has completed. Progress on these features can be tracked on the <a href="https://github.com/microsoft/STL">MSVC STL GitHub site</a> through its <a href="https://github.com/microsoft/STL/projects/9">C++20 DRs project</a>.</p>
-<p>In the compiler, we are working with ISO C++ and other toolchain vendors to clarify expectations around allowing virtual functions to be <code>constexpr</code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1064r0.html">P1064R0</a>). There are a couple of possibilities for implementation, which have significant ABI implications as to whether this is implemented via vtable entry. In the interim, we have implemented two modes, under <code>/experimental:constevalVfuncVtable</code> and <code>/experimental:constevalVfuncNoVtable</code>, which implement the most likely resolutions to this ambiguity. Once a decision is made on how to proceed, we’ll bring that capability under <code>/std:c++20</code> and <code>/std:c++latest</code>.</p>
-<p>Additionally, there were some feature areas that were unintentionally partially implemented. We are working to get those areas filled. For VS 2022 v17.0, we have implemented the requires-expression portion of the Concepts feature (<a href="https://wg21.link/P0734R0">P0734R0</a>), which is scheduled to ship in VS 2022 v17.0.  We’re also working to complete implementation of <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0859r0.html">Core Issue 1581</a>: “When are constexpr member functions defined?,” which is tracking towards inclusion in a VS 2022 update after v17.0.</p>
-<h2 id="msvc-extensions-and-abi"><span style="font-size: 18pt;">MSVC Extensions and ABI</span></h2>
-<h3 id="c20-no_unique_address"><span style="font-size: 14pt;">C++20 <code>[[no_unique_address]]</code></span></h3>
-<p>Implementation of C++20 <code>[[no_unique_address]]</code> included a couple of additional challenges due to the ABI-breaking impact (changing object layout) of applying this optimization. This is problematic due to the MSVC compiler ignoring attributes that are not known, as allowed by the standard, resulting in scenarios where MSVC ABI compatibility guarantees would be broken for standard C++ code:</p>
-<ul>
-<li>Compiling the same header/source under <code>/std:c++17</code> and <code>/std:c++20</code> would result in link-time incompatibilities due to object layout differences resulting in ODR violations.</li>
-<li>Linking static libraries built with an older version of the MSVC compiler (VS 2015 through VS 2019 v16.8), within the v14x ABI-compatible family, would result in ODR violations and break our compatibility guarantees.</li>
-</ul>
-<p>It was decided to hold-off on enabling the optimization for the <code>[[no_unique_address]]</code> attribute in the MSVC compiler until our next ABI breaking revision of the MSVC toolset, where it will be enabled across all language modes.</p>
-<p>However, we do recognize that there are some customers who are in a position to take advantage of this optimization without worrying about linking binaries across versions of the MSVC toolset.  For this audience, we have made this optimization available in VS 2019 v16.9 and later through an extension attribute that affects optimization across all compiler language modes, <code>[[msvc::no_unique_address]]</code>.</p>
-<ul>
-<li>There are portability concerns for customers who require ABI-compatiblity between MSVC and Clang for the STL. Please see <a href="https://github.com/microsoft/STL/issues/1364">https://github.com/microsoft/STL/issues/1364</a> for more details.</li>
-<li>This extension attribute enables this optimization under all C++ language modes (e. <code>/std:c++14</code>, <code>/std:c++17</code>, <code>/std:c++20</code>, <code>/std:c++latest</code>.</li>
-<li>We strongly recommend that any usage of this attribute is guarded by an MSVC version-check as demonstrated in the below example:</li>
-</ul>
-<pre class="prettyprint">#include &lt;iostream&gt;
-
-#if _MSC_VER &gt;= 1929 // VS2019 v16.10 and later (_MSC_FULL_VER &gt;= 192829913 for VS 2019 v16.9)
-// Works with /std:c++14 and /std:c++17, and performs optimization
-
-#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-
-#else
-
-// no-op in MSVC v14x ABI
-#define NO_UNIQUE_ADDRESS /* [[no_unique_address]] */
-
-#endif
-
-
-struct Empty {};
-
-struct A
-{
-    int a;
-    NO_UNIQUE_ADDRESS Empty b;
-};
-
-int main()
-{
-    A inst{ 0 };
-
-    // [[msvc::no_unique_address]] : sizeof(inst) == 4.
-    // [[no_unique_address]] : sizeof(inst) == 8.
-    std::cout &lt;&lt; sizeof(inst) &lt;&lt; "\n";
-}</pre>
-<h3 id="c20-coroutine-support-for-c14-c17-awaitstrict"><span style="font-size: 14pt;">C++20 Coroutine support for C++14/C++17 (<code>/await:strict</code>)</span></h3>
-<p>The <code>/await:strict</code> option can be used in place of <code>/await</code> for C++20 compatible coroutine support in projects that build in C++14 or C++17 mode. In <code>/await:strict</code> mode library support is provided in <code>&lt;coroutine&gt;</code> and in the std namespace. For full clarity, this behavior is on-by-default under <code>/std:c++20</code> without any <code>/await*</code> switch usage.</p>
-<p>Strict mode disables language extensions present in <code>/await</code> that were not adopted into the C++20 standard. Use  of such features with <code>/await:strict</code> will result in a compiler error. Strict mode also implements coroutine behaviors such as promise parameter preview that are not available under <code>/await</code> due to binary compatibility issues with older releases.</p>
-<p>Note: coroutine state objects obtained from <code>coroutine_handle&lt;T&gt;::address()</code> are not compatible between <code>/await</code> and <code>/await:strict</code> modes. Using <code>coroutine_handle&lt;T&gt;::from_address()</code> on an address obtained from a coroutine handle created in an incompatible mode will result in undefined behavior.</p>
-<h2 id="more-information"><span style="font-size: 18pt;">More Information</span></h2>
-<p>For Visual Studio changes (beyond the C++ toolset) and download links, see the <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes">VS 2019 Release Notes</a> and  <a href="https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-preview">VS 2022 Preview Release Notes</a>. You can report bugs through <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Developer Community</a>, and you can also report STL bugs via <a href="https://github.com/microsoft/STL/issues">microsoft/STL GitHub issues</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">MSVC C++20 and the /std:c++20 Switch</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
 		
 		
