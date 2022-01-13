@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 21 Dec 2021 18:04:52 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 13 Jan 2022 17:52:08 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,115 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>How we used C++20 to eliminate an entire class of runtime bugs</title>
+		<link>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Thu, 13 Jan 2022 17:52:08 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[compiler]]></category>
+		<category><![CDATA[constexpr]]></category>
+		<category><![CDATA[safety]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29981</guid>
+
+					<description><![CDATA[<p>C++20 is here and has been supported in MSVC since 16.11, but today&#8217;s post is not about how you can use it, but rather how we used it to effectively eliminate an entire class of runtime bugs by hoisting a check into compile-time.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/">How we used C++20 to eliminate an entire class of runtime bugs</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>C++20 is here and has been supported in MSVC since <a href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">16.11</a>, but today&#8217;s post is not about how you can use it, but rather how <em>we</em> used it to effectively eliminate an entire class of runtime bugs by hoisting a check into compile-time. Let&#8217;s get right into it!</p>
+<h4><span id="humble-beginnings">Humble beginnings</span></h4>
+<p>In compiler design one of the very first things you need is a way to convey to the programmer that their source code has an error or warn them if their code might not behave as expected. In MSVC our error infrastructure looks something like this:</p>
+<pre>enum ErrorNumber {
+    C2000,
+    C2001,
+    C2002,
+    ...
+};
+void error(ErrorNumber, ...);</pre>
+<p>The way <code>error</code> works is that each <code>ErrorNumber</code> has a corresponding string entry which represents the text we want to display to the user. These text strings can be anything from: <code>C2056 -&gt; "illegal expression"</code> to: <code>C7627 -&gt; "'%1$T': is not a valid template argument for '%2$S'"</code>, but what are these <code>%1$T</code> and <code>%2$S</code> things? These are some of the compiler&#8217;s format-specifiers to display certain types of structures in the compiler to the user in a readable way.</p>
+<h4><span id="double-edged-sword">The double-edged sword of format-specifiers</span></h4>
+<p>Format-specifiers provide a lot of flexibility and power to us as compiler developers. Format-specifiers can more clearly illustrate why a diagnostic was issued and provide the user with more context into the problem. The problem with format-specifiers is that they are not type checked in the call to <code>error</code>, so if we happen to get an argument type wrong or did not pass an argument at all it will almost certainly end up in a runtime error later for the user. Other problems arise when you want to refactor a diagnostic message into something clearer, but to do that you need to query every caller of that diagnostic message and ensure that the refactor agrees with the arguments being passed to <code>error</code>.</p>
+<p>We have three high-level goals when designing a system that can check our format-specifiers:</p>
+<ol>
+<li>Validate that argument types passed into our diagnostic APIs at compile-time so authoring a mistake is caught as early as possible.</li>
+<li>Minimize changes made to callers of diagnostic APIs. This is to ensure well-formed calls retain their original structure (no disruption to future calls as well).</li>
+<li>Minimize changes made to implementation details of the callee. We should not change the behavior of the diagnostic routines at runtime.</li>
+</ol>
+<p>There are, of course, some solutions introduced with later C++ standards which could aid in trying to remedy this problem. For one, once variadic templates were introduced into the language we could have tried some template metaprogramming to try and type check the calls to <code>error</code>, but that would require a separate lookup table since constexpr and templates were limited in what they could do. C++14/17 both introduced a lot of improvements to constexpr and non-type template arguments. Something like this would work great:</p>
+<pre>constexpr ErrorToMessage error_to_message[] = {
+    { C2000, fetch_message(C2000) },
+    { C2001, fetch_message(C2001) },
+    ...
+};
+
+template &lt;typename... Ts&gt;
+constexpr bool are_arguments_valid(ErrorNumber n) {
+    /* 1. fetch message
+       2. parse specifiers
+       3. check each specifier against the parameter pack Ts... */
+    return result;
+}</pre>
+<p>So we finally had the tools to try and check the format-specifiers at compile-time. But there was still a problem: we still did not have a way to silently check all the existing calls to <code>error</code> meaning that we would have to add an extra layer of indirection between the call sites of <code>error</code> to ensure that the <code>ErrorNumber</code> could fetch the string at compile-time and check the argument types against it. In C++17 this will not work:</p>
+<pre>template &lt;typename... Ts&gt;
+void error(ErrorNumber n, Ts&amp;&amp;... ts) {
+    assert(are_arguments_valid&lt;Ts...&gt;(n));
+    /* do error stuff */
+}</pre>
+<p>And we cannot make <code>error</code> itself constexpr because it does a lot of constexpr-unfriendly things. Additionally, adjusting all the call sites to something like: <code>error&lt;C2000&gt;(a, b, c)</code> so that we can check the error number as a compile-time expression is unsavory and would cause a lot of unnecessary churn in the compiler.</p>
+<h4><span id="cpp20">C++20 to the rescue!</span></h4>
+<p>C++20 introduced an important tool for us to enable compile-time checking, <code>consteval</code>. <code>consteval</code> is in the family of constexpr but the language guarantees that a function adorned with <code>consteval</code> will be evaluated at compile-time. A well-known library by the name of <a href="https://github.com/fmtlib/fmt">fmtlib</a> introduced compile-time checking as part of the <a href="https://fmt.dev/latest/api.html#core-api">core API</a> and it did so without changing any call sites, assuming the call site was well-formed according to the library. Imagine a simplified version of <code>fmt</code>:</p>
+<pre>template &lt;typename T&gt;
+void fmt(const char* format, T);
+
+int main() {
+    fmt("valid", 10);    // compiles
+    fmt("oops", 10);     // compiles?
+    fmt("valid", "foo"); // compiles?
+}</pre>
+<p>Where the intent is that <code>format</code> should always be equal to <code>"valid"</code> and <code>T</code> should always be an <code>int</code>. The code in <code>main</code> is ill-formed according to the library in this case, but nothing validates that at compile-time. fmtlib accomplished compile-time checking using a little trick with user-defined types:</p>
+<pre>#include &lt;string_view&gt;
+#include &lt;type_traits&gt;
+
+// Exposition only
+#define FAIL_CONSTEVAL throw
+
+template &lt;typename T&gt;
+struct Checker {
+    consteval Checker(const char* fmt) {
+        if (fmt != std::string_view{ "valid" }) // #1
+            FAIL_CONSTEVAL;
+        // T must be an int
+        if (!std::is_same_v&lt;T, int&gt;)            // #2
+            FAIL_CONSTEVAL;
+    }
+};
+
+template &lt;typename T&gt;
+void fmt(std::type_identity_t&lt;Checker&lt;T&gt;&gt; checked, T);
+
+int main() {
+    fmt("valid", 10);    // compiles
+    fmt("oops", 10);     // fails at #1
+    fmt("valid", "foo"); // fails at #2
+}</pre>
+<p>Note: you need to use the <code>std::type_identity_t</code> trick to keep <code>checked</code> from participating in type deduction. We only want it to deduce the rest of the arguments and use their deduced types as template arguments to <code>Checker</code>.</p>
+<p>You can fiddle with the example for yourself using <a href="https://godbolt.org/z/baPvojah1">Compiler Explorer</a>.</p>
+<h4><span id="tying-it-together">Tying it all together</span></h4>
+<p>The code above is powerful in that it gives us a tool which can perform additional safety checking without changing any caller which is well-formed. Using the technique above we applied compile-time checking to all our <code>error</code>, <code>warning</code>, and <code>note</code> message routines. The code used in the compiler is nearly identical to the <code>fmt</code> above except that the argument to <code>Checker</code> is an <code>ErrorNumber</code>.</p>
+<p>In total we identified <b>~120</b> instances where we were either passing the incorrect number of arguments to a diagnostic API or where we passed the wrong type for a particular format-specifier. Over the years we have received bugs regarding strange compiler behavior when emitting a diagnostic or a straight-up ICE (Internal Compiler Error) because the format-specifiers were looking for arguments which were incorrect or did not exist. Using C++20 we have largely eliminated possibility of such bugs happening in the future and while offering the ability for us to safely refactor diagnostic messages, made possible by one little keyword: <code>consteval</code>.</p>
+<h4 id="closing">Closing</h4>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow me on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/">How we used C++20 to eliminate an entire class of runtime bugs</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Visual Studio Code C++ December 2021 Update: clang-tidy</title>
 		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/#comments</comments>
@@ -1019,60 +1128,6 @@ Have questions or comments about Visual Studio 2022?</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/#comments</comments>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Mon, 25 Oct 2021 13:53:40 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[gamedev]]></category>
-		<category><![CDATA[Intellisense]]></category>
-		<category><![CDATA[unreal engine]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29655</guid>
-
-					<description><![CDATA[<p>With Visual Studio, we want to build the best tools to empower game developers. We joined forces with Epic Games to bring faster semantic highlighting and IntelliSense ready to Visual Studio 2022 for Unreal Engine developers. In this blog post, we will detail how we worked with the Unreal Engine team to significantly speed up the time it takes IntelliSense to start when a new file is opened in the editor by an order of 18x.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/">18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>With Visual Studio, we want to build the best tools to empower game developers. We joined forces with Epic Games to bring faster semantic highlighting and IntelliSense ready to Visual Studio 2022 for Unreal Engine developers. In this blog post, we will detail how we worked with the Unreal Engine team to significantly speed up the time it takes IntelliSense to start when a new file is opened in the editor by an order of <strong>18x</strong>.</p>
-<p><strong><em>&#8220;We&#8217;ve always struggled with Intellisense performance in the Unreal Engine solution, but these changes are a night-and-day improvement. Faster feedback and less waiting help devs stay focused on making amazing games.&#8221;</em></strong> – Ben Marsh, Lead Programmer at Epic Games</p>
-<p><strong>The changes are available for Unreal Engine 4.27.1 projects using the latest Visual Studio 2022 Preview. The changes will be available for Unreal Engine 5 at a later date.</strong></p>
-<h1 id=""><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHOld30s.gif"><img class="aligncenter size-full wp-image-29684" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHOld30s.gif" alt="Image UnrealPCHOld30s" width="1200" height="675" /></a></h1>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHNew15s.gif"><img class="aligncenter size-full wp-image-29685" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCHNew15s.gif" alt="Image UnrealPCHNew15s" width="1200" height="675" /></a></p>
-<h2 id="testing-methodology">Testing Methodology</h2>
-<p>We tested using an Unreal Engine 4.27.1 sample project on a desktop with Intel Core i7-9700 @ 3Ghz, 64GB RAM, and an SSD. The tests took place on Visual Studio 2019 16.11.5 and Visual Studio 2022 Preview 6. The results were averaged over 4 runs.</p>
-<h2 id="results">Results</h2>
-<p>When opening a file on Visual Studio 2019, it took <strong>11.0</strong> seconds for IntelliSense to be ready and semantic code colorization to show up. Opening a different file took the same amount of time to get to the same state. Closing and reopening the same file took <strong>1.0</strong> seconds for the ready state.</p>
-<p>In comparison, Visual Studio 2022 took <strong>7.2</strong> seconds for the first file to be ready and <strong>0.4</strong> seconds for any subsequent files.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png"><img class="aligncenter size-full wp-image-29671" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png" alt="Image UnrealPCH" width="2273" height="1393" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH.png 2273w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-300x184.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-1024x628.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-768x471.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-1536x941.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/UnrealPCH-2048x1255.png 2048w" sizes="(max-width: 2273px) 100vw, 2273px" /></a></p>
-<h2 id="analysis">Analysis</h2>
-<p>Prior to the change, each translation unit, the C++ and header files in your project, started from scratch with no state reuse between them. Reopening the same file took 1 second; however, because PCHs were not shared between files, opening any file for the first time took the same amount of time for semantic highlighting to show up and IntelliSense to be ready.</p>
-<p>In Unreal Engine 4.27.1 projects using Visual Studio 2022, the generated project files are updated to configure IntelliSense to share compilation state across translation units. As a result, the semantic code colorization and IntelliSense completion will be available drastically quicker (<strong>0.4 seconds</strong>) when switching files in Visual Studio.</p>
-<p>In addition, C++ IntelliSense improvements in VS2022 were able to bring down ready time by a factor of <strong>1.5x</strong> from 11 seconds to 7.4 seconds. This change will benefit all C++ developers using IntelliSense, not only Unreal Engine developers.</p>
-<h2 id="applying-the-change-to-your-project">Applying The Change to Your Project</h2>
-<p>Currently, you will need to manually make an update in the Unreal Engine Editor to apply the changes.</p>
-<ol>
-<li>Click Edit -&gt; Editor Preferences -&gt; Source Code</li>
-<li>Change Source Code Editor to “Visual Studio 2022”</li>
-<li>Click File -&gt; Refresh Visual Studio 2022 Project</li>
-<li>Click File -&gt; Open Visual Studio 2022 to open the project in Visual Studio</li>
-</ol>
-<p><em>If you use GenerateProjectFiles.bat when working with Unreal Engine source code, use “GenerateProjectFiles.bat -2022” to generate project files with changes.</em></p>
-<h2 id="feedback-wanted">Feedback Wanted!</h2>
-<p>We received feedback about various ways of making the game developer experiences even better in Visual Studio. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like the one detailed in this blogpost.</p>
-<p>How will these productivity enhancements impact you as a game developer? What other enhancements do you wish to see in Visual Studio? Talk to us in the comments below, on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
-<h2 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h2>
-<p><strong><a href="https://visualstudio.microsoft.com/launch/">Visual Studio 2022</a> is now available! </strong></p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/">18x Faster IntelliSense for Unreal Engine Projects in Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/feed/</wfw:commentRss>
-			<slash:comments>15</slash:comments>
 		
 		
 			</item>
