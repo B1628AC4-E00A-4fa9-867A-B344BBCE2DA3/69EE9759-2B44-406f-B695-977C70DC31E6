@@ -1,4 +1,206 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 13 Dec 2021 02:32:15 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[中身のないnpmパッケージ「-」が70万回以上ダウンロードされる— その理由とは]]></title><description><![CDATA[名前が1文字の「-」という謎めいたnpmパッケージは、2020年にレジストリで公開されて以来、70万回以上ダウンロードされています。 さらに、このパッケージには有効なコードが含まれていません。では、…]]></description><link>https://postd.cc/empty-npm-package-has-over-700-000-downloads-heres-why/</link><guid isPermaLink="false">https://postd.cc/empty-npm-package-has-over-700-000-downloads-heres-why/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[npm]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[NodeJS]]></category><category><![CDATA[オープンソース]]></category><category><![CDATA[OSS]]></category><pubDate>Mon, 13 Dec 2021 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>名前が1文字の「-」という謎めいたnpmパッケージは、2020年にレジストリで公開されて以来、70万回以上ダウンロードされています。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Jan 2022 02:47:28 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Rustのビルドを高速化する方法]]></title><description><![CDATA[Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。 例えば、つい最近の記事にこのように書かれて…]]></description><link>https://postd.cc/fast-rust-builds/</link><guid isPermaLink="false">https://postd.cc/fast-rust-builds/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Rust]]></category><pubDate>Mon, 24 Jan 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。</p>
+<p>例えば、つい最近の<a href="https://kerkour.com/blog/rust-development-workflow/">記事</a>にこのように書かれていました。</p>
+<blockquote>
+<p>一方、Rustでは、プロジェクトやCIサーバーの性能にもよりますが、
+CIパイプラインの実行に15～45分かかります。</p>
+</blockquote>
+<p>これは筆者には理解できません。GitHub Actions上にあるrust-analyzerのCIの所要時間は8分です。しかも、これは100万行の依存関係に加え、20万行の独自コードが記述されたとても大規模で複雑なプロジェクトでの話です。</p>
+<p>確かに、Rustは根本的な部分で非常にコンパイルが遅いのは間違いありません。Rustは<a href="https://research.swtch.com/generic">ジェネリクスのジレンマ</a>において「遅いコンパイラ」を選び、全体的な設計思想としてコンパイル時間よりもランタイムを優先しています（この点に関する優れたシリーズ記事を紹介します：<a href="https://pingcap.com/blog/rust-compilation-model-calamity">1</a>、<a href="https://pingcap.com/blog/generics-and-compile-time-in-rust">2</a>、<a href="https://pingcap.com/blog/rust-huge-compilation-units">3</a>、<a href="https://pingcap.com/blog/reasons-rust-compiles-slowly">4</a>）。しかし、rustcは低速なコンパイラではありません。rustcは業務用コンパイラの中で最も<a href="https://blog.jetbrains.com/kotlin/2020/09/the-dark-secrets-of-fast-compilation-for-kotlin/#:~:text=I%20think%20Rust%20qualifies%20as%20a%20counter%20example%20here">先進的なインクリメンタルコンパイル手法</a>を導入し、適切なモジュール（クレート）に基づくコンパイルモデルを活用しており、<a href="https://blog.mozilla.org/nnethercote/2020/09/08/how-to-speed-up-the-rust-compiler-one-last-time/">細かい部分まで最適化されています</a>。Rustプロジェクトの高速なコンパイルは、たとえ一般的ではなくても現実に可能です。ただし、それにはいくつかの注意点と専門知識が必要です。</p>
+<p>それでは、私たちがrust-analyzerのコンパイル時間を妥当な範囲に収めるために実施した対策を詳しく見ていきましょう。</p>
+<h2>ビルド時間を気にする理由</h2>
+<p>筆者が明確にしておきたいのは、プロジェクトのビルド時間を最適化するのは、ある意味ではあまり価値のない取り組みだという点です。コンパイル時間を削減しても、ユーザーにとっての<strong>直接的</strong>なメリットはごくわずかで、あくまで本質から外れた問題にすぎません。</p>
+<p>とはいえ、コンパイル時間はほぼすべての作業の所要時間を<strong>倍増</strong>させます。追加機能の搭載、コードの高速化、要件変更への対応や、新しいコントリビュータの勧誘にもビルド時間が関わってきます。</p>
+<p>コンパイル時間には間接的な影響もあります。コンパイラの作業を待つだけなら比較的小さな問題です。大きな問題は、コードのコンパイルの間に、集中力が失われたり、さらに悪いことに気分が変わって別の作業をしたくなったりすることです。コンパイラにとっては1分の仕事でも、人間にとっては1分以上の時間が無駄になります。</p>
+<p>こうした影響を定量化するのは困難ですが、直感的にはプロジェクトの1人当たりのコードが数千行を超えると、ビルド時間は非常に重要になると思います。</p>
+<p>ビルド時間の最も恐ろしい特徴は、気づかないうちに増大する点です。プロジェクトが小規模なうちは、ビルド時間は許容できる範囲にとどまるでしょう。プロジェクトが成長するにつれて、ビルド時間もゆっくりと増加し始めます。放っておくと、後でコントロールできる状態に戻そうとしても困難になる恐れがあります。</p>
+<p>プロジェクトのコンパイル時間がすでに許容できないほど遅くなっている場合は、以下のような事態を招きます。</p>
+<ul>
+<li>ビルド時間の改善には時間がかかります。なぜなら、「変更を試し、ビルドを実行して、改善度を測定する」ためのイテレーションに毎回長い時間がかかるからです（ビルド時間はすべての作業の所要時間を倍増させますが、それにはビルド時間自体も含まれます）。</li>
+<li>簡単に成果を上げるのは難しいでしょう。ランタイムのパフォーマンスとは異なり、パレートの法則は機能しません。1,000行のコードのうち、パフォーマンスに影響するのは100行かもしれませんが、コンパイル時間は1行ごとに増えます。</li>
+<li>ビルド時間がわずかに短縮されても、それが十分に蓄積するまでは、取るに足らないと感じられるでしょう。コンパイル時間を5秒削減できたとして、元々のビルド時間が5分であれば非常に大きな成果ですが、1時間であればそうでもありません。</li>
+<li>同様に、ビルド時間がわずかに増加しても誰も気づきません。</li>
+</ul>
+<p>これには文化的な要因もあります。あなたがプロジェクトに参加して、そのCIに1時間かかるとしたら、1時間のCIは普通だと思うようになるでしょう。</p>
+<p>うれしいことに、ビルド時間の問題を解決するには簡単なコツがあります。</p>
+<h2>銀の弾丸</h2>
+<p>ビルド時間は、問題になる<strong>前</strong>から注視し、修正する必要があります。ビルド時間の短縮は、最適化に関する問題としてはかなり簡単です。直接的なフィードバックを得る方法は明確で（ビルド時間を測るだけです）、プロファイリングツールも数多く存在し、目安となるベンチマークを考案する必要さえありません。課題となるのはコンパイラ全般のパフォーマンスの向上ではなく、特定のプロジェクトのビルド時間の最適化です。一般に、ビルド時間の最適化のように本質的でない問題では、ほとんどのケースでこのような好ましい特徴が見られます。つまり、エンジニアリング問題としての定義が明確で、その解決策もよく知られている傾向があります。</p>
+<p>コンパイル時間に関して唯一難しいのは、実際に問題になるまで、それが問題だと認識できない点です。ですから、この記事から学べる最も有益なポイントは、もしあなたがRustプロジェクトに取り組んでいるなら、今日はビルドの最適化のためにある程度時間をとり、今後もなるべく、たまには最適化を行うべきだということです。</p>
+<p>これでソフトウェアエンジニアリングの話は終わったので、ようやく実用的なプログラミングのアドバイスに入ることができます。</p>
+<h2>bors</h2>
+<p>筆者は、注目すべき主要な指標の1つとして好んでCI実行時間を利用します。</p>
+<p>理由の1つはCI時間それ自体が重要だからです。機能の開発がCIに制約されない場合でも、CI時間は1つの作業を終えて次の作業を始めるための意識の切り替えによる負担に直接影響します。CI完了を待ちながら、5件のプルリクエスト（PR）を同時並行で処理するのは生産的ではありません。またCIが長くなると、作業を独立したまとまりに分割しにくくなります。1つのタイポを訂正するのにPRタブを30分開いておく必要があるなら、次の機能のブランチで修正を実行する方が良いでしょう。</p>
+<p>しかし、それより大きな理由は、CIが標準的なベンチマークになることです。ローカル環境では、コンパイルは徐々に行われ、変更の内容によってビルド時間は大きく異なります。通常、コンパイルするのはプロジェクトの一部です。こうした変動が避けられないため、ローカル環境におけるビルドでは、ビルド時間に関する継続的なフィードバックを十分に得られません。一方、標準化されたCIはすべての変更に対して実行されるので、直接比較可能なデータを時系列で把握できます。</p>
+<p>CIによる標準化を推進するには、“<a href="https://graydon2.dreamwidth.org/1597.html">ロケットサイエンスのルール</a>”ではなく、メインブランチのあらゆる段階でCIを確実に実行するためのマージボットの設定をお勧めします。筆者は特に<a href="https://bors.tech/">bors</a>をよく導入していますが、他の方法もあります。</p>
+<p>borsのようなツールには、（導入の決め手には全くなりませんが）妥当なコンパイル時間を実現するうえで2つのメリットがあります。</p>
+<ul>
+<li>あらゆる変更に対してCIが確実に実行されるようにし、全体的なCIの健全性の維持を推進します。</li>
+<li>PRに<code class="language-text">r+</code>コメントを付けてから「PR merged」の通知を受け取るまでの時間を常にフィードバックループで活用できます。わざわざビルド時間を測定する必要はなく、あらゆるPRがビルドのベンチマークとなります。</li>
+</ul>
+<h2>CIキャッシング</h2>
+<p>考えてみれば、優れたキャッシング戦略がCIにとって有効なのはどう見ても明らかです。めったに変更されないものをキャッシュするのは理にかなっていますが、頻繁に変更されるものをキャッシュしても無意味です。つまり、依存関係はすべてキャッシュすべきですが、プロジェクト自体のクレートはキャッシュすべきではありません。</p>
+<p>しかし、残念なことに、これを実践している人はほとんどいません。<a href="https://github.com/actions/cache/blob/main/examples.md#rust---cargo">よくあるのが</a><code class="language-text">./target</code>ディレクトリ全体をキャッシュしているケースです。これは間違っています。<code class="language-text">./target</code>はサイズが大きく、その大部分はCIには不要です。</p>
+<p>とはいえ、修正するのはそれほど簡単ではありません。悲しいことに、Cargoを使用しても、<code class="language-text">./target</code>のどの部分が持続的な依存関係で、どの部分が変更されやすいローカルなクレートであるかを容易には判別できません。ですから、キャッシュを保存する前に<code class="language-text">./target</code>を整理するための<a href="https://github.com/rust-analyzer/rust-analyzer/blob/94d9fc2a28ea5d97e3a9293b9dac05bdb00304cc/xtask/src/pre_cache.rs#L30-L53">コード</a>を書く必要があります。特にGitHub Actionsでは<a href="https://github.com/Swatinem/rust-cache">Swatinem/rust-cache</a>も利用できます。</p>
+<h2>CIワークフロー</h2>
+<p>キャッシングは通常、簡単に大きな成果を上げられます。しかし、他にも微調整できる点はいくつか存在します。</p>
+<p>まず、CIを<code class="language-text">cargo test --no-run</code>と<code class="language-text">cargo test</code>に<a href="https://github.com/rust-analyzer/rust-analyzer/blob/48f84a7b60bcbd7ec5fa6434d92d9e7a8eb9731b/.github/workflows/ci.yaml#L56-L61">分割</a>します。CIのどの部分がビルドで、どの部分がテストかを把握するのは必要不可欠です。</p>
+<p>次に、インクリメンタルコンパイルを<a href="https://github.com/rust-analyzer/rust-analyzer/blob/25368d24308d6a94ffe8b99f0122bcf5a2175322/.github/workflows/ci.yaml#L11">無効化</a>します。CIビルドはスクラッチビルドに近いケースが多いです。通常、変更はローカルな編集とコンパイルのサイクルよりはるかに大規模になるからです。スクラッチビルドでは、インクリメンタルコンパイルによって、新たな依存関係を追跡するオーバーヘッドが増えます。IOの量と<code class="language-text">./target</code>のサイズも大幅に増加し、キャッシングの有効性が低下します。</p>
+<p>debuginfoを<a href="https://github.com/rust-analyzer/rust-analyzer/blob/48f84a7b60bcbd7ec5fa6434d92d9e7a8eb9731b/Cargo.toml#L6-L10">無効化</a>するのも有効です。debuginfoは<code class="language-text">./target</code>のサイズを大幅に増大させるため、やはりキャッシングにとって悪影響です。望ましいワークフローに応じて、debuginfoを無条件に無効化することを検討しても良いでしょう。ローカル環境でのビルドにとっても一定のメリットがあります。</p>
+<p>ついでに、<code class="language-text">-D warnings</code>を<code class="language-text">RUSTFLAGS</code>環境変数に<a href="https://github.com/rust-analyzer/rust-analyzer/blob/3dae94bf2b3e496adb049da589c7efef272a39b8/.github/workflows/ci.yaml#L15">追加</a>して、すべてのクレートの警告をまとめて拒否しましょう。<code class="language-text">#![deny(warnings)]</code>をコードに追加するのは良いアイデアではありません。すべてのクレートで同じことを繰り返さなければならず、ローカルの開発を不必要に困難にし、ユーザーがコンパイラをアップグレードする際に気力をそがれる恐れがあります。Cargoネットワークのリトライ回数を増やすのも有効かもしれません。</p>
+<h2>Lockfileを読み込む</h2>
+<p>他のアドバイスとしては、当然のことですが、利用する依存関係の数を減らし小規模化すると良いでしょう。</p>
+<p>ただし、これには微妙な点があります。ライブラリは実際に問題を解決するものです。crates.ioで解決済みの問題に自分でソリューションを導入するのはばかげています。そして、あなたのソリューションがより小規模である保証はありません。</p>
+<p>しかし、アプリケーションが解決しようとしている問題と、そうでない問題を認識するのは重要です。数千人が利用するCLIユーティリティを構築している場合、<a href="http://clap.rs/">clap</a>とそのすべての機能は絶対に必要です。一方、CIの間に実行する簡単なスクリプトを書いていて、それがチームにしか使用されない場合、コマンドラインのパーシングを単純にして、ビルドを高速化しても構わないでしょう。</p>
+<p>これに関して、<code class="language-text">Cargo.lock</code>（Cargo.tomlではありません）を読み、それぞれの依存関係が自分のアプリケーションを使用する人たちにとってどんな実際の問題を解決するか考えてみるのは、とても有用なトレーニングとなります。<strong>自分の環境</strong>では依存関係が全く意味を持たないのに気づくのは非常によくあることです。</p>
+<p>例を挙げると、rust-analyzerはregexに依存していますが、これは無意味です。私たちには RustとMarkdown向けの厳密なパーサーとレキサーがあるため、ランタイムで正規表現を解釈する必要はありません。さらに、regexは小規模な言語を丸ごと導入するため、依存関係がかなり重いクレートの1つです。この依存関係が存在する理由は、私たちが利用しているロギングライブラリにおいて、以下のような記述が可能になるためです。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">RUST_LOG=rust_analyzer=very complex filtering expression</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>この場合、フィルタリング式のパーシングは正規表現によって行われます。</p>
+<p>これは一部のアプリケーションにとって間違いなくとても便利な機能ですが、rust-analyzerに関しては不要です。<code class="language-text">env_logger-</code>の単純なフィルタリングで十分でしょう。</p>
+<p>同様に冗長な依存関係を特定したら、どこかのfeaturesフィールドを微修正するか、PRを上流に送信して不必要な部分を変更可能にすれば十分です。</p>
+<p>時にはもっと大規模なyak shaving（※訳注 問題を解決しようとすると別の問題が出てきて、それを解決しようとするとさらに別の問題が出てくるという繰り返しのこと）が必要な場合もあります。例えば、rust-analyzerはオプションでjemallocクレートを利用しており、そのビルドスクリプトは<a href="https://docs.rs/fs_extra">fs_extra</a>と（よりによって）<a href="https://docs.rs/paste">paste</a>を呼び出します。ここでの理想的な解決策はもちろん、堅牢で安定した純正なrustメモリアロケータの導入です。</p>
+<h2>最適化の前にプロファイリングを</h2>
+<p>ここまで常識的な対策を実施してきたので、そろそろビルド時間を削減する前に測定してみましょう。今回使用するツールはCargoのtimingsフラグです（<a href="https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#timings">ドキュメントはこちら</a>）。悲しいことに、筆者はこの機能の質の高さと洗練性を十分に表現できるだけの雄弁さを持ち合わせていません。そこで、ここでは愛 ❤️ を表明するだけにとどめ、ドライに説明を続けさせてください。</p>
+<p><code class="language-text">cargo build -Z timingsは</code>、ビルド中のプロファイリングデータを記録し、それをとても読みやすくて情報が詰まったHTMLファイルとして出力します。これはナイトリー版の機能であるため、<code class="language-text">+nightly</code>トグルが必要です。とはいえ、ときどき手動で実行すればよいだけなので、実際は問題ありません。</p>
+<p>以下はrust-analyzerの例です。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">cargo +nightly build -p rust-analyzer --bin rust-analyzer \
+  -Z timings –release</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<p><img src="https://matklad.github.io/assets/cargo-timings.png"></p>
+<p>各クレートのコンパイルにどれだけ時間がかかったかだけでなく、個々のコンパイルがどのようにスケジューリングされ、各クレートのコンパイルがいつ開始されたかや、クリティカルな依存関係も分かります。</p>
+<h2>コンパイルのモデル：クレート</h2>
+<p>ここからは重要な最後のポイントを説明します。クレートは依存関係の有向非巡回グラフを形成し、マルチコアのCPUではこのグラフの形状がコンパイル時間に大きく影響します。</p>
+<p>以下はすべてのクレートを順番にコンパイルする必要があるため、コンパイルに時間がかかります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">A -&gt; B -&gt; C -&gt; D -&gt; E</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>一方、以下のグラフでは並列処理が可能な部分が大幅に増えるため、コンパイルははるかに速くなります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">   +-  B  -+
+  /         \
+A  -&gt;  C  -&gt;  E
+  \         /
+   +-  D  -+</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>並列処理とインクリメンタリティにも関係があります。2番目の大きいグラフでは、Bを変更してもCとDを再びコンパイルする必要はありません。</p>
+<p>Rustのコンパイル時間について不満を言うと、最初に返ってくるアドバイスは「コードをクレートに分割しよう」です。しかし、これはさほど簡単ではありません。最初のグラフのような形状になっている場合、大きな成果は見込めません。アプリケーションを2番目のグラフのように構築するのが重要となります。つまり、共通用語のクレート、複数の独立した機能、そしてすべてを繋ぐ「葉」の役割を果たすクレートから成る構造です。クレートの最も重要なプロパティは、そのクレートが（推移的に）依存していないクレートはどれかということです。</p>
+<p>もう1つの重要な検討事項は、最終的なアーティファクト（最も一般的にはバイナリ）の数です。Rustは静的リンク方式であるため、2つの異なるバイナリが同一のライブラリを使用する場合、各バイナリにはそれぞれ別にリンクされたライブラリのコピーが含まれます。仮にn個のバイナリとm個のライブラリが存在し、各バイナリが各ライブラリを使用するとき、リンクを作成する際の作業量は<strong>m * n</strong>です。そのため、アーティファクトの数は最小限に抑えると良いでしょう。よくあるテクニックの1つが、<a href="https://www.busybox.net/FAQ.html#design">BusyBox</a>のような多機能ナイフ型の実行可能ファイルです。このアイデアは、同じ実行可能ファイルを、異なる名前を持つ複数のファイルとしてハードリンクするものです。プログラムは0番目のコマンドライン引数を参照することで、自らが呼び出されたファイル名を把握し、それをサブコマンドの名前として有効に利用できます。ただし、Cargoに特有の注意点として、<code class="language-text">./examples</code>と<code class="language-text">./tests</code>フォルダ内の各ファイルはデフォルトで新たな実行可能ファイルを作成します。</p>
+<h2>コンパイルのモデル：マクロとパイプライン化</h2>
+<p>しかし、Cargoにはそれ以上にスマートな機能があります。それはコンパイルのパイプライン化です。Cargoはクレートのコンパイルをメタデータとコード生成の段階に分け、メタデータの段階が終わるとすぐに依存するクレートのコンパイルを開始します。</p>
+<p>このとき、手続きマクロ（とビルドスクリプト）との間に面白い関係が発生します。<code class="language-text">rustc</code>はクレートのメタデータを計算するために手続きマクロを実行する必要があります。これは手続きマクロがパイプライン化できないことや、手続きマクロが完全にコンパイルされてバイナリコードになるまで、その手続きマクロを使用するクレートがブロックされることを意味します。</p>
+<p>一方、手続きマクロはRustコードをパースする必要がありますが、これはかなり複雑なタスクです。この機能を担うデファクトスタンダードのクレートである<code class="language-text">syn/serde</code>はコンパイルに長い時間がかかります（肥大化しているからではなく、単純にRustのパーシングが難しいからです）。</p>
+<p>これは一般に、プロジェクトにおいて、コンパイル中のCPU稼働率のプロファイルに <code class="language-text">syn/serde</code> は大きく穴をあける傾向にあることを意味します。（訳注: syn/serde によって、 コンパイル中にCPUに対して大きく負荷がかかります）そのため、手続きマクロはそれが十分に活用される場合のみ使用し、<code class="language-text">cargo -Z timings</code>グラフで<code class="language-text">syn</code>の前にクレートを配置することがかなり重要です。</p>
+<p>ただし、後者は難しい場合があります。手続きマクロの依存関係はいつの間にか増大する可能性があるからです。こうした依存関係はフィーチャーフラグに隠れていることが多く、それらのフィーチャーフラグが川下のクレートによって有効化されるケースが問題となります。以下の例を考えてみましょう。</p>
+<p>便利なユーティリティ型、例えばSSO文字列が<code class="language-text">small_string</code>クレートに存在するとします。シリアル化を実装するには、実は継承は必要ないため（Stringへの委譲で十分です）、<code class="language-text">serde</code>との（任意の）依存関係を追加します。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">[package]
+name = &quot;small-string&quot;
+
+[dependencies]
+serde = { version = &quot;1&quot; }</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>SSO文字列は非常に便利な抽象型なので、コードベース全体で使用されます。その後、例えばJSON APIを公開する必要がある葉のクレートに、<code class="language-text">serde</code>フィーチャーを持つ<code class="language-text">small_string</code>と、deriveフィーチャーを持つ<code class="language-text">serde</code>自体との依存関係を追加します。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">[package]
+name = &quot;json-api&quot;
+
+[dependencies]
+small-string = { version = &quot;1&quot;, features = [ &quot;serde&quot; ] }
+serde = { version = &quot;1&quot;, features = [ &quot;derive&quot; ] }</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ここで問題になるのは、<code class="language-text">json-api</code>が<code class="language-text">serde</code>の<code class="language-text">derive</code>フィーチャーを有効化するため、<code class="language-text">small-string</code>とその逆依存関係のすべてが<code class="language-text">syn</code>のコンパイルを待つ必要があることです。同様に、あるクレートが<code class="language-text">syn</code>のフィーチャーの一部にしか依存していなくても、クレートグラフ内の別の何かがすべてのフィーチャーを有効化すると、元のクレートにはそのフィーチャーも追加されます。</p>
+<p>これは必ずしも破滅的な状況ではありませんが、依存関係グラフがフィーチャーの存在によって厄介なものとなり得ることが分かります。うれしいことに、<code class="language-text">cargo -Z timings</code>は問題の発生を気づきやすくしてくれます。もっとも、いったい何が間違っているのか明らかになるとは限りませんが。</p>
+<p>手続きマクロは、もっと直接的にコンパイルを遅くする原因にもなります。マクロが大量のコードを生成する場合、コンパイルに一定の時間がかかります。というのも、一部のマクロは少量のソースコードを書くことを可能にしており、それ自体は害がないように感じられますが、そのコードが大量のロジックに拡大するのです。代表的な例はシリアル化です。筆者は、数値からJSONへの変換（とその逆）がコンパイルにおいて驚くほど大きな部分を占めていると気づきました。ここではクレートのグラフ全体について考えるのが役立ちます。シリアル化は、システムの境界の葉のクレートで実行するようにすべきです。システムの根幹の付近にシリアル化を導入すると、すべての中間クレートがビルド時間のコストを負担することになります。</p>
+<p>いずれにせよ、面白いポイントは、手続きマクロは本質的にコンパイルが遅いわけではないことです。むしろ、ほとんどの手続きマクロはRustをパースする必要があるか、あるいは多くのコードを生成するために遅くなっています。ときには、マクロはsynなしでパースできる単純な構文を受け入れ、それに基づいてわずかなRustコードを生成する場合もあります。有効なRustの生成は、そのパーシングに比べれば全く複雑ではありません。</p>
+<h2>コンパイルのモデル：モノモーフィゼーション</h2>
+<p>以上でクレートレベルのマクロに関する問題はカバーしたので、コードレベルの問題を詳しく見ていきましょう。主に注目するのはジェネリクスです。ジェネリクスがどのようにコンパイルされるかを理解するのは非常に重要です。Rustの場合はモノモーフィゼーションによって実現されます。以下のありふれたジェネリック関数について考えてみましょう。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">fn frobnicate&lt;T: SomeTrait&gt;(x: &amp;T) {
+   ...
+}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>Rustがこの関数をコンパイルするとき、実際には機械語は出力しません。代わりに、関数の本体の抽象表現をライブラリに保存します。実際のコンパイルは、関数を特定の型の変数で<strong>インスタンス化</strong>したときに行われます。直感的な理解のためにC++の用語を借用するならば、 <code class="language-text">frobnicate</code>は「テンプレート」です。これは変数Tに具体的な型が代入された際に実際の関数を生成します。</p>
+<p>言い換えると、以下のケースでは</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">fn frobnicate_both(x: String, y: Widget) {
+  frobnicate(&amp;x);
+  frobnicate(&amp;y);
+}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>機械語のレベルで2つの異なる<code class="language-text">frobnicate</code>のコピーが生成されます。両者は変数の詳細な処理が違っていますが、それ以外は同一です。</p>
+<p>これではとても困ると思いませんか？どうやら大規模なジェネリック関数を書くと、それをインスタンス化するために複数の型のコードを少し書いただけで、コンパイラに大きな負荷がかかるようです。</p>
+<p>ここで残念なお知らせがあります。現実は想像よりもはるかに悪いのです。型が異なっていない場合さえ、重複は発生します。例えば、以下のようなダイヤモンド型の4つのクレートがあるとしましょう。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">   +- B -+
+  /       \
+A           D
+  \       /
+   +- C -+</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">frobnicate</code>はAで定義され、BとCで使用されます。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">// A
+pub fn frobnicate&lt;T: SomeTrait&gt;(x: &amp;T) { ... }
+
+// B
+pub fn do_b(s: String) { a::frobnicate(&amp;s) }
+
+// C
+pub fn do_c(s: String) { a::frobnicate(&amp;s) }
+
+// D
+fn main() {
+  let hello = &quot;hello&quot;.to_owned();
+  b::do_b(&amp;hello);
+  c::do_c(&amp;hello);
+}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>このケースでは<code class="language-text">frobincate</code>を<code class="language-text">String</code>でしかインスタンス化していませんが、モノモーフィゼーションはクレートごとに行われるため、コンパイルは2回となります。BとCは別々にコンパイルされ、それぞれに<code class="language-text">do_*</code>関数の機械語が含まれるため、<code class="language-text">frobnicate&lt;String&gt;</code>を必要とします。最適化が無効な場合、<code class="language-text">rustc</code>はテンプレートのインスタンス化を直接の依存関係と共有できますが、親が共通の依存関係とは共有しません。最適化が有効な場合、<code class="language-text">rustc</code>は直接の依存関係とさえモノモーフィゼーションを共有しません。</p>
+<p>言い換えると、Rustのジェネリクスによって、多くのクレートでコンパイル回数が意図せず二次関数的に増加する恐れがあります。</p>
+<p>これ以上悪いことがあり得るのかと考えているなら、その答えはイエスです。筆者は、モノモーフィゼーションの実際の単位はコード生成単位だと考えており、そのため重複は1つのクレート内でも発生する可能性があります。</p>
+<h2>インスタンス化に注意</h2>
+<p>ジェネリクスには、重複に加えて、コンパイル時間を利用者に転嫁する問題もあります。ジェネリック関数のコンパイル時間のコストの大部分はその機能を使用するクレートが負担する一方、定義が記述されたクレートはコードを一切生成せず、コードの型をチェックするだけです。何が、どこで、なぜインスタンス化されるかが全く明確でない場合（<a href="https://github.com/rust-analyzer/rust-analyzer/issues/10065">例</a>）もあるため、ジェネリックAPIを直接追跡するのは困難です。</p>
+<p>しかし、うれしいことに、その作業は必要ありません。そのためのツールがあるからです。<a href="https://github.com/dtolnay/cargo-llvm-lines">cargo llvm-lines</a>は、特定のクレートでどのようなモノモーフィゼーションが起きているかを教えてくれます。</p>
+<p>以下は<a href="https://github.com/rust-analyzer/rust-analyzer/issues/10065">最近の調査に基づく例</a>です。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">$ cargo llvm-lines --lib --release -p ide_ssr | head -n 12
+ Lines          Copies        Function name
+  -----          ------        -------------
+  533069 (100%)  28309 (100%)  (TOTAL)
+   20349 (3.8%)    357 (1.3%)  RawVec&lt;T,A&gt;::current_memory
+   18324 (3.4%)    332 (1.2%)  &lt;Weak&lt;T&gt; as Drop&gt;::drop
+   14024 (2.6%)    332 (1.2%)  Weak&lt;T&gt;::inner
+   11718 (2.2%)    378 (1.3%)  core::ptr::metadata::from_raw_parts_mut
+   10710 (2.0%)    357 (1.3%)  &lt;RawVec&lt;T,A&gt; as Drop&gt;::drop
+    7984 (1.5%)    332 (1.2%)  &lt;Arc&lt;T&gt; as Drop&gt;::drop
+    7968 (1.5%)    332 (1.2%)  Layout::for_value_raw
+    6790 (1.3%)     97 (0.3%)  hashbrown::raw::RawTable&lt;T,A&gt;::drop_elements
+    6596 (1.2%)     97 (0.3%)  &lt;hashbrown::raw::RawIterRange&lt;T&gt; as Iterator&gt;::next</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この表は各ジェネリック関数について、生成されたコピーの数とその合計サイズを示しています。サイズは関数のエンコードに必要なllvm irの行数として非常に大ざっぱに測定されています。有益な情報としては、llvmはジェネリック関数を持っていません。関数テンプレートをインスタンス化によって実際の関数に変えるのはrustcの仕事です。</p>
+<h2>インスタンス化のコントロール</h2>
+<p>モノモーフィゼーションの落とし穴が分かれば、大まかな対策も明らかになります。それはジェネリックコードをクレート間の境界に設置しないことです。大規模なシステムを設計するときは、一連のコンポーネントとして設計したうえで、各コンポーネントが具体的な作業を行い、ジェネリックでないインターフェースを持つようにします。</p>
+<p>型安全性や作業効率を改善するためにジェネリックインターフェースが必要な場合は、必ずインターフェースのレイヤーを薄くし、ジェネリックでない実装にすぐに委譲するようにします。ここで埋め込むべき関数の典型的な例は、<code class="language-text">str::fs</code>モジュールに記述され、パス上で動作するさまざまな関数です。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">pub fn read&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;Vec&lt;u8&gt;&gt; {
+  fn inner(path: &amp;Path) -&gt; io::Result&lt;Vec&lt;u8&gt;&gt; {
+    let mut file = File::open(path)?;
+    let mut bytes = Vec::new();
+    file.read_to_end(&amp;mut bytes)?;
+    Ok(bytes)
+  }
+  inner(path.as_ref())
+}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>外側の関数はパラメータ化されており、効率良く使用できますが、川下のあらゆるクレートで毎回コンパイルされます。とはいえ、この関数は非常に小規模で、stdでコンパイルされるジェネリックでない関数にすぐ移譲されるので問題ありません。</p>
+<p>引数としてパスを必要とする関数を記述する場合、<code class="language-text">&amp;Path</code>を利用するか、あるいは<code class="language-text">impl AsRef&lt;Path&gt;</code>を利用してジェネリックでない実装へ委譲しましょう。APIの効率が気になって、implトレイトを利用するくらいなら、<code class="language-text">inner</code>をうまく使うべきです。関数を呼び出すのに使用される構文と同様に、コンパイル時間も効率の大きな要素となります。</p>
+<p>第2の典型的なケースはクロージャです。基本的に<code class="language-text">&amp;dyn Fn()</code>を<code class="language-text">impl Fn()</code>よりも優先しましょう。パスの場合と同様に、<code class="language-text">impl</code>ベースの優れたAPIを薄いラッパーとして、<code class="language-text">dyn</code>ベースの実装が大部分の作業を実施するのが良いでしょう。</p>
+<p>これに関する別のアイデアは、「ジェネリックなインラインのホットパスと、コンクリート（具体的）なアウトラインのコールドパス」です。<a href="https://lib.rs/crates/once_cell">once_cell</a>クレートには、以下のような面白いパターンが記述されています（以下は簡略化済み。<a href="https://github.com/matklad/once_cell/blob/f92720a4cac370c117e9d565aebbae2b8de51852/src/imp_std.rs#L86">実際のソース</a>はこちら）。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">struct OnceCell&lt;T&gt; {
+  state: AtomicUsize,
+  inner: Option&lt;T&gt;,
+}
+
+impl&lt;T&gt; OnceCell&lt;T&gt; {
+  #[cold]
+  fn initialize&lt;F: FnOnce() -&gt; T&gt;(&amp;self, f: F) {
+    let mut f = Some(f);
+    synchronize_access(self.state, &amp;mut || {
+      let f = f.take().unwrap();
+      match self.inner {
+        None =&gt; self.inner = Some(f()),
+        Some(_value) =&gt; (),
+      }
+    });
+  }
+}
+
+fn synchronize_access(state: &amp;AtomicUsize, init: &amp;mut dyn FnMut()) {
+  // One hundred lines of tricky synchronization code on atomics.
+}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この<code class="language-text">initialize</code>関数は2回ジェネリックになります。最初に<code class="language-text">OnceCell</code>が、保存された値の型とともに変数化され、次に<code class="language-text">initialize</code>がジェネリックなクロージャ変数を受け取ります。<code class="language-text">initialize</code>の仕事は、（たとえ同時に多くのスレッドから呼び出されたとしても）最大で1つのfしか実行されないようにすることです。この相互排他タスクは、コンパイル時間を改善するために、実際は具体的なTやFに依存せず、ジェネリックではない<code class="language-text">synchronize_access</code>として実装されています。理想的には<code class="language-text">init: dyn FnOnce()</code>引数を使用したいのですが、現在のRustでは記述できないのが欠点です。このケースでは、<code class="language-text">let mut f = Some(f) / let f = f.take().unwrap()</code>が標準的な次善の策となります。</p>
+<h2>結論</h2>
+<p>大体こんなところでしょうか！要点を振り返っておきましょう。</p>
+<p>ビルド時間はプロジェクトに取り組む人間のトータルな生産性に大きく影響します。ビルド時間の最適化はエンジニアリング課題としては単純で、ツールも存在します。恐らく難しいのは、取り組みが少しずつ後退しないようにすることです。この記事がそのための十分なモチベーションとインスピレーションになるように願っています。大まかな目安として、20万行のRustプロジェクトのビルド時間を妥当な範囲に収めるためにある程度最適化すれば、GitHub Actions上のCIの所要時間は約10分となるはずです。</p>
+<p><a href="https://old.reddit.com/r/rust/comments/pid70f/blog_post_fast_rust_builds">/r/rust</a>での議論はこちらです。</p>
+<p>本記事は<a href="https://matklad.github.io/2021/09/05/Rust100k.html">One Hundred Thousand Lines of Rust</a>シリーズの一部です。</p>]]></content:encoded></item><item><title><![CDATA[中身のないnpmパッケージ「-」が70万回以上ダウンロードされる— その理由とは]]></title><description><![CDATA[名前が1文字の「-」という謎めいたnpmパッケージは、2020年にレジストリで公開されて以来、70万回以上ダウンロードされています。 さらに、このパッケージには有効なコードが含まれていません。では、…]]></description><link>https://postd.cc/empty-npm-package-has-over-700-000-downloads-heres-why/</link><guid isPermaLink="false">https://postd.cc/empty-npm-package-has-over-700-000-downloads-heres-why/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[npm]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[NodeJS]]></category><category><![CDATA[オープンソース]]></category><category><![CDATA[OSS]]></category><pubDate>Mon, 13 Dec 2021 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>名前が1文字の「-」という謎めいたnpmパッケージは、2020年にレジストリで公開されて以来、70万回以上ダウンロードされています。</p>
 <p>さらに、このパッケージには有効なコードが含まれていません。では、一体なぜこれほど多くダウンロードされているのでしょうか？</p>
 <h2>npmパッケージ「-」の中身</h2>
 <p>「-」というnpmパッケージは、2020年初めにnpmレジストリで公開されてから、約72万回もダウンロードされてきました。</p>
@@ -879,39 +1081,4 @@ BitbucketにはCIパイプライン機能としてBitbucket pipelinesが提供�
 Cloud Runは従量課金制のため、あまりコストを気にせずに環境の増減を行えるのがメリットとなっています。</p>
 <h2>終わりに</h2>
 <p>以上の設計・作業をもってリニューアルを行い、新しいデザインでのPOSTDをスタートさせることになりました。</p>
-<p>ユーザー体験の向上を継続的に図りつつ、再び海外のエンジニアトレンドを紹介していきますので、よろしくお願いします。</p>]]></content:encoded></item><item><title><![CDATA[PHPはもうダメだ、PHP万歳！]]></title><description><![CDATA[(編注：2020/08/18、いただいたフィードバックをもとに記事を修正いたしました。) GutenbergとWordPressに関する騒動は、PHPの終焉につながる最新記事です。深呼吸をしてくださ…]]></description><link>https://postd.cc/php-is-dead-viva-le-php/</link><guid isPermaLink="false">https://postd.cc/php-is-dead-viva-le-php/</guid><category><![CDATA[プロダクト・サービス]]></category><category><![CDATA[プログラミング]]></category><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[PHP]]></category><pubDate>Thu, 28 Mar 2019 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p><img src="https://cdn-images-1.medium.com/max/1200/1*fi1N5O-vvtJUgH4wqdM0ng.png"></p>
-<p>(編注：2020/08/18、いただいたフィードバックをもとに記事を修正いたしました。)</p>
-<p>GutenbergとWordPressに関する騒動は、PHPの終焉につながる最新記事です。深呼吸をしてください、みなさん。トロールは無視し、Mark TwainとFidel CastroとPHPとの共通点を見ていきましょう。そして、もっと重要なのは、スタートアップやスモールビジネスにとって、PHPが今でも合理的な選択である理由です。</p>
-<h2>PHPはいつから廃れ始めたのか</h2>
-<p>“PHPはもうダメだ”といったブログの投稿が、登場し始めたのは2011年のようです（これより古いものを見つけたら、お知らせください）。Mediumや、mushroomsのように突然出現したcoding bootcampsを探し回れば、その唯一の共通点は、みんながPHPを嫌っているか、あるいは単に無視しているかです。どうやら、法外な値段のコーヒーを飲みながら、油まみれのヒゲと皮肉たっぷりのTシャツと一緒に、PHPでコーディングするのは不可能のようです。</p>
-<p><img src="https://cdn-images-1.medium.com/max/1200/0*g0GFJF0d-oQ0eNgQ.jpg"></p>
-<p>ばかな！</p>
-<p>もうたくさんです。反PHPのエコーチェンバー現象のせいで、疑わしいビジネス上の決断を下そうとしている創設者に私はいつも話しかけています。<br>
-これが現実です。 <a href="https://w3techs.com/technologies/details/pl-php/all/all">2018年現在、Webサイトの約80パーセントがPHPが使用している</a> 。<br>
-PHPは、なんだかんだ言っても、それほど廃れていないと思います。</p>
-<h2>神話</h2>
-<p>PHPはスケーラブルではない。まったくその通りです。Wikipediaは完全にPHPによって動いており、インターネットで5番目にアクセス件数の多いサイトです。PHPを使っているFacebookと呼ばれるこの取るに足らないサイトもあります。聞いたことがありますか？</p>
-<p>PHPは遅い。もちろん、旧来のPHPは遅くなることがあります。私の最初のApple IIeが遅かったから、OS 10はひどいOSだと聞こえてくるのとほぼ同じような議論です。PHP7は十分速いです。実に <a href="https://hackr.io/blog/python-vs-php-in-2019">Pythonより3倍も速い</a> です。</p>
-<h2>PHPが輝くプロジェクト</h2>
-<p>私が事業主にWebサイトが必要だという話をするとき、PHPベースのCMS、例えばDrupalなどを検討することをまず提案します。PHPでカスタムCMSを構築する際でも、大部分のスモールビジネスの予算の範囲内に十分収まります。”でも、「とても高価でニッチなTechnology X」はどうですか”とつぶやくような返事をもらうことが多いです。</p>
-<p>誤解しないでください。私は機械学習、高負荷のシステム、最先端のJavaを使ってプロジェクトを管理してきました。私は、技術革新反対主義者ではありません。私は実業家です。そして、それが共に働く企業ごとに完全に適切な技術を見つけることに固執している理由です。</p>
-<p>PHPはコンテンツ主導型のWebサイトを構成するのに優れています。私が共に働くビジネスのほとんどは、アップデートやコピーの変更、ブログ投稿の追加、テンプレートでの運用が容易なサイトが必要です。また、こうしたあらゆるものが、専門技能を持たない職員が状況を壊すことなく実行できるほど簡単なのです。</p>
-<p>同じことが電子商取引にも当てはまります。コーディングよりも販売に集中する必要がある事業主は、買ってきてそのまま使うことができるMagentoのようなプラットフォームを使用します。心配しないでください。バックグラウンドでPHPが動いている電子商取引のサイトから、ヒゲの油をまだ売ることができます。秘密にしておきます。</p>
-<p>そこで立ち止まる必要はありません。Symfonyのような高度なフレームワークは広範囲のアプリケーションの複雑なビジネスロジックに対処できます。ReactやVue、Angularのような最新のフロントエンドのフレームワークとうまく適合するAPIを構築するのにPHPは優れた言語です。</p>
-<h2>PHPのビジネス感覚</h2>
-<p>PHPがWebサイトの80パーセントで使用されている話に戻ります。経済力につなげてください。つまり、PHPの開発者は山ほど存在しているのですから。あなたにとっての利点は以下のようなものです。</p>
-<ol>
-<li>開発者を雇うのは、 <em>極めて</em> 簡単です。不明瞭なフレームワークで間に合わせることを決めたプロジェクトに対して、新しい開発者が見つかることをお祈り致します。</li>
-<li>開発のコストは抑えられます。というのも、採用市場に出ている開発者の能力は高く、また一から作り直す必要はありません。利用できるオープンソースのプロジェクトはたくさん存在しています。</li>
-</ol>
-<p><img src="https://cdn-images-1.medium.com/max/1200/1*3bAVxsQdVpBi2xO-_xd7IQ.jpeg"></p>
-<p>どんな理由であれ、ビジネスにおける基本的な洞察力は、スタートアップの現場では欠けています。次に、誰かがブロックチェーンや機械学習についての失言で、簡単なWebのアプリについて説明しているのを聞いたら、ただうなづき、涼しい顔でLaravel やSymfonyがほぼ間違いなく、ちゃんとうまく動いている理由を説明しましょう。要するに、自分のマーケティング部門の誇大広告を信用してはいけません。</p>
-<p>ブートストラップなスタートアップにとってはいくら強調してもしたりません。PHPのエコシステムでソリューションを見つけてください。大抵、PHPで進めていくことにより、費用や開発時間のほんのわずかな一部でビジネスロジックを実行することができます。</p>
-<h2>上級開発者がもたらす視点</h2>
-<p>真の上級エンジニアはインターネット上での経験が2年の”上級開発者”と話をした時には決して得ることのない、堅実で広範な視点をもたらしてくれます。PHPのような実証済みのテクノロジを使用する場合、10年の経験を積んだエキスパートを見つけることはとても簡単です。</p>
-<p>企業家にとって、経験豊かなエンジニアと組むことはコストの削減になります。若手のチームを雇ってお金を”倹約”しようとするよりもむしろ、MVPをより高速にし、初めから高い品質で構築してください。PHPとSymfonyやLaravelといったフレームワークを用いる場合、上級開発者を見つけるのがはるかに現実的です。</p>
-<h2>なかなかしぶといPHP</h2>
-<p>2019年にはPHPの終焉に関するブログの投稿はついに終わりになるだろう、といつも期待しています。その反面、他の人が私の秘密を知らなければ、その方が良いかもしれないとも思っています。PHPやRubyのような素晴らしい言語のため、上級開発者を雇って <a href="https://hackernoon.com/idea-to-app-for-under-15k-reality-or-not-399fcd21507e">166万円以下のMVP</a> を次から次へと作り出しています。</p>
-<p>PHPはプログラミング言語のFidel Castroです。つまり、結局のところCastroは彼の暗殺を命じた5人のアメリカ大統領よりも長生きしました。そしてもちろん、Mark Twainの死の報道が実際より誇張されたように、Webの80パーセントを動かしている言語を終わったと考えるのは、まるで訳が分からないことです。</p>
-<p>PHP万歳！</p>
-<p>元々の投稿は <a href="https://eteam.io/blog/php-is-dead-viva-php/">eTeamのブログ</a> です。</p>]]></content:encoded></item></channel></rss>
+<p>ユーザー体験の向上を継続的に図りつつ、再び海外のエンジニアトレンドを紹介していきますので、よろしくお願いします。</p>]]></content:encoded></item></channel></rss>
