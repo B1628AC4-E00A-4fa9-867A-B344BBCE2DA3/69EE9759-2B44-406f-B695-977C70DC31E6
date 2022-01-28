@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper</link>
 	<description></description>
-	<lastBuildDate>Wed, 06 Oct 2021 17:03:45 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 28 Jan 2022 20:04:20 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,460 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Making the app single-instanced (Part 3)</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2022/01/28/making-the-app-single-instanced-part-3/</link>
+		
+		<dc:creator><![CDATA[Jingwei Zhang, Program Manager]]></dc:creator>
+		<pubDate>Fri, 28 Jan 2022 19:45:36 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[Windows Developers]]></category>
+		<category><![CDATA[WinUI]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56430</guid>
+
+					<description><![CDATA[<p><span style="font-weight: 400;">Single-instanced apps only allow one instance of the app running at a time. WinUI apps are multi-instanced by default. They allow you to launch multiple instances of the same app at one time, which we call multiple ins</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2022/01/28/making-the-app-single-instanced-part-3/">Making the app single-instanced (Part 3)</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<span style="font-weight: 400;">Single-instanced apps only allow one instance of the app running at a time. WinUI apps are multi-instanced by default. They allow you to launch multiple instances of the same app at one time, which we call multiple instances. However, you may implement single-instancing based on the use case of your app. Attempting to launch a second instance of a single-instanced app will only result in the first instance’s main window being activated instead. This tutorial demonstrates how to implement single-instancing.</span>
+
+<span style="font-weight: 400;">By the end of this section, you will be able to: 1. Turn off XAML’s generated Program code 2. Define customized MAIN method for redirection 3. Test single-instancing via app deployment</span>
+<h3><b>Turn off XAML’s generated Program code</b></h3>
+<span style="font-weight: 400;">We need to check for redirection as early as possible, and before creating any windows. To do this, we must define the symbol “DISABLE_XAML_GENERATED_MAIN” in the project build properties.</span>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><b>Double-click</b><span style="font-weight: 400;"> on the project name in Solution Explorer:</span></li>
+ 	<li style="font-weight: 400;" aria-level="1">Define the <b>DISABLE_XAML_GENERATED_MAIN</b> symbol below </PropertyGroup></li>
+</ol>
+<span style="font-weight: 400;">DrumPad:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
+  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+</PropertyGroup></pre>
+<h3><b>Define a customized Program class with a Main method</b></h3>
+<span style="font-weight: 400;">A customized Program.cs file is created instead of running the default Main method because it enables the app to check for redirection, which is not what WinUI apps default to doing.</span>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -> </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -> Add -> New Item</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Under </span><b>Visual C# Items</b><span style="font-weight: 400;"> -> Code -> Class -> Name it </span><b>Program.cs</b><span style="font-weight: 400;"> -> Add</span></li>
+</ol>
+<b>NOTE</b><span style="font-weight: 400;">: Your project should look like this:</span>
+
+<img class="aligncenter size-full wp-image-56432" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture1.png-BLOG-3.png" alt="" width="832" height="828" />
+
+<span style="font-weight: 400;">    3. Add the following namespaces:</span>
+
+<span style="font-weight: 400;">Program.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">using System.Threading;
+using Microsoft.UI.Dispatching;
+using Microsoft.Windows.AppLifecycle;
+using Windows.ApplicationModel.Activation;
+using Windows.Storage;</pre>
+4. <span style="font-weight: 400;">Replace the empty class Program with following:</span>
+
+<span style="font-weight: 400;">Program.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">{
+    [STAThread]
+    static async Task<int> Main(string[] args)
+    {
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+        bool isRedirect = await DecideRedirection();
+        if (!isRedirect)
+        {
+            Microsoft.UI.Xaml.Application.Start((p) =>
+            {
+                var context = new DispatcherQueueSynchronizationContext(
+                    DispatcherQueue.GetForCurrentThread());
+                SynchronizationContext.SetSynchronizationContext(context);
+                new App();
+            });
+        }
+
+        return 0;
+    }
+}</pre>
+<b>NOTE</b><span style="font-weight: 400;">: Main determines if it should redirect or launch a new app instance via DecideRedirection();</span>
+
+5. D<span style="font-weight: 400;">efine DecideRedirection() below the Main method:</span>
+
+<span style="font-weight: 400;">Program.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private static async Task<bool> DecideRedirection()
+{
+    bool isRedirect = false;
+    AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
+    ExtendedActivationKind kind = args.Kind;
+    AppInstance keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
+    
+    if (keyInstance.IsCurrent) {
+        keyInstance.Activated += OnActivated;
+    }
+    else {
+        isRedirect = true;
+        await keyInstance.RedirectActivationToAsync(args);
+    }
+    return isRedirect;
+}
+</pre>
+<b>NOTE</b><span style="font-weight: 400;">: DecideRedirection determines if the app has been registered by registering a key that represents your app instance. Based on the result of key registration, it infers if there is a current app instancing running; therefore, whether or not to redirect or allow the app to launch for the first time</span>
+
+6. D<span style="font-weight: 400;">efine the helper method OnActivated(), below the DecideRedirection method:</span>
+
+<span style="font-weight: 400;">Program.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private static void OnActivated(object sender, AppActivationArguments args)
+{
+    ExtendedActivationKind kind = args.Kind;
+}</pre>
+<h3><b>Testing single-instancing via app deployment</b></h3>
+<span style="font-weight: 400;">Up until now, we have been testing our app by running the solution debugger. We can only have one debugger running at once. Therefore, it prevents us from knowing whether the app is single-instanced because we can’t debug the same project solution twice at the same time. To test, we will deploy the application. After deploying, we can launch the app from the desktop like how you would with Microsoft Word.</span>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -> </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -> </span><b>Deploy</b></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Open the start menu and click on the search field</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Type “DrumPad” (or your app’s name) in the search field</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Click on the app icon from the search result to launch the app</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Repeat steps 2 to 4 to launch the same app again and see if another instance pops up</span></li>
+</ol>
+<h3><b>Result</b></h3>
+<img class="aligncenter size-full wp-image-56433" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture2.gif-BLOG-3.gif" alt="" width="1388" height="1080" />
+<h3><b>Wrapping up</b></h3>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56420&preview=true"><b>In part 1</b></a><span style="font-weight: 400;">, we learned how to use WinUI 3 controls to create the app’s visual layer.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56426&preview=true"><b>In part 2</b></a><span style="font-weight: 400;">, we introduced the concepts of dark mode and windowing.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><b>In part 3</b><span style="font-weight: 400;">, we enforced single-instancing for our app.</span></li>
+</ul>
+<span style="font-weight: 400;">All the code we have covered from the blog series is on </span><a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad"><span style="font-weight: 400;">GitHub</span></a><span style="font-weight: 400;">, with branches for the different steps. The main branch is the most comprehensive. The other branches are intended to show you how the app architecture evolved.</span>
+<h3><b>Further learning</b></h3>
+<span style="font-weight: 400;">Here are some links to check out with resources on building for WinUI 3 apps with WinAppSDK. </span><b>Don’t stop learning!</b>
+
+<span style="font-weight: 400;">More examples:</span>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://github.com/microsoft/WindowsAppSDK-Samples"><span style="font-weight: 400;">WinAppSDK Samples</span></a></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://github.com/microsoft/WinUI-3-Demos"><span style="font-weight: 400;">WinUI 3 Samples</span></a></li>
+</ul>
+<span style="font-weight: 400;">Official documentation:</span>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://github.com/microsoft/WindowsAppSDK"><span style="font-weight: 400;">Official WinAppSDK GitHub Repo</span></a></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/apps/winui/winui3/"><span style="font-weight: 400;">Windows UI Library 3</span></a></li>
+</ul>
+<span style="font-weight: 400;">Now that you have the basic app built, you can easily add other controls from the WinUI 3 Controls Gallery and experiment other cool WinAppSDK features to enhance your Windows apps!</span>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Adding event handlers: Sounds, Dark Mode &#038; Windowing (Part 2)</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2022/01/28/adding-event-handlers-sounds-dark-mode-windowing-part-2/</link>
+		
+		<dc:creator><![CDATA[Jingwei Zhang, Program Manager]]></dc:creator>
+		<pubDate>Fri, 28 Jan 2022 19:45:10 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[Windows Developers]]></category>
+		<category><![CDATA[WinUI]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56426</guid>
+
+					<description><![CDATA[<h1><b>Adding event handlers: Sounds, Dark Mode &#038; Windowing (Part 2)</b></h1>
+<p><span style="font-weight: 400;">Note that in <a href="https://blogs.windows.com/windowsdeveloper/?p=56420&#038;preview=true">part 1</a> of the WinAppSDK Blog Series you implemen</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2022/01/28/adding-event-handlers-sounds-dark-mode-windowing-part-2/">Adding event handlers: Sounds, Dark Mode &amp; Windowing (Part 2)</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h1><b>Adding event handlers: Sounds, Dark Mode & Windowing (Part 2)</b></h1>
+<span style="font-weight: 400;">Note that in <a href="https://blogs.windows.com/windowsdeveloper/?p=56420&preview=true">part 1</a> of the WinAppSDK Blog Series you implemented the visual layer of the DrumPad using WinUI 3 controls. However, if you click on any buttons, nothing happens, because we have not defined any actions, which we will do now. You will be guided to accomplish the following in this post: </span>
+<ul>
+ 	<li><span style="font-weight: 400;"> Play a sound when a drum pad button is clicked </span></li>
+ 	<li><span style="font-weight: 400;">Switch into dark mode when the toggle switch is turned on </span></li>
+ 	<li><span style="font-weight: 400;">Go into a specific windowing mode when a presenter mode is selected</span></li>
+</ul>
+<h2><b>Play a sound when a drum pad button is clicked</b></h2>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Download sound clips to your project’s Assets folder</span></li>
+</ol>
+<b>NOTE</b><span style="font-weight: 400;">: You may download any .wav sound clips for this part. Optionally, you could use my sound clips </span><a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad/tree/5c6e560edf74ceb0a40183e20b66741175a046d7/DrumPad/DrumPad/Assets"><span style="font-weight: 400;">here</span></a><span style="font-weight: 400;"> as well. Store the sound clips under your project’s Assets folder because that is the folder path we will provide to specify which sound to play.</span>
+
+<span style="font-weight: 400;">    2. Install the </span><i><span style="font-weight: 400;">System.Windows.Extensions</span></i><span style="font-weight: 400;"> NuGet Package</span>
+
+<b>NOTE</b><span style="font-weight: 400;">: Playing a sound in WinUI apps requires using a library called </span><i><span style="font-weight: 400;">System.Media</span></i><span style="font-weight: 400;">, accessible through a NuGet Package. Following these two steps to install the NuGet Package in Visual Studio:</span>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to </span><b>Solution Explorer</b><span style="font-weight: 400;">, under Dependencies, </span><b>right-click</b><span style="font-weight: 400;"> on Packages, select Manage NuGet Packages</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Select the </span><b>Browse</b><span style="font-weight: 400;"> tab, search </span><b>System.Windows.Extensions</b><span style="font-weight: 400;"> and </span><b>install</b><span style="font-weight: 400;"> it</span></li>
+</ul>
+<span style="font-weight: 400;">    3. Add the following namespace to </span><b>MainAppWindow.xaml.cs</b><span style="font-weight: 400;">:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">using System.Media;
+</pre>
+4. <span style="font-weight: 400;">Create a call-back function that plays a sound in </span><i><span style="font-weight: 400;">class MainWindow : Window</span></i><span style="font-weight: 400;"> :</span>
+
+<span style="font-weight: 400;">MainAppWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private void pad_clicked(object sender, RoutedEventArgs e)
+{
+    // get the full path to your app’s folder where it is installed
+    var installedPath = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+    // join path above with the sub-paths in your Assets folder and the specific sound file
+    var soundFile = Path.Join(installedPath, "Assets", "rim.wav");
+
+    SoundPlayer player = new System.Media.SoundPlayer(soundFile);
+    player.Play();
+}</pre>
+5. l<span style="font-weight: 400;">ink the call-back function above to a button via the </span><b>Click</b><span style="font-weight: 400;"> parameter:</span>
+
+<span style="font-weight: 400;">MainWindow.xaml:</span><button></button>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><Button Grid.Row="0" Grid.Column="0" … … Click="pad_clicked" /></pre>
+<span style="font-weight: 400;">Repeat step 4 and 5 to attach another sound clip to a different button until all the buttons have a click action! For your reference, check out my </span><a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad/blob/App_Logic/DrumPad/DrumPad/MainWindow.xaml.cs"><span style="font-weight: 400;">MainWindow.xaml.cs</span></a><span style="font-weight: 400;"> and </span><a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad/blob/App_Logic/DrumPad/DrumPad/MainWindow.xaml"><span style="font-weight: 400;">MainWindow.xaml</span></a><span style="font-weight: 400;"> on GitHub.</span>
+<h3><b>Implement dark mode</b></h3>
+<span style="font-weight: 400;">The dark mode is an app appearance where the content is laid out on a dark background. It gives the app a different aesthetic look and can improve readability, especially in a low-light environment.</span>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Define SolidColorBrush under the light and dark themes below the comment <!– Other app resources here –>:</span></li>
+</ol>
+<span style="font-weight: 400;">App.xaml:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+        <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent"/>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+        <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Black"/>
+    </ResourceDictionary>
+</ResourceDictionary.ThemeDictionaries></pre>
+<span style="font-weight: 400;">    2. Indicate which theme to use via the </span><b>Background</b><span style="font-weight: 400;"> parameter (here we specified it on the outermost Grid in MainWindow.xaml):</span>
+
+<span style="font-weight: 400;">MainWindow.xaml:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><Grid Background="{ThemeResource HomePageBackgroundBrush}">
+</pre>
+<span style="font-weight: 400;">    3. Define the action for ToggleSwitch in </span><i><span style="font-weight: 400;">class MainWindow : Window</span></i><span style="font-weight: 400;"> :</span>
+
+<span style="font-weight: 400;">MainWinow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+{
+    ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+    if (toggleSwitch.IsOn) {
+        ((FrameworkElement)this.Content).RequestedTheme = ElementTheme.Dark;
+    }
+    else {
+        ((FrameworkElement)this.Content).RequestedTheme = ElementTheme.Light;
+    }
+}</pre>
+<span style="font-weight: 400;">    4. Link the call-back function above to the ToggleSwitch control:</span>
+
+<span style="font-weight: 400;">MainWindow.xaml:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><ToggleSwitch … … Toggled="ToggleSwitch_Toggled" />
+</pre>
+<b>NOTE</b><span style="font-weight: 400;">: You can save the state of the theme resource and persist the option the user chose at the next time of app startup with four easy steps. Follow </span><a href="https://github.com/jingwei-a-zhang/test-MDfiles/blob/main/DarkModeExtra.md"><span style="font-weight: 400;">this blog post</span></a><span style="font-weight: 400;"> to implement this functionality.</span>
+<h3><b>Managing window display</b></h3>
+<span style="font-weight: 400;">Using the Windowing features in WinAppSDK provides a lot of flexibility and customization to your app experience. One of these customization features is the ability to change the Presenter mode of your window. There are 3 presenters you can use: Compact Overlay, Fullscreen, and Overlapped mode, with overlapped being the default presenter.</span>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Add the following namespaces:</span></li>
+</ol>
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">using WinRT;
+// Needed for WindowId
+using Microsoft.UI;
+// Needed for AppWindow
+using Microsoft.UI.Windowing;
+// Needed for XAML hwnd interop
+using WinRT.Interop;</pre>
+<span style="font-weight: 400;">    2. Declare the following variable in </span><i><span style="font-weight: 400;">class MainWindow : Window</span></i><span style="font-weight: 400;"> :</span>
+
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">AppWindow m_appWindow;
+</pre>
+<span style="font-weight: 400;">    3. Define a helper method </span><i><span style="font-weight: 400;">GetAppWindowForCurrentWindow()</span></i><span style="font-weight: 400;"> :</span>
+
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private AppWindow GetAppWindowForCurrentWindow()
+{
+    IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+    WindowId myWndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+    return AppWindow.GetFromWindowId(myWndId);
+}</pre>
+<b>NOTE</b><span style="font-weight: 400;">: The preceding code gets the window Id for the hwnd and then uses that window Id to get the current AppWindow. This will create the WinAppSDK window layer that gives you access to all the window customization features of the app window.</span>
+
+<span style="font-weight: 400;">    4. Call GetAppWindowForCurrentWindow in the </span><b>MainWindow() method</b><span style="font-weight: 400;">:</span>
+
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">m_appWindow = GetAppWindowForCurrentWindow();
+</pre>
+<span style="font-weight: 400;">    5. Set the current app window to the Compact Overlay presenter via the SetPresenter method in </span><i><span style="font-weight: 400;">class MainWindow : Window</span></i><span style="font-weight: 400;"> :</span>
+
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private void SwtichPresenter_CompOverlay(object sender, RoutedEventArgs e)
+{
+    m_appWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
+}</pre>
+<span style="font-weight: 400;">    6. Modify the MenuFlyouItem control to add the SwtichPresenter_CompOverlay function using the </span><b>Click</b><span style="font-weight: 400;"> parameter:</span>
+
+<span style="font-weight: 400;">MainWindow.xaml:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml"><MenuFlyoutItem Text="Compact Overlay" Click="SwtichPresenter_CompOverlay"/>
+</pre>
+<b>NOTE</b><span style="font-weight: 400;">: Repeat the steps 5 and 6 to implement the FullScreen and Overlapped (the default) presenters. The only change needed is to modify step 5 to use AppWindowPresenterKind.Overlapped or AppWindowPresenterKind.FullScreen.</span>
+<h3><b>Result</b></h3>
+<img class="aligncenter size-full wp-image-56427" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture1.gif-BLOG-2.gif" alt="" width="1920" height="938" />
+
+<span style="font-weight: 400;">Just like that, you can see how we can leverage the amazing Windowing features to customize windowing options for your app. If you run your app again and click the drop-down button and choose Compact Overlay, the app window will not allow other app windows to overlap on top of it. To learn more about Windowing, see </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview"><span style="font-weight: 400;">Manage app windows</span></a><span style="font-weight: 400;"> for additional information on what you can do with this feature.</span>
+
+<a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad/tree/App_Logic"><span style="font-weight: 400;">Here</span></a><span style="font-weight: 400;"> is the completed code covered in this post.</span>
+<h3><b>Moving forward</b></h3>
+<span style="font-weight: 400;">Next, we will keep evolving the app with </span><a href="https://github.com/jingwei-a-zhang/test-MDfiles/blob/main/SingleInstancing.md"><span style="font-weight: 400;">single-instancing</span></a><span style="font-weight: 400;">.</span>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Build your first WinUI 3 app (Part 1)</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2022/01/28/build-your-first-winui-3-app-part-1/</link>
+		
+		<dc:creator><![CDATA[Jingwei Zhang, Program Manager]]></dc:creator>
+		<pubDate>Fri, 28 Jan 2022 19:44:43 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[Windows Developers]]></category>
+		<category><![CDATA[WinUI]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56420</guid>
+
+					<description><![CDATA[<p><span style="font-weight: 400;">As part of the </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/"><span style="font-weight: 400;">Windows App SDK</span></a><span style="font-weight: 400;">, WinUI 3 provides a modernized U</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2022/01/28/build-your-first-winui-3-app-part-1/">Build your first WinUI 3 app (Part 1)</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<span style="font-weight: 400;">As part of the </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/"><span style="font-weight: 400;">Windows App SDK</span></a><span style="font-weight: 400;">, WinUI 3 provides a modernized UI framework for building Windows 10 and Windows 11. This 3-part blog aims to help members new to Windows development quickly build familiarity using the Window App SDK through a fun sample app.</span>
+
+<b>This post is only part 1 of the 3-part Windows App SDK blog</b><span style="font-weight: 400;"> and is scoped to showing you how to use WinUI 3 controls to create a simple working user interface. </span><span style="font-weight: 400;">Part <a href="https://blogs.windows.com/windowsdeveloper/?p=56426&amp;preview=true">2</a></span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">3</span><span style="font-weight: 400;"> are for windowing and single instancing.</span>
+<h3><b>Sample app overview</b></h3>
+<span style="font-weight: 400;">We are going to build an app with buttons that produce drum sounds (DrumPad). As simple as this demo app is, it shows some cool things you can do right away with the Windows App SDK (WinAppSDK): </span>
+<ul>
+ 	<li><span style="font-weight: 400;"> Working with simple and easy-to-use UI controls from </span><a href="https://docs.microsoft.com/en-us/windows/apps/winui/winui3/"><span style="font-weight: 400;">Windows UI Library (WinUI) 3</span></a></li>
+ 	<li><span style="font-weight: 400;">Customizing </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview"><span style="font-weight: 400;">windowing</span></a><span style="font-weight: 400;"> options so that the user can multitask with the app always on top or have a full immersive experience </span></li>
+ 	<li><span style="font-weight: 400;">Making the app </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/applifecycle/applifecycle-instancing"><span style="font-weight: 400;">single-instanced</span></a><span style="font-weight: 400;"> to reduce synchronization issues between instances</span></li>
+</ul>
+<h3><b>Prerequisites</b></h3>
+<ol>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Install tools for developing apps for Windows 10 and Windows 11 </span><a href="https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=vs-2022"><span style="font-weight: 400;">here</span></a><span style="font-weight: 400;">.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/apps/winui/winui3/create-your-first-winui3-app?pivots=winui3-packaged-csharp">Create a WinUI 3 app</a> using the Blank App, Packaged (WinUI 3 in Desktop) template, and name it <b>DrumPad</b>.</li>
+</ol>
+<h3><b>Project template structure</b></h3>
+<span style="font-weight: 400;">In the WinUI 3 project template, most of our code will live in </span><i><span style="font-weight: 400;">MainWindow.xaml</span></i><span style="font-weight: 400;"> and </span><i><span style="font-weight: 400;">MainWindow.xaml.cs</span></i>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><b>MainWindow.xaml</b><span style="font-weight: 400;"> is a XAML file where we will define all of our UI elements, called “controls”, that will make up the visual layer of our application.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><b>MainWindow.xaml.cs</b><span style="font-weight: 400;"> is the C# code-behind file where we will put all the logic that lets us interact with our application.</span></li>
+</ul>
+<h3><b>UI layout design</b></h3>
+<span style="font-weight: 400;">The following WinUI 3 controls are used to represent components of a drum pad: </span>
+<ul>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.dropdownbutton?view=winui-3.0"><span style="font-weight: 400;">DropDownButton</span></a><span style="font-weight: 400;">: includes a chevron to indicate a menu can be opened </span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.toggleswitch?view=winui-3.0"><span style="font-weight: 400;">ToggleSwitch</span></a><span style="font-weight: 400;">: a switch that can be toggled between dark/light mode </span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.button?view=winui-3.0"><span style="font-weight: 400;">Button</span></a><span style="font-weight: 400;">: has a click user interaction and will trigger a unique drum sound </span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.grid?view=winui-3.0">Grid</a>: made of rows and columns and is used to position the other controls</li>
+</ul>
+<img class="aligncenter size-full wp-image-56416" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture1.png-blog-1.png" alt="" width="1872" height="1300" />
+<h3><b>Deleting partial template code</b></h3>
+<span style="font-weight: 400;">The default project template comes with some blocks of code you’ll want to delete so we can replace them with our own markup and implementation:</span>
+
+<span style="font-weight: 400;">MainWindow.xaml:</span><!-- Delete the following template code -->
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">&lt;!-- Delete the following template code --&gt;
+
+&lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"&gt;
+    &lt;Button x:Name="myButton" Click="myButton_Click"&gt;Click Me&lt;/Button&gt;
+&lt;/StackPanel&gt;</pre>
+<span style="font-weight: 400;">MainWindow.xaml.cs:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">// Delete the following template code
+
+private void myButton_Click(object sender, RoutedEventArgs e)
+{
+    myButton.Content = "Clicked";
+}
+</pre>
+<h3 style="text-align: left;"><b>Defining the layout</b></h3>
+<p style="text-align: left;"><span style="font-weight: 400;">In your MainWindow.xaml we will start by defining the set of nested grids and specify their controls and positioning. Open MainWindow.xaml in the XML editor view and inside the </span><i></i><span style="font-weight: 400;"> element add this content:</span><!-- Add GRID CODE --> <!-- STEP 1: Add DropDownButton & ToggleSwitch CODE --> <!-- STEP 3: Define column & row positioning --> <!-- STEP 4: Add Styling for BUTTON --> <!-- STEP 2: Add BUTTON CODE --></p>
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">&lt;!-- Add GRID CODE --&gt;
+
+&lt;Grid&gt;
+    &lt;Grid.RowDefinitions&gt;
+        &lt;RowDefinition Height="Auto"/&gt;
+        &lt;RowDefinition Height="*"/&gt;
+    &lt;/Grid.RowDefinitions&gt;
+
+    &lt;Grid Margin="12"&gt;
+        &lt;Grid.ColumnDefinitions&gt;
+            &lt;ColumnDefinition Width="*" /&gt;
+            &lt;ColumnDefinition Width="Auto" /&gt;
+        &lt;/Grid.ColumnDefinitions&gt;
+        &lt;!-- STEP 1: Add DropDownButton &amp; ToggleSwitch CODE --&gt;
+    &lt;/Grid&gt;
+    
+    &lt;Grid x:Name="Control1" Grid.Row="1" ColumnSpacing="30" RowSpacing="12"
+          VerticalAlignment="Center" HorizontalAlignment="Center"&gt;
+        &lt;!-- STEP 3: Define column &amp; row positioning --&gt;
+        &lt;!-- STEP 4: Add Styling for BUTTON --&gt;
+        &lt;!-- STEP 2: Add BUTTON CODE --&gt;
+    &lt;/Grid&gt;
+&lt;/Grid&gt;</pre>
+<p style="text-align: left;"><b>NOTE</b><span style="font-weight: 400;">: Auto and * are used to specify the height and width above to create a responsive layout. The controls held within the Grids are not fixed in size and can adjust to fill in spaces as the user resizes the app window.</span></p>
+
+<h3 style="text-align: left;"><b>Setting up remaining controls</b></h3>
+<p style="text-align: left;"><span style="font-weight: 400;">STEP 1: Add DropDownButton &amp; ToggleSwitch:</span></p>
+
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">&lt;DropDownButton Content="Display" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Width="118" &gt;
+    &lt;DropDownButton.Flyout&gt;
+        &lt;MenuFlyout Placement="Bottom"&gt;
+            &lt;MenuFlyoutItem Text="Default"/&gt;
+            &lt;MenuFlyoutItem Text="Compact Overlay"/&gt;
+            &lt;MenuFlyoutItem Text="Fullscreen"/&gt;
+        &lt;/MenuFlyout&gt;
+    &lt;/DropDownButton.Flyout&gt;
+&lt;/DropDownButton&gt;
+
+&lt;ToggleSwitch AutomationProperties.Name="simple ToggleSwitch" x:Name="dark_switch" Grid.Column="1" CornerRadius="3" VerticalAlignment="Center"  HorizontalAlignment="Right" MinWidth="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" /&gt;</pre>
+<span style="font-weight: 400;">STEP 2: Add Buttons:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">&lt;Button Background="#FF0000" Grid.Row="0" Grid.Column="0" Content="Kick 1"/&gt;
+&lt;Button Background="#C4425A" Grid.Row="0" Grid.Column="1" Content="Kick 2"/&gt;
+&lt;Button Background="#D41DD8" Grid.Row="0" Grid.Column="2" Content="Kick 3"/&gt;
+&lt;Button Background="#6A21A3" Grid.Row="0" Grid.Column="3" Content="Kick 4"/&gt;
+
+&lt;Button Background="#C4425A" Grid.Row="1" Grid.Column="0" Content="Clap 1"/&gt;
+&lt;Button Background="#D41DD8" Grid.Row="1" Grid.Column="1" Content="Clap 2"/&gt;
+&lt;Button Background="#6A21A3" Grid.Row="1" Grid.Column="2" Content="Clap 3"/&gt;
+&lt;Button Background="#473DB8" Grid.Row="1" Grid.Column="3" Content="Clap 4"/&gt;
+
+&lt;Button Background="#D41DD8" Grid.Row="2" Grid.Column="0" Content="Open Hat 1"/&gt;
+&lt;Button Background="#6A21A3" Grid.Row="2" Grid.Column="1" Content="Open Hat 2"/&gt;
+&lt;Button Background="#473DB8" Grid.Row="2" Grid.Column="2" Content="Open Hat 3"/&gt;
+&lt;Button Background="#26AAC7" Grid.Row="2" Grid.Column="3" Content="Open Hat 4"/&gt;
+
+&lt;Button Background="#6A21A3" Grid.Row="3" Grid.Column="0" Content="Snare 1"/&gt;
+&lt;Button Background="#473DB8" Grid.Row="3" Grid.Column="1" Content="Snare 2"/&gt;
+&lt;Button Background="#26AAC7" Grid.Row="3" Grid.Column="2" Content="Snare 3"/&gt;
+&lt;Button Background="#1A7BD6" Grid.Row="3" Grid.Column="3" Content="Snare 4"/&gt;
+</pre>
+<span style="font-weight: 400;">STEP 3: Specify how the Grid should position these Buttons:</span>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">&lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+&lt;/Grid.ColumnDefinitions&gt;
+
+&lt;Grid.RowDefinitions&gt;
+    &lt;RowDefinition Height="*" /&gt;
+    &lt;RowDefinition Height="*" /&gt;
+    &lt;RowDefinition Height="*" /&gt;
+    &lt;RowDefinition Height="*" /&gt;
+&lt;/Grid.RowDefinitions&gt;</pre>
+<span style="font-weight: 400;">STEP 4: Apply standardized styling to all the Buttons:</span>
+<h3><b>Result</b></h3>
+<span style="font-weight: 400;">As simple as that, we should have a working visual layer built out using WinUI 3 controls. Choose x64 as your target platform, then press F5 to run the project solution. You should see:</span>
+
+<img class="aligncenter size-full wp-image-56417" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture2.png-BLOG-1.png" alt="" width="1872" height="1192" />
+
+<a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad/tree/UI_Layout"><span style="font-weight: 400;">Here</span></a><span style="font-weight: 400;"> is the completed code used in this post.</span>
+<h3><b>Moving forward</b></h3>
+<span style="font-weight: 400;">The buttons don’t </span><i><span style="font-weight: 400;">do</span></i><span style="font-weight: 400;"> anything yet, but that’s next time! In </span><a href="https://blogs.windows.com/windowsdeveloper/?p=56426&amp;preview=true"><span style="font-weight: 400;">part 2</span></a><span style="font-weight: 400;"> we will dive into implementing the business logic.</span>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Developing for Windows 11</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2021/10/04/developing-for-windows-11/</link>
 		
@@ -541,168 +995,6 @@ We look forward to collaborating with you to make progress on each of these effo
 <span data-contrast="auto">These updates will allow developers to optimize their workflow or incorporate new functionality into their applications, enhancing the experience for the end user and creating a better product overall. The further development of Project Reunion is definitely something Windows Developers should be closely watching, allowing developers to unify their development process and modernize previously developed applications without programming. If you’d like to learn more about any of these announcements, tune in to the all-digital </span><a href="https://register.build.microsoft.com/"><span data-contrast="none">Microsoft Build 2021</span></a><span data-contrast="auto"> May 25th-27th.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span>
 
 <i><span data-contrast="none">*TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.</span></i><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}">  </span>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Announcing Rust for Windows v0.9</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2021/05/06/announcing-rust-for-windows-v0-9/</link>
-		
-		<dc:creator><![CDATA[Angela Zhang]]></dc:creator>
-		<pubDate>Thu, 06 May 2021 18:14:05 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<category><![CDATA[Windows Developers]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56203</guid>
-
-					<description><![CDATA[<p><span style="font-weight: 400;">Rust for Windows v0.9 has recently been released and includes full consumption support, along with several other updates! With completed consumption support, you can now call any Windows APIs (past, present, and futur</p>
-<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2021/05/06/announcing-rust-for-windows-v0-9/">Announcing Rust for Windows v0.9</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<span style="font-weight: 400;">Rust for Windows v0.9 has recently been released and includes full consumption support, along with several other updates! With completed consumption support, you can now call any Windows APIs (past, present, and future) using the Rust language projection. Rust developers have access to the entire Windows API surface in a language-idiomatic way, allowing them to easily take advantage of the power and breadth of Windows development. </span>
-
-<span style="font-weight: 400;">Along with this latest release, we have added new content to Microsoft Docs on </span><a href="https://docs.microsoft.com/en-us/windows/dev-environment/rust/"><span style="font-weight: 400;">developing with Rust on Windows</span></a><span style="font-weight: 400;">. There is also a new </span><a href="https://youtu.be/-oZrsCPKsn4"><span style="font-weight: 400;">Getting Started</span></a><span style="font-weight: 400;"> video for those who want to dive in! For more information on the project, check out the Rust for Windows </span><a href="https://github.com/microsoft/windows-rs"><span style="font-weight: 400;">Github repo</span></a><span style="font-weight: 400;">.</span>
-<h3><span style="font-weight: 400;">Updates and Improvements</span></h3>
-<span style="font-weight: 400;">We have made great progress since last year’s </span><a href="https://blogs.windows.com/windowsdeveloper/2020/04/30/rust-winrt-public-preview/"><span style="font-weight: 400;">Rust/WinRT public preview announcement</span></a><span style="font-weight: 400;">, with continued improvements and investment in the project. Some of the changes and updates since this last announcement include:</span>
-<ul>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Added support for Win32 and COM APIs, unifying the Windows APIs available for consumption via the </span><a href="https://crates.io/crates/windows"><span style="font-weight: 400;">windows</span></a><span style="font-weight: 400;"> crate. The addition of these APIs is enabled by the </span><a href="https://github.com/microsoft/win32metadata"><span style="font-weight: 400;">win32metadata project</span></a><span style="font-weight: 400;">. </span><span style="font-weight: 400;">With this increased coverage and unification of Windows APIs, we changed the name of the project from “Rust/WinRT” to “Rust for Windows”.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Added several </span><a href="https://github.com/microsoft/windows-rs/tree/master/examples"><span style="font-weight: 400;">examples</span></a><span style="font-weight: 400;"> to the Rust for Windows repo, demonstrating how to call a wide range of Windows APIs (includes Win32, COM, and WinRT APIs).</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">The </span><a href="https://crates.io/crates/windows"><span style="font-weight: 400;">windows</span></a><span style="font-weight: 400;"> crate is published on crates.io and is now dual-licensed under MIT or Apache. </span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">The windows crate now uses generated bindings rather than hand-written bindings internally.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">The windows crate now builds on Linux.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Many improvements and fixes for Win32 APIs, such as support for array types, a variety of string types, and updated metadata. </span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Added more natural and idiomatic support for COM interfaces such as with return values, and support for additional APIs involving things like C-style unions and nested types. </span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Improved build times and error handling.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Original API case is </span><a href="https://github.com/microsoft/windows-rs/pull/646"><span style="font-weight: 400;">now preserved</span></a><span style="font-weight: 400;">, which will affect existing code using the windows crate.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Transformed QueryInterface-like functions into generic functions, making it safer and more convenient to call many COM-related functions.</span></li>
-</ul>
-<span style="font-weight: 400;">For more details and a more comprehensive list of updates, look at the </span><a href="https://github.com/microsoft/windows-rs/blob/master/docs/changelog.md"><span style="font-weight: 400;">changelog</span></a><span style="font-weight: 400;"> on the Rust for Windows repo.</span>
-<h3><span style="font-weight: 400;">A simple example: Win32 APIs in Rust</span></h3>
-<span style="font-weight: 400;">We have recently added support for calling Win32 APIs in Rust, so I will walk through a simple example calling the </span><a href="https://docs.microsoft.com/windows/win32/api/winuser/nf-winuser-messagebox"><span style="font-weight: 400;">MessageBox</span></a><span style="font-weight: 400;"> function. First make sure you have your Rust development environment set up, which you can do by following </span><a href="https://docs.microsoft.com/windows/dev-environment/rust/setup"><span style="font-weight: 400;">these docs</span></a><span style="font-weight: 400;">. The code for this example can also be found </span><a href="https://github.com/microsoft/windows-rs/tree/master/examples/message_box"><span style="font-weight: 400;">here</span></a><span style="font-weight: 400;">. </span>
-
-<span style="font-weight: 400;">To begin, I created a new Rust project by running the following command in a command prompt: </span>
-<pre style="padding-left: 40px;">C:\sample&gt;cargo new message_box</pre>
-<span style="font-weight: 400;">This creates a new directory with the starter files for my Rust project. Navigate to this new directory, and create a nested bindings crate using the command below to house the generated bindings. By doing this, the build can cache the results of any imported bindings. </span>
-<pre style="padding-left: 40px;">C:\sample\message_box&gt;cargo new --lib bindings</pre>
-<span style="font-weight: 400;">Now opening my project in Visual Studio Code, the directory structure looks like this.</span>
-
-<img class="aligncenter wp-image-56204 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/05/rust1.png" alt="" width="452" height="578" />
-
-<span style="font-weight: 400;">In the outer Cargo.toml file directly under the </span><i><span style="font-weight: 400;">message_box </span></i><span style="font-weight: 400;">directory, add the following dependency which tells Cargo that it now depends on the newly created bindings library.</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="rust">[dependencies]
-bindings = {path = "bindings"}
-</pre>
-<span style="font-weight: 400;">Now in the Cargo.toml file underneath the </span><i><span style="font-weight: 400;">bindings</span></i><span style="font-weight: 400;"> folder, add the following dependencies to add the windows crate.</span> <span style="font-weight: 400;">This will allow Cargo to download, build, and cache Windows support as a package.</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="rust">[dependencies]
-windows = "0.9.1"
-
-[build-dependencies]
-windows = "0.9.1"
-</pre>
-<span style="font-weight: 400;">Next, in Visual Studio Code I created a new file directly under the </span><i><span style="font-weight: 400;">bindings </span></i><span style="font-weight: 400;">folder named build.rs. In this file, use the </span><i><span style="font-weight: 400;">windows::build</span></i><span style="font-weight: 400;"> macro to specify the types that you want to use as shown below. You can list any additional APIs you want to use in this build script. The windows crate will then generate the necessary bindings directly from metadata.</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="rust">// build.rs
-fn main() {
-    windows::build!(
-    Windows::Win32::WindowsAndMessaging::MessageBoxA
-    );
-}
-</pre>
-<span style="font-weight: 400;">Next in the lib.rs file under </span><i><span style="font-weight: 400;">bindings/src, </span></i><span style="font-weight: 400;">remove the default code and add the following line, which includes the source code generated by </span><span style="font-weight: 400;">build.rs</span><i><span style="font-weight: 400;">.</span></i>
-<pre class="EnlighterJSRAW" data-enlighter-language="rust">windows::include_bindings!();
-</pre>
-<span style="font-weight: 400;">In the main.rs file, you can now make use of any of the specified Windows APIs. Paste the following code, which creates a message box with a “Hello World” message. Note that any Win32 functions and COM interface methods should be marked </span><i><span style="font-weight: 400;">unsafe</span></i><span style="font-weight: 400;">.</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="rust">use bindings::Windows::Win32::WindowsAndMessaging::{MessageBoxA,  MESSAGEBOX_STYLE};
- 
-fn main() {
-    unsafe {
-        MessageBoxA(None, "Hello", "World", MESSAGEBOX_STYLE::MB_OK);
-    }
-}
-</pre>
-<span style="font-weight: 400;">Run </span><i><span style="font-weight: 400;">cargo build </span></i><span style="font-weight: 400;">and then </span><i><span style="font-weight: 400;">cargo run</span></i><span style="font-weight: 400;"> on a command prompt from the root directory of the sample, and you will see the following output!</span>
-
-<img class="wp-image-56208 size-full aligncenter" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/05/messagebox.png" alt="" width="266" height="296" />
-<h3><span style="font-weight: 400;">Get started today</span></h3>
-<span style="font-weight: 400;">We are excited about all the new improvements and capabilities with the latest Rust for Windows update. Get started today with developing Rust applications on Windows (and for Windows) with the </span><a href="https://docs.microsoft.com/windows/dev-environment/rust/"><span style="font-weight: 400;">latest documentation</span></a><span style="font-weight: 400;"> on Microsoft Docs. For a hands-on tutorial check out this </span><span style="font-weight: 400;">Getting Started</span> <span style="font-weight: 400;">video created by Kenny Kerr.</span>
-
-[embed]http://www.youtube.com/watch?v=-oZrsCPKsn4&feature=youtu.be&ab_channel=KennyKerr[/embed]
-<h3><span style="font-weight: 400;">Closing</span></h3>
-<span style="font-weight: 400;">We have made great progress with Rust for Windows over the last year, and we are continuing to invest in the project to make building Windows apps easy for Rust developers. Up next, we are working on Rust </span><a href="https://github.com/microsoft/windows-rs/issues/81"><span style="font-weight: 400;">authoring support</span></a><span style="font-weight: 400;"> both for COM interfaces and WinRT components, so stay tuned. We encourage you to reach out with any issues, feedback, or questions on the Rust for Windows </span><a href="https://github.com/microsoft/windows-rs"><span style="font-weight: 400;">Github repo</span></a><span style="font-weight: 400;">!</span>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>The Windows Developer’s Guide to Microsoft Build 2021</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2021/05/25/the-windows-developers-guide-to-microsoft-build-2021/</link>
-		
-		<dc:creator><![CDATA[samirmehta]]></dc:creator>
-		<pubDate>Wed, 05 May 2021 15:01:18 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56215</guid>
-
-					<description><![CDATA[<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2021/05/25/the-windows-developers-guide-to-microsoft-build-2021/">The Windows Developer’s Guide to Microsoft Build 2021</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2021/05/25/the-windows-developers-guide-to-microsoft-build-2021/">The Windows Developer’s Guide to Microsoft Build 2021</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>How I Got Started as an App Developer</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2021/04/15/how-i-got-started-as-an-app-developer/</link>
-		
-		<dc:creator><![CDATA[samirmehta]]></dc:creator>
-		<pubDate>Thu, 15 Apr 2021 19:56:39 +0000</pubDate>
-				<category><![CDATA[Windows Developers]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56196</guid>
-
-					<description><![CDATA[<p><img class="alignleft size-full wp-image-56197" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/04/H2Q4w9xg_400x400.jpg" alt="" width="400" height="400" />Daniel Paulino created his first Windows app when he was at a career crossr</p>
-<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2021/04/15/how-i-got-started-as-an-app-developer/">How I Got Started as an App Developer</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<img class="alignleft size-full wp-image-56197" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/04/H2Q4w9xg_400x400.jpg" alt="" width="400" height="400" />Daniel Paulino created his first Windows app when he was at a career crossroads: Was he good enough to have a successful career as a developer? He wasn’t sure, but Daniel also knew he needed a timer app that connected to his workout band. “At the time, no app did this. I had this curiosity. That drove me back into building apps,” Daniel says.
-
-Daniel’s curiosity has served him well. Today, he is the creator of multiple Windows apps, including <a href="https://www.microsoft.com/en-us/p/pillbox/9nblggh4x7vb">Pillbox</a>, <a href="https://www.microsoft.com/en-us/p/nightingale-rest-client/9n2t6f9f5zdn">Nightingale</a> and <a href="https://www.microsoft.com/en-us/p/ambie-white-noise/9p07xnm5chp0">Ambie</a>. He is also a software engineer on the Windows apps team — and it’s safe to say Daniel is a Microsoft devices and tooling fanatic. “I’ve been around the block, but I keep coming back to Visual Studio, .NET, and WinUI. I’m addicted to Microsoft’s advanced set of tooling. It empowers me to take what’s in my brain and put it into an app.”
-
-Looking at the many apps Daniel has released in the last five years, it would be easy to conclude his career path was straightforward — but from Daniel’s perspective, becoming a developer was more indirect: It came from following his passions.
-<h3><strong>From a hobby to a career</strong></h3>
-He was well into university before he considered software development as a career. Growing up, Daniel spent a lot of time in hospitals, watching doctors investigate both he and his mother’s medical issues. He became fascinated by the doctors’ curiosity and how they worked from interrogation and discovery to understand the root causes of disease.
-
-This interest made Daniel plan to study Molecular Biology at Simon Fraser University in Vancouver — until he had to take a course in Python. Daniel had always been drawn to computers, even though his family could not afford to buy a new one. Out of necessity, Daniel became the family expert at optimizing the operating system — he had even cleaned up the Windows OS registry on an old PC until it ran as well as the new devices his friends had.
-
-Despite his passion for technology, Daniel never believed that his hobby could become a career — until that Python course, and after a guest speaker at his university asked him if he had ever heard of Bioinformatics. That moment changed the rest of his career: Daniel’s school offered a joint major program that fused his passions for medicine and immunology and his growing love for computer science. This discovery opened a new world.
-<h3>Real-world problem solving</h3>
-Looking back at his school experiences, Daniel is quick to recommend new developers build tools that solve real-world problems. He had a revelatory moment at his first bioinformatics job when his boss suggested that Daniel build the first-ever C++ tool that efficiently closed gaps in the human genome. The experience left an indelible mark: he was struck by how impactful his work could be.
-
-Following this experience, Daniel applied and was accepted to a software engineering internship at Microsoft Garage. It was his first role exclusively as a developer. He and the four other interns on his team had four months to build their product, a Windows Phone app, from start to finish. While he learned a lot about collaboration, Daniel’s biggest takeaway was how much he needed to grow. Daniel recalls, “It was a very humbling experience. I wasn’t good enough at the time and that was hard to accept.” Daniel even considered removing computer science from his degree.
-
-While he felt uncertain about what direction to take, Daniel turned to developing apps to solve real problems. “It was this passion and curiosity that reignited my interest in software. I didn’t actively stop myself from quitting, but I let myself be curious.”
-
-[caption id="attachment_56198" align="aligncenter" width="1500"]<img class="wp-image-56198 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/04/DP_Apps.png" alt="" width="1500" height="600" /> Daniel’s Windows apps: Pillbox, Nightingale, and Ambie[/caption]
-<h3><strong>Empowering people with apps</strong></h3>
-Daniel’s proudest achievement came from one of the apps he built during this time, Pillbox. The app tracks a user’s medication schedule and reminds users when to take their pills. He built it to help his mother keep track of her wide variety of medications.
-
-His mother’s real-world challenge proved to be the perfect place for Daniel to put his app development skills to work. He was eager to help his mother and excited to learn about databases and notifications — two integral pieces of the app. Daniel’s mother also acted as his stakeholder, helping him make the app easier to use when she requested new features.
-
-Developing Pillbox shaped how Daniel thinks about development: Not only had he learned how to work with a stakeholder, but he also got to see the impact the technology had on his mother. Even though she was far from a tech enthusiast, she could load all her information in the app, keep it up to date and easily share her information with her doctor.
-
-What stuck with Daniel the most was how he was able to empower his mother. He says a defining moment came when “One day we went to the ER and the nurse asked if my mom took any medicines. When she showed them the app, the nurse was so excited and asked where she got it. My mom was able to say, ‘My son made it for me.’”
-
-[caption id="attachment_56199" align="aligncenter" width="300"]<img class="wp-image-56199 size-medium" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/04/DP_and_Mom-300x294.jpeg" alt="" width="300" height="294" /> Daniel with his mom at his graduation from Simon Fraser University.[/caption]
-
-Daniel recommends this kind of real-world problem-solving. “Be curious. Build software that empowers people. That will teach you a lot about yourself.”
-<h3><strong>Pursuing growth opportunities</strong></h3>
-Daniel continued to develop Windows apps after he graduated from university — while also starting a full-time job building bioinformatics tools. His development skills and enthusiasm for software development grew faster than ever, thanks to this cycle of developing both at work and home. Eventually, he hit a learning ceiling and Daniel realized that he needed to focus exclusively on development as a career.
-
-<img class="alignleft wp-image-56200 size-medium" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2021/04/1585425084522-225x300.jpg" alt="" width="225" height="300" />For anyone looking to make a similar switch, Daniel says, “Keep in touch with your network. In the long run, this can open up new opportunities when it’s time. Just learning from your network also helps you grow.”
-
-Ultimately, Daniel ended up working at Microsoft as a Software Engineer. While many of his friends assumed that working at Microsoft would be the end of his development efforts after hours, becoming a full-time developer made Daniel even more excited about development. “I continued coding on the bus and the train. The process of coding at work — and then coding at home — doubled my learning speed,” Daniel says. The skills he was learning at work made the apps he developed at home much better. In turn, that practice made him better at work.
-<h3><strong>Following his curiosity today</strong></h3>
-Throughout his career, Daniel keeps coming back to empowering others. “When I discovered software, I realized I was creative. My outlet was code,” he says. Once he had this outlet, he wanted to use it to help other people.
-
-Amid the pandemic, Daniel created Ambie, a white noise app designed to help you focus, sleep or meditate. “What drives me is channeling my creativity to help someone, whether that’s to get something done with Nightingale or help them improve their health,” Daniel says.
-
-“Developers have a unique opportunity to build something in their apartment that can affect a lot of people around the world. I just want to keep growing and helping more and more people that way.”]]></content:encoded>
 					
 		
 		
