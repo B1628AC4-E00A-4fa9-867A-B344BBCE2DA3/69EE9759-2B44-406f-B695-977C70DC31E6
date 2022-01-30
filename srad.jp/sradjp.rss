@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2022-01-30T00:50:32+00:00</dc:date>
+<dc:date>2022-01-30T02:27:25+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,7 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://security.srad.jp/story/22/01/30/0023217/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/22/01/29/0759218/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/22/01/29/0757228/" />
   <rdf:li rdf:resource="https://apple.srad.jp/story/22/01/29/0548205/" />
@@ -37,7 +38,6 @@
   <rdf:li rdf:resource="https://science.srad.jp/story/22/01/27/1623230/" />
   <rdf:li rdf:resource="https://hardware.srad.jp/story/22/01/27/1555201/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/22/01/27/1525222/" />
-  <rdf:li rdf:resource="https://it.srad.jp/story/22/01/27/1533224/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,81 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://security.srad.jp/story/22/01/30/0023217/">
+<title>Polkit に 12 年前の最初のバージョンから存在した脆弱性「Pwnkit」</title>
+<link>https://security.srad.jp/story/22/01/30/0023217/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/bug_64.png"&gt;主な Linux ディストリビューションに標準でインストールされるツールキット Polkit (旧名: PolicyKit) の最初のバージョン (12 年前) から存在したメモリ破損の脆弱性 (CVE-2021-4034) について、発見した Qualys が解説している
+(Qualys Security Blog の記事、
+Red Hat のアドバイザリー、
+Neowin の記事、
+Ars Technica の記事)。
+
+Qualys が Pwnkit と名付けた脆弱性は非特権ユーザーがrootの権限でコマンドを実行できるようにする Polkit の コマンドラインツール pkexec に存在する。pkexec の main() 関数ではコマンドライン引数の数 (argc) を適切に処理せず、常に 1 以上として扱うため、引数リスト (argv) が空の状態でも境界外のメモリを引数 (argv[1]) として読み書きしてしまう。
+
+境界外の直近にあるのは 1 つ目の環境変数 (envp[0]) であり、pkexec は読み取った値を実行ファイルの名前として PATH 環境変数で指定されたディレクトリを探し、一致する実行ファイルが見つかったらパスを付加して envp[0] を上書きする。これにより、通常は main() 関数実行前に除去される「安全でない」変数を pkexec の環境に再導入することが可能であり、悪用することでローカルでの権限昇格が可能になる。
+
+Polkit では argc が 1 未満の場合に処理を終了する修正を行っており、修正済みの Polkit パッケージが入手可能になり次第更新することが推奨される。&lt;p&gt; &lt;a href="https://security.srad.jp/story/22/01/30/0023217/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt; | &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/01/30/0023217/&amp;amp;text=Polkit%20%E3%81%AB%2012%20%E5%B9%B4%E5%89%8D%E3%81%AE%E6%9C%80%E5%88%9D%E3%81%AE%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E3%81%8B%E3%82%89%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%8CPwnkit%E3%80%8D" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/01/30/0023217/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/01/30/0023217/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/01/30/0023217/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/21/07/25/0825256"&gt;HP / Samsung / Xerox のプリンタードライバーに 16 年前から存在した脆弱性&lt;/a&gt; &lt;small&gt;2021年07月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/21/06/12/044230"&gt;Linuxでプロセスの権限を設定するpolkit、7年以上前から存在した特権昇格の脆弱性が見つかる&lt;/a&gt; &lt;small&gt;2021年06月12日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/07/18/0624243"&gt;Windows Serverに17年前から存在していたバグが修正される&lt;/a&gt; &lt;small&gt;2020年07月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/16/10/22/043249"&gt;Linuxカーネルに11年以上前から存在する特権昇格の脆弱性「Dirty COW」が修正される&lt;/a&gt; &lt;small&gt;2016年10月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/15/03/11/063226"&gt;TLS/SSL実装に20年前からの脆弱性、影響範囲は広範&lt;/a&gt; &lt;small&gt;2015年03月11日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/14/11/14/1954259"&gt;Microsoft、18年にわたってWindowsに存在した脆弱性を修正&lt;/a&gt; &lt;small&gt;2014年11月15日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/14/07/01/0546244"&gt;FFmpegのLZO実装コードに脆弱性、20年前から存在&lt;/a&gt; &lt;small&gt;2014年07月02日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>headless</dc:creator>
+<dc:date>2022-01-30T01:01:00+00:00</dc:date>
+<dc:subject>bug</dc:subject>
+<slash:department>境界</slash:department>
+<slash:section>security</slash:section>
+<slash:comments>7</slash:comments>
+<slash:hit_parade>7,7,1,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/bug_64.png"&gt;主な Linux ディストリビューションに標準でインストールされるツールキット Polkit (旧名: PolicyKit) の最初のバージョン (12 年前) から存在したメモリ破損の脆弱性 (&lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-4034"&gt;CVE-2021-4034&lt;/a&gt;) について、発見した Qualys が解説している
+(&lt;a href="https://blog.qualys.com/vulnerabilities-threat-research/2022/01/25/pwnkit-local-privilege-escalation-vulnerability-discovered-in-polkits-pkexec-cve-2021-4034"&gt;Qualys Security Blog の記事&lt;/a&gt;、
+&lt;a href="https://access.redhat.com/ja/security/vulnerabilities/6668681"&gt;Red Hat のアドバイザリー&lt;/a&gt;、
+&lt;a href="https://www.neowin.net/news/every-major-linux-distro-has-been-vulnerable-for-the-last-12-years-due-to-polkit-pkexec-flaw/"&gt;Neowin の記事&lt;/a&gt;、
+&lt;a href="https://arstechnica.com/information-technology/2022/01/a-bug-lurking-for-12-years-gives-attackers-root-on-every-major-linux-distro/"&gt;Ars Technica の記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+Qualys が Pwnkit と名付けた脆弱性は非特権ユーザーがrootの権限でコマンドを実行できるようにする Polkit の コマンドラインツール pkexec に存在する。pkexec の main() 関数ではコマンドライン引数の数 (argc) を適切に処理せず、常に 1 以上として扱うため、引数リスト (argv) が空の状態でも境界外のメモリを引数 (argv[1]) として読み書きしてしまう。&lt;br&gt;
+&lt;br&gt;
+境界外の直近にあるのは 1 つ目の環境変数 (envp[0]) であり、pkexec は読み取った値を実行ファイルの名前として PATH 環境変数で指定されたディレクトリを探し、一致する実行ファイルが見つかったらパスを付加して envp[0] を上書きする。これにより、通常は main() 関数実行前に除去される「安全でない」変数を pkexec の環境に再導入することが可能であり、悪用することでローカルでの権限昇格が可能になる。&lt;br&gt;
+&lt;br&gt;
+Polkit では &lt;a href="https://gitlab.freedesktop.org/polkit/polkit/-/commit/a2bf5c9c83b6ae46cbd5c779d3055bff81ded683"&gt;argc が 1 未満の場合に処理を終了する修正&lt;/a&gt;を行っており、修正済みの Polkit パッケージが入手可能になり次第更新することが推奨される。&lt;p&gt;
+	&lt;a href="https://security.srad.jp/story/22/01/30/0023217/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/01/30/0023217/&amp;amp;text=Polkit%20%E3%81%AB%2012%20%E5%B9%B4%E5%89%8D%E3%81%AE%E6%9C%80%E5%88%9D%E3%81%AE%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E3%81%8B%E3%82%89%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%8CPwnkit%E3%80%8D" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/01/30/0023217/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/01/30/0023217/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/01/30/0023217/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/21/07/25/0825256"&gt;HP / Samsung / Xerox のプリンタードライバーに 16 年前から存在した脆弱性&lt;/a&gt;
+			&lt;small&gt;2021年07月25日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/21/06/12/044230"&gt;Linuxでプロセスの権限を設定するpolkit、7年以上前から存在した特権昇格の脆弱性が見つかる&lt;/a&gt;
+			&lt;small&gt;2021年06月12日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/07/18/0624243"&gt;Windows Serverに17年前から存在していたバグが修正される&lt;/a&gt;
+			&lt;small&gt;2020年07月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/16/10/22/043249"&gt;Linuxカーネルに11年以上前から存在する特権昇格の脆弱性「Dirty COW」が修正される&lt;/a&gt;
+			&lt;small&gt;2016年10月22日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/15/03/11/063226"&gt;TLS/SSL実装に20年前からの脆弱性、影響範囲は広範&lt;/a&gt;
+			&lt;small&gt;2015年03月11日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/14/11/14/1954259"&gt;Microsoft、18年にわたってWindowsに存在した脆弱性を修正&lt;/a&gt;
+			&lt;small&gt;2014年11月15日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/14/07/01/0546244"&gt;FFmpegのLZO実装コードに脆弱性、20年前から存在&lt;/a&gt;
+			&lt;small&gt;2014年07月02日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://it.srad.jp/story/22/01/29/0759218/">
 <title>イングランド・ウェールズ・スコットランドの法律委員会、自動運転車におけるユーザーの免責を勧告</title>
 <link>https://it.srad.jp/story/22/01/29/0759218/</link>
@@ -69,8 +144,8 @@ The Next Web の記事)。
 <dc:subject>robot</dc:subject>
 <slash:department>免責</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>19</slash:comments>
-<slash:hit_parade>19,19,4,2,0,0,0</slash:hit_parade>
+<slash:comments>21</slash:comments>
+<slash:hit_parade>21,21,4,2,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/robot_64.png"&gt;イングランドとウェールズ、スコットランドの法律委員会が共同報告書を作成し、自動運転車における責任者ユーザーに対する免責を勧告している
 (&lt;a href="https://s3-eu-west-2.amazonaws.com/lawcom-prod-storage-11jsxou24uy7q/uploads/2022/01/Automated-vehicles-joint-report-cvr-24-01-22.pdf"&gt;報告書: PDF&lt;/a&gt;、
 &lt;a href="https://www.theguardian.com/technology/2022/jan/26/self-driving-car-users-should-have-immunity-from-offences-report"&gt;The Guardian の記事&lt;/a&gt;、
@@ -169,8 +244,8 @@ Microsoft が発表した Windows 10 の月間アクティブデバイス数は 
 <dc:subject>windows</dc:subject>
 <slash:department>時代</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>51</slash:comments>
-<slash:hit_parade>51,49,7,3,0,0,0</slash:hit_parade>
+<slash:comments>59</slash:comments>
+<slash:hit_parade>59,57,7,3,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/windows_64.png"&gt;Microsoft のパノス・パネイ氏が 1 月 26 日、「A new era of the PC (PC の新しい時代)」と題したブログ記事で Windows 10 と Windows 11 を合わせた月間アクティブデバイスが 14 億台を超えたことを明らかにした
 (&lt;a href="https://blogs.windows.com/windowsexperience/2022/01/26/a-new-era-of-the-pc/"&gt;Windows Experience Blog の記事&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
@@ -275,8 +350,8 @@ Mac Rumors の記事、
 <dc:subject>privacy</dc:subject>
 <slash:department>安全</slash:department>
 <slash:section>apple</slash:section>
-<slash:comments>21</slash:comments>
-<slash:hit_parade>21,21,4,3,1,0,0</slash:hit_parade>
+<slash:comments>24</slash:comments>
+<slash:hit_parade>24,24,4,3,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/privacy_64.png"&gt;Apple が同社製品に関連する個人向けの安全対策をまとめたガイドブック「Personal Safety User Guide」を公開している
 (&lt;a href="https://support.apple.com/ja-jp/guide/personal-safety/welcome/web"&gt;Apple のサポート記事&lt;/a&gt;、
 &lt;a href="https://www.theverge.com/2022/1/26/22903005/apple-airtags-personal-safety-hub"&gt;The Verge の記事&lt;/a&gt;、
@@ -489,8 +564,8 @@ FAQ エントリはデータの移行方法などとともに追記されたも�
 <dc:subject>humor</dc:subject>
 <slash:department>仕事の壁</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>102</slash:comments>
-<slash:hit_parade>102,101,37,3,1,0,0</slash:hit_parade>
+<slash:comments>104</slash:comments>
+<slash:hit_parade>104,103,37,3,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/humor_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;Stack Overflowで「&lt;a href="https://workplace.stackexchange.com/questions/182321/no-access-to-data-as-a-data-analyst-how-do-i-change-this-culture"&gt;データアナリストとして雇われたが、（生）データを見ることもできない。この会社の文化を変えるのにはどうすればいいか&lt;/a&gt;」という相談を書き込んでいる人を発見したので紹介したい。&lt;br&gt; &lt;br&gt;ectoplasmさんの質問によると、データアナリストとして社内向けにデータを分析し、Qlik Senseというデータ分析ソフトでデータからの洞察と予測を見ることができるシステムを作ることを目的に雇われたらしいのだが、実際の仕事はエクセル形式のレポートファイルをウェブサーバーからダウンロードし、別のエクセルファイルにデータをコピーして、ピボットを使った後にまた別のエクセルファイルにコピーする作業をやっているそうだ。&lt;br&gt; &lt;br&gt;生データを商習慣に合わせて加工したデータマートのエクセルファイルしかアクセスできる環境にしかないため、必要な分析ができず困っているそうだ。この非常識な社内システムのせいで、自動化することもできないため、社内の何人かがコピーを繰り返す仕事に費やされており、質問者は一生の間この作業を続けないといけないのかと考えているという。自分の上司はこの問題を認識しているが、お手上げだそうだ。&lt;br&gt; &lt;br&gt;質問者は提案に返信する形で、月に3日もかけて数十個のエクセルファイルにデータのコピペを繰り返して報告書を作る製品マネージャーがいると答えている。この件でも生データにアクセスして自動化する要求の提案を上に出したが、優先事項ではないと返されてしまったようだ。&lt;br&gt; &lt;br&gt;回答として上がっているのは、「自動化してどれだけ節約できるのかを提案する」「上が問題を認識しているにもかかわらず、解決に失敗しているなら、あなたも解決することはできないだろう」「エクセルのパワーユーザー社員のスキルを失うことを上が恐れているからシステムを変更できないし、それを変えるのは地獄になる」「他の人が欲しがるような自動化プロセスを自分用にまず作ってみるのはどうか」「生データにアクセスできないのは、コンプライアンスやセキュリティの問題や、ウェブサーバーを管理している人の政治の問題があるか。これを考えずに提案をすると有益でも上は拒否するだろう」など。みなさんはどう考えるだろうか。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
 	&lt;a href="https://it.srad.jp/story/22/01/27/1618245/"&gt;すべて読む&lt;/a&gt;
 	
@@ -694,66 +769,6 @@ FAQ エントリはデータの移行方法などとともに追記されたも�
 		
 			&lt;br&gt;&lt;a href="https://it.srad.jp/story/09/10/06/0140212"&gt;インターネットで私たちが失ったモノ&lt;/a&gt;
 			&lt;small&gt;2009年10月06日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://it.srad.jp/story/22/01/27/1533224/">
-<title>ドコモが6Gで人間の感覚を拡張。攻殻機動隊とかマトリックスを目指すらしい</title>
-<link>https://it.srad.jp/story/22/01/27/1533224/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/ntt_64.png"&gt;NTTドコモは第6世代通信（6G）の特徴である超低遅延を生かした技術を開発したそうだ。6Gではネットワークの通信速度が人間の神経の反応速度を超えるそうで、脳や身体の情報をネットワークに接続し、人間の感覚を拡張するというSFじみたことが可能になるという。同社は17日にこうした「人間拡張」を実現するための基盤を、H2L、FCNT、富士通の技術協力を得て開発したそうだ（NTTドコモリリース、Impress Watch、BCN、ロボスタ）。 
-
-この技術基盤では人やロボットなど他者間の動作の共有が可能になる。例えば動作を再現する駆動機器に伝える際、操作元となる人間と接続先である機器とのサイズ差を吸収して無理のない自然な動作をしたりできる。例えば人間の動きをトレースして巨大ロボットを動かしたり、反対に超小型ロボットに人間の動きを反映させて精密作業をしたりすることもできるようだ。この技術基盤では、パートナー企業のさまざまなデバイスの相互接続も可能なほか、デバイス開発者向けに簡単に接続可能な開発キット（SDK）を提供することも考えているとしている。&lt;p&gt; &lt;a href="https://it.srad.jp/story/22/01/27/1533224/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/tech"&gt;テクノロジー&lt;/a&gt; | &lt;a href="https://srad.jp/stories/input"&gt;入力デバイス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/communications"&gt;通信&lt;/a&gt; | &lt;a href="https://srad.jp/stories/ntt"&gt;NTT&lt;/a&gt; | &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/virtualization"&gt;仮想化&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/01/27/1533224/&amp;amp;text=%E3%83%89%E3%82%B3%E3%83%A2%E3%81%8C6G%E3%81%A7%E4%BA%BA%E9%96%93%E3%81%AE%E6%84%9F%E8%A6%9A%E3%82%92%E6%8B%A1%E5%BC%B5%E3%80%82%E6%94%BB%E6%AE%BB%E6%A9%9F%E5%8B%95%E9%9A%8A%E3%81%A8%E3%81%8B%E3%83%9E%E3%83%88%E3%83%AA%E3%83%83%E3%82%AF%E3%82%B9%E3%82%92%E7%9B%AE%E6%8C%87%E3%81%99%E3%82%89%E3%81%97%E3%81%84" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/01/27/1533224/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/01/27/1533224/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/01/27/1533224/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://science.srad.jp/story/21/12/26/187211"&gt;人工培養した「ミニ脳」にゲームをプレイさせることに成功、AIよりも早く操作を学習&lt;/a&gt; &lt;small&gt;2021年12月28日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/21/02/17/015215"&gt;脳に刺激を与えることで左手を集中的に使用させる技術&lt;/a&gt; &lt;small&gt;2021年02月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/21/02/03/1855254"&gt;イーロン・マスク、思考で機器を操作する技術の経過報告。猿がゲームプレイできる？&lt;/a&gt; &lt;small&gt;2021年02月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/21/01/21/1824250"&gt;ムーンショット型研究開発制度、気象制御技術やテレパシーのように伝える技術が候補に残る&lt;/a&gt; &lt;small&gt;2021年01月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/12/21/1741255"&gt;プログラム言語を処理するとき使う脳部位は言語野ではなかった&lt;/a&gt; &lt;small&gt;2020年12月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/17/04/19/0651256"&gt;生殖器官のがん治療に向けた「精子型ロボット」&lt;/a&gt; &lt;small&gt;2017年04月20日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-01-28T08:05:00+00:00</dc:date>
-<dc:subject>ntt</dc:subject>
-<slash:department>SF</slash:department>
-<slash:section>it</slash:section>
-<slash:comments>40</slash:comments>
-<slash:hit_parade>40,39,8,5,2,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/ntt_64.png"&gt;NTTドコモは第6世代通信（6G）の特徴である超低遅延を生かした技術を開発したそうだ。6Gではネットワークの通信速度が人間の神経の反応速度を超えるそうで、脳や身体の情報をネットワークに接続し、人間の感覚を拡張するというSFじみたことが可能になるという。同社は17日にこうした「人間拡張」を実現するための基盤を、H2L、FCNT、富士通の技術協力を得て開発したそうだ（&lt;a href="https://www.nttdocomo.co.jp/info/news_release/2022/01/17_00.html"&gt;NTTドコモリリース&lt;/a&gt;、&lt;a href="https://www.watch.impress.co.jp/docs/news/1381048.html"&gt;Impress Watch&lt;/a&gt;、&lt;a href="https://www.bcnretail.com/market/detail/20220117_262169.html"&gt;BCN&lt;/a&gt;、&lt;a href="https://robotstart.info/2020/01/22/5g-evolution-6g.html"&gt;ロボスタ&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-この技術基盤では人やロボットなど他者間の動作の共有が可能になる。例えば動作を再現する駆動機器に伝える際、操作元となる人間と接続先である機器とのサイズ差を吸収して無理のない自然な動作をしたりできる。例えば人間の動きをトレースして巨大ロボットを動かしたり、反対に超小型ロボットに人間の動きを反映させて精密作業をしたりすることもできるようだ。この技術基盤では、パートナー企業のさまざまなデバイスの相互接続も可能なほか、デバイス開発者向けに簡単に接続可能な開発キット（SDK）を提供することも考えているとしている。&lt;p&gt;
-	&lt;a href="https://it.srad.jp/story/22/01/27/1533224/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/tech"&gt;テクノロジー&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/input"&gt;入力デバイス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/communications"&gt;通信&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/ntt"&gt;NTT&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/virtualization"&gt;仮想化&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/01/27/1533224/&amp;amp;text=%E3%83%89%E3%82%B3%E3%83%A2%E3%81%8C6G%E3%81%A7%E4%BA%BA%E9%96%93%E3%81%AE%E6%84%9F%E8%A6%9A%E3%82%92%E6%8B%A1%E5%BC%B5%E3%80%82%E6%94%BB%E6%AE%BB%E6%A9%9F%E5%8B%95%E9%9A%8A%E3%81%A8%E3%81%8B%E3%83%9E%E3%83%88%E3%83%AA%E3%83%83%E3%82%AF%E3%82%B9%E3%82%92%E7%9B%AE%E6%8C%87%E3%81%99%E3%82%89%E3%81%97%E3%81%84" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/01/27/1533224/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/01/27/1533224/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/01/27/1533224/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/21/12/26/187211"&gt;人工培養した「ミニ脳」にゲームをプレイさせることに成功、AIよりも早く操作を学習&lt;/a&gt;
-			&lt;small&gt;2021年12月28日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/21/02/17/015215"&gt;脳に刺激を与えることで左手を集中的に使用させる技術&lt;/a&gt;
-			&lt;small&gt;2021年02月18日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/21/02/03/1855254"&gt;イーロン・マスク、思考で機器を操作する技術の経過報告。猿がゲームプレイできる？&lt;/a&gt;
-			&lt;small&gt;2021年02月04日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/21/01/21/1824250"&gt;ムーンショット型研究開発制度、気象制御技術やテレパシーのように伝える技術が候補に残る&lt;/a&gt;
-			&lt;small&gt;2021年01月22日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/20/12/21/1741255"&gt;プログラム言語を処理するとき使う脳部位は言語野ではなかった&lt;/a&gt;
-			&lt;small&gt;2020年12月23日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/17/04/19/0651256"&gt;生殖器官のがん治療に向けた「精子型ロボット」&lt;/a&gt;
-			&lt;small&gt;2017年04月20日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
