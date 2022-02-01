@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 13 Jan 2022 17:52:08 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 01 Feb 2022 15:45:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,108 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>GSL 4.0.0 is Available Now</title>
+		<link>https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/#respond</comments>
+		
+		<dc:creator><![CDATA[Dmitry Kobets]]></dc:creator>
+		<pubDate>Tue, 01 Feb 2022 15:45:22 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[Writing Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30051</guid>
+
+					<description><![CDATA[<p>Version 4.0.0 of Microsoft’s implementation of the C++ Core Guidelines Support Library (GSL) is now available for you to download on the releases page. This release maintains the safety guarantees that we have always offered and adds improvements to various parts of the library.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/">GSL 4.0.0 is Available Now</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Version 4.0.0 of Microsoft’s implementation of the <a href="https://github.com/microsoft/GSL">C++ Core Guidelines Support Library</a> (GSL) is now available for you to download on the <a href="https://github.com/microsoft/gsl/releases">releases page</a>. This release maintains the safety guarantees that we have always offered and adds improvements to various parts of the library.</p>
+<h2 id="what-changed-in-this-release">What changed in this release?</h2>
+<ul>
+<li><a href="#deprecation-of-gslstring_span">Deprecation of <code>gsl::string_span</code></a></li>
+<li><a href="#removal-of-gsl-multi_span">Removal of <code>&lt;gsl/multi_span&gt;</code></a></li>
+<li><a href="#header-files-dropped-the-gsl_-prefix">Header files dropped the <code>gsl_</code> prefix</a></li>
+<li><a href="#changes-to-not_null">Changes to <code>not_null</code></a></li>
+<li><a href="#gslspan-and-stdspan-now-use-the-correct-specialization-of-gslat"><code>gsl::span</code> and <code>std::span</code> now use the correct specialization of <code>gsl::at</code></a></li>
+<li>The <code>zstring</code> family no longer requires empty brackets to be used: <a href="https://github.com/microsoft/GSL/issues/992">issue#992</a>
+<ul>
+<li>for example, <code>void foo(zstring&lt;&gt; str);</code> should now be <code>void foo(zstring str);</code></li>
+</ul>
+</li>
+<li><code>gsl::narrowing_error</code> now has a helpful <code>what()</code> message</li>
+<li><code>finally</code> and <code>final_action</code> are now <code>[[nodiscard]]</code></li>
+<li><a href="#gsl-will-work-in-environments-where-exceptions-are-disabled-with-some-caveats">GSL will work in environments where exceptions are disabled, with some caveats</a></li>
+<li>GSL will work in environments which do not support iostreams, via the addition of the <code>GSL_NO_IOSTREAMS</code> flag: <a href="https://github.com/microsoft/GSL/pull/935">#953</a></li>
+<li><a href="#C-compilers">Updated compiler support</a></li>
+<li><a href="#cmake-and-build-improvements">CMake and build improvements</a></li>
+</ul>
+<h2 id="deprecation-of-gslstring_span">Deprecation of <code>gsl::string_span</code></h2>
+<p><a href="https://github.com/isocpp/CppCoreGuidelines/pull/1680">isocpp/CppCoreGuidelines#1680</a> removed <code>string_span</code> from the C++ Core Guidelines. The recommendation is to use <code>std::string_view</code>, <code>std::span&lt;char&gt;</code> or <code>gsl::span&lt;char&gt;</code> instead. To more closely align Microsoft’s GSL with the C++ Core Guidelines, we deprecated our implementation of <code>string_span</code> and <code>zstring_span</code>, including <code>basic_string_span</code>, <code>basic_zstring_span</code>, and all related types. For the time being, we will continue to provide the <code>&lt;gsl/string_span&gt;</code> header, but it will not be actively worked on or maintained. A table of all supported and unsupported types/features can be found in the <a href="https://github.com/microsoft/GSL/blob/main/README.md">README.md</a>.</p>
+<h2 id="removal-of-gsl-multi_span">Removal of <code>&lt;gsl/multi_span&gt;</code></h2>
+<p><code>multi_span</code>, <code>strided_span</code>, and everything else in <code>&lt;gsl/multi_span&gt;</code> were deprecated over a year ago in <a href="https://github.com/microsoft/GSL/releases/tag/v3.0.0">GSL 3.0.0</a>, and it is time for them and their associated tests to be removed from the library.</p>
+<h2 id="header-files-dropped-the-gsl_-prefix">Header files dropped the <code>gsl_</code> prefix</h2>
+<p>All headers which previously contained a <code>gsl_</code> prefix in their name have had this prefix removed. For example, <code>&lt;gsl/gsl_algorithm&gt;</code> is now <code>&lt;gsl/algorithm&gt;</code>. The <code>gsl_</code> prefixed files still exist and pass through to the updated files, but will be removed in a future release.</p>
+<h2 id="changes-to-not_null">Changes to <code>not_null</code></h2>
+<p>To more closely align Microsoft’s GSL with the C++ Core Guidelines, <code>gsl::not_null</code> now accepts only types which are <em>comparable</em> to <code>nullptr</code>. Previously, it accepted only types which are <em>assignable</em> from <code>nullptr</code>, but this was stricter than what was intended by the <a href="http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslview-views">Core Guidelines</a>.</p>
+<p>The functions <code>make_not_null</code> and <code>make_strict_not_null</code>, and the <code>not_null</code> comparison operators, are now all <code>noexcept</code>.</p>
+<h2 id="gslspan-and-stdspan-now-use-the-correct-specialization-of-gslat"><code>gsl::span</code> and <code>std::span</code> now use the correct specialization of <code>gsl::at</code></h2>
+<p><code>gsl::span</code> and <code>std::span</code> now have their own separate specializations of <code>gsl::at</code>, to ensure consistent behavior between the two versions of span. Both overloads are included when importing <code>&lt;gsl/span&gt;</code>. The <code>std::span</code> overload can be separately included from <code>&lt;gsl/util&gt;</code>.</p>
+<h2 id="gsl-will-work-in-environments-where-exceptions-are-disabled-with-some-caveats">GSL will work in environments where exceptions are disabled, with some caveats</h2>
+<p><code>gsl::narrow</code> is the only part of the library which may throw exceptions and has been moved into its own header <code>&lt;gsl/narrow&gt;</code>. This header is included in <code>&lt;gsl/gsl&gt;</code> only if exceptions are enabled. This allows users of the library who are working in environments without exceptions to use all of the other components of the library.</p>
+<p>Note: <code>gsl::narrow_cast</code> is still in <code>&lt;gsl/util&gt;</code>, since it does not throw exceptions.</p>
+<h2 id="updated-compiler-support">Updated compiler support</h2>
+<p>The list of supported compilers/toolsets has been updated with newer versions. More info on compiler support can be found in the <a href="https://github.com/microsoft/GSL/blob/main/README.md#supported-compilers--toolsets">README.md</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Compiler/Toolset</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XCode</td>
+<td>13.2.1 &amp; 12.5.1</td>
+</tr>
+<tr>
+<td>GCC</td>
+<td>11.1.0 &amp; 10.3.0</td>
+</tr>
+<tr>
+<td>Clang</td>
+<td>12.0.0 &amp; 11.0.0</td>
+</tr>
+<tr>
+<td>Visual Studio with MSVC</td>
+<td>VS2022 (17.0) &amp; VS2019 (16.11)</td>
+</tr>
+<tr>
+<td>Visual Studio with LLVM</td>
+<td>VS2022 (17.0) &amp; VS2019 (16.11)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cmake-and-build-improvements">CMake and build improvements</h2>
+<ul>
+<li>GSL Install logic is now guarded by a cmake option <code>GSL_INSTALL</code>: <a href="https://github.com/microsoft/GSL/pull/964">#964</a></li>
+<li>Fix bug which prevented the library from being built on a 32-bit host and then being used on a 64-bit machine: <a href="https://github.com/microsoft/GSL/pull/893">#893</a></li>
+<li>Build will now use <code>CMAKE_CXX_STANDARD</code> if it&#8217;s provided <a href="https://github.com/microsoft/GSL/pull/953">#953</a></li>
+<li>Clean up <code>GSL_SUPPRESS</code> warning for intel compilers: <a href="https://github.com/microsoft/GSL/pull/906">#906</a></li>
+<li>Fix build failure for C++20 compilers which don&#8217;t have <code>std::span</code>: <a href="https://github.com/microsoft/GSL/pull/993">#993</a></li>
+<li>Cleaned up some static analysis warnings</li>
+<li>The cmake cache variable <code>VS_ADD_NATIVE_VISUALIZERS</code> has been renamed to <code>GSL_VS_ADD_NATIVE_VISUALIZERS</code>: <a href="https://github.com/microsoft/GSL/pull/941">#941</a></li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>This has been a list of the changes in the GSL 4.0.0 release. You can download the code at the <a href="https://github.com/microsoft/GSL">GSL GitHub page</a>. Please stay tuned for future releases!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/">GSL 4.0.0 is Available Now</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>How we used C++20 to eliminate an entire class of runtime bugs</title>
 		<link>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/#comments</comments>
@@ -1083,51 +1185,6 @@ Have questions or comments about Visual Studio 2022?</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-cross-platform-developers-in-visual-studio-2022/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Microsoft C++ Code Analysis with GitHub Actions</title>
-		<link>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/#comments</comments>
-		
-		<dc:creator><![CDATA[Daniel Winsor]]></dc:creator>
-		<pubDate>Tue, 26 Oct 2021 11:23:10 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29701</guid>
-
-					<description><![CDATA[<p>We previously talked about GitHub Code Scanning capabilities which enabled developers to incorporate security checks into their CI/CD environment and developer workflow. CodeQL is the default analysis engine behind Code Scanning. Today we are introducing support for MSVC Code Analysis which will provide a great companion to CodeQL for C++ GitHub repos with Windows workflows.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/">Microsoft C++ Code Analysis with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We previously talked about <a href="https://devblogs.microsoft.com/cppblog/code-scanning-with-github-actions/">GitHub Code Scanning capabilities</a> which enabled developers to incorporate security checks into their CI/CD environment and developer workflow. <a href="https://codeql.github.com/">CodeQL</a> is the default analysis engine behind Code Scanning. Today we are introducing support for MSVC Code Analysis which will provide a great companion to CodeQL for C++ GitHub repos with Windows workflows.</p>
-<p>This <a href="https://github.com/marketplace/actions/microsoft-c-code-analysis-action">Action</a> will take the variety of Code Quality and Security warnings available in Visual Studio today and process them as alerts, displaying them in the <a href="https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/managing-code-scanning-alerts-for-your-repository">Security view of a GitHub repository</a>. The code scanning alerts produced will power the <a href="https://github.com/features/security/code">existing features</a> available through GitHub. These include highlighting the source code of contributors’ PRs with any warnings they may have introduced or allowing repository owners to view and manage the backlog of alerts under the Security tab.</p>
-<p><img class="alignnone" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/CodeScanning.png" alt="Analysis results annotated in Pull Request UI" width="933" height="557" /></p>
-<p>Alongside the support for analysis alerts inside of GitHub, the results can also be published as workflow artifacts, allowing contributors to download and view them locally in the IDE. This is enabled by our <a href="https://devblogs.microsoft.com/cppblog/microsoft-c-code-analysis-supports-sarif-2-1/">support for SARIF</a>, which is a standardized file format for analysis tooling. This format can be viewed inside of Visual Studio Code using the <a href="https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer">SARIF Viewer extension</a>. This will provide additional information highlighted on the source code, allowing the developer to easily resolve any problems found.</p>
-<p>The repository will need to support CMake to ensure information about how the project is built can be extracted. We chose CMake because it provides a good abstraction for the varied nature of C++ projects and due to its wide adoption in the open-source community. It also provides an easy path for teams not currently building with the Microsoft Compiler to get analysis setup and see the features it has to offer.</p>
-<h2 id="setup-github-action">Setup GitHub Action</h2>
-<p>To get started using this experience you can find an entry for Microsoft C++ Code Analysis on the Security (tab) -&gt; Setup up code scanning page if C++ is detected in your repository.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/WorkflowSetup.gif"><img class="alignnone wp-image-29704 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/10/WorkflowSetup.gif" alt="Setting up Code Scanning workflow (GIF)" width="1002" height="592" /></a></p>
-<p>Once you have the template installed you can customize it to adapt to the specific needs of your repository. You can configure options such as ignoring a set of targets used for testing or changing the Ruleset file. The Ruleset file allows you to customize which warnings will be run beyond the default behavior. You can select a predefined ruleset available in a Visual Studio install (inside the ‘Team ToolsStatic Analysis ToolsRule Sets’ directory) or reference a customized file checked-in to the source. For the best results create a custom ruleset that adds/removes warnings from official rulesets in VS. This will ensure you receive updated checks as more are developed. Refer to the <a href="https://docs.microsoft.com/cpp/code-quality/using-rule-sets-to-specify-the-cpp-rules-to-run?view=msvc-160">documentation on rulesets</a> for more information.</p>
-<h3 id="example-ruleset">Example Ruleset</h3>
-<pre><code class="language-xml">&lt;?xml version="1.0" encoding="utf-8"?&gt; 
-&lt;RuleSet Name="Example" Description="Enable Warnings" ToolsVersion="10.0"&gt; 
-  &lt;!-- Default rules available in Visual Studio --&gt;
-  &lt;Include Path="NativeRecommendedRules.ruleset" Action="Default" /&gt; 
-  &lt;Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis"     
-         RuleNamespace="Microsoft.Rules.Native"&gt; 
-    &lt;Rule Id="C26440" Action="None" /&gt; &lt;!-- Exclude: Declare noexcept --&gt;
-    &lt;Rule Id="C26492" Action="None" /&gt; &lt;!-- Include: No const_cast&lt;&gt; --&gt; 
-  &lt;/Rules&gt; 
-&lt;/RuleSet&gt; </code></pre>
-<h2 id="feedback">Feedback</h2>
-<p>The action is published under a pre-release status as it is tested on additional GitHub repositories and more features are added. We would love to hear feedback from you on how we can improve the Action to make it compatible with your GitHub projects. If you have a need for Native MSBuild support, please express your interest on the following <a href="https://developercommunity.visualstudio.com/t/Add-Native-MSBuild-support-for-GitHub-Ac/1563225">feature request ticket</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/">Microsoft C++ Code Analysis with GitHub Actions</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
