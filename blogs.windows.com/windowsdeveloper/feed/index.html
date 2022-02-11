@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper</link>
 	<description></description>
-	<lastBuildDate>Wed, 02 Feb 2022 00:18:37 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 11 Feb 2022 02:20:32 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -48,32 +48,32 @@
 <span style="font-weight: 400;">We need to check for redirection as early as possible, and before creating any windows. To do this, we must define the symbol “DISABLE_XAML_GENERATED_MAIN” in the project build properties.</span>
 <ol>
  	<li style="font-weight: 400;" aria-level="1"><b>Double-click</b><span style="font-weight: 400;"> on the project name in Solution Explorer:</span></li>
- 	<li style="font-weight: 400;" aria-level="1">Define the <b>DISABLE_XAML_GENERATED_MAIN</b> symbol below </PropertyGroup></li>
+ 	<li style="font-weight: 400;" aria-level="1">Define the <b>DISABLE_XAML_GENERATED_MAIN</b> symbol below</li>
 </ol>
 <span style="font-weight: 400;">DrumPad:</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="xml"><PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup>
-<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup>
-<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup>
-<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup>
-<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup>
-<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
-  <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-</PropertyGroup></pre>
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Debug|x64'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;
+&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Debug|x86'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;
+&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Release|x86'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;
+&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Release|x64'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;
+&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Debug|arm64'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;
+&lt;propertygroup condition="'$(Configuration)|$(Platform)'=='Release|arm64'"&gt;
+  &lt;defineconstants&gt;DISABLE_XAML_GENERATED_MAIN&lt;/defineconstants&gt;
+&lt;/propertygroup&gt;</pre>
 <h3><b>Define a customized Program class with a Main method</b></h3>
 <span style="font-weight: 400;">A customized Program.cs file is created instead of running the default Main method because it enables the app to check for redirection, which is not what WinUI apps default to doing.</span>
 <ol>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -> </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -> Add -> New Item</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Under </span><b>Visual C# Items</b><span style="font-weight: 400;"> -> Code -> Class -> Name it </span><b>Program.cs</b><span style="font-weight: 400;"> -> Add</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -&gt; </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -&gt; Add -&gt; New Item</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Under </span><b>Visual C# Items</b><span style="font-weight: 400;"> -&gt; Code -&gt; Class -&gt; Name it </span><b>Program.cs</b><span style="font-weight: 400;"> -&gt; Add</span></li>
 </ol>
 <b>NOTE</b><span style="font-weight: 400;">: Your project should look like this:</span>
 
@@ -90,15 +90,16 @@ using Windows.Storage;</pre>
 4. <span style="font-weight: 400;">Replace the empty class Program with following:</span>
 
 <span style="font-weight: 400;">Program.cs:</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="xml">{
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">class program
+{
     [STAThread]
-    static async Task<int> Main(string[] args)
+    static async Task Main(string[] args)
     {
         WinRT.ComWrappersSupport.InitializeComWrappers();
         bool isRedirect = await DecideRedirection();
         if (!isRedirect)
         {
-            Microsoft.UI.Xaml.Application.Start((p) =>
+            Microsoft.UI.Xaml.Application.Start((p) =&gt;
             {
                 var context = new DispatcherQueueSynchronizationContext(
                     DispatcherQueue.GetForCurrentThread());
@@ -108,14 +109,13 @@ using Windows.Storage;</pre>
         }
 
         return 0;
-    }
-}</pre>
+    }</pre>
 <b>NOTE</b><span style="font-weight: 400;">: Main determines if it should redirect or launch a new app instance via DecideRedirection();</span>
 
 5. D<span style="font-weight: 400;">efine DecideRedirection() below the Main method:</span>
 
 <span style="font-weight: 400;">Program.cs:</span>
-<pre class="EnlighterJSRAW" data-enlighter-language="xml">private static async Task<bool> DecideRedirection()
+<pre class="EnlighterJSRAW" data-enlighter-language="xml">private static async Task DecideRedirection()
 {
     bool isRedirect = false;
     AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
@@ -144,7 +144,7 @@ using Windows.Storage;</pre>
 <h3><b>Testing single-instancing via app deployment</b></h3>
 <span style="font-weight: 400;">Up until now, we have been testing our app by running the solution debugger. We can only have one debugger running at once. Therefore, it prevents us from knowing whether the app is single-instanced because we can’t debug the same project solution twice at the same time. To test, we will deploy the application. After deploying, we can launch the app from the desktop like how you would with Microsoft Word.</span>
 <ol>
- 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -> </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -> </span><b>Deploy</b></li>
+ 	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Navigate to Solution Explorer -&gt; </span><b>Right-click</b><span style="font-weight: 400;"> on the project name -&gt; </span><b>Deploy</b></li>
  	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Open the start menu and click on the search field</span></li>
  	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Type “DrumPad” (or your app’s name) in the search field</span></li>
  	<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Click on the app icon from the search result to launch the app</span></li>
@@ -154,8 +154,8 @@ using Windows.Storage;</pre>
 <img class="aligncenter size-full wp-image-56433" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/01/Picture2.gif-BLOG-3.gif" alt="" width="1388" height="1080" />
 <h3><b>Wrapping up</b></h3>
 <ul>
- 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56420&preview=true"><b>In part 1</b></a><span style="font-weight: 400;">, we learned how to use WinUI 3 controls to create the app’s visual layer.</span></li>
- 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56426&preview=true"><b>In part 2</b></a><span style="font-weight: 400;">, we introduced the concepts of dark mode and windowing.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56420&amp;preview=true"><b>In part 1</b></a><span style="font-weight: 400;">, we learned how to use WinUI 3 controls to create the app’s visual layer.</span></li>
+ 	<li style="font-weight: 400;" aria-level="1"><a href="https://blogs.windows.com/windowsdeveloper/?p=56426&amp;preview=true"><b>In part 2</b></a><span style="font-weight: 400;">, we introduced the concepts of dark mode and windowing.</span></li>
  	<li style="font-weight: 400;" aria-level="1"><b>In part 3</b><span style="font-weight: 400;">, we enforced single-instancing for our app.</span></li>
 </ul>
 <span style="font-weight: 400;">All the code we have covered from the blog series is on </span><a href="https://github.com/jingwei-a-zhang/WinAppSDK-DrumPad"><span style="font-weight: 400;">GitHub</span></a><span style="font-weight: 400;">, with branches for the different steps. The main branch is the most comprehensive. The other branches are intended to show you how the app architecture evolved.</span>
