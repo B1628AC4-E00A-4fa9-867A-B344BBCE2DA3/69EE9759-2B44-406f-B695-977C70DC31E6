@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 01 Feb 2022 15:45:22 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 14 Feb 2022 16:29:09 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -927,24 +927,24 @@ Project c:\source\test activated
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/">C++ build throughput investigation and tune up</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></description>
 										<content:encoded><![CDATA[<p>Building C++ code is a complex process, launching many build tools in parallel and often running for a long time. It is always desirable to make it faster, but also a challenge to understand what the most effective way would be to achieve this.</p>
-<p>We’d like to share some techniques we use to get a “bigger” picture of the build, as well as tools that can help to see what is taking time in a particular part of the build. We’ll also talk about MSBuild project options which can improve build parallelism without overwhelming the system, as well as other (not immediately obvious) options which might affect build throughput.</p>
+<p>We’d like to share some techniques we use to get a &#8220;bigger&#8221; picture of the build, as well as tools that can help to see what is taking time in a particular part of the build. We’ll also talk about MSBuild project options which can improve build parallelism without overwhelming the system, as well as other (not immediately obvious) options which might affect build throughput.</p>
 <p>This blog is more like a list of what is currently available, full of instructions and details. Some of the suggestions should be useful for any C++ build, but most of the measurements and tuning options are for MSBuild based projects (vcxproj).</p>
 <p>As any performance improvement starts with the measurement, here we are – measure your build.</p>
 <p>Note that the total build time can vary quite noticeably between several identical builds on the same machine – the system is adjusting to the active processes. So, if you compare builds before and after making some options changes, it is more reliable to run the build several times and get the average. It is also helpful to measure not only the total build time but get more detailed information, so if you get a surprising result, you can figure out why it happened. For MSBuild we recommend running it on the command line and collecting a <a href="http://www.msbuildlog.com/">binary log</a>.</p>
 <h2 id="measure-your-build-time-using-msbuild-performance-summary">Measure your build time using MSBuild Performance Summary</h2>
 <p>If your build is MSBuild based, the first thing to do when investigating build performance is to see which projects and which tasks/targets inside the projects are taking most of the build time. The performance summary data is also very useful for comparing builds using different options.</p>
 <p>To get a performance summary for your full build, you can do the following: open a Developer (or MSBuild) Command Prompt and run the build of your solution with the following options (replace Configuration and Platform values with the ones your solution actually has):</p>
-<pre class="prettyprint">msbuild /m /t:clean /p:Configuration=”Debug”;Platform=”x86” YourSolution.sln 
-msbuild  /m /fl  -flp:PerformanceSummary;v=q;LogFile=Perf.log /p:Configuration=”Debug”;Platform=”x86” YourSolution.sln
+<pre class="prettyprint">msbuild /m /t:clean /p:Configuration="Debug";Platform="x86" YourSolution.sln 
+msbuild  /m /fl  -flp:PerformanceSummary;v=q;LogFile=Perf.log /p:Configuration="Debug";Platform="x86" YourSolution.sln
 </pre>
-<p>The “quet” or “minimal” verbosity setting (<code>-flp:PerformanceSummary;v=q</code>) is recommended as console logging itself takes noticeable time. But you can set the verbosity to other levels if you want more build info in the Perf.log. You can also add <code>/detailedSummary</code> to see msbuild.exe <a href="https://devblogs.microsoft.com/visualstudio/msbuild-4-detailed-build-summary/#gimme-some-numbers">nodes utilization</a>).</p>
+<p>The &#8220;quet&#8221; or &#8220;minimal&#8221; verbosity setting (<code>-flp:PerformanceSummary;v=q</code>) is recommended as console logging itself takes noticeable time. But you can set the verbosity to other levels if you want more build info in the Perf.log. You can also add <code>/detailedSummary</code> to see msbuild.exe <a href="https://devblogs.microsoft.com/visualstudio/msbuild-4-detailed-build-summary/#gimme-some-numbers">nodes utilization</a>).</p>
 <p>The same information can be extracted from a binary log. We recommend creating binary logs when investigating your builds. To create a binary log, run:</p>
-<pre><code class="language-txt">msbuild /m /t:clean /p:Configuration=”Debug”;Platform=”x86” YourSolution.sln 
-msbuild /m /bl:build.binlog /p:Configuration=”Debug”;Platform=”x86” YourSolution.sln</code></pre>
+<pre><code class="language-txt">msbuild /m /t:clean /p:Configuration="Debug";Platform="x86" YourSolution.sln 
+msbuild /m /bl:build.binlog /p:Configuration="Debug";Platform="x86" YourSolution.sln</code></pre>
 <p>To extract the perf info into Perf.log, run:</p>
 <pre><code class="language-txt">msbuild -noconlog -flp:PerformanceSummary -flp:v=q  build.binlog
 ren msbuild.log Perf.log</code></pre>
-<p>You can also enable “Build Timings” for VC projects in the IDE by setting “Tools/Options/Projects and Solutions/VC++ Project Settings/Build Timings” = “Yes”. This will create the Perf Summary for each project, but not for the whole solution build. Thus, using the command line is better to see the “whole picture”.</p>
+<p>You can also enable &#8220;Build Timings&#8221; for VC projects in the IDE by setting &#8220;Tools/Options/Projects and Solutions/VC++ Project Settings/Build Timings&#8221; = &#8220;Yes&#8221;. This will create the Perf Summary for each project, but not for the whole solution build. Thus, using the command line is better to see the &#8220;whole picture&#8221;.</p>
 <p>In the Perf.log you’ll find times (in ms) it took to build the whole solution, each project (in the time increasing order) and commutative time of all targets and tasks (also in the time increasing order). Note that project build time and some targets (like ResolveProjectReferences target) include the wait for referenced projects to be built. You can use the Timeline tab of the binlog viewer to see if other projects were built as a part of a particular project build.</p>
 <p>For a solution containing mostly C++ projects, cl and link would usually be the tasks taking most of the time:</p>
 <pre><code class="language-txt">Project Performance Summary:
@@ -1000,7 +1000,7 @@ The problem of optimal build parallelism is quite complex as it is hard to predi
 <p>If you don’t use <code>/MP</code> for your build currently, turn it on and give it a try. To affect all projects, define the following property as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
 <p><code>set CL_MP = true</code></p>
 <p>By default, the MSBuild Resource Manager will allow maximum 2*(number of CPU cores) to be used simultaneously by all project’s tasks. The 2x cores (instead of just 1x) limit is partially dictated by the current MSBuild scheduler architecture, but also seems to allow better build throughput on average. Most of the time the build will use less than 2xCPUs and when it does, the system usually tolerates 2x CPU oversubscription quite well unless bottlenecks other than the CPU are hit by the build (see Many Cores Machines section).</p>
-<p>There are also a couple of “knobs” to try if the default behavior is not good enough.
+<p>There are also a couple of &#8220;knobs&#8221; to try if the default behavior is not good enough.
 In addition to setting the maximum number of projects allowed to be built in parallel (<code>msbuild /m:nProjects</code>), you can set the following environment variables (cannot be MSBuild properties) to modify the behavior:</p>
 <ul>
 <li><code>MSBUILDCORELIMIT=N</code> where N is the max number of cores to be given to one project. By default it’s the number of logical CPUs on the machine</li>
@@ -1034,7 +1034,7 @@ Even with C++20 modules, where compilation does use the build outputs (modules) 
 <p><code>msbuild /p:Configuration=Debug;Platform= x64 /t:BuildGenerateSources;BuildCompile;BuildLink solution.sln</code></p>
 <p>How it works:</p>
 <p>By default, MSBuild starts project build execution after all projects it references finish building.
-Each VC project build consists of BuildGenerateSources, BuildCompile and BuildLink targets executed one after another. They are historically called “build passes”.</p>
+Each VC project build consists of BuildGenerateSources, BuildCompile and BuildLink targets executed one after another. They are historically called &#8220;build passes&#8221;.</p>
 <p>The default build timeline for two projects where ProjectB is referencing ProjectA looks like</p>
 <p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/11/Build.png" alt="Regular build" /></p>
 <p>When <code>BuildPassReferences</code> is set to true, a project B’s <code>BuildGenerateSources</code> target will be executed as soon as project A’s <code>BuildGenerateSources</code> target finish building. The project B’s <code>BuildCompile</code> target will wait for project B’s <code>BuildGenerateSources</code> target to finish executing, as well as project A’s <code>BuildCompile</code> targets. Similarly, a project B’s <code>BuildLink</code> target will wait for project B’s <code>BuildCompile</code> target and project A’s <code>BuildLink</code> target.</p>
@@ -1075,7 +1075,7 @@ Each series contains build times when number of projects built in parallel (and 
 <p>Note that in all series, build time did not improve much (and even got worse) when building more projects in parallel after some point. For this particular solution, building just ~40 projects in parallel showed the best results.</p>
 <p>We’ve also tested other generated solutions with different number of projects, longer code, project references, etc. We also used different build options, especially the ones we recommend using in section#3.
 The trends were quite similar, though the optimal number of parallel processes might differ.</p>
-<p>The “real” code compilation usually takes much longer than the compilation of our small and simple generated files, so File System bottleneck might be not so pronounced there. But changing the antivirus and TMP settings improved the build times there as well, though not as much.</p>
+<p>The &#8220;real&#8221; code compilation usually takes much longer than the compilation of our small and simple generated files, so File System bottleneck might be not so pronounced there. But changing the antivirus and TMP settings improved the build times there as well, though not as much.</p>
 <h2 id="directory-build-props-sample-to-set-options-for-all-projects">Directory.Build.props sample to set options for all projects</h2>
 <p>Create<code> Directory.Build.props</code> in the root directory to affect all projects under this root.
 This is a sample content of<code> Directory.Build.props</code> you can use to try different build settings.</p>
