@@ -1,4 +1,122 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Jan 2022 02:47:28 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Rustのビルドを高速化する方法]]></title><description><![CDATA[Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。 例えば、つい最近の記事にこのように書かれて…]]></description><link>https://postd.cc/fast-rust-builds/</link><guid isPermaLink="false">https://postd.cc/fast-rust-builds/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Rust]]></category><pubDate>Mon, 24 Jan 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 14 Feb 2022 04:10:26 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Core Web VitalsはWebを高速化したか？]]></title><description><![CDATA[Core Web Vitals（CWV）は2020年5月に発表されました。Googleはこの発表の中で、「より良いWebのためにページエクスペリエンスを評価する」と述べています。特に重要なのは、この…]]></description><link>https://postd.cc/have-core-web-vitals-made-the-web-faster/</link><guid isPermaLink="false">https://postd.cc/have-core-web-vitals-made-the-web-faster/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[CWV]]></category><pubDate>Mon, 14 Feb 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<style>
+  .image-text {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  .image-text, .image-text ul li {
+    font-size: 0.6rem;
+  }
+</style>
+<p><a href="https://web.dev/vitals/">Core Web Vitals（CWV）</a>は2020年5月に発表されました。Googleはこの発表の中で、「<a href="https://developers.google.com/search/blog/2020/05/evaluating-page-experience">より良いWebのためにページエクスペリエンスを評価する</a>」と述べています。特に重要なのは、この評価がGoogleの検索順位アルゴリズムの一部を構成することでした。つまり、高速なWebサイトは、同等の遅いWebサイトよりも順位が上になり、Google検索によるトラフィック（ほとんどのWebサイトにとってWebトラフィックの最も大きな部分を占める）が増えます。</p>
+<p>Webパフォーマンスコミュニティは、Webパフォーマンスのビジネス上のメリットを売り込むことに関して、常にSEO業界に劣っていました。Webパフォーマンスがビジネスのパフォーマンスに<a href="https://wpostats.com/">直接影響を及ぼす証拠</a>が数多く存在するにもかかわらずです。しかし、今やSEO業界全体がWebパフォーマンスを重視するようになり、企業もWebパフォーマンスについて真剣に考えなければならなくなったのです。</p>
+<p>Googleは2020年11月に次の発表を行い、<a href="https://developers.google.com/search/blog/2020/11/timing-for-page-experience">2021年5月までにWebサイトをCore Web Vitalsに対応させる必要があるという明確な期限を定めました</a>（モバイルサイトの場合。<a href="https://developers.google.com/search/blog/2021/11/bringing-page-experience-to-desktop">デスクトップ向けサイトは1年後の予定</a>）。</p>
+<p>そうして、Core Web Vitalsが検索順位に影響を与えるようになってから約半年が経ちました。実際に、何らかの影響はあったのでしょうか？GoogleがSEOという大きな力を振るったことで、Webは高速化したのでしょうか？</p>
+<p>確かに影響はあったと示唆するサクセスストーリーは数多く存在します。しかし、筆者は「クリスマス嫌いのグリンチ」（※訳注：米国の童話の登場人物）のようにひねくれ者なので、あまり納得できずにいます。</p>
+<h2>Core Web Vitalsに肯定的な証拠</h2>
+<p>筆者は<a href="https://httparchive.org/">HTTP Archive</a>のメンテナンスに関わっています。このプロジェクトはWebの状態のトラッキングを目指すものです。HTTP Archiveは毎月Webのクローリングを実行し、発見したさまざまな事実や数値を報告することでトラッキングを行っています。このプロジェクトでは主に3つの方法でデータを提供しています。</p>
+<ol>
+<li>すべての基礎データを<a href="https://github.com/HTTPArchive/httparchive.org/blob/main/docs/gettingstarted_bigquery.md">BigQueryのデータセットとして公開しています</a>。SQLに関する多少の知識があればクエリを実行できます。</li>
+<li><a href="https://httparchive.org/reports">Webサイト上でレポートとしてさまざまな統計を提供しています</a>。</li>
+<li><a href="https://calendar.perfplanet.com/2021/have-core-web-vitals-made-the-web-faster/#:~:text=report%20called%20the-,Web%20Almanac,-which%20is%20a">Web Almanac</a>というレポートを毎年公開しています。このレポートは、業界の専門家がデータを詳細に分析し、そこから読み取れることを報告するものです（<a href="https://almanac.httparchive.org/en/2021/">2021年版</a>は最近発表されたばかりです。ぜひご覧ください）。</li>
+</ol>
+<p>また、HTTP Archiveは<a href="https://developers.google.com/web/tools/chrome-user-experience-report">Chrome User Experience Report（CrUX）</a>データセットとも連携し、より多くのデータについて報告するためにCrUXを活用しています。CrUXは、実際にWeb VitalsがどのようにGoogleに報告されるのかを明らかにするものです。そのレポートの1つは、特に2021年5月の期限以降において、Core Web Vitalsを達成したWebサイトが増加したことを明確に示しています。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image8.png"></p>
+<div class="image-text">
+画像内訳
+<em>Core Web Vitals（LCP、FID、CLS）の３つの指標すべてで「良好」なエクスペリエンスを達成したオリジンの割合。オリジンのFIDのデータがない場合、残りの指標のパフォーマンスに基づいて評価。</em>
+</div>
+<p>さらに、他にも統計は公表されています（筆者自身も統計を公表している1人です）。多くの統計はHTTP Archiveのデータに基づいており、特に<a href="https://datastudio.google.com/u/0/reporting/55bc8fad-44c2-4280-aa0b-5f3f0cd3d2be/page/M6ZPC">Core Web Vitals Technology</a>レポートを活用しています。このレポートは、テクノロジーを通じてデータの詳細分析を行うためにHTTP Archiveが作成したものです。これらの統計はいずれも、とても前向きなストーリーを示しています。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image3.png"></p>
+<div class="image-text">
+画像内訳
+<em>Webのパフォーマンスは改善しているか？答えはYES :) 今やオリジンの33%がCore Web Vitalsのしきい値を達成！フレームワークを利用しているサイトも大幅に改善</em>
+<ul>
+  <li><em>現在、全体で33%のオリジンがCore Web Vitalsの推奨しきい値を達成</em></li>
+  <li><em>昨年以降、Core Web Vitalsのしきい値を達成したオリジンは26%増加</em></li>
+</ul>
+</div>
+<p>このように、問題の答えは明らかになりました。このとても短いブログ記事は、タイトルで提示した疑問（Core Web VitalsはWebを高速化したか？）に回答したことになります。記事を読んでいただき、ありがとうございました！</p>
+<h2>あまり楽観的ではない見方</h2>
+<p>いやいや、ちょっと待ってください。最初のグラフはCore Web Vitalsを達成したWebサイトの数を表しています。これをWebが高速化しているかどうかを示す代理データとして使用するには、いくつかの前提が必要です。</p>
+<ul>
+<li>Core Web Vitalsを達成するためのしきい値は変化していない（実際もほとんど変化していない）。</li>
+<li>測定対象のWebサイトは同一（CrUXは「広く知られているかどうか」（popularity threshold）を定めており、対象は毎月変わるが、全体としては概ね同一）。</li>
+<li>改善の主な理由はCore Web Vitalsである（ネットワーク全般の速度が改善したことや、パンデミックによって多くの人が家にこもり、ブロードバンド接続を利用するようになったことなどが理由ではない）。</li>
+<li>Core Web Vitalsの測定方法は、測定期間を通じて一貫しており、大幅に変更されていない。</li>
+</ul>
+<p>特に気になるのは最後の項目です。Core Web Vitalsは<strong>生まれたばかり</strong>の指標です。<a href="https://twitter.com/anniesullie">Annie Sullivan</a>はちょうど2年前に、<a href="https://calendar.perfplanet.com/2019/developing-the-largest-contentful-paint-metric/">3つのCore Web Vitalsの1つ（LCP）がどのように開発されたかに関する記事</a>をWeb Performance Calendarに投稿しています。つまり、Core Web Vitalsは人間でいうところの「魔の2歳児」と呼ばれる時期です。そして、親なら誰でも知っているとおり、生まれてから2歳になるまでには多くの変化が起こります。</p>
+<p>このような新しい指標を最初から完璧な形で導入するのは不可能です。GoogleのChromeチームは、特にSEOへの影響を考慮して、熱心にCore Web Vitalsの改善に取り組み、適切な測定ができていないケースに対処してきました。Core Web Vitalsは多くの点で改善されています（すべての改善点は<a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/README.md">公開変更ログ</a>で明確に追跡できます）。</p>
+<p><a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/lcp.md">Largest Contentful Paint（LCP）は、最大のコンテンツ要素を正しく特定するためにいくつかの点が変更されています</a>。非表示の画像や背景の画像は「コンテンツ」ではないものとして無視され、LCPの計算が停止するタイミングも変更されました。これらはすべて（プラスとマイナスの）影響を及ぼすとみられ、LCPの改善のグラフは最初に示したグラフよりも（特にモバイルで）やや横ばいとなっています。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image10.png"></p>
+<div class="image-text">
+画像内訳
+<em>LCPエクスペリエンスが「良好」（2.5秒以下）であるオリジンの割合。</em>
+</div>
+<p><a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/fid.md">First Input Delay（FID）の変更点</a>は、LCPに比べると多くありません。ただし、Chromeが<a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/2021_05_fid.md">ダブルタップによるズームの禁止</a>条件を変更したことはプラスの影響を及ぼしています。これは2021年5月にリリースされており、リリース直後からモバイルのFIDの数値に影響を与えていることが分かります。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image7.png"></p>
+<div class="image-text">
+画像内訳
+<em>FIDエクスペリエンスが「良好」（100ミリ秒以下）であるオリジンの割合。CrUXのFIDを参照。</em>
+</div>
+<p>FIDは通常、Core Web Vitalsの中で達成するのが最も簡単です。そのため、多くの人（何よりも<a href="https://web.dev/better-responsiveness-metric/">Chromeチーム自身</a>）が、抜本的な変更が必要ではないかという疑問を提起しています。したがって、来年ごろにはFID（少なくともCore Web VitalsにおけるFID）に何らかの大きな変化があるでしょう。</p>
+<p>最後に、3番目のCore Web VitalsであるCumulative Layout Shift（CLS）は最も大きく変更されています。CLSは、Cumulative（累積）という名称が示すとおり、以前はページが存在する限り増加し続けていました。これは、シングルページアプリケーション（SPA）が不当に不利な立場に置かれているという苦情の原因となりました。SPAのページは長期にわたって存続すると見込まれるためです。CLSに対する影響がわずかであっても、時とともに蓄積し、しきい値を超えて「改善が必要」や「不十分」となる可能性が高まります。</p>
+<p>CLSは、<a href="https://web.dev/evolving-cls/">1回のセッションウィンドウの間の最大累積CLSのみを報告する</a>ように変更されました。実質的に、現在のCLSスコアはすべてのCLSシフトの合計ではなく、一定の時間におけるCLSシフトの最大の部分を示すものとなっています。この変更は2021年5月ごろのChrome 91でリリースされており、グラフでは同じ時期にCLSスコアが良好なサイトが急増しているのが分かります。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image2.png"></p>
+<div class="image-text">
+画像内訳
+<em>CLSエクスペリエンスが「良好」（0.1以下）であるオリジンの割合。</em>
+</div>
+<p>2021年9月のChrome 93では<a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/cls.md">さらなる改善点</a>がリリースされており、再びグラフが上昇しています。</p>
+<p>指標の変更と同様に、測定のベースラインにも留意する必要があります。3つすべてのCore Web Vitalsを達成したAngularサイトの数が111%増加したのは結構なことですが、詳しく見てみると、<a href="https://datastudio.google.com/u/0/reporting/55bc8fad-44c2-4280-aa0b-5f3f0cd3d2be/page/M6ZPC?params=%7B%22df44%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580Angular%22%7D">Angularサイト全体の3%から6%に増えただけ</a>であり、素晴らしい改善というには程遠いようです。しかも、これらの統計が示す改善がなされていないAngularサイトであっても、上記の指標の変更による恩恵を受けているはずです。</p>
+<h2>Webは高速化したのか？</h2>
+<p>これまで筆者は、気難しいエベニーザ・スクルージ（※訳注：小説『クリスマス・キャロル』の登場人物）のように、クリスマスに水を差してきました。そして、Core Web Vitalsが向上した理由は、単に測定方法が改善されたためである可能性があるので、プラスの影響を主張するのはやや時期尚早かもしれないことを示しました。しかし、実際に多くのサイトはパフォーマンスの改善に忙しく取り組んでいます。そのため、Core Web Vitalsの向上の理由はすべて測定方法にあると主張するのは、逆の方向に極端であり、あまりに悲観的過ぎるかもしれません。では、指標の定義の大幅な変更を踏まえ、測定方法による影響と真のパフォーマンスの向上を分離し、Web全体が改善したのかを確認するにはどうすれば良いのでしょうか？</p>
+<p>そのための方法の1つは、従来のより安定した指標に回帰し、それを読み解くことです。真新しく光るLCP、FID、CLSという指標が舞台に突然現れスポットライトを浴びる以前、Webパフォーマンスコミュニティでは、<a href="https://web.dev/first-contentful-paint/">First Contentful Paint</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/Events/load">onLoad</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/DOMContentLoaded_event">edDOMContentLoad</a>、<a href="https://web.dev/lighthouse-total-blocking-time/">Total Blocking Time</a>、<a href="https://web.dev/interactive/">Time to Interactive</a>など多くの他の指標に頼っていました。筆者のお気に入りの1つは<a href="https://web.dev/speed-index/">Speed Index</a>です。</p>
+<p>誤解のないように言うと、筆者はCore Web Vitalsの方が<strong>はるかに</strong>優れた指標だと考えています。Core Web Vitalsの3つの指標は、ユーザー体験の代わりとなることを意図した恣意的で細かな数値ではなく、ユーザーにとって意味のある影響を測定しようとしています。ユーザーはDOMがいつ読み込まれるかなどといったことは気にしません。ユーザーが気にするのは、目的のコンテンツがページにいつ表示されるかです。特に、ラボベース（※訳注：開発者内部の環境下で行われるモニタリング）の完全に人為的な測定から、リアルユーザモニタリング（RUM）ベースの現場での測定への転換は非常に大きな進歩です。ラボベースのテストがユーザー体験の良い指標となるように膨大な仮定を置く必要がなく、ユーザーが体験する実際のWebパフォーマンスを報告できるのはとても良いことです。</p>
+<p>しかし、これまで見てきたとおり、この記事で挙げている疑問に答えるには、新たな指標は変動が大き過ぎると言わなければなりません。新しい指標は優れていますが、古い指標が役に立たなかったわけではありません。Webパフォーマンスが改善されれば、古い指標にもプラスの影響があるはずです。そこで、これらの指標を詳しく調べ、何が分かるのかを見ていきましょう。</p>
+<p>筆者はSpeed Indexがお気に入りの「昔ながらの」指標だと述べました。Speed Indexは基本的に、読み込み中のページのスクリーンショットを保存して、変化ごとのページの「完成度」を計算し、それを使用してページの読み込みに関するスコアを算出するものです。ロゴなどわずかな一部を除いてほとんど読み込みが終わっているページと、最後まで一切描画されないページを比べると、一部の指標（onLoad、DOMContentLoadedなど）は同じであっても、Speed Indexでは前者の方が良い数値になります。</p>
+<p>このように、Speed IndexはLCPの測定対象とそれほど違っておらず、CLSの一部も含まれています。LCPに影響する要素の読み込みが速く、読み込み中のビューポート内のコンテンツがあまり移動しなければ、Speed Indexも改善するでしょう。Annieは、上記の過去の記事で、Speed IndexがCore Web Vitalsとして使用されず、代わりにLCPが考案された主な理由として「Speed Indexを実行するのは大きなコストがかかり、リアルタイムで利用できないこと」を挙げています。Speed Indexはあくまでラボベースの指標なのです。</p>
+<p>HTTP Archiveは2016年から、調査の一環としてSpeed Indexを算出しています。Speed Indexがラボベースであるという事実は、RUMベースの指標に影響を与える一部の変動やノイズに左右されないことを意味します。このような変動やノイズには、例えばネットワーク速度の改善や、パンデミックによってモバイルネットワークよりも家庭用のWi-Fiを利用した在宅勤務が増えていることなどがあります。HTTP Archiveの調査ではこうした要素が除去されています。クローリングに使用するハードウェアや、ネットワークの調査手法に（とても）一貫性があるからです。</p>
+<p>注意すべき点として、HTTP Archiveは、Speed Indexの独自の定義を定めている<a href="https://www.webpagetest.org/">WebPageTest</a>（WPT）を利用しています。これは（WPTの定義を基礎とする）Lighthouseの定義とはわずかに異なります。WPTは色ヒストグラムを利用しているため、（コンテンツがビューポートの内外を移動しない限り）コンテンツの移動による影響をあまり受けません。一方、Lighthouse版はより複雑な<a href="https://www.imatest.com/docs/ssim/">構造的類似性</a>（SSIM）指数を利用しており、コンテンツの移動による影響を受けやすくなっています。</p>
+<p>Speed IndexのグラフはHTTP ArchiveのWebサイトでは提供していませんでした。しかし、データは既に収集してあったので、この記事を作成する一環として<a href="https://httparchive.org/reports/loading-speed#speedIndex">グラフを追加しました</a>。以下がそのグラフです（数値は低いほど良い）。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image6.png"></p>
+<div class="image-text">
+画像内訳
+<em>ページのコンテンツが視覚的に表示される速度。この指標はWebPageTestによるものであり、（WebPageTestの定義を基礎とする）Lighthouse版とはわずかに異なる。</em>
+</div>
+<p>グラフは筆者が恐れていたことを示しています。Core Web Vitalsの代わりに変動の小さいSpeed Indexで測定したところ、Core Web Vitalsの導入以降、Webは全体として大幅に高速化してはいないようです。それどころか、モバイルでは2021年6月以降にSpeed Indexも悪化しています。</p>
+<p>HTTP Archiveによる<a href="https://httparchive.org/reports/loading-speed">読み込み速度レポート</a>では、他の指標も同様の結果を示しています。実質的な変化はなく、First Contentful Paintがある程度改善した程度にとどまりました（ただし、この指標も<a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/speed/metrics_changelog/fcp.md">最近変更がありました</a>）。Time to InteractiveもWebサイトの応答時間の長期化を示しています（恐らく<a href="https://almanac.httparchive.org/en/2021/javascript#how-much-javascript-do-we-load">JavaScriptの使用が多過ぎる</a>ためでしょう）。この傾向はCore Web Vitalsが登場する以前から続いているものです。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image9.png"></p>
+<div class="image-text">
+画像内訳
+<em>操作が開始された時点から、CPUが5秒以上停止するまでの秒数。この指標はLighthouseによるもので、モバイルのテストでのみ利用できる。</em>
+</div>
+<h2>とても残念な結果に思えるが……</h2>
+<p>以上のように、Googleや、同社の最も人気のあるWebブラウザや検索エンジンの絶大な影響力をもってしても、パフォーマンスを改善できていないようです。これはとても残念な結果であり、Webパフォーマンスマニアのクリスマスを台無しにしてしまったことを申し訳なく思います……。しかし、筆者はそこまで残念だとは思っていません。ですから、この記事はもっと明るい雰囲気で終わらせましょう。</p>
+<p>HTTP ArchiveとCrUXのデータの重要な違いは、HTTP Archiveがホームページのみをクローリングしているという点です。CrUXのデータは、Webサイト全ページの実際の利用状況に基づいています。この取り組みの優れた点の1つは、ホームページ以外のパフォーマンス指標を明らかにしているところにあります。過去のWebパフォーマンス測定ツールでは、ホームページのみを測定対象としていた場合もあったはずです。</p>
+<p>かつてのパフォーマンス測定ではホームページばかりが注目されていたことや、ホームページは比較的シンプルなので問題がある可能性が低いことは、十分にあり得ます。もしかすると、筆者が悲観的過ぎるだけであって、上記のCrUXデータの方が、ユーザーが体験した実際のパフォーマンスの改善状況をよく表しているのでしょうか。筆者は、真実はその中間にあるとみています。しかし、胸に手を当てて考えてみると、HTTP Archiveのクローリングによるグラフの方が恐らく真実に近いでしょう。ただし、指標が成熟するにつれて変化が小さくなると仮定すれば、将来的にはCrUXベースのグラフは大いに興味深いものになるとみられます。</p>
+<p>どれほどの影響力を持っていても、Web全体で何かを変えるのは困難です。<a href="https://httparchive.org/reports/state-of-the-web#numUrls">HTTP Archiveはクローリングの一環として750万件以上のWebサイトをクロールしています</a>。そして、WebパフォーマンスやSEOのコミュニティがパフォーマンスについて大騒ぎをしていたにもかかわらず、大部分のサイトはその間も大きく変化してはいないでしょう。一方で、変化したサイトも数多く存在するため、Webサイトは実際に高速化したのかもしれません。しかし、それはまだWeb全体を見た場合に有意義な影響を与えられるほど十分な規模ではありません。</p>
+<p>筆者はCore Web Vitalsを気に入っており、優れた指標だと考えています。また、GoogleによるCore Web Vitalsへの投資や、同社がWebサイトに対して改善に向けた圧力をかけていることも評価しています。たとえその取り組みの一部に不満があったとしてもです（Google Search Consoleにおけるページのグルーピングの不透明さは大いに不満です）。指標が依然として発展途上であるという指摘は、批判ではなく、とても前向きなものです。この事実は、Core Web Vitalsは変化を拒むものではなく、あくまでWebパフォーマンスの改善に向けた次のステップだという認識を示しており、だからこそ前進できるのです。</p>
+<p>たとえ上記のHTTP Archiveのデータに対する影響がまだ表れていないとしても、Webパフォーマンスに関する議論が大幅に増えたのは事実です。そして、こうした議論が今や、比較的小さいWebパフォーマンスコミュニティ（いつでも歓迎します！）の外でも行われるようになったのは素晴らしいことです。</p>
+<h2>最後にうれしいニュースを紹介</h2>
+<p>上位1,000件のWebサイトを見てみると、Core Web Vitalsを達成したWebサイトの割合は全体よりも大幅に上昇していることが分かります。2021年5月以降の改善割合は、モバイルWebサイト全体では32.8%ですが、上位1,000件のサイトでは37.1%となっています。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image5.png"></p>
+<div class="image-text">
+画像内訳
+<em>Core Web Vitals達成割合の時系列データ</em>
+</div>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image1.png"></p>
+<div class="image-text">
+画像内訳
+<em>上位1,000件のサイトのCore Web Vitals達成割合の時系列データ</em>
+</div>
+<p>当然ながら、大規模なサイトほど予算も多く（改善のインセンティブも大きく）、SEOのトレンドをより正確に把握しているかもしれません。また、こうしたサイトは指標の改善による影響が比較的大きい場合があるという事実が一因となっている可能性もあります。しかし、それでも筆者はこれを前向きな兆候と捉えています。こうしたサイトが先頭を進み、他のWebサイトがそれを追いかけるというトリクルダウン効果が起きるのはよくあることです。</p>
+<p>また、Wixなどの一部のプラットフォームは、<a href="https://www.smashingmagazine.com/2021/11/improving-performance-wix-websites-case-study/">パフォーマンスを改善するための取り組みに膨大な労力を費やしています</a>。これらのWebサイトの取り組みは、HTTP ArchiveのSpeed Indexのスコアに反映されています（これは、Speed Indexを使用するという筆者の判断を正当化するのに役立っており、Speed IndexがCrUXに比べて実情を反映していないのではないかという筆者の懸念をある程度緩和するものです）。</p>
+<p><img src="https://calendar.perfplanet.com/images/2021/barry/image4.png"></p>
+<p>一度に1つのプラットフォームのみに注目するよりも、（<a href="https://datastudio.google.com/u/0/reporting/55bc8fad-44c2-4280-aa0b-5f3f0cd3d2be/page/M6ZPC?params=%7B%22df44%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580Angular%22%7D">Core Web Vitals Technology Report</a>が示すように）その他のプラットフォームの相対的な改善度合いに注目する方が指標として優れているかもしれません。しかし、<a href="https://twitter.com/igrigorik/status/1415340002494402564?s=20">多少の競争がある</a>のはきっと良いことです。</p>
+<p>恐らくもっと興味深い点として、<a href="https://almanac.httparchive.org/en/2021/cms#fig-6">Web全体の3分の1に利用されている</a>WordPressは最近、「<a href="https://make.wordpress.org/core/2021/10/12/proposal-for-a-performance-team/">パフォーマンス改善提案チーム</a>」を立ち上げました。これはWixなどが強調しているパフォーマンスの改善に対応して、WordPressが後れを取っているという印象を避けるためです。WordPressはまさに「Webを動かす」力を持っており、そのことは<a href="https://twitter.com/rick_viscomi/status/1344380340153016321?s=20">ネイティブLazyload</a>の導入にも表れています（ただし、大いなる力には大いなる責任が伴うもので、<a href="https://web.dev/lcp-lazy-loading/">導入の方法がやや稚拙だったという証拠もあります</a>）。</p>
+<h2>そろそろ質問に答えてくれ！</h2>
+<p>結局、Core Web VitalsによってWebは高速化したのでしょうか？筆者はイエスだと考えていますが、Core Web Vitalsの一部のデータが示すほど数値は明確に改善してはいません。しかし、この記事で言及した一部のプラットフォームの例に追随するプラットフォームが増え、Webパフォーマンスへの投資が増加すれば、上記の数値も間違いなく追いつくでしょう。もしかすると、来年のブログ記事はもっと短くなり、すべてうまくいっていると述べるだけになるかもしれません。それまでは、指標から読み取れることをしっかりと理解し、出来過ぎた話には疑問を持つようにしてください。たとえ、それが本当であってほしいと望むストーリーであってもです。</p>
+<p><em>この記事のために質問に答えてくれたこと、また言うまでもなく、Speed Index、WebPageTestや、その他にもWebパフォーマンスを測定・改善するための素晴らしいツールを数多く作成してくれたことについて、<a href="https://twitter.com/patmeenan">Patrick Meenan</a>にとても感謝しています。</em></p>]]></content:encoded></item><item><title><![CDATA[Rustのビルドを高速化する方法]]></title><description><![CDATA[Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。 例えば、つい最近の記事にこのように書かれて…]]></description><link>https://postd.cc/fast-rust-builds/</link><guid isPermaLink="false">https://postd.cc/fast-rust-builds/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Rust]]></category><pubDate>Mon, 24 Jan 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>Rustコードのコンパイルが遅いことは誰でも知っています。しかし筆者は、世の中のほとんどのRustコードはコンパイルをもっと速くできると強く感じています。</p>
 <p>例えば、つい最近の<a href="https://kerkour.com/blog/rust-development-workflow/">記事</a>にこのように書かれていました。</p>
 <blockquote>
 <p>一方、Rustでは、プロジェクトやCIサーバーの性能にもよりますが、
@@ -1008,77 +1126,4 @@ DuckDuckGoのライトモードとダークモード（<a href="https://cloud.ne
 <em>Harvard Law ReviewのWebサイトの行内の脚注（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/c6f7aade-a9af-4c39-8722-039498c715c7/16-accessible-frontend-components.png">プレビューを拡大</a>）</em></p>
 <p>Kitty Giraudelはアクセシブルな脚注をビルドする方法を<a href="https://www.sitepoint.com/accessible-footnotes-css/">詳細に説明</a>しています。また彼の記事では、<a href="https://kittygiraudel.com/2020/11/24/accessible-footnotes-and-a-bit-of-react/">Reactでアクセシブルな脚注をビルドする方法</a>も取り上げており、そのためにサイトジェネレータのEleventyで<a href="https://github.com/KittyGiraudel/react-a11y-footnotes">react-a11y-footnotes</a>を使用することも可能です（このTipsを教えてくれたKitty Giraudelに感謝します）。</p>
 <hr>
-<p>※<a href="/complete-guide-accessible-front-end-components-2">後編が公開されています</a></p>]]></content:encoded></item><item><title><![CDATA[POSTDをGatsby.jsベースに変更しました]]></title><description><![CDATA[POSTDの運用がリクルートからニジボックスに移管される際に、デザインのリニューアルと同時にコードベースをGatsby.jsに変更しました。 本記事では、運用移管に至るまでの過程を踏まえつつ、現在の…]]></description><link>https://postd.cc/postd-on-gatsbyjs/</link><guid isPermaLink="false">https://postd.cc/postd-on-gatsbyjs/</guid><category><![CDATA[プログラミング]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[Gatsby.js]]></category><pubDate>Wed, 28 Apr 2021 16:00:00 GMT</pubDate><content:encoded><![CDATA[<p>POSTDの運用がリクルートからニジボックスに移管される際に、デザインのリニューアルと同時にコードベースをGatsby.jsに変更しました。</p>
-<p>本記事では、運用移管に至るまでの過程を踏まえつつ、現在のPOSTDの構成を紹介します。</p>
-<h2>移管前のPOSTD</h2>
-<p>前述の通り、POSTDは株式会社リクルートのインキュベーション部門Media Technology Lab.（現新規事業開発部）で運用されていました。
-最後に公開した記事は、2019年3月28日の「<a href="/php-is-dead-viva-le-php/">PHPはもうダメだ、PHP万歳！</a>」となっています。</p>
-<p>もともとはWordPressによる運用が行われていましたが、運用体制の関係で静的HTMLをFirebaseで公開する形式になっていました。
-ニジボックスへの引き継ぎに伴い、記事の翻訳を始めとしたサイト運用を再開することになり、改めて<strong>CMSの形式に変換する</strong>必要が出てきます。</p>
-<h2>Gatsby.jsを選ぶ</h2>
-<p>以前のPOSTDはWordPressを元に静的ファイルのみが残っている状態でした。
-再び翻訳記事の掲載が可能になる体制にするためには、何かしらの形でCMS化をしていく必要があります。</p>
-<p>候補を検討しましたが、移管後の運用などを意識した際に、要件として上がってきたのが以下の2点です。</p>
-<ul>
-<li>レスポンス速度などのパフォーマンスを可能な限り維持する</li>
-<li>ニジボックスの強みを生かした構成にする</li>
-</ul>
-<p>最終的には、以下の判断のもとGatsby.jsへの移行を決定しました。</p>
-<h3>レスポンス速度などのパフォーマンスを可能な限り維持する</h3>
-<p>前述の通り、引き継ぎ直後の状態は「静的HTMLをFirebase Hostingで配信する」という形態です。
-この形態は、バックエンドにアプリケーションが存在しないため、非常にレスポンスが高速です。
-このパフォーマンスを可能な限り維持することを考えると、CMSとしては<strong>SSG(Static Site Generation)機能による静的HTMLの生成</strong>がほぼ必須になります。</p>
-<p>Gatsby.jsは<code class="language-text">gatsby build</code>というコマンドによってソースから静的HTMLを生成できるため、速度の維持が期待できます。</p>
-<h3>ニジボックスの強みを生かした構成にする</h3>
-<p>ニジボックスの開発組織はフロントエンドに強みを持っています。
-（どういう強みがあるかについては、Wantedlyやキャリア採用サイトを参照ください）
-特に「React合宿」といった能力向上施策も実施しており、Reactコンポーネントの設計・実装をできるメンバーが多数います。</p>
-<ul>
-<li><a href="https://nijibox.jp/blog/react-training-camp/">React.js開発合宿に行ってきた！</a></li>
-<li><a href="https://nijibox.jp/blog/react-camp-2/">第2回 React合宿レポート 〜地上29階から都会の景色を眺めて〜</a></li>
-</ul>
-<p>Gatsby.jsはReactをベースとしたフレームワークです。
-そのため、ニジボックスのフロントエンド開発力を用いたコンポーネント設計・運用を進められます。</p>
-<h2>切り替えの流れ</h2>
-<p>実際の移行のために、以下の作業に分割して作業を進めていきました。</p>
-<ul>
-<li>既存のページから記事情報を抽出</li>
-<li>デザインの設計とコンポーネント分割</li>
-<li>デプロイ・プレビューに関する設計</li>
-</ul>
-<h3>既存のページから記事情報を抽出</h3>
-<p>手元に存在するファイルは「WordPressから生成した静的HTML+アップロードファイル群」です。
-そのため、まずはサイト全体からコンテンツ情報を抽出する必要があります。</p>
-<p>基本的にはWordPressの記事としての運用をしていたため、「タイトル」「本文」「タグ」といったブログとしての標準的な情報を持っています。
-それに加えて、翻訳記事をコンテンツとするサイトとして「多くの記事に『翻訳元の記事についての情報』を含む」という特性が存在します。</p>
-<p>POSTDの場合は、全体として以下のような記事情報を抽出しています。</p>
-<ul>
-<li>邦題タイトル</li>
-<li>本文</li>
-<li>カテゴリ</li>
-<li>タグ</li>
-<li>公開日</li>
-<li>サムネイル画像</li>
-<li>元記事情報（タイトル、URL、記事の日付、著者名、著者リンク、その他の情報）</li>
-</ul>
-<p>Gatsby.jsの関係上、記事ソースはMarkdownが望ましいので、HTMLからpandocで変換し直しています。
-機械的な変換をしているため、いくつかの記事で表示崩れなどが起きているものについては、手動でフィードバックを掛けていきました。</p>
-<p>また、既存記事に紐付いている画像については、URLがWordPressの構造から<code class="language-text">/wp/wp-contents/uploads</code>で始まっています。
-これらについては、静的ファイルとして<code class="language-text">static</code>配下でビルド時に直接組み込めるようにしています。</p>
-<h3>デザインの設計とコンポーネント分割</h3>
-<p>Gatsby.jsを採用したため、CMSとしてのテンプレートの部分はReactコンポーネントとなります。</p>
-<p>フロントエンド開発室のメンバーにも参画してもらい、フロントエンドエンジニアにコンポーネント設計や実装を行ってもらっています。
-自分は主に「Gatsby.jsでの運用を想定したプロトタイプの用意」「Gatsby.jsとしてのデータ構造への再設計」に注力しました。</p>
-<p>コンポーネント周りについても、比較的細かく分割してもらっています。
-そのため、今後のフロントエンドメンバーによる改善だけでなく、
-非フロントエンドの自分による簡素な手直しについても難易度が低く抑えられています。</p>
-<h3>デプロイ・プレビューに関する設計</h3>
-<p>ニジボックスでは、内部のクラウドリポジトリとして現在Bitbucketを利用しています。
-BitbucketにはCIパイプライン機能としてBitbucket pipelinesが提供されており、
-これによって特定ブランチへのコミットをそのまま公開状態としてデプロイする仕組みとなっています。</p>
-<p>また、公開前の社内確認用としては「特定条件のブランチへのコミット」をトリガーに、
-都度Cloud Runのサービスを作成してプレビュー可能な構成にしています。
-Cloud Runは従量課金制のため、あまりコストを気にせずに環境の増減を行えるのがメリットとなっています。</p>
-<h2>終わりに</h2>
-<p>以上の設計・作業をもってリニューアルを行い、新しいデザインでのPOSTDをスタートさせることになりました。</p>
-<p>ユーザー体験の向上を継続的に図りつつ、再び海外のエンジニアトレンドを紹介していきますので、よろしくお願いします。</p>]]></content:encoded></item></channel></rss>
+<p>※<a href="/complete-guide-accessible-front-end-components-2">後編が公開されています</a></p>]]></content:encoded></item></channel></rss>
