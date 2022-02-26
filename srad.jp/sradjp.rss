@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2022-02-26T08:18:54+00:00</dc:date>
+<dc:date>2022-02-26T10:10:43+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,7 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://security.srad.jp/story/22/02/26/0854222/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/22/02/26/0746206/" />
   <rdf:li rdf:resource="https://mobile.srad.jp/story/22/02/26/0555226/" />
   <rdf:li rdf:resource="https://apple.srad.jp/story/22/02/26/0327223/" />
@@ -37,7 +38,6 @@
   <rdf:li rdf:resource="https://srad.jp/story/22/02/24/1740229/" />
   <rdf:li rdf:resource="https://hardware.srad.jp/story/22/02/24/1558254/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/22/02/24/1535202/" />
-  <rdf:li rdf:resource="https://hardware.srad.jp/story/22/02/24/1553209/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,86 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://security.srad.jp/story/22/02/26/0854222/">
+<title>テルアビブ大学の研究者曰く、ARM の TrustZone のセキュリティ実装にはオープンな標準が必要</title>
+<link>https://security.srad.jp/story/22/02/26/0854222/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/encryption_64.png"&gt;Samsung 製 Android スマートフォンで TrustZone OS (TZOS) の暗号機能に見つかった 2 件の脆弱性について、発見したイスラエル・テルアビブ大学のチームが論文 (PDF) と POC を公開している
+(The Register の記事、
+Android Police の記事、
+SlashGear の記事)。
+
+ARM ベースの Android スマートフォンでは Android OS から独立して Trusted Execution Environment (TEE) 上で実行する TZOS にセキュリティ上重要な暗号機能が実装されるが、その暗号機能実装はベンダーに任されており、非公開でプロプライエタリな設計になっているという。研究チームは Samsung のフラッグシップデバイス Galaxy S シリーズを調査し、ハードウェアベースのキーストア (Keymaster TA) の暗号設計と実装を明らかにした。
+
+2 件の脆弱性は Galaxy S9 の AES-GCM で見つかった IV 再利用の脆弱性 (CVE-2021-25444) と、より新しい Galaxy S10 / S20 / S21 でも IV 再利用攻撃を可能にするキーブロブダウングレード攻撃の脆弱性 (CVE-2021-25490)。前者は昨年 5 月に Samsung へ報告し、Galaxy S9 のほか Galaxy J3 Top / J7 Top / J7 Duo / TabS4 / Tab-A-S-Lite / A6 Plus / A9S を対象としたパッチが 8 月に公開されている。後者は 7 月に報告し、Android P 以降をプリインストールしたデバイスを対象としたパッチが 10 月に公開された。こちらのパッチではレガシーなキーブロブ実装が完全に削除されたとのこと。いずれの脆弱性も Galaxy S9 よりも古い S8 には存在しない。
+
+今回の脆弱性は 1 億台程度の Samsung 製デバイスに適用されるのみだが、ベンダー各社が TZOS や TA (Trusted Application) のセキュリティや暗号の設計・実装を秘密にすることが危険な落とし穴になっている。各社はプロプライエタリシステムのリバースエンジニアリングの難しさに依存するのではなく、外部の研究者によって十分な検査ができるようにすべきだと研究チームは結論付けている。&lt;p&gt; &lt;a href="https://security.srad.jp/story/22/02/26/0854222/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/encryption"&gt;暗号&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/02/26/0854222/&amp;amp;text=%E3%83%86%E3%83%AB%E3%82%A2%E3%83%93%E3%83%96%E5%A4%A7%E5%AD%A6%E3%81%AE%E7%A0%94%E7%A9%B6%E8%80%85%E6%9B%B0%E3%81%8F%E3%80%81ARM%20%E3%81%AE%20TrustZone%20%E3%81%AE%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E5%AE%9F%E8%A3%85%E3%81%AB%E3%81%AF%E3%82%AA%E3%83%BC%E3%83%97%E3%83%B3%E3%81%AA%E6%A8%99%E6%BA%96%E3%81%8C%E5%BF%85%E8%A6%81" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/02/26/0854222/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/02/26/0854222/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/02/26/0854222/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://security.srad.jp/story/21/10/31/2138255"&gt;イスラエル・テルアビブ、家庭や小規模オフィスの Wi-Fi は 70 % が容易にクラックできるとの調査結果&lt;/a&gt; &lt;small&gt;2021年11月02日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/20/12/21/1616223"&gt;メモリバスが発する電磁波を利用してエアギャップ環境からデータを盗む「AIR-FI」&lt;/a&gt; &lt;small&gt;2020年12月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/17/1428244"&gt;Snapdragonに400個を超える脆弱性「Achilles」が見つかる。Check Pointが発見&lt;/a&gt; &lt;small&gt;2020年08月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/18/07/09/0859233"&gt;Nintendo Switchでは不正行為に対し本体やゲーム単位でのBANが行える&lt;/a&gt; &lt;small&gt;2018年07月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/17/09/27/0611200"&gt;電力管理システムを悪用してARM系CPUのTrustZoneをハックする手法が報告される&lt;/a&gt; &lt;small&gt;2017年09月27日&lt;/small&gt; &lt;br&gt;&lt;a href="https://idle.srad.jp/story/16/09/16/0451232"&gt;市庁舎が巨大テトリスに変わるイスラエル・テルアビブ&lt;/a&gt; &lt;small&gt;2016年09月16日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/14/09/18/0553257"&gt;パソコンの電位の揺らぎからRSA秘密鍵などが解析される&lt;/a&gt; &lt;small&gt;2014年09月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/13/12/22/2051236"&gt;パソコンの電源鳴きから4096ビットのRSA秘密鍵が解析される&lt;/a&gt; &lt;small&gt;2013年12月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/12/06/18/013203"&gt;AMD、ARM のセキリュリティ技術を 2013 年以降の APU に統合&lt;/a&gt; &lt;small&gt;2012年06月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/08/09/30/0817247"&gt;ソースコードを元にソフトウェアの異常な動作を検知する侵入検知システム&lt;/a&gt; &lt;small&gt;2008年09月30日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>headless</dc:creator>
+<dc:date>2022-02-26T09:11:00+00:00</dc:date>
+<dc:subject>encryption</dc:subject>
+<slash:department>標準</slash:department>
+<slash:section>security</slash:section>
+<slash:comments>1</slash:comments>
+<slash:hit_parade>1,1,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/encryption_64.png"&gt;Samsung 製 Android スマートフォンで TrustZone OS (TZOS) の暗号機能に見つかった 2 件の脆弱性について、発見したイスラエル・テルアビブ大学のチームが論文 (&lt;a href="https://eprint.iacr.org/2022/208.pdf"&gt;PDF&lt;/a&gt;) と &lt;a href="https://github.com/shakevsky/keybuster"&gt;POC&lt;/a&gt; を公開している
+(&lt;a href="https://www.theregister.com/2022/02/23/samsung_encryption_phones/"&gt;The Register の記事&lt;/a&gt;、
+&lt;a href="https://www.androidpolice.com/samsung-shipped-millions-of-smartphones-with-a-serious-security-flaw/"&gt;Android Police の記事&lt;/a&gt;、
+&lt;a href="https://www.slashgear.com/777125/samsung-shipped-100-million-galaxy-s-devices-with-fatal-security-flaw/"&gt;SlashGear の記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+ARM ベースの Android スマートフォンでは Android OS から独立して Trusted Execution Environment (TEE) 上で実行する TZOS にセキュリティ上重要な暗号機能が実装されるが、その暗号機能実装はベンダーに任されており、非公開でプロプライエタリな設計になっているという。研究チームは Samsung のフラッグシップデバイス Galaxy S シリーズを調査し、ハードウェアベースのキーストア (Keymaster TA) の暗号設計と実装を明らかにした。&lt;br&gt;
+&lt;br&gt;
+2 件の脆弱性は Galaxy S9 の AES-GCM で見つかった IV 再利用の脆弱性 (&lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-25444"&gt;CVE-2021-25444&lt;/a&gt;) と、より新しい Galaxy S10 / S20 / S21 でも IV 再利用攻撃を可能にするキーブロブダウングレード攻撃の脆弱性 (&lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-25490"&gt;CVE-2021-25490&lt;/a&gt;)。前者は昨年 5 月に Samsung へ報告し、Galaxy S9 のほか Galaxy J3 Top / J7 Top / J7 Duo / TabS4 / Tab-A-S-Lite / A6 Plus / A9S を対象としたパッチが 8 月に公開されている。後者は 7 月に報告し、Android P 以降をプリインストールしたデバイスを対象としたパッチが 10 月に公開された。こちらのパッチではレガシーなキーブロブ実装が完全に削除されたとのこと。いずれの脆弱性も Galaxy S9 よりも古い S8 には存在しない。&lt;br&gt;
+&lt;br&gt;
+今回の脆弱性は 1 億台程度の Samsung 製デバイスに適用されるのみだが、ベンダー各社が TZOS や TA (Trusted Application) のセキュリティや暗号の設計・実装を秘密にすることが危険な落とし穴になっている。各社はプロプライエタリシステムのリバースエンジニアリングの難しさに依存するのではなく、外部の研究者によって十分な検査ができるようにすべきだと研究チームは結論付けている。&lt;p&gt;
+	&lt;a href="https://security.srad.jp/story/22/02/26/0854222/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/encryption"&gt;暗号&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/02/26/0854222/&amp;amp;text=%E3%83%86%E3%83%AB%E3%82%A2%E3%83%93%E3%83%96%E5%A4%A7%E5%AD%A6%E3%81%AE%E7%A0%94%E7%A9%B6%E8%80%85%E6%9B%B0%E3%81%8F%E3%80%81ARM%20%E3%81%AE%20TrustZone%20%E3%81%AE%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E5%AE%9F%E8%A3%85%E3%81%AB%E3%81%AF%E3%82%AA%E3%83%BC%E3%83%97%E3%83%B3%E3%81%AA%E6%A8%99%E6%BA%96%E3%81%8C%E5%BF%85%E8%A6%81" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/02/26/0854222/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/02/26/0854222/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/02/26/0854222/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/21/10/31/2138255"&gt;イスラエル・テルアビブ、家庭や小規模オフィスの Wi-Fi は 70 % が容易にクラックできるとの調査結果&lt;/a&gt;
+			&lt;small&gt;2021年11月02日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/20/12/21/1616223"&gt;メモリバスが発する電磁波を利用してエアギャップ環境からデータを盗む「AIR-FI」&lt;/a&gt;
+			&lt;small&gt;2020年12月22日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/08/17/1428244"&gt;Snapdragonに400個を超える脆弱性「Achilles」が見つかる。Check Pointが発見&lt;/a&gt;
+			&lt;small&gt;2020年08月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/18/07/09/0859233"&gt;Nintendo Switchでは不正行為に対し本体やゲーム単位でのBANが行える&lt;/a&gt;
+			&lt;small&gt;2018年07月10日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/17/09/27/0611200"&gt;電力管理システムを悪用してARM系CPUのTrustZoneをハックする手法が報告される&lt;/a&gt;
+			&lt;small&gt;2017年09月27日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://idle.srad.jp/story/16/09/16/0451232"&gt;市庁舎が巨大テトリスに変わるイスラエル・テルアビブ&lt;/a&gt;
+			&lt;small&gt;2016年09月16日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/14/09/18/0553257"&gt;パソコンの電位の揺らぎからRSA秘密鍵などが解析される&lt;/a&gt;
+			&lt;small&gt;2014年09月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/13/12/22/2051236"&gt;パソコンの電源鳴きから4096ビットのRSA秘密鍵が解析される&lt;/a&gt;
+			&lt;small&gt;2013年12月23日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/12/06/18/013203"&gt;AMD、ARM のセキリュリティ技術を 2013 年以降の APU に統合&lt;/a&gt;
+			&lt;small&gt;2012年06月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/08/09/30/0817247"&gt;ソースコードを元にソフトウェアの異常な動作を検知する侵入検知システム&lt;/a&gt;
+			&lt;small&gt;2008年09月30日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://science.srad.jp/story/22/02/26/0746206/">
 <title>米郵政公社の次世代配達車両調達計画、バイデン政権の要請に従わず電気自動車の比率を 10 % にとどめる</title>
 <link>https://science.srad.jp/story/22/02/26/0746206/</link>
@@ -66,7 +146,8 @@ ROD: PDF)。
 <dc:subject>earth</dc:subject>
 <slash:department>予算</slash:department>
 <slash:section>science</slash:section>
-<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<slash:comments>2</slash:comments>
+<slash:hit_parade>2,2,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/earth_64.png"&gt;米郵政公社 (USPS) は 23 日、国家環境政策法 (NEPA) に基づく次世代配達車両 (NGDV) プログラムの環境評価を完了したと発表し、決定記録 (ROD) を官報に登録した
 (&lt;a href="https://about.usps.com/newsroom/national-releases/2022/0223-usps-completes-environmental-review-of-next-gen-delivery-vehicles.htm"&gt;ニュースリリース&lt;/a&gt;、
 &lt;a href="https://www.theverge.com/2022/2/23/22947717/usps-biden-dejoy-electric-mail-trucks-reject-oshkosh"&gt;The Verge の記事&lt;/a&gt;、
@@ -212,8 +293,8 @@ ACM は App Store でデーティングアプリの提供者が自由に支払�
 <dc:subject>eu</dc:subject>
 <slash:department>無視</slash:department>
 <slash:section>apple</slash:section>
-<slash:comments>2</slash:comments>
-<slash:hit_parade>2,2,0,0,0,0,0</slash:hit_parade>
+<slash:comments>3</slash:comments>
+<slash:hit_parade>3,3,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/eu_64.png"&gt;オランダの消費者・市場庁 (ACM) が命じたアプリストアの支払いシステム変更について、Apple 側に従う気がないとの見方を欧州委員会デジタル制作担当上級副委員長のマルグレーテ・ベステアー氏が示している
 (&lt;a href="https://ec.europa.eu/commission/commissioners/2019-2024/vestager/announcements/shared-objectives-framing-tech-economy_en"&gt;スピーチ全文&lt;/a&gt;、
 &lt;a href="https://9to5mac.com/2022/02/23/apple-doesnt-care-about-dutch-antitrust-fines-says-eu-competition-regulator/"&gt;9to5Mac の記事&lt;/a&gt;、
@@ -289,8 +370,8 @@ Intel プロセッサーでは同世代・同 SKU ナンバーのプロセッサ
 <dc:subject>intel</dc:subject>
 <slash:department>別々</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>42</slash:comments>
-<slash:hit_parade>42,40,1,0,0,0,0</slash:hit_parade>
+<slash:comments>48</slash:comments>
+<slash:hit_parade>48,46,1,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/intel_64.png"&gt;PassMark の CPU シングルスレッド性能ランキングで、上位 11 位までを Intel プロセッサーが占める事態となっている
 (&lt;a href="https://www.cpubenchmark.net/singleThread.html"&gt;PassMark Single Thread Performance&lt;/a&gt;、
 &lt;a href="https://www.neowin.net/news/top-10-single-thread-passmark-cpus-are-now-intel-only-amd-ryzen-nowhere-in-sight/"&gt;Neowin の記事&lt;/a&gt;、
@@ -353,8 +434,8 @@ Intel プロセッサーでは同世代・同 SKU ナンバーのプロセッサ
 <dc:subject>medicine</dc:subject>
 <slash:department>ネコの国なのに</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>36</slash:comments>
-<slash:hit_parade>36,35,9,5,2,0,0</slash:hit_parade>
+<slash:comments>40</slash:comments>
+<slash:hit_parade>40,39,13,6,4,1,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/medicine_64.png"&gt;国立環境研究所などが日本の高齢者1万人以上を対象にした調査を行ったところ、犬を飼っている人は飼ったことがない人に比べ、介護の必要性や死亡リスクが半減することが判明したそうだ。調査は東京都内の65~84歳に対し、郵送アンケートで犬猫の飼育の有無などを聞き、このデータに介護保険などのデータを照らし合わせたりしたそうだ（&lt;a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0263791"&gt;PLOS ONE掲載論文&lt;/a&gt;、&lt;a href="https://www.asahi.com/articles/ASQ2Q2Q0JQ2PULBJ001.html"&gt;朝日新聞&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 研究では、過去に一度も犬を飼ったことがない高齢者が要介護や死亡するリスクを1とした場合、犬を飼っている高齢者のリスクは、0.54倍と大幅に低くなったという。この傾向は年齢や性別、持病、飲酒や喫煙、収入、同居人数といった影響を取り除いても変化がなかった。一方で猫を飼っていてもこのような効果は無かったとしている。&lt;br&gt; &lt;br&gt;
@@ -467,8 +548,8 @@ Waymo はカリフォルニア州で DMV の認可を受けて自律走行車の
 <dc:subject>toys</dc:subject>
 <slash:department>電動ギミックとは</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>18</slash:comments>
-<slash:hit_parade>18,18,2,0,0,0,0</slash:hit_parade>
+<slash:comments>25</slash:comments>
+<slash:hit_parade>25,25,5,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/toy_64.png"&gt;小学館の「幼稚園」2022年5・6月号の付録「JRの自動改札機」が話題になっているらしい。この付録はJR東日本メカトロニクスとのコラボレーションにより開発されたものだそうで、電動のドアと音声機能が仕込まれており、付属するミニチュアSuicaに反応してドアが開くといったギミックがあるそうだ。人形を改札に通すごっこなどが楽しめるとしている。3月31日ごろ発売だそうでお値段は1390円となっている（&lt;a href="https://twitter.com/youchien_hensyu/status/1495956519812472834"&gt;小学館『幼稚園』編集部Twitter&lt;/a&gt;、&lt;a href="https://nlab.itmedia.co.jp/nl/articles/2202/24/news132.html"&gt;ねとらぼ&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/02/24/1740229/"&gt;すべて読む&lt;/a&gt;
 	
@@ -617,62 +698,6 @@ Softpedia の記事、
 		
 			&lt;br&gt;&lt;a href="https://security.srad.jp/story/21/09/15/169222"&gt;Chrome の User Agent 文字列情報削減計画、完了は 2023 年 5 月の Chrome 113 を予定&lt;/a&gt;
 			&lt;small&gt;2021年09月16日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://hardware.srad.jp/story/22/02/24/1553209/">
-<title>パナソニック、マイクロフォーサーズの最上位機種「GH6」を発表。1億画素のハイレゾ記録も</title>
-<link>https://hardware.srad.jp/story/22/02/24/1553209/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/news_64.png"&gt;あるAnonymous Coward 曰く、パナソニックがマイクロフォーサーズ最高となる2500万画素のGH6を発表した。4回露出した画像を合成して1億画素の画像を記録できるハイレゾモードもあり、三脚固定のみならず手持ちでも使用できる。この「LUMIX GH6」は昨年5月に開発が予告されていた製品で、現行製品であるGH5シリーズの最上位機種。主に動画面での機能強化が図られている。発売日は3月25日を予定しており、本体価格はボディ単体が約26万3000円（税込）、LEICA DG 12-60mmレンズが付属するレンズキットが約33万7000円（同）となっている。2月22～3月24日までの期間に予約購入限定のキャッシュバックキャンペーンが実施されている。キャンペーンでは本体のみで2万円、レンズキットでは3万円のキャッシュバックが行われるほか、128GBのCFexpressカードが付くとしている（LUMIX GH6、キャッシュバックキャンペーン、デジカメ Watch）。 
-
-イメージセンサーには新開発の有効約2521万画素Live MOSセンサーを採用。このセンサーではローリングシャッター現象によるゆがみの抑制が図られている。またGHシリーズの特徴である手ブレ補正はより強化され、従来の5軸6.5段（GH5II）から7.5段に向上している。一方でAFはこれまでと同様のコントラスト検出式だが、すでに出回っているレビュー動画などによれば、従来よりもAF速度は改善されているようだ。 
-
-また単一露光でISO感度の異なる2種類の画像を取得して合成することにより、ダイナミックレンジを拡大する「ダイナミックレンジブースト」や、動画の記録面でも5.7K 60p、C4K 120p、Apple ProRes 422 HQなど記録モードが用意されている。記録モードについては発売後のファームウェアアップデートで拡充される予定もあるとしている。&lt;p&gt; &lt;a href="https://hardware.srad.jp/story/22/02/24/1553209/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/news"&gt;ニュース&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/22/02/24/1553209/&amp;amp;text=%E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF%E3%80%81%E3%83%9E%E3%82%A4%E3%82%AF%E3%83%AD%E3%83%95%E3%82%A9%E3%83%BC%E3%82%B5%E3%83%BC%E3%82%BA%E3%81%AE%E6%9C%80%E4%B8%8A%E4%BD%8D%E6%A9%9F%E7%A8%AE%E3%80%8CGH6%E3%80%8D%E3%82%92%E7%99%BA%E8%A1%A8%E3%80%821%E5%84%84%E7%94%BB%E7%B4%A0%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%AC%E3%82%BE%E8%A8%98%E9%8C%B2%E3%82%82" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/22/02/24/1553209/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/22/02/24/1553209/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/22/02/24/1553209/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/29/207221"&gt;パナソニックからもVlog向けカメラ「LUMIX G100」が発表。国内発売は不明&lt;/a&gt; &lt;small&gt;2020年07月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/15/02/05/1849226"&gt;オリンパス、マイクロフォーサーズ対応の円筒形カメラを発売へ&lt;/a&gt; &lt;small&gt;2015年02月06日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/14/12/20/205259"&gt;オリンパスの技術をオープンにしたオープンプラットフォームカメラ、26日までテスター募集中&lt;/a&gt; &lt;small&gt;2014年12月21日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/13/09/10/0824222"&gt;オリンパス、今後はフォーサーズの新製品開発を行わない予定&lt;/a&gt; &lt;small&gt;2013年09月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/13/01/10/0240207"&gt;米 Polaroid からマイクロフォーサーズ対応の Android ミラーレス一眼&lt;/a&gt; &lt;small&gt;2013年01月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/11/07/11/0812245"&gt;iPhone 4に一眼用レンズを取り付け可能にするガジェット&lt;/a&gt; &lt;small&gt;2011年07月11日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-02-25T07:06:00+00:00</dc:date>
-<dc:subject>news</dc:subject>
-<slash:department>ちょい重いけどよさげ</slash:department>
-<slash:section>hardware</slash:section>
-<slash:comments>70</slash:comments>
-<slash:hit_parade>70,68,6,3,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/news_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;パナソニックがマイクロフォーサーズ最高となる2500万画素のGH6を発表した。&lt;br&gt;4回露出した画像を合成して1億画素の画像を記録できるハイレゾモードもあり、三脚固定のみならず手持ちでも使用できる。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;この「LUMIX GH6」は昨年5月に開発が予告されていた製品で、現行製品であるGH5シリーズの最上位機種。主に動画面での機能強化が図られている。発売日は3月25日を予定しており、本体価格はボディ単体が約26万3000円（税込）、LEICA DG 12-60mmレンズが付属するレンズキットが約33万7000円（同）となっている。2月22～3月24日までの期間に予約購入限定のキャッシュバックキャンペーンが実施されている。キャンペーンでは本体のみで2万円、レンズキットでは3万円のキャッシュバックが行われるほか、128GBのCFexpressカードが付くとしている（&lt;a href="https://panasonic.jp/dc/products/g_series/gh6.html"&gt;LUMIX GH6&lt;/a&gt;、&lt;a href="https://panasonic.jp/dc/products/g_series/gh6/reserve_cashback.html"&gt;キャッシュバックキャンペーン&lt;/a&gt;、&lt;a href="https://dc.watch.impress.co.jp/docs/news/1390068.html"&gt;デジカメ Watch&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-イメージセンサーには新開発の有効約2521万画素Live MOSセンサーを採用。このセンサーでは&lt;a href="https://capa.getnavi.jp/special/281698/"&gt;ローリングシャッター現象&lt;/a&gt;によるゆがみの抑制が図られている。またGHシリーズの特徴である手ブレ補正はより強化され、従来の5軸6.5段（GH5II）から7.5段に向上している。一方でAFはこれまでと同様のコントラスト検出式だが、すでに出回っているレビュー動画などによれば、従来よりもAF速度は改善されているようだ。&lt;br&gt; &lt;br&gt;
-
-また単一露光でISO感度の異なる2種類の画像を取得して合成することにより、ダイナミックレンジを拡大する「ダイナミックレンジブースト」や、動画の記録面でも5.7K 60p、C4K 120p、Apple ProRes 422 HQなど記録モードが用意されている。記録モードについては発売後のファームウェアアップデートで拡充される予定もあるとしている。&lt;/p&gt;&lt;p&gt;
-	&lt;a href="https://hardware.srad.jp/story/22/02/24/1553209/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/news"&gt;ニュース&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/22/02/24/1553209/&amp;amp;text=%E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF%E3%80%81%E3%83%9E%E3%82%A4%E3%82%AF%E3%83%AD%E3%83%95%E3%82%A9%E3%83%BC%E3%82%B5%E3%83%BC%E3%82%BA%E3%81%AE%E6%9C%80%E4%B8%8A%E4%BD%8D%E6%A9%9F%E7%A8%AE%E3%80%8CGH6%E3%80%8D%E3%82%92%E7%99%BA%E8%A1%A8%E3%80%821%E5%84%84%E7%94%BB%E7%B4%A0%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%AC%E3%82%BE%E8%A8%98%E9%8C%B2%E3%82%82" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/22/02/24/1553209/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/22/02/24/1553209/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/22/02/24/1553209/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/06/29/207221"&gt;パナソニックからもVlog向けカメラ「LUMIX G100」が発表。国内発売は不明&lt;/a&gt;
-			&lt;small&gt;2020年07月01日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/15/02/05/1849226"&gt;オリンパス、マイクロフォーサーズ対応の円筒形カメラを発売へ&lt;/a&gt;
-			&lt;small&gt;2015年02月06日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/14/12/20/205259"&gt;オリンパスの技術をオープンにしたオープンプラットフォームカメラ、26日までテスター募集中&lt;/a&gt;
-			&lt;small&gt;2014年12月21日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/13/09/10/0824222"&gt;オリンパス、今後はフォーサーズの新製品開発を行わない予定&lt;/a&gt;
-			&lt;small&gt;2013年09月10日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/13/01/10/0240207"&gt;米 Polaroid からマイクロフォーサーズ対応の Android ミラーレス一眼&lt;/a&gt;
-			&lt;small&gt;2013年01月10日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/11/07/11/0812245"&gt;iPhone 4に一眼用レンズを取り付け可能にするガジェット&lt;/a&gt;
-			&lt;small&gt;2011年07月11日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
