@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 01 Mar 2022 19:26:52 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 08 Mar 2022 09:30:18 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -1027,7 +1027,7 @@ Count TotalDuration MinDuration AverageDuration MaxDuration MedianDuration Proce
 The problem of optimal build parallelism is quite complex as it is hard to predict up front the resource usage of a particular build operation and pretty much impossible to predict actual resource availability for the whole time of that build operation. But some heuristics can be used, at least for the number of running processes and threads.</p>
 <h4 id="msbuild-resource-manager"><em>MSBuild Resource Manager</em></h4>
 <p>In VS 2019 16.10, MSBuild introduced <a href="https://github.com/dotnet/msbuild/blob/main/documentation/specs/resource-management.md">cross-process resource management</a>, which allows build parts (tasks) of different projects communicating their anticipated CPU usage and limiting this usage if resources are already reserved by other build parts. All C++ build tasks that launch several processes (like cl.exe or custom build tools) or the ones that are known to use many threads (like link.exe) participate in this communication.</p>
-<p>In VS 2022 17.0 VC project’s build uses the MSBuild Resource Manager by default. The MSBuild Resource Manager support is also available VS 2019 16.11, but off by default. To activate it the following property should be defined as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
+<p>The MSBuild Resource Manager support in VC projects is available in VS 2019 16.11 and later. In VS 2022 17.0 it was turned on by default, but we found that this negatively impacts build throughput in some codebases, so in 17.2 we turned it off to avoid this. To activate it the following property should be defined as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
 <p><code>set UseMSBuildResourceManager=true</code></p>
 <p>If you don’t use <code>/MP</code> for your build currently, turn it on and give it a try. To affect all projects, define the following property as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
 <p><code>set CL_MP = true</code></p>
