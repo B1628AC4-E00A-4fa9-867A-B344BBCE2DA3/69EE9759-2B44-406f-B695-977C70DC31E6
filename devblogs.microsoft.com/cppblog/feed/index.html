@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 08 Mar 2022 09:30:18 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 10 Mar 2022 00:01:39 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,86 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Embedded Software Development in Visual Studio Code</title>
+		<link>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/#respond</comments>
+		
+		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
+		<pubDate>Thu, 10 Mar 2022 00:01:39 +0000</pubDate>
+				<category><![CDATA[embedded]]></category>
+		<category><![CDATA[IoT]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30142</guid>
+
+					<description><![CDATA[<p>We are happy to announce that we have released the Embedded Tools extension for Visual Studio Code. These capabilities are the same as what we recently announced for Visual Studio 2022. Used in conjunction with the new vcpkg artifact capabilities you can quickly bootstrap an embedded development machine and get started.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">Embedded Software Development in Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that we have released the Embedded Tools extension for Visual Studio Code. These capabilities are the same as what we recently announced for <a href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Visual Studio 2022</a>. Used in conjunction with the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifact capabilities</a> you can quickly bootstrap an embedded development machine and get started.</p>
+<p>In this post we will walk you through how to acquire embedded tool dependencies with vcpkg, then demonstrate edit, build, deploy, and debugging directly in VS Code with new peripheral register and RTOS object views. We will demonstrate all of this with an Azure RTOS ThreadX project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded.png"><img class="alignnone size-full wp-image-30146" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded.png" alt="VS Code embedded development screenshot" width="1671" height="1044" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded.png 1671w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded-300x187.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded-1024x640.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded-768x480.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vscode_embedded-1536x960.png 1536w" sizes="(max-width: 1671px) 100vw, 1671px" /></a></p>
+<p>Azure RTOS ThreadX is a widely used Real Time Operating System (RTOS) used on billions of microcontrollers (MCUs) in products around the world. We have dedicated pages for VS Code usage in the getting started guides for the <a href="https://github.com/azure-rtos/getting-started/blob/master/MXChip/AZ3166/vscode.md">Azure IoT DevKit</a>, <a href="https://github.com/azure-rtos/getting-started/blob/master/NXP/MIMXRT1060-EVK/vscode.md">NXP 1060</a>, and STMicro STM32L4_L4+ IOT01A boards (<a href="https://github.com/azure-rtos/getting-started/blob/master/STMicroelectronics/B-L475E-IOT01A/vscode.md">L475E</a> or <a href="https://github.com/azure-rtos/getting-started/blob/master/STMicroelectronics/B-L4S5I-IOT01A/vscode.md">L4S5I</a>). The techniques used for interacting with these boards should be applicable to other targets by changing configuration information we’ll highlight throughout.</p>
+<h4 id="installation">Installation</h4>
+<p>To get started install VS Code, then in the extensions side bar search for Embedded Tools and install it.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_embedded_tools.png"><img class="alignnone size-full wp-image-30147" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_embedded_tools.png" alt="Embedded Tools extension page screenshot" width="624" height="167" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_embedded_tools.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_embedded_tools-300x80.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
+<h4 id="using-vcpkg-to-acquire-embedded-tools">Using vcpkg to acquire embedded tools</h4>
+<p>One of the challenges in embedded development is getting the tools necessary installed and configured. It is not uncommon to have different compilers used for different projects, custom debug tools, etc. This is where the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">artifact capabilities in vcpkg</a>  can help us. Today we’ll demonstrate using vcpkg from a PowerShell prompt to activate our embedded development environment, but you can use the shell you prefer on your platform. In a future release this will be integrated into a Visual Studio Code extension for a more seamless experience.</p>
+<p>From a PowerShell prompt, clone the Azure RTOS getting started repo. This sample will serve as our example project for the remainder of this post.</p>
+<pre>git clone --recursive https://github.com/azure-rtos/getting-started.git</pre>
+<p>Navigate to the subfolder for the board you are using, here I’m using the Azure IoT DevKit.</p>
+<pre>cd ./getting-started/MXChip/AZ3166</pre>
+<p>If you haven’t already, install vcpkg.</p>
+<p>Linux/macOS</p>
+<pre>. &lt;(curl https://aka.ms/vcpkg-init.sh -L)</pre>
+<p>PowerShell</p>
+<pre>iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
+<p>CMD Shell</p>
+<pre>curl -LO https://aka.ms/vcpkg-init.cmd &amp;&amp; .\vcpkg-init.cmd</pre>
+<p>In the project folder, there is a file vcpkg_configuration.json. This manifest file was created with vcpkg and has recorded the tools you need to build and debug this project. See the <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifacts post</a> for details on how to create your own manifest. Running the vcpkg activate command will use this file to determine if I have those tools, install them if I do not, then activate them in my environment for use.</p>
+<pre>vcpkg activate</pre>
+<p>So, in three commands we have cloned our embedded project, installed vcpkg, acquired and activated the necessary tools for building the project.</p>
+<h4 id="using-vs-code-for-embedded-development">Using VS Code for embedded development</h4>
+<p>In the previous section we used vcpkg to acquire the tools for our embedded project. Today vcpkg is not integrated in Visual Studio Code. So, at present we need to launch VS Code from the environment we activated at the command line so those tools are available for its use as well.</p>
+<pre>code .</pre>
+<p>Now that we have the project open in VS Code it is ready to go as any other CMake project. <a href="https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/">VS Code can run the CMake build using the preconfigured CMakePresets file</a> with the compilers vcpkg acquired. Select the preset arm-gcc-cortex-m4 when prompted on opening the folder.</p>
+<p>All the editing power of VS Code is now available for use with the embedded project. With this Azure RTOS project we’ll cover code navigation, IntelliSense, build, deploy, debugging. We’ll also cover new diagnostic capabilities around peripheral registers and RTOS object views.</p>
+<h5 id="code-navigation-and-intellisense">Code Navigation and IntelliSense</h5>
+<p>Use Ctrl + T to open symbol search and type button_a_callback, select the button_a_callback function to navigate to it. Note on hover that this function expands to TIM3-&gt;CCR1 which is a peripheral register on the board which we’ll inspect while we are debugging.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_inspectregdef.png"><img class="alignnone size-full wp-image-30148" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_inspectregdef.png" alt="IntelliSense function expansion screenshot" width="538" height="327" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_inspectregdef.png 538w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_inspectregdef-300x182.png 300w" sizes="(max-width: 538px) 100vw, 538px" /></a></p>
+<h5 id="build-deploy-and-debug-on-hardware">Build, Deploy, and Debug on hardware</h5>
+<p>Set a breakpoint on RGB_LED_SET_R().</p>
+<p>To see how the launch is controlled in the sidebar open .vscode/launch.json and look at the launch configuration. You can see the miDebuggerPath set to use arm-none-eabi-gdb while the debugServerPath is set to invoke openocd with the configuration script in debugServerArgs. The information for describing peripheral registers is provided by the MCU manufacturer in an SVD file that we point to with svdPath. This project is configured to break on entry with the property stopAtConnect.</p>
+<p>Now, with your board plugged into the PC with <a href="https://www.st.com/en/development-tools/stsw-link009.html">ST-LINK drivers installed</a>, select the debug icon in the activity bar and make sure Run and Debug is set to Launch. Now F5 will work using openocd acquired by vcpkg to flash and debug the attached board. Execution stops at the entry function, so here we see the assembly code for that. We can also view the disassembly by right clicking the function in the call stack window, Open Disassembly View.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry.png"><img class="alignnone size-full wp-image-30149" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry.png" alt="Assembly source and disassembly screenshot" width="1047" height="177" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry.png 1047w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry-300x51.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry-1024x173.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_assemblyonentry-768x130.png 768w" sizes="(max-width: 1047px) 100vw, 1047px" /></a></p>
+<p>Press continue to let execution continue.</p>
+<h5 id="peripheral-registers">Peripheral Registers</h5>
+<p>Now press the A button on the board. This has triggered our breakpoint. We can now go to the command palette Ctrl + Shift + P  and enter “peripheral”, select Focus on Peripheral View View. This opens the peripheral register view using the information from our SVD file specified in the launch configuration. We can now scroll through this list to find the register we are interested in, here TIM3-&gt;CCR1 which will update when we step over the RGB_LED_SET_R function.</p>
+<p>On break</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regbefore_new.png"><img class="alignnone wp-image-30259 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regbefore_new.png" alt="Register before stepping" width="847" height="405" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regbefore_new.png 847w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regbefore_new-300x143.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regbefore_new-768x367.png 768w" sizes="(max-width: 847px) 100vw, 847px" /></a></p>
+<p>After stepping</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regafter_new.png"><img class="alignnone wp-image-30260 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regafter_new.png" alt="Register after stepping" width="898" height="410" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regafter_new.png 898w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regafter_new-300x137.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_regafter_new-768x351.png 768w" sizes="(max-width: 898px) 100vw, 898px" /></a></p>
+<h5 id="rtos-object-views">RTOS Object Views</h5>
+<p>VS Code threads view won’t show you the threads in our Azure RTOS application. Why not? A good explanation can be found in this <a href="https://azure.microsoft.com/resources/real-time-operating-system">white paper on Real Time Operating Systems</a>.</p>
+<p>“A Real-Time Operating System is system software that provides services and manages processor resources for applications. These resources include processor cycles, memory, peripherals, and interrupts. The main purpose of a Real-Time Operating System is to allocate processing time among various duties the embedded software must perform. This typically involves a division of the software into pieces, commonly called “tasks” or “threads,” and creating a run-time environment that provides each thread with its own virtual microprocessor (“Multithreading”). Basically, a virtual microprocessor consists of a virtual set of microprocessor resources, e.g., register set, program counter, stack memory area, and a stack pointer. Only while executing does a thread use the physical microprocessor resources, but each thread retains its own copy of the contents of these resources as if they were its own private resources (the thread”s “context”).”</p>
+<p>So for embedded development ideally you would have views that could show you information about these RTOS objects. To see the new available RTOS objects views, go to the command palate Ctrl + Shift + P  and enter “rtos” then select Focus on RTOS viewer view</p>
+<p>This will open the threads view that shows at a glance much of the information you would commonly need during embedded development, thread ids and names, how many times they have run, where the stack starts, ends, and its size as well as the maximum stack usage.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads.png"><img class="alignnone size-full wp-image-30153" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads.png" alt="RTOS threads window" width="1277" height="167" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads.png 1277w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads-300x39.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads-1024x134.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_RTOSthreads-768x100.png 768w" sizes="(max-width: 1277px) 100vw, 1277px" /></a></p>
+<p>There are other views for additional ThreadX objects like block and byte pools, events, mutexes, queues, and timers. You can find these by selecting the three dots in the RTOS Viewer panel.</p>
+<p>We also have RTOS object views for FreeRTOS though the available objects there differ based on what it supports.</p>
+<h5 id="hardware-breakpoint-limits">Hardware breakpoint limits</h5>
+<p>One last debugging capability to call out is that embedded hardware targets commonly have a limited set of hardware breakpoints available. Setting too many can corrupt the debugger state. As such we have added hardwareBreakpoints to launch.json. For this board that is set to what it supports which is 6. If we set more than that we will see the breakpoint is not set but will show as a gray empty circle.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_hwbreakpoint.png"><img class="alignnone size-full wp-image-30154" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_hwbreakpoint.png" alt="Hardware breakpoint example screenshot" width="328" height="66" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_hwbreakpoint.png 328w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/vsc_hwbreakpoint-300x60.png 300w" sizes="(max-width: 328px) 100vw, 328px" /></a></p>
+<p>If you mouse over the breakpoint in the breakpoints view you will see a warning that it won’t be hit. This prevents corrupting the connection to the board and allows us the opportunity to unset some other breakpoints and continue debugging uninterrupted.</p>
+<h4 id="send-us-your-feedback">Send us your feedback</h4>
+<p>We hope that these new capabilities will enable you to choose VS Code for your embedded development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">Embedded Software Development in Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Execution and Static Analysis Support for MSVC on Compiler Explorer</title>
 		<link>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/#comments</comments>
@@ -942,230 +1022,6 @@ Project c:\source\test activated
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/">Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>C++ build throughput investigation and tune up</title>
-		<link>https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/#comments</comments>
-		
-		<dc:creator><![CDATA[olgaark]]></dc:creator>
-		<pubDate>Fri, 19 Nov 2021 09:41:12 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29790</guid>
-
-					<description><![CDATA[<p>Building C++ code is a complex process, launching many build tools in parallel and often running for a long time. It is always desirable to make it faster, but also a challenge to understand what the most effective way would be to achieve this.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/">C++ build throughput investigation and tune up</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Building C++ code is a complex process, launching many build tools in parallel and often running for a long time. It is always desirable to make it faster, but also a challenge to understand what the most effective way would be to achieve this.</p>
-<p>We’d like to share some techniques we use to get a &#8220;bigger&#8221; picture of the build, as well as tools that can help to see what is taking time in a particular part of the build. We’ll also talk about MSBuild project options which can improve build parallelism without overwhelming the system, as well as other (not immediately obvious) options which might affect build throughput.</p>
-<p>This blog is more like a list of what is currently available, full of instructions and details. Some of the suggestions should be useful for any C++ build, but most of the measurements and tuning options are for MSBuild based projects (vcxproj).</p>
-<p>As any performance improvement starts with the measurement, here we are – measure your build.</p>
-<p>Note that the total build time can vary quite noticeably between several identical builds on the same machine – the system is adjusting to the active processes. So, if you compare builds before and after making some options changes, it is more reliable to run the build several times and get the average. It is also helpful to measure not only the total build time but get more detailed information, so if you get a surprising result, you can figure out why it happened. For MSBuild we recommend running it on the command line and collecting a <a href="http://www.msbuildlog.com/">binary log</a>.</p>
-<h2 id="measure-your-build-time-using-msbuild-performance-summary">Measure your build time using MSBuild Performance Summary</h2>
-<p>If your build is MSBuild based, the first thing to do when investigating build performance is to see which projects and which tasks/targets inside the projects are taking most of the build time. The performance summary data is also very useful for comparing builds using different options.</p>
-<p>To get a performance summary for your full build, you can do the following: open a Developer (or MSBuild) Command Prompt and run the build of your solution with the following options (replace Configuration and Platform values with the ones your solution actually has):</p>
-<pre class="prettyprint">msbuild /m /t:clean /p:Configuration="Debug";Platform="x86" YourSolution.sln 
-msbuild  /m /fl  -flp:PerformanceSummary;v=q;LogFile=Perf.log /p:Configuration="Debug";Platform="x86" YourSolution.sln
-</pre>
-<p>The &#8220;quet&#8221; or &#8220;minimal&#8221; verbosity setting (<code>-flp:PerformanceSummary;v=q</code>) is recommended as console logging itself takes noticeable time. But you can set the verbosity to other levels if you want more build info in the Perf.log. You can also add <code>/detailedSummary</code> to see msbuild.exe <a href="https://devblogs.microsoft.com/visualstudio/msbuild-4-detailed-build-summary/#gimme-some-numbers">nodes utilization</a>).</p>
-<p>The same information can be extracted from a binary log. We recommend creating binary logs when investigating your builds. To create a binary log, run:</p>
-<pre><code class="language-txt">msbuild /m /t:clean /p:Configuration="Debug";Platform="x86" YourSolution.sln 
-msbuild /m /bl:build.binlog /p:Configuration="Debug";Platform="x86" YourSolution.sln</code></pre>
-<p>To extract the perf info into Perf.log, run:</p>
-<pre><code class="language-txt">msbuild -noconlog -flp:PerformanceSummary -flp:v=q  build.binlog
-ren msbuild.log Perf.log</code></pre>
-<p>You can also enable &#8220;Build Timings&#8221; for VC projects in the IDE by setting &#8220;Tools/Options/Projects and Solutions/VC++ Project Settings/Build Timings&#8221; = &#8220;Yes&#8221;. This will create the Perf Summary for each project, but not for the whole solution build. Thus, using the command line is better to see the &#8220;whole picture&#8221;.</p>
-<p>In the Perf.log you’ll find times (in ms) it took to build the whole solution, each project (in the time increasing order) and commutative time of all targets and tasks (also in the time increasing order). Note that project build time and some targets (like ResolveProjectReferences target) include the wait for referenced projects to be built. You can use the Timeline tab of the binlog viewer to see if other projects were built as a part of a particular project build.</p>
-<p>For a solution containing mostly C++ projects, cl and link would usually be the tasks taking most of the time:</p>
-<pre><code class="language-txt">Project Performance Summary:
-…
-    1100252 ms  d:testMySolution.sln          1 calls  solution build time (msbuild /m)
-
-Task Performance Summary:
-…
-     22495731 ms  Link    250 calls 
-    152500624 ms  CL      250 calls </code></pre>
-<p>The task time is the sum of all times the task was executing for all projects and thus it can be bigger than the total build time. For CL and Link tasks their time is very close to the cl.exe and link.exe time.</p>
-<h2 id="use-build-insights-to-see-the-build-timeline-for-cl-exe-and-link-exe">Use Build Insights to see the build timeline for cl.exe and link.exe</h2>
-<p>Most of the C++ builds time is usually spent in the compiler. To visualize what is going on during the build, see the processes running in parallel and pivot on the parts that take most of the time, you can use the <a href="https://devblogs.microsoft.com/cppblog/introducing-c-build-insights/">Build Insights</a> tool.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/11/word-image.gif"><img class="alignnone wp-image-25179 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/11/word-image.gif" alt="" width="881" height="680" /></a></p>
-<h2 id="change-options-to-improve-c-build-throughput">Change options to improve C++ build throughput</h2>
-<p>There are many parameters which can affect build throughput and different codebases can benefit from different sets of options. Here we&#8217;ll talk about antivirus and project settings which are easy to change and which can potentially greatly improve your build throughput.</p>
-<h3 id="1-check-your-antivirus-settings">1. Check your antivirus settings</h3>
-<p>C++ builds produce a lot of intermediate files and we often see the file system as a bottleneck there. With your antivirus scanning all build outputs, the problem is greatly amplified.</p>
-<p>Windows Defender Antivirus automatically excludes most of the common build tools when they are found in the default install locations. But if you install Visual Studio in a custom location or use many additional build tools, your build throughput might be affected.</p>
-<p>To see if Windows Defender scans are impacting your build, you can use <a href="https://techcommunity.microsoft.com/t5/microsoft-defender-for-endpoint/announcing-performance-analyzer-for-microsoft-defender-antivirus/ba-p/2713911">Performance Analyzer for Microsoft Defender Antivirus</a>. The tool collects minimal data so you can run it for a good chunk of your build (10-20 min is usually enough) if not the whole build. We recommend closing all application unrelated to the build before collecting the data to avoid seeing unrelated to build processes in the report.</p>
-<p>To collect the data and see the affected build processes:</p>
-<ul>
-<li>Open a Windows PowerShell and run:
-<pre><code class="language-txt">New-MpPerformanceRecording -RecordTo MyBuild.etl</code></pre>
-</li>
-<li>Rebuild your code in the IDE or on the command line</li>
-<li>After the build is finished (or after 10-20 min) go back to the PowerShell and stop the recording by hitting any key</li>
-<li>In PowerShell run
-<pre><code class="language-txt">Get-MpPerformanceReport -TopProcesses:20 MyBuild.etl</code></pre>
-<p>This will give you the list of the affected processes, similar to the following one:</p>
-<pre><code class="language-txt">TopProcesses
-============
-
-Count TotalDuration MinDuration AverageDuration MaxDuration MedianDuration ProcessPath
------ ------------- ----------- --------------- ----------- -------------- -----------
-8193  62272.1020ms    0.1790ms        7.6006ms  119.5682ms       6.8465ms   D:Visual Studio 17VCToolsMSVC14.30.30528binHostx64x86cl.exe
-1068  14587.9547ms    3.2531ms       13.6591ms 927.2716ms       6.0416ms    D:Visual Studio 17VCToolsMSVC14.30.30528binHostx64x86link.exe
-…</code></pre>
-<p>You can add the build tools from the trusted locations to the excluded files or directories list in the <a href="https://docs.microsoft.com/microsoft-365/security/defender-endpoint/configure-extension-file-exclusions-microsoft-defender-antivirus?view=o365-worldwide#exclusion-lists">Windows Defender settings.</a></li>
-</ul>
-<h3 id="2-redefine-tmp-directory">2. Redefine TMP directory.</h3>
-<p>During compilation, cl.exe creates a tmp file per each source in the TMP folder. When many cl.exe processes are running in parallel and simultaneously creating a lot of files in the same folder it creates a lot of stress for the file system.</p>
-<p>Using different TMP folders for different projects (and preferably not on the system drive) often makes the build faster, especially on powerful machines with many CPUs where disk I/O and file system are more often a bottleneck.</p>
-<p>We are planning to address this problem in the future VS releases, but meanwhile you can redefine the TMP environment variable to be different for different projects. See the proposed <code>Directory.Build.props</code> sample at the end of the blog.</p>
-<h3 id="3-tune-build-options-for-better-parallelism">3. Tune build options for better parallelism.</h3>
-<p>Many C++ build operations support parallel execution. A general assumption is that the build should be faster when more build operations are running in parallel. This is true, but only to a point when the build is not overwhelming the system capacity to distribute machine resources between processes and threads.</p>
-<p>Most of the build tools are heavy users of CPU, memory, and the file system. Depending on the number of source files, their size, and content, any of these components can be a bottleneck preventing the build from being faster when more tools are running in parallel. When a resource limit is hit, running more build operations in parallel will make the build slower, rather than faster, sometimes significantly. For instance, the <code>msbuild /m</code> + <code>cl /MP</code> resource overuse problem has been known for quite some time, but recently became more frequent as more and more computers have 32+ logical CPUs.
-The problem of optimal build parallelism is quite complex as it is hard to predict up front the resource usage of a particular build operation and pretty much impossible to predict actual resource availability for the whole time of that build operation. But some heuristics can be used, at least for the number of running processes and threads.</p>
-<h4 id="msbuild-resource-manager"><em>MSBuild Resource Manager</em></h4>
-<p>In VS 2019 16.10, MSBuild introduced <a href="https://github.com/dotnet/msbuild/blob/main/documentation/specs/resource-management.md">cross-process resource management</a>, which allows build parts (tasks) of different projects communicating their anticipated CPU usage and limiting this usage if resources are already reserved by other build parts. All C++ build tasks that launch several processes (like cl.exe or custom build tools) or the ones that are known to use many threads (like link.exe) participate in this communication.</p>
-<p>The MSBuild Resource Manager support in VC projects is available in VS 2019 16.11 and later. In VS 2022 17.0 it was turned on by default, but we found that this negatively impacts build throughput in some codebases, so in 17.2 we turned it off to avoid this. To activate it the following property should be defined as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
-<p><code>set UseMSBuildResourceManager=true</code></p>
-<p>If you don’t use <code>/MP</code> for your build currently, turn it on and give it a try. To affect all projects, define the following property as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample):</p>
-<p><code>set CL_MP = true</code></p>
-<p>By default, the MSBuild Resource Manager will allow maximum 2*(number of CPU cores) to be used simultaneously by all project’s tasks. The 2x cores (instead of just 1x) limit is partially dictated by the current MSBuild scheduler architecture, but also seems to allow better build throughput on average. Most of the time the build will use less than 2xCPUs and when it does, the system usually tolerates 2x CPU oversubscription quite well unless bottlenecks other than the CPU are hit by the build (see Many Cores Machines section).</p>
-<p>There are also a couple of &#8220;knobs&#8221; to try if the default behavior is not good enough.
-In addition to setting the maximum number of projects allowed to be built in parallel (<code>msbuild /m:nProjects</code>), you can set the following environment variables (cannot be MSBuild properties) to modify the behavior:</p>
-<ul>
-<li><code>MSBUILDCORELIMIT=N</code> where N is the max number of cores to be given to one project. By default it’s the number of logical CPUs on the machine</li>
-<li><code>MSBUILDNODECOREALLOCATIONWEIGHT= [0 – 100]</code>
-0% means that MSBuild nodes don’t consider using CPUs and 100% means that each MSBuild node would be considered using 1 CPU. In C++ builds, MSBuild processes CPU usage is small comparing to the compiler CPU usage, so 0 should be OK. But for mixed C# and C++ solutions it probably should be set to something between 50 and 100.</li>
-</ul>
-<p>If for some reason building with the MSBuild Resource Manager is slower for your build and you don’t want to experiment with other options, you can disable it by setting <code>UseMSBuildResourceManager</code> as false.</p>
-<h4 id="multitooltask-mtt"><em>MultiToolTask (MTT)</em></h4>
-<p>Other options which can be used to limit the number of cl.exe processes running in parallel are described in <a href="https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/">Improve Parallelism in MSBuild</a>.</p>
-<p>To activate MTT mode set the following properties as environment variables or as MSBuild properties for all projects (see also the <code>Directory.Build.props</code> sample below):</p>
-<pre><code class="language-txt">set UseMultiToolTask=true
-set EnforceProcessCountAcrossBuilds=true</code></pre>
-<p>This will make the build launch a separate cl.exe process for each C/C++ source and limit the number of simultaneously running cl processes (across all project builds) to <code>CL_MPCOUNT</code>, which is by default set to the number of logical processors.</p>
-<p>MultiToolTask mode can be also used together with the MSBuild Resource Manager. This might be beneficial for some builds as instead of asking the MSBuild Resource Manager for available resources only once before launching the top-level <code>cl.exe /MP</code>, the build will ask it before launching cl.exe for each source file.</p>
-<p>Note, that for projects with many small and simple C/C++ files (i.e., when individual file compilation is not taking a long time), launching a separate cl.exe processes for each file would bring a noticeable overhead. So, this option is recommended to use when most of the source files are relatively large and complex.</p>
-<p>In VS 2022, the new experimental &#8220;ClServer&#8221; mode has been added to address the process creation overhead in MTT mode by using server-client model similar to <code>cl.exe /MP</code>. The server would spawn worker cl.exe processes, then dispatch work via IPC. The server resides in MSBuild process so is in-sync with the resource manager while scheduling work dynamically—allocating more workers or freeing resources to scaling down to deal with &#8220;long pole&#8221; compiles.</p>
-<p>To enable this mode the following property should be defined as an environment variable or as an MSBuild property for all projects (see Directory.Build.props sample below):</p>
-<p><code>set EnableClServerMode=true</code></p>
-<h4 id="increase-build-parallelism-for-native-c-projects-experimental"><em>Increase build parallelism for native C++ projects (experimental)</em></h4>
-<p>This option is experimental and works only for command line builds currently (not supported for the IDE build).</p>
-<p>By default, if project B is referencing project A, the build of project B will not start until project A’s build is finished.
-This makes sense for managed projects where assemblies must exist before they can be used as references in the compilation.</p>
-<p>But native C++ code compilation usually does not use any build outputs from the referenced projects, only the linker does.
-Even with C++20 modules, where compilation does use the build outputs (modules) from the referenced projects, it only needs to wait for the referenced project compilation step to finish but does not need to wait for the link to be complete.</p>
-<p>To allow the compilation step of the referencing projects to start as soon as the compilation step of the referenced projects is finished:</p>
-<p><code>set BuildPassReferences=true</code></p>
-<p>To allow parallel compilation of all native sources in spite of project references (implies <code>BuildPassReferences=true</code>): (Note that this mode won&#8217;t work if the code is using C++ 20 modules built as a part of the solution)</p>
-<p><code>set AllowParallelCompileInReferencedProjects=true</code></p>
-<p>As these options would allow more build parts running simultaneously, make sure to enable the MSBuild Resource Manager and/or MultiToolTask with <code>EnforceProcessCountAcrossBuilds</code>.</p>
-<p>The command line should look like:</p>
-<p><code>msbuild /p:Configuration=Debug;Platform= x64 /t:BuildGenerateSources;BuildCompile;BuildLink solution.sln</code></p>
-<p>How it works:</p>
-<p>By default, MSBuild starts project build execution after all projects it references finish building.
-Each VC project build consists of BuildGenerateSources, BuildCompile and BuildLink targets executed one after another. They are historically called &#8220;build passes&#8221;.</p>
-<p>The default build timeline for two projects where ProjectB is referencing ProjectA looks like</p>
-<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/11/Build.png" alt="Regular build" /></p>
-<p>When <code>BuildPassReferences</code> is set to true, a project B’s <code>BuildGenerateSources</code> target will be executed as soon as project A’s <code>BuildGenerateSources</code> target finish building. The project B’s <code>BuildCompile</code> target will wait for project B’s <code>BuildGenerateSources</code> target to finish executing, as well as project A’s <code>BuildCompile</code> targets. Similarly, a project B’s <code>BuildLink</code> target will wait for project B’s <code>BuildCompile</code> target and project A’s <code>BuildLink</code> target.</p>
-<p>So, with <code>BuildPassReferences = true</code>, the build timeline would look like</p>
-<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/11/BuildPasses.png" alt="Build with pass references" /></p>
-<p>When <code>AllowParallelCompileInReferencedProjects</code> is true, the build will allow even the same targets of the referencing and referenced projects to run in parallel. This will only work if a target does not use outputs from the same target of the referenced project. Note, that .lib and .implib are created as a part of <code>BuildCompile</code> so they are always available for <code>BuildLink</code>.</p>
-<p>The project B’s <code>BuildGenerateSources</code> target can be executed at the same time as project A&#8217;s <code>BuildGenerateSources</code> target.
-The project B’s <code>BuildCompile</code> target will wait for project B’s and project A&#8217;s <code>BuildGenerateSources</code> targets to finish executing.
-The project B’s <code>BuildLink</code> target will wait for project B’s and project A&#8217;s <code>BuildCompile</code> targets.</p>
-<p>So, with <code>AllowParallelCompileInReferencedProjects=true</code> the timeline would look like</p>
-<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/11/ParallelCompile.png" alt="Build with parallel compilation" /></p>
-<h3 id="4-tune-sources-includes-and-precompiled-headers-pch">4. Tune sources, includes and precompiled headers (PCH)</h3>
-<p>To see which sources are taking most of the compiler time, use <a href="https://devblogs.microsoft.com/cppblog/introducing-c-build-insights/">Build Insights</a>. This tool will help you to see if adding a particular include to the pch would save a lot of compilation time. It will also allow you to view the build timeline.</p>
-<p>Check the following blog post for adjusting PCH files:
-<a href="https://devblogs.microsoft.com/cppblog/precompiled-header-pch-issues-and-recommendations/">Precompiled Header (PCH) issues and recommendations</a></p>
-<p>If your files are well isolated, you can also try using Unity(Jumbo) builds:
-<a href="https://devblogs.microsoft.com/cppblog/support-for-unity-jumbo-files-in-visual-studio-2017-15-8-experimental/">Support for Unity (Jumbo) Files in Visual Studio 2017 15.8 (Experimental)</a></p>
-<h3 id="5-special-considerations-for-machines-with-64-cpus">5. Special considerations for machines with 64+ CPUs</h3>
-<p>The following recommendations are based on the build time measurements performed on a 192 cores Windows Server machine.</p>
-<ul>
-<li>If you are running Windows Server 2016 on such a machine, it is highly recommended to upgrade it to WS2019. WS2016 was not optimized for launching many (64+) instances of the same exe, which resulted in poor performance of 64+ cl.exe running together.</li>
-<li>When using Windows Server 2019, make sure that antivirus check is not affecting your build and TMP directory is redefined (i.e. follow recommendations #1 and #2 of this blog, see the chart below).</li>
-<li>The build is likely to hit file system and disk I/O bottleneck when running a lot of build tools in parallel. If you’ve adjusted your build options for the best parallelism (#3), but still see low CPU utilization during build, it is likely that build is hitting a bottleneck other than CPU. Try limiting the number of projects running in parallel, as well as setting <code>MSBUILDCORELIMIT</code> to a lower number &#8211; this might actually improve your build throughput.</li>
-</ul>
-<p>In one of our tests, we’ve built a generated solution containing 250 projects, 250 cpp files each, with no project references. The C++ code was also generated and, admittedly, quite simple, containing one class per file, up to 30 methods each.</p>
-<p>The following chart shows build times of this solution with different system and TMP options.
-Each bar corresponds to the <code>msbuild /m:[nProjects]</code> build time, no other options were set. As the test projects did not have any project references, that was enough to achieve best parallelism.
-Each series contains build times when number of projects built in parallel (and thus max number of cl.exe instances running together) was 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, and 180.</p>
-<p>The system/TMP setting for each series are:</p>
-<ol>
-<li>WS2016 Default settings</li>
-<li>WS2019 Default settings, custom VS install location (Defender on, no exclusions, default TMP folder <code>c:users[username]AppDataLocalTemp</code>)</li>
-<li>WS2019* Build tools are excluded from the Defender scan. Default TMP folder, not excluded from Defender scan.</li>
-<li>WS2019** Build tools and default TMP folder are excluded from the Defender scan</li>
-<li>WS2019*** Build tools are excluded from the Defender scan, TMP is set to project specific location, different for each project.</li>
-</ol>
-<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/11/Chart.png" alt="Build time (ms)" /></p>
-<p>Note that in all series, build time did not improve much (and even got worse) when building more projects in parallel after some point. For this particular solution, building just ~40 projects in parallel showed the best results.</p>
-<p>We’ve also tested other generated solutions with different number of projects, longer code, project references, etc. We also used different build options, especially the ones we recommend using in section#3.
-The trends were quite similar, though the optimal number of parallel processes might differ.</p>
-<p>The &#8220;real&#8221; code compilation usually takes much longer than the compilation of our small and simple generated files, so File System bottleneck might be not so pronounced there. But changing the antivirus and TMP settings improved the build times there as well, though not as much.</p>
-<h2 id="directory-build-props-sample-to-set-options-for-all-projects">Directory.Build.props sample to set options for all projects</h2>
-<p>Create<code> Directory.Build.props</code> in the root directory to affect all projects under this root.
-This is a sample content of<code> Directory.Build.props</code> you can use to try different build settings.</p>
-<pre><code class="language-xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;Project&gt;
-  &lt;PropertyGroup&gt;
-    &lt;!-- To enable project specific directory for temporary files. --&gt;
-    &lt;UseProjectTMPDirectory&gt;true&lt;/UseProjectTMPDirectory&gt;
-
-    &lt;!-- To enable MSBuild Resource Manager in VS 2019 16.11 (on by default in VS 2022) --&gt;
-    &lt;UseMSBuildResourceManager&gt;true&lt;/UseMSBuildResourceManager&gt;
-
-    &lt;!-- Uncomment to enable MultiToolTask (MTT) mode. --&gt;
-    &lt;!--&lt;UseMultiToolTask&gt;true&lt;/UseMultiToolTask&gt;
-      &lt;EnforceProcessCountAcrossBuilds&gt;true&lt;/EnforceProcessCountAcrossBuilds&gt;--&gt;
-
-    &lt;!-- Uncomment to enable experimental MTT ClServer mode, available in VS 2022. --&gt;
-    &lt;!--&lt;EnableClServerMode&gt;true&lt;/EnableClServerMode&gt;--&gt;
-
-    &lt;!-- Uncomment and change the value to control the maximum number of cl.exe processes running in parallel. 
-         If using MTT without MSBuild Resource Manager, 10-20% oversubscription is often beneficial. --&gt;
-    &lt;!--&lt;CL_MPCount&gt;20&lt;/CL_MPCount&gt;--&gt;
-
-    &lt;!--Uncomment to allow executing more build operations in parallel--&gt;
-    &lt;!--&lt;BuildPassReferences&gt;true&lt;/BuildPassReferences&gt; --&gt;
-    &lt;!--&lt;AllowParallelCompileInReferencedProjects&gt;true&lt;/AllowParallelCompileInReferencedProjects&gt; --&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemDefinitionGroup&gt;
-    &lt;!--  Enable parallel compilation (cl.exe /MP) --&gt;
-    &lt;ClCompile&gt;
-      &lt;MultiProcessorCompilation&gt;true&lt;/MultiProcessorCompilation&gt;
-    &lt;/ClCompile&gt;
-    &lt;!--  Enable parallel execution of a custom build tool--&gt;
-    &lt;CustomBuild&gt;
-      &lt;BuildInParallel&gt;true&lt;/BuildInParallel&gt;
-    &lt;/CustomBuild&gt;
-  &lt;/ItemDefinitionGroup&gt;
-
-  &lt;!-- Define project specific directory for temporary files --&gt;
-  &lt;Target Name="SetProjectTMPDirectory"
-          Condition="'$(UseProjectTMPDirectory)' == 'true'"
-          AfterTargets="SetBuildDefaultEnvironmentVariables"&gt;
-    &lt;MakeDir Directories="$(IntDir)TMP"/&gt;
-    &lt;SetEnv Name   ="TMP"
-            Value  ="$(IntDir)TMP"
-            Prefix ="false"&gt;
-    &lt;/SetEnv&gt;
-  &lt;/Target&gt;
-&lt;/Project&gt;</code></pre>
-<h2 id="send-us-feedback">Send Us Feedback</h2>
-<p>Build is a complex process, and its performance depends on many factors and circumstances. Building different codebases on different hardware would benefit from different build settings. We hope you can try some of the options described in the blog and see if they improve your build time.</p>
-<p>If you try any suggestions, please let us know, we love to hear from you! You can leave your comments below or email us at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/">C++ build throughput investigation and tune up</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp-build-throughput-investigation-and-tune-up/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
