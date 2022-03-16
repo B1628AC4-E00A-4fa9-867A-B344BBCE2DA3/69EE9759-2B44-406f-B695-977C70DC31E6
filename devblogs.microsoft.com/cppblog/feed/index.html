@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 10 Mar 2022 00:01:39 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 16 Mar 2022 18:17:45 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,114 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Visual Studio for remote macOS C++ development</title>
+		<link>https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/#respond</comments>
+		
+		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
+		<pubDate>Wed, 16 Mar 2022 18:17:45 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30167</guid>
+
+					<description><![CDATA[<p>The latest preview version of Visual Studio is now available to download. In this latest release, users wishing to develop cross platform C++ applications for macOS can now make use of Visual Studio’s Linux tools with CMake to target the Mac.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/">Visual Studio for remote macOS C++ development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span class="TextRun SCXW190762823 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart SCXW190762823 BCX8">The latest preview version of Visual Studio is now <a href="https://visualstudio.microsoft.com/vs/preview/" target="_blank" rel="noopener">available to download</a>. In this latest release, users</span><span class="NormalTextRun SCXW190762823 BCX8"> wishing to develop cross platform C++ applications for </span><span class="NormalTextRun SCXW190762823 BCX8">macOS</span><span class="NormalTextRun SCXW190762823 BCX8"> can </span><span class="NormalTextRun SCXW190762823 BCX8">now </span><span class="NormalTextRun SCXW190762823 BCX8">make use of Visual Studio’s Linux tools with CMake to target </span><span class="NormalTextRun SCXW190762823 BCX8">the Mac. There is some setup required on the Mac side to enable the support, but then the Mac is treated just as any other remote (Linux) target by Visual Studio.</span></span><span class="EOP SCXW190762823 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1.png"><img class="alignnone size-full wp-image-30175" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1.png" alt="Example of an application targeting MacOS from Windows Visual Studio" width="1428" height="892" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1-300x187.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1-1024x640.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/MacOS-Target-Example-1-768x480.png 768w" sizes="(max-width: 1428px) 100vw, 1428px" /></a></p>
+<h4 id="installation">Installation</h4>
+<p>To get started install the latest preview release of Visual Studio 2022 and select the Linux and embedded development with C++ workload. The components you need are selected by default.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Linux-Selection-1.png"><img class="alignnone size-full wp-image-30173" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Linux-Selection-1.png" alt="Select Linux and embedded development in C++ workload in latest preview release of Visual Studio 2022" width="910" height="460" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Linux-Selection-1.png 910w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Linux-Selection-1-300x152.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Linux-Selection-1-768x388.png 768w" sizes="(max-width: 910px) 100vw, 910px" /></a></p>
+<h4 id="setup-on-the-mac">Setup on the Mac</h4>
+<p>Visual Studio requires certain tools to be present on the Mac to enable the remote development experience.</p>
+<h5 id="c-tools">C++ Tools</h5>
+<p>If you have used your Mac for C++ development before you likely have everything installed that you need. If not, some of these tools should already be present (for example rsync) but some may need to be installed, typically the compiler command line tools, <em>cmake</em>, <em>ninja-build</em>, and <em>lldb-mi</em>. The following step should be performed in a terminal window on the Mac to set up the development environment.</p>
+<ol>
+<li>Make sure you have enabled your Mac for development:</li>
+</ol>
+<pre style="padding-left: 40px;"><em>DevToolsSecurity --enable</em></pre>
+<ol start="2">
+<li>Use <em>xcode-select</em> to install the compiler tools:</li>
+</ol>
+<pre style="padding-left: 40px;"><em>xcode-select --install</em></pre>
+<ol start="3">
+<li>Install CMake from cmake.org. Follow the instructions here (<a href="https://cmake.org/install">Installing | CMake</a>) to copy and install the latest CMake. Make sure to update the PATH variable to include the CMake location. For example when using <em>zsh</em> add the line below to ~/.zshenv; when using <em>bash</em> add the line to ~/.bashrc.</li>
+</ol>
+<pre style="padding-left: 40px;">export PATH=/Applications/CMake.spp/Contents/bin:$PATH</pre>
+<ol start="4">
+<li>Install ninja-build from <em>github</em> or using a package manager such as <em>brew</em>. If installing directly from GitHub use the following commands:</li>
+</ol>
+<pre style="padding-left: 40px;"><em>git clone https://</em><em>github.com/ninja-build/ninja.git</em>
+
+<em>cd ninja</em>
+
+<em>./configure.py --bootstrap</em>
+
+<em>sudo cp ninja /usr/local/bin</em></pre>
+<ol start="5">
+<li>Install <em>lldb-mi</em>, a command line interface to the lldb debugger. Use a browser to download from <a href="https://go.microsoft.com/fwlink/?linkid=2154927">https://go.microsoft.com/fwlink/?linkid=2154927</a> . Then copy the binary to <em>/usr/local/bin</em> and set its execute permissions.</li>
+</ol>
+<pre style="padding-left: 40px;"><em>sudo cp ~/Downloads</em><em>/debugAdapters/lldb-mi/bin/lldb-mi /usr/local/bin</em> 
+<em>sudo chmod +x /usr/local/bin</em></pre>
+<h5 id="remote-connection-enablement">Remote connection enablement</h5>
+<p>Make sure you have enabled your Mac to allow remote connections. From System Preferences select Sharing, then ensure that Remote Login is selected, and your user has access. If you need to interact with an app that has UI remotely on the Mac you also need to enable Remote Management and under Computer Settings enable VNC viewers. You should then be able to access the Mac from Windows using a VNC client.</p>
+<h4 id="connect-from-visual-studio">Connect from Visual Studio</h4>
+<p>Once the necessary tools are installed on the Mac then Visual Studio can access the Mac using the Connection Manager.</p>
+<p style="padding-left: 40px;">On a Windows machine open Visual Studio (with C++ and Linux workloads installed) and open the Connection Manager from Tools&gt;Options&gt;Cross Platform&gt;Connection Manager. Add a new connection using the Mac machine name or IP address, username, and password.</p>
+<p style="padding-left: 40px;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3.png"><img class="alignnone size-full wp-image-30181" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3.png" alt="Image Picture3" width="623" height="364" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3.png 623w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3-300x175.png 300w" sizes="(max-width: 623px) 100vw, 623px" /></a></p>
+<p>Once a connection has been set up in Visual Studio it can be used as a CMake target in either a CMakeSettings.json or CMakePresets.json configuration. Below I’ll walk through setting up a new CMake project using CMakePresets.json.</p>
+<h4 id="a-sample-cmake-project">A Sample CMake Project</h4>
+<ol>
+<li>Since we will use CMake presets for this example, first ensure that CMakePresets is enabled in your Visual Studio installation. Go to Tools&gt;Options&gt;CMake&gt;General and check “Always use CMakePresets.json”.</li>
+<li>From File&gt;New&gt;Project select CMake Project to create a new project (in this example “CMakeProject90”). The project will open targeting the “Local Machine” by default. From the “Target System” dropdown select the connection to the Mac system that was made in the previous step.<a style="background-color: #f7f7f9; font-size: 1rem;" href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture4.png"><img class="alignnone size-full wp-image-30183" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture4.png" alt="In the top bar of a CMake project, &quot;Target Machine&quot; will be automatically selected as well as x64 Debug and Default. Select connection to MacOS machine from &quot;Target System&quot; dropdown" width="624" height="90" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture4.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture4-300x43.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></li>
+</ol>
+<p style="padding-left: 40px;">The target for the project will now reflect this choice and identify it as a Mac target.<a style="background-color: #f7f7f9; font-size: 1rem;" href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture6.png"><img class="alignnone size-full wp-image-30187" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture6.png" alt="The top bar for the CMake project will now show the Mac machine you connected to after selection" width="624" height="82" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture6.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture6-300x39.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
+<p style="padding-left: 40px;">The CMake pane of the Output Window will contain a log of the copy and CMake configure operations.<a style="background-color: #f7f7f9; font-size: 1rem;" href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture7.png"><img class="alignnone wp-image-30188" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture7.png" alt="Output window containing the log of the copy and Cmake configure operations" width="658" height="272" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture7.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture7-300x124.png 300w" sizes="(max-width: 658px) 100vw, 658px" /></a></p>
+<p style="padding-left: 40px;">At this point the project is ready to build and debug.</p>
+<ol start="3">
+<li>From the Solution Explorer open CMakeProject.cpp and place a breakpoint on the first line of <em>main</em>. From the “Select Startup Item” dropdown select “CMakeProject90”. Start debugging (F5). Visual Studio will build the project (see the Build pane of the Output Window) and start the debugger on the Mac. The debugger will halt the application pointing to the location of the breakpoint just set.<a style="background-color: #f7f7f9; font-size: 1rem;" href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture6.png"> </a><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture8.png"><img class="alignnone size-full wp-image-30190" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture8.png" alt="The application is being debugged with a breakpoint set. The debugger hit the breakpoint and now debugging capabilities, such as call stack pictured, are able to be viewed." width="780" height="347" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture8.png 780w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture8-300x133.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture8-768x342.png 768w" sizes="(max-width: 780px) 100vw, 780px" /></a></li>
+</ol>
+<p style="padding-left: 40px;">The debugging capabilities of Visual Studio (for example, the locals, watch, and call stack windows) may now be used to examine the application.</p>
+<h4 id="attach-debugging-on-the-mac">Attach Debugging on the Mac</h4>
+<p>The Visual Studio debugger’s attach-to-process function also works for Mac targets.</p>
+<ol>
+<li>Change the main function of the above C++ application as follows:</li>
+</ol>
+<pre style="padding-left: 40px;">#include "CMakeProject90.h"
+#include &lt;unistd.h&gt;
+using namespace std;
+int main()
+{
+       cout &lt;&lt; "Hello CMake." &lt;&lt; endl;
+       while (true)
+       {
+             sleep(1);
+       }
+       return 0;
+}</pre>
+<p style="padding-left: 40px;">Save the file and select Debug&gt;Start Without Debugging.</p>
+<ol start="2">
+<li>Select Debug&gt;Attach to Process… On the “Attach to Process” dialog select Connection type “SSH”. Then Select the Mac connection from the “Connection target” dropdown. The dialog will populate the “Available process” display with the processes running on the Mac.</li>
+</ol>
+<p style="padding-left: 40px;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture-1.png"><img class="alignnone size-full wp-image-30198" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture-1.png" alt="Attach to Process Window with the Mac machine connection selected under Connection target and the available processes populated underneath, including the sample CMakeProject" width="780" height="644" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture-1.png 780w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture-1-300x248.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture-1-768x634.png 768w" sizes="(max-width: 780px) 100vw, 780px" /></a></p>
+<p style="padding-left: 40px;">Select “Attach”. A “Select Code Type” dialog will pop-up. Select “Native (LLDB)” and click OK.</p>
+<p style="padding-left: 40px;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture2.png"><img class="alignnone size-full wp-image-30200" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture2.png" alt="In Attach to Process window, after selecting &quot;Attach&quot; on the target available process the &quot;Select Code Type&quot; window will pop up. Native LLDB is selected for this example." width="624" height="442" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture2.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture2-300x213.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
+<p style="padding-left: 40px;">The debugger is now attached to the remote process on the Mac. Select Debug&gt;Break All to begin debugging.</p>
+<p style="padding-left: 40px;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3-1.png"><img class="alignnone size-full wp-image-30201" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3-1.png" alt="Image Picture3" width="624" height="335" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3-1.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Picture3-1-300x161.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
+<h4 id="caveats">Caveats</h4>
+<p>Currently only x64 Macs are fully supported for debugging. This means that when attempting to debug on an ARM64 Mac, Rosetta must be installed and only applications that are cross compiled for x64 can be debugged.</p>
+<h4 id="send-us-your-feedback">Send us your feedback</h4>
+<p>We hope that these new capabilities will enable you to choose Visual Studio for your macOS C++ development needs. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>A special thanks to Paul Maybee for authoring this post.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/">Visual Studio for remote macOS C++ development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Embedded Software Development in Visual Studio Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/#comments</comments>
@@ -954,74 +1062,6 @@ Project c:\source\test activated
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/feed/</wfw:commentRss>
 			<slash:comments>14</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</title>
-		<link>https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/</link>
-		
-		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
-		<pubDate>Mon, 06 Dec 2021 15:20:01 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[C++ extension]]></category>
-		<category><![CDATA[compilation database]]></category>
-		<category><![CDATA[compile commands]]></category>
-		<category><![CDATA[compile_commands.json]]></category>
-		<category><![CDATA[CPP]]></category>
-		<category><![CDATA[make]]></category>
-		<category><![CDATA[makefile]]></category>
-		<category><![CDATA[makefile tools]]></category>
-		<category><![CDATA[problem matcher]]></category>
-		<category><![CDATA[vs code]]></category>
-		<category><![CDATA[VSCode]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29854</guid>
-
-					<description><![CDATA[<p>The December 2021 update of the Makefile Tools extension for Visual Studio Code is here, bringing you support for problem matchers (to easily view errors and warnings in the editor), the ability to generate a compile_commands.json file for your project, and a bunch of other enhancements and bug fixes!</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/">Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The December 2021 update of <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">the Makefile Tools extension for Visual Studio Code</a> is here, bringing you <a href="https://github.com/microsoft/vscode-makefile-tools/issues/7">support for problem matchers</a> (to easily view errors and warnings in the editor), the ability to <a href="https://github.com/microsoft/vscode-makefile-tools/issues/104">generate a compile_commands.json file</a> for your project, and a bunch of other enhancements and bug fixes! To find out more about all the enhancements, check out our <a href="https://github.com/microsoft/vscode-makefile-tools/releases/tag/v0.3.0">release notes on GitHub.</a></p>
-<h1 id="problem-matchers">Problem matchers</h1>
-<p>If you’ve used the C++ extension for VS Code, you’re probably familiar with the <strong>Problems</strong> panel, where you can navigate through a list of compiler errors and warnings found in your project. VS Code uses a <a href="https://code.visualstudio.com/Docs/editor/tasks#_processing-task-output-with-problem-matchers">problem matcher</a> to display the errors and warnings in the Problems panel.</p>
-<p>For example, if you’re missing a semi-colon in your source file, you’ll see the compiler error in the <strong>Problems</strong> panel. Selecting the problem brings you to the line of code generating the error or warning. To fix the problem, click on the lightbulb and choose from a list of Quick Actions.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png"><img class="alignnone size-full wp-image-29856" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png" alt="A screenshot of the Problems Pane in VS Code, showing errors and warnings found by GCC and make in the project" width="3036" height="2054" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2.png 3036w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-300x203.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-1024x693.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-768x520.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-1536x1039.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-problem-selected-2-2048x1386.png 2048w" sizes="(max-width: 3036px) 100vw, 3036px" /></a></p>
-<p>Now, let’s say you don’t have any compiler errors, but make displays a bunch of warnings when you build your project. Until now, there wasn’t a way to see those warnings in the Problems panel. With this latest release of the Makefile Tools extension, you’ll see all of make’s errors and warnings in the Problems panel after you build your program.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png"><img class="alignnone size-full wp-image-29857" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png" alt="A screenshot showing make's warnings in the Problems Pane in VS Code after building a project with Makefile Tools." width="3036" height="2062" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings.png 3036w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-300x204.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-1024x695.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-768x522.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-1536x1043.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-warnings-2048x1391.png 2048w" sizes="(max-width: 3036px) 100vw, 3036px" /></a></p>
-<p>To enable make errors and warnings in the Problems panel, add <strong>&#8220;problemMatchers&#8221;: [&#8220;$gcc&#8221;]</strong> to your makefile configuration in settings.json, like this:</p>
-<pre class="prettyprint">"makefile.configurations": [
-
-        {
-
-            "name": "MyConfiguration",
-
-            "problemMatchers": [
-
-                "$gcc"
-
-            ],
-
-            "makeArgs": ["any", "other", "args", "you", "want"]
-
-        },
-
-]</pre>
-<p>If you’re on Windows using MSVC, set the problemMatcher to <strong>&#8220;$msCompile&#8221;</strong> instead of <strong>&#8220;$gcc&#8221;</strong>. Contributions from the community to support additional problem matchers are welcome! Problem matchers are defined in the extension’s <a href="https://github.com/microsoft/vscode-makefile-tools/blob/main/package.json#L198">package.json</a> file.</p>
-<h1 id="generate-compile_commands-json">Generate compile_commands.json</h1>
-<p>As a C++ developer, you might find yourself wanting a compilation database, which is a file that stores compilation instructions for the source files in your project. Compilation databases are used by many <a href="https://clang.llvm.org/docs/ClangTools.html">Clang tools</a> and editors/IDEs. A common compilation database format is compile_commands.json, which contains command objects, one for each translation unit in the project. Each command object specifies the translation unit’s main file, the compile command, and the working directory where the compile command is run.</p>
-<p>With this latest release of the Makefile Tools extension, you can generate a compile_commands.json file for your project. All you have to do is specify the path to the target compile_commands.json file in settings.json, like this:</p>
-<pre class="prettyprint">"makefile.compileCommandsPath": ".vscode/compile_commands.json"</pre>
-<p>Then configure your project to generate compile_commands.json at the specified location.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png"><img class="alignnone size-full wp-image-29855" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png" alt="A screenshot of the contents of a compile_commands.json file generated by the Makefile Tools extension" width="3088" height="1888" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands.png 3088w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-300x183.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-1024x626.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-768x470.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-1536x939.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/makefile-tools-compile-commands-2048x1252.png 2048w" sizes="(max-width: 3088px) 100vw, 3088px" /></a></p>
-<p>Thank you <a href="https://github.com/rapgenic">rapgenic</a> for the request and for contributing to this feature!</p>
-<h1 id="give-it-a-try">Give it a try</h1>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools">Download the Makefile Tools extension for Visual Studio Code</a> today, give it a try, and let us know what you think. Check out <a href="https://devblogs.microsoft.com/cppblog/now-announcing-makefile-support-in-visual-studio-code/">this blog post</a> to learn how to get started with Makefile Tools.</p>
-<p>If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-makefile-tools/issues">Issues section of our GitHub repository</a>. Be sure to check out the <a href="https://github.com/microsoft/vscode-makefile-tools/tree/main/docs">Makefile Tools documentation</a> for troubleshooting tips and a list of tested repositories and their configuration instructions.</p>
-<p>We can be reached via the comments below or in email at <a href="mailto:makefiletools@microsoft.com">makefiletools@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/makefile-tools-december-2021-update-problem-matchers-and-compilation-database-generation/">Makefile Tools December 2021 Update: Problem Matchers and Compilation Database Generation</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
