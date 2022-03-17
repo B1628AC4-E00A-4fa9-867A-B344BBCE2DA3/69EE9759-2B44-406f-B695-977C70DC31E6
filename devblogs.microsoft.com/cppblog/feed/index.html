@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 16 Mar 2022 18:17:45 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 17 Mar 2022 22:31:30 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,145 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++ Modules in CMake with Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/cpp20-modules-in-cmake-with-vs/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/cpp20-modules-in-cmake-with-vs/#respond</comments>
+		
+		<dc:creator><![CDATA[Will Buik]]></dc:creator>
+		<pubDate>Thu, 17 Mar 2022 22:31:30 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30295</guid>
+
+					<description><![CDATA[<p>We’ve seen a lot of excitement around C++ modules since we announced support in the Microsoft C++ compiler and Visual Studio. Ever since, the community has been asking us when CMake support was coming. I am happy to announce that Visual Studio 2022 17.2 Preview 2 has experimental support for C++ modules in CMake projects.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp20-modules-in-cmake-with-vs/">C++ Modules in CMake with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We’ve seen a lot of excitement around C++ modules since we announced support in the Microsoft C++ compiler and Visual Studio. Ever since, the community has been asking us when CMake support was coming. I am happy to announce that Visual Studio 2022 17.2 Preview 2 has experimental support for C++ modules in CMake projects. One caveat for this early support, is that you must use the Visual Studio (MSBuild) generator. If you want to try it out, you can <a href="https://visualstudio.com/preview">download the latest preview of Visual Studio</a> today. We are looking forward to hearing your feedback about how modules work in your CMake projects.</p>
+<p><a href="https://docs.microsoft.com/en-us/cpp/cpp/modules-cpp">C++ modules</a> are a new feature in C++20. They can help you compartmentalize your code, speed up build times, and they work seamlessly, side-by-side with your existing code. To learn more, I would recommend checking <a href="https://devblogs.microsoft.com/cppblog/a-tour-of-cpp-modules-in-visual-studio/">A Tour of C++ Modules in Visual Studio</a>. That post explores the details of how and when to use modules and some of the ways Visual Studio can help you do it.</p>
+<p>For an even deeper dive into modules, you can also explore the following series:</p>
+<ul>
+<li><a href="https://devblogs.microsoft.com/cppblog/standard-c20-modules-support-with-msvc-in-visual-studio-2019-version-16-8/">Standard C++20 Modules support with MSVC</a></li>
+<li><a href="https://devblogs.microsoft.com/cppblog/moving-a-project-to-cpp-named-modules/">Moving a project to C++ named Modules</a></li>
+<li><a href="https://devblogs.microsoft.com/cppblog/using-cpp-modules-in-msvc-from-the-command-line-part-1/">Using C++ Modules in MSVC from the Command Line Part 1: Primary Module Interfaces</a></li>
+</ul>
+<h3 id="getting-started-with-modules-and-cmake">Getting Started with Modules and CMake</h3>
+<p>While CMake support for modules in Visual Studio is still experimental, it is straightforward to start using it. You don’t need to do anything special in your CMake project files. Just make sure you have enabled the C++20 language standard. Starting in this preview, our CMake project template will do that for you, but if you are working with an existing project you will need to add this to your CMakeLists.txt:</p>
+<p><code>set_property(TARGET $TargetName PROPERTY CXX_STANDARD 20)</code></p>
+<p><strong><em>Note:</em></strong><em> Enabling C++20 requires CMake 3.12 or higher. Visual Studio ships with the latest version of CMake, but this may be a consideration if you use this project across operating systems or need to use an older version of CMake.</em></p>
+<p>You will also need to make sure you are using the Visual Studio generator with CMake. Support for other generators, such as Ninja, is planned but it isn’t available yet. Ninja is the default generator when working with CMake projects in Visual Studio so you will need to modify your project’s <a href="https://docs.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-170">CMakePresets.json</a> or <a href="https://docs.microsoft.com/en-us/cpp/build/customize-cmake-settings?view=msvc-170">CMakeSettings.json</a> file to change this.</p>
+<p><strong><em>CMake Presets:</em></strong></p>
+<p>If your project is using CMake Presets, in CMakePresets.json, find the “windows-base” configure preset. It will have a “generator” property that is most likely set to “Ninja”. Update it to this:</p>
+<pre>{
+  "version": 3,
+  "configurePresets": [ {
+    "name": "windows-base",
+    "hidden": true,
+    "generator": "Visual Studio 17 2022",
+    //…
+  }]
+}</pre>
+<p><strong><em>CMake Settings:</em></strong></p>
+<p>If your project is using CMake Settings, you can open the CMakeSettings.json editor and change the Generator setting (under Advanced) to “Visual Studio 17 2022:”</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator.png"><img class="alignnone size-full wp-image-30300" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator.png" alt="CMake Settings &gt; Advanced &gt; CMake generator" width="1425" height="826" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator.png 1425w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator-300x174.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator-1024x594.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/CMake-Settings-Generator-768x445.png 768w" sizes="(max-width: 1425px) 100vw, 1425px" /></a></p>
+<p>You will need to do this for each of your project’s configurations.</p>
+<p>And that’s it, once the Visual Studio generator is selected and the C++20 language standard is enabled for your target you can use modules in your project.</p>
+<h3 id="creating-modules-in-a-cmake-project">Creating Modules in a CMake Project</h3>
+<p>To add a module to your project, just right click on any folder and select “Add New Item:”</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item.png"><img class="alignnone size-full wp-image-30301" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item.png" alt="CMake Context Menu &gt; Add &gt; Add New Item..." width="1972" height="665" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item.png 1972w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item-300x101.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item-1024x345.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item-768x259.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Item-1536x518.png 1536w" sizes="(max-width: 1972px) 100vw, 1972px" /></a></p>
+<p>And select the “C++ Module Interface Unit (.ixx)” template in in the “Visual C++” category:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item.png"><img class="alignnone size-full wp-image-30302" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item.png" alt="New File &gt; Visual C++ &gt; C++ Module Interface Unit (.ixx)" width="1253" height="490" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item.png 1253w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item-300x117.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item-1024x400.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/New-Module-Interface-Item-768x300.png 768w" sizes="(max-width: 1253px) 100vw, 1253px" /></a></p>
+<p>If you are using the <a href="https://devblogs.microsoft.com/cppblog/cmake-support-in-visual-studio-targets-view-single-file-compilation-and-cache-generation-settings/#cmake-targets-view">Targets View</a>, it is even easier. Just click “Add -&gt; New Module…” in the context menu on any target:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View.png"><img class="alignnone size-full wp-image-30303" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View.png" alt="CMake Targets View Context Menu &gt; Add &gt; New Module..." width="1232" height="667" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View.png 1232w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View-300x162.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View-1024x554.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/Add-New-Module-Targets-View-768x416.png 768w" sizes="(max-width: 1232px) 100vw, 1232px" /></a></p>
+<h3 id="exporting-and-using-modules">Exporting and Using Modules</h3>
+<p>Once you have created a Module interface (.ixx) file, you can export functions, classes, and structs. The example below defines a simple module called <code>Printers</code> and exports a single struct:</p>
+<pre>// Printers.ixx
+// 
+// The .ixx extension lets the build system know this file contains
+// a module interface.
+
+// Begin global module fragment.
+module;
+
+// Headers included in the global module fragment (between "module;" and
+// "export module Printers;") can be used by the module implementation but
+// are not exported. These included headers are invisible to translation
+// units that import the Printers module.
+#include &lt;iostream&gt;
+
+// Creates the Printers module. This can be imported into other translation
+// units with "import Printers;" Any items marked with the export keyword
+// will be available in translation units that import the Printers module.
+export module Printers;
+
+// This only applies to this module's translation unit. It does not leak
+// into translation units that import the Printers module.
+using namespace std;
+
+// These constants are not exported, they are invisible from translation
+// units that import the Printer module.
+const string default_spacer = " ";
+const string default_separator = ",\n";
+
+// SimplePrinter is exported and accessible to any code that imports the
+// Printers module.
+export struct SimplePrinter
+{
+    string element_spacer;
+    string separator;
+
+    void print_element(int e)
+    {
+        std::cout &lt;&lt; e &lt;&lt; element_spacer;
+    }
+
+    void print_separator()
+    {
+        std::cout &lt;&lt; separator;
+    }
+};
+
+// Exports the function get_default_printer.
+// This is accessible from translation units that import the Printers module.
+export SimplePrinter get_default_printer()
+{
+    return SimplePrinter {
+        .element_spacer = default_spacer,
+        .seperator = default_seperator
+    };
+}</pre>
+<p>Once you define the module, other source files and module interfaces can consume it with the <code>import</code> keyword. It is possible to import any modules declared in the current target or any of its imports. For example, “PrintVector.cpp” below uses the <code>Printers</code> module we defined above:</p>
+<pre>// PrintVector.cpp
+
+// Conventional #includes and module imports can be freely mixed.
+#include &lt;vector&gt;
+
+// Import the Printers module defined in Printers.ixx.
+import Printers;
+
+using namespace std;
+
+void print_vector(const vector &amp;list)
+{
+    // SimplePrinter and get_default_printer are imported from the
+    // Printers module.
+    SimplePrinter printer = get_default_printer();
+
+    for (auto i : list) {
+        printer.print_element(i);
+    }
+    printer.print_separator();
+}</pre>
+<p>You can do a lot with C++ modules. To learn more, I would recommend reading <a href="https://devblogs.microsoft.com/cppblog/a-tour-of-cpp-modules-in-visual-studio/">A Tour of C++ Modules in Visual Studio</a> which goes into much more detail about how to use modules. For instance, it is possible to split module interfaces from their implementations. That post has been updated with some of the latest details about using modules with CMake.</p>
+<h3 id="feedback">Feedback</h3>
+<p>If you are interested in trying out C++ modules in your own CMake projects, please <a href="https://visualstudio.com/preview">download the latest Visual Studio Preview</a>. Try it out and let us know if you have any questions or feedback. If you find any issues or have a suggestion, the best way to reach out to us is to <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio">Report a Problem</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp20-modules-in-cmake-with-vs/">C++ Modules in CMake with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp20-modules-in-cmake-with-vs/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Visual Studio for remote macOS C++ development</title>
 		<link>https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-for-remote-macos-c-development/#respond</comments>
@@ -211,7 +350,7 @@ int main()
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
+			<slash:comments>3</slash:comments>
 		
 		
 			</item>
@@ -914,154 +1053,6 @@ In this post we will walk you through Visual Studio installation of the embedded
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/feed/</wfw:commentRss>
 			<slash:comments>15</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Bootstrap your dev environment with vcpkg artifacts</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/#comments</comments>
-		
-		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
-		<pubDate>Mon, 06 Dec 2021 16:27:55 +0000</pubDate>
-				<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29826</guid>
-
-					<description><![CDATA[<p>We are happy to announce a new experience for acquiring artifacts using vcpkg. We define an artifact as a set of packages required for a working development environment. Examples of relevant packages include compilers, linkers, debuggers, build systems, and platform SDKs.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">Bootstrap your dev environment with vcpkg artifacts</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce a new experience for acquiring artifacts using vcpkg. We define an artifact as a set of packages required for a working development environment. Examples of relevant packages include compilers, linkers, debuggers, build systems, and platform SDKs. With this important change, vcpkg can not only download and build your libraries from source, it can also bootstrap the rest of your environment, acquiring pre-built binary dependencies for your projects.</p>
-<p>The experience is in preview and currently focused on embedded developers. We will expand the scope in the future to include any developers targeting Linux, macOS, or Windows.</p>
-<p>This post focuses on using vcpkg artifacts at the command line. Check out the <a href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Embedded Development in Visual Studio blogpost</a> for how the capabilities are used there.</p>
-<p>Here we are going to show how to acquire vcpkg, then activate artifacts for building an embedded project. Following that we’ll cover specific vcpkg capabilities for finding and using artifacts, then how to create a manifest and add artifacts to it. We will also cover how you can use artifacts of your own that are not part of the default artifact registry.</p>
-<h4 id="using-vcpkg-artifacts">Using vcpkg artifacts</h4>
-<p>We’ll look at some embedded development scenarios to understand the new artifact capabilities in vcpkg. Embedded development is particularly known for being difficult to get a new developer machine started. Projects often have specific compiler requirements, special debug tools needed, etc. What we will show here is how through using vcpkg with a manifest you can capture these requirements and easily restore an environment for an embedded project. You do not need a device to follow along as we will not show any device interactivity. These steps except where noted are consistent cross platform.</p>
-<h5 id="acquire-vcpkg">Acquire vcpkg</h5>
-<p>We have also added a new way to acquire vcpkg in a single step without a git clone of the repo. Depending on your platform use one of the following commands to get vcpkg.</p>
-<p>Linux/macOS</p>
-<pre>. &lt;(curl https://aka.ms/vcpkg-init.sh -L)</pre>
-<p>PowerShell</p>
-<pre class="prettyprint">iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
-<p>CMD Shell</p>
-<pre class="prettyprint">curl -LO https://aka.ms/vcpkg-init.cmd &amp;&amp; .\vcpkg-init.cmd</pre>
-<h5 id="clone-the-example-project">Clone the example project</h5>
-<p>The example project is the Azure RTOS getting started repo, so start by cloning that with this command.</p>
-<pre class="prettyprint">git clone --recursive https://github.com/azure-rtos/getting-started.git</pre>
-<p>This repo has many projects within is, each for a specific board. Use the Azure IoT DevKit by switching to that directory.</p>
-<pre class="prettyprint">cd .\getting-started\MXChip\AZ3166\</pre>
-<h5 id="vcpkg-activate">vcpkg activate</h5>
-<p>In the project folder, there is a file vcpkg-configuration.json. This manifest file has recorded the tools you need to build and debug this project. Running the vcpkg activate command will use this file to determine if those tools have been acquired before, acquire them not, then activate them in your environment for use.</p>
-<pre class="prettyprint">vcpkg activate</pre>
-<p>This is a new vcpkg command that works with artifacts. As this is the first time you are using vcpkg for artifacts it acquires the new vcpkg-ce component on demand. The ce in this component name stands for configure environment. This name was chosen as vcpkg will modify your current environment to use the artifacts in the manifest with your C++ projects.</p>
-<p>To demonstrate that build the project. To do so generate the CMake configuration, then build the project using the preset provided by CMakePresets.json in the project with the following two commands.</p>
-<pre class="prettyprint">cmake --preset arm-gcc-cortex-m4
-cmake --build --preset arm-gcc-cortex-m4</pre>
-<p>So, in just a few commands you have installed vcpkg, cloned an embedded project, acquired and activated the necessary tools for building the project, and successfully compiled it.</p>
-<h5 id="finding-artifacts">Finding artifacts</h5>
-<p>There is a vcpkg search command already that finds ports of libraries in the vcpkg registry. We needed a way to distinguish between the existing vcpkg port concept and the new artifacts concept in areas where the commands could mean either. As such we have introduced a new find command that can be used as find port name, or find artifact name. The existing search command is still present with its existing behavior that only returns ports.</p>
-<p>Try finding an artifact, like CMake, with the following command.</p>
-<pre class="prettyprint">vcpkg find artifact cmake</pre>
-<p>This will output anything that matches the short name used, currently the below.</p>
-<pre class="prettyprint">vcpkg-ce ('configure environment') is experimental and may change at any time.
- Artifact                       Version  Summary
- microsoft:tools/kitware/cmake  3.20.1   Kitware's cmake tool
-</pre>
-<h5 id="using-artifacts">Using artifacts</h5>
-<p>Now that you have found an artifact you want to use, you can with the vcpkg use command. Try this command to use CMake.</p>
-<pre class="prettyprint">vcpkg use cmake 
-vcpkg-ce ('configure environment') is experimental and may change at any time.
- Artifact                           Version    Status     Dependency  Summary
-
- microsoft:tools/kitware/cmake      3.20.1     installed              Kitware's cmake tool
-
-Activating individual artifacts
-</pre>
-<p>Yes, you can activate more than one artifact at a time. The following command activates gcc, cmake, and ninja, a complete C++ build system in one command. Note this is the Arm GCC compiler as that is the only one presently in the registry.</p>
-<pre class="prettyprint">vcpkg use gcc cmake ninja</pre>
-<h5 id="creating-your-own-manifest">Creating your own manifest</h5>
-<p>The manifest, vcpkg-configuration.json, in the example above was also created with vcpkg. To create a manifest with tools needed for your own use vcpkg new. Make sure to run the subsequent commands in a new directory that is not a subfolder of an existing project.</p>
-<pre class="prettyprint">vcpkg new</pre>
-<h5 id="adding-artifacts-to-your-manifest">Adding artifacts to your manifest</h5>
-<p>Now that we have a manifest and found artifacts we want to use with our project it is simple to add them. Note that the add command requires us to specify an artifact as it can also be used to add ports to a manifest.</p>
-<pre class="prettyprint">vcpkg add artifact cmake
-
-vcpkg-ce ('configure environment') is experimental and may change at any time.
-
- Artifact                       Version  Status     Dependency  Summary
-
- microsoft:tools/kitware/cmake  3.20.1   installed  *           Kitware's cmake tool
-
-Project c:\source\newprj activated</pre>
-<p>Now you can check in vcpkg-configuration.json with your source. Anyone else who uses your project can install vcpkg with a single command, then activate the artifacts in your manifest and reproduce the same results locally.</p>
-<h4 id="subsequent-use-of-vcpkg">Subsequent use of vcpkg</h4>
-<p>In the above examples vcpkg was available on the command line after installation. There is a quick way to get it back in new instances of your favorite terminal.</p>
-<p>Linux/macOS</p>
-<pre class="prettyprint">. ~/.vcpkg/vcpkg-init.sh</pre>
-<p>PowerShell</p>
-<pre class="prettyprint">. ~/.vcpkg/vcpkg-init.ps1</pre>
-<p>CMD Shell</p>
-<pre class="prettyprint">%USERPROFILE%\.vcpkg\vcpkg-init.cmd</pre>
-<h4 id="removing-vcpkg">Removing vcpkg</h4>
-<p>That was fun, how do you remove vcpkg installed from your system using the instructions above? Simply delete the .vcpkg folder in your home directory. No other changes have been made to your system through installing or using it.</p>
-<h4 id="using-your-own-registry">Using your own registry</h4>
-<p>The current artifacts in the default registry are limited to the embedded scenarios we have been developing the tool around which focus on Azure RTOS. In the future this set will expand to desktop development scenarios. The default registry can be found here: <a href="https://github.com/microsoft/vcpkg-ce-catalog">https://github.com/microsoft/vcpkg-ce-catalog</a>. Note that we are not taking pull requests of artifact additions to the default registries at this time.</p>
-<p>We fully expect people to have their own artifacts they would like to use, or to provide for others to use.</p>
-<p>As an example, what if you want to use a newer Arm compiler? Our example uses the one set by the example Azure RTOS project so that is the only one we put into the registry. In the steps below I will show how I added a new Arm compiler to my own registry. You can follow the same steps, modified for the artifact you need, to create your own registry of artifacts for use with vcpkg.</p>
-<p>To create a new Arm gcc artifact metadata file I looked at the existing artifact metadata for the gcc compiler in the vcpkg-ce-catalog repo, <a href="https://github.com/microsoft/vcpkg-ce-catalog/blob/main/compilers/arm/gcc/gcc-2020.10.0.yaml">compilers/arm/gcc/ gcc-2020.10.0.yaml</a>.</p>
-<p>On my local machine I copied that file into a folder, myregistry, under the same path for consistency. I then went to Arm’s website to find the latest compilers they provide. I then renamed the metadata file to match, gcc-2021.10.0.yaml. I updated the fields in the file for the version, the artifact urls under install &gt; unzip, and added the sha256 information. Note that Arm only provides md5 sums for their artifacts, this meant I had to download the artifacts manually first to generate my own sha256 sums to use. You can find this file in my personal GitHub repository here, <a href="https://github.com/robotdad/myregistry/blob/main/compilers/arm/gcc/gcc-2021.10.0.yaml">gcc-2021.10.0.yaml</a>.</p>
-<p>Now, to test this I created a test folder and created a manifest with vcpkg new. I then opened this manifest and added a registry section pointing to my local folder with the artifact metadata.</p>
-<pre class="prettyprint">{
-    "registries": [
-      {
-        "name": "myregistry",
-        "location": "c:/source/myregistry",
-        "kind": "artifact"
-      }
-    ]
-}</pre>
-<p>Note that I specified the full path, alias like ~ are not supported.  Now, to find this entry I specified the name as part of the search query.</p>
-<pre class="prettyprint">vcpkg find artifact myregistry:gcc
-
-vcpkg-ce ('configure environment') is experimental and may change at any time.
-Artifact                 Version    Summary
-myregistry:compilers/arm/gcc  2021.10.0  GCC compiler for ARM CPUs.</pre>
-<p>Once verified I added it to the manifest in the same way.</p>
-<pre class="prettyprint">vcpkg add artifact local:gcc
-
-vcpkg-ce ('configure environment') is experimental and may change at any time.
-Artifact                      Version    Status     Dependency Summary
-myregistry:compilers/arm/gcc  2021.10.0  installed  *          GCC compiler for ARM CPUs.
-
-Project c:\source\test activated
-</pre>
-<p>Now my manifest looks like this:</p>
-<pre class="prettyprint">{
-  "registries": [
-    {
-      "name": "myregistry",
-      "location": "c:/source/myregistry",
-      "kind": "artifact"
-    }
-  ],
-  "requires": {
-    "myregistry:compilers/arm/gcc": "* 2021.10.0"
-  }
-}</pre>
-<p>I wouldn’t want to share a manifest with others where a local path was used for a registry. Network paths are supported which works if I am only sharing internally. Note I had to escape the path in the location field.</p>
-<pre class="prettyprint">"location": "\\\\myshare\\folder\\myregistry",</pre>
-<p>I wanted to share my registry on GitHub to support this post which requires a couple of extra steps. The first extra step is to generate an index file. To do so I ran the following experimental command (this is likely to change in the future).</p>
-<pre class="prettyprint">vcpkg z-ce regenerate c:/source/myregistry</pre>
-<p>This generated an index.yaml for all of the artifact metadata files in the specified location.</p>
-<p>To use a registry published in a GitHub repo I needed to specify the endpoint that provides an archive of the repository. This allows vcpkg to acquire all the artifact metadata in a single request. For a GitHub repo this is available at the path /archive/refs/heads/main.zip under the repository. For this example, I published my registry in my personal GitHub account here, <a href="https://github.com/robotdad/myregistry">https://github.com/robotdad/myregistry</a>, the location for that is specified as below in the manifest.</p>
-<pre class="prettyprint">"location": "https://github.com/robotdad/myregistry/archive/refs/heads/main.zip",</pre>
-<h4 id="give-us-your-feedback">Give us your feedback!</h4>
-<p>We are very interested in hearing your thoughts on the new artifact capabilities in vcpkg. We have a separate repo for the component that provides those, <a href="https://github.com/microsoft/vcpkg-ce">vcpkg-ce</a>, where you can file any issues you encounter. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. As capabilities around artifacts in vcpkg evolve, your thoughts are critical to us for creating an excellent developer experience.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">Bootstrap your dev environment with vcpkg artifacts</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/feed/</wfw:commentRss>
-			<slash:comments>14</slash:comments>
 		
 		
 			</item>
