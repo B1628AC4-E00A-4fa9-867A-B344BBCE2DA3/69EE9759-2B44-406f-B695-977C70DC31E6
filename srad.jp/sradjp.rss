@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2022-04-06T06:16:24+00:00</dc:date>
+<dc:date>2022-04-06T08:14:25+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,8 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://opensource.srad.jp/story/22/04/05/1613218/" />
+  <rdf:li rdf:resource="https://srad.jp/story/22/04/05/1745229/" />
   <rdf:li rdf:resource="https://security.srad.jp/story/22/04/05/1621241/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/04/05/1640200/" />
   <rdf:li rdf:resource="https://yro.srad.jp/story/22/04/05/161214/" />
@@ -36,8 +38,6 @@
   <rdf:li rdf:resource="https://srad.jp/story/22/04/05/1636205/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/04/04/2127231/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/04/04/2058246/" />
-  <rdf:li rdf:resource="https://srad.jp/story/22/04/04/212239/" />
-  <rdf:li rdf:resource="https://hardware.srad.jp/story/22/04/04/165209/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,133 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://opensource.srad.jp/story/22/04/05/1613218/">
+<title>AGPLv3 に Commons Clause を追加するとオープンソースライセンスでなくなるか</title>
+<link>https://opensource.srad.jp/story/22/04/05/1613218/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/gnu_64.png"&gt;headless 曰く、ライセンスに AGPLv3 と Commons Clause を組み合わせたソフトウェアをオープンソースと呼べるかどうかについて、米連邦地裁と控訴裁判所が判断を誤ったと Software Freedom Conservancy (SFC) がブログ記事で指摘している
+(SFC のブログ記事、
+The Register の記事)。
+
+この裁判はグラフデータベースソフトウェア Neo4j を開発する米 Neo4j Inc., とスウェーデン子会社が元パートナー企業を訴えているものだ。Neo4j は GPLv3 ライセンスで機能制限あり・サポートなしの Community Edition と、商用向けの機能を多数追加した Enterprise Edition (EE) が提供されている。被告の PureThink は Neo4j と EE の販売・サポートを行うパートナー契約を結んでいたが、顧客へのライセンス供与に関する契約違反によりパートナー契約を打ち切られたという。
+
+元々 Neo4j EE は有償の商用ライセンスと、非商用向けに無償の AGPLv3 ライセンスで提供されていたが、バージョン 3.4 では無断の販売やサービス提供を防ぐため、オープンソースライセンスとみなされなくすることを意図して無償ライセンスを AGPLv3 + Common Clause に変更した。しかし、それでも被告の PureThink などは EE をフォークした Open Native Graph DB (ONgDB) を EE 代替のフリーでオープンソースなソフトウェアなどと主張して販売を続けたという。そのため、Neo4j は商標権侵害や虚偽の広告、不正競争防止法違反などを理由に PureThink などを提訴し、バージョン 3.5 では商用ライセンスのみに変更した。
+
+Commons Clause はライセンシーにソフトウェアの販売を禁ずる条項で、オープンソースライセンスに追加することを意図して作られているが、追加するといわゆるオープンソースライセンスとはみなされなくなる。一方、AGPLv3 ではより厳しい制限を課す条項の追加を禁じており、追加されている場合は削除できると定めている。被告側はこの点で Commons Clause を削除できると主張したが、1 審のカリフォルニア北部地区連邦地裁では AGPLv3 がより厳しい制限の追加を禁じているのはライセンシーに対してであり、ライセンサーに対する制限ではないと判断。ONgDB をフリーでオープンソースな EE の代替だと主張することなどを禁ずる事前差止命令を含む部分的な略式判決(PDF)を出した。
+
+今年 2 月には連邦巡回区第 9 控訴裁判所が 1 審判決を支持する判決(PDF)を出しており、Open Source Initiative (OSI) はオープンソースライセンスでないものをオープンソースと呼ぶことを禁じる画期的な判決とする一方で、AGPLv3 ではより厳しい制限をライセンシーが削除できる点が無視されていることを示唆していた。
+
+今回、SFC のブログ記事は AGPLv3 の共同起草者である Bradley M. Kuhn 氏が執筆している。AGPLv3 第 7 条第 4 段落 (※) ではライセンシーが受け取ったソフトウェアのライセンス条項から AGPLv3 で定めるものよりも厳しい制限を課す条項を削除できること、この条項は今回 Neo4j が試みたようなことを防ぐために存在すること、元のライセンサーが対象外なら条項の存在意義が薄れることなどを指摘。AGPLv3 では一部の条項だけを抜き出して新たなライセンスを作ることを認めているにもかかわらず Neo4j は全文の使用を選択したのであり、Commons Clause の削除を止めることはできない。そのため SFC は市民の義務として、裁判所の結論が間違っていることを世間に知らせる必要があるとのことだ。
+
+※注: 第 3 条第 4 段落と表記されている部分もあるが第 3 条は 2 段落しかなく、内容から見て第 7 条第 4 段落の誤記とみられる&lt;p&gt; &lt;a href="https://opensource.srad.jp/story/22/04/05/1613218/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://opensource.srad.jp/"&gt;オープンソースセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/gnu"&gt;GNU is Not Unix&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://opensource.srad.jp/story/22/04/05/1613218/&amp;amp;text=AGPLv3%20%E3%81%AB%20Commons%20Clause%20%E3%82%92%E8%BF%BD%E5%8A%A0%E3%81%99%E3%82%8B%E3%81%A8%E3%82%AA%E3%83%BC%E3%83%97%E3%83%B3%E3%82%BD%E3%83%BC%E3%82%B9%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9%E3%81%A7%E3%81%AA%E3%81%8F%E3%81%AA%E3%82%8B%E3%81%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://opensource.srad.jp/story/22/04/05/1613218/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://opensource.srad.jp/story/22/04/05/1613218/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://opensource.srad.jp/story/22/04/05/1613218/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/21/10/24/1818242"&gt;トランプ前大統領による新SNS、発表翌日にAGPLv3違反が指摘される&lt;/a&gt; &lt;small&gt;2021年10月25日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/17/04/12/1347222"&gt;Twitterのライバルと目される「Mastodon」&lt;/a&gt; &lt;small&gt;2017年04月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://linux.srad.jp/story/15/08/15/2110204"&gt;Canonical、Ubuntu Oneの主要部分のソースコードを公開&lt;/a&gt; &lt;small&gt;2015年08月16日&lt;/small&gt; &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/13/08/06/0413252"&gt;プライバシに配慮したオープンソースの新しいWebメールソフトウェア「Mailpile」&lt;/a&gt; &lt;small&gt;2013年08月07日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/11/02/19/002249"&gt;マイクロソフト、Windows Phone Marketplaceにてオープンソースは認めず&lt;/a&gt; &lt;small&gt;2011年02月19日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-04-06T08:01:00+00:00</dc:date>
+<dc:subject>gnu</dc:subject>
+<slash:department>シン・オープンソース</slash:department>
+<slash:section>opensource</slash:section>
+<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/gnu_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;ライセンスに AGPLv3 と Commons Clause を組み合わせたソフトウェアをオープンソースと呼べるかどうかについて、米連邦地裁と控訴裁判所が判断を誤ったと Software Freedom Conservancy (SFC) がブログ記事で指摘している
+(&lt;a href="https://sfconservancy.org/blog/2022/mar/30/neo4j-v-purethink-open-source-affero-gpl/"&gt;SFC のブログ記事&lt;/a&gt;、
+&lt;a href="https://www.theregister.com/2022/04/02/court_neo4j_ruling/"&gt;The Register の記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+この裁判はグラフデータベースソフトウェア Neo4j を開発する米 Neo4j Inc., とスウェーデン子会社が元パートナー企業を訴えているものだ。Neo4j は GPLv3 ライセンスで機能制限あり・サポートなしの Community Edition と、商用向けの機能を多数追加した Enterprise Edition (EE) が提供されている。被告の PureThink は Neo4j と EE の販売・サポートを行うパートナー契約を結んでいたが、顧客へのライセンス供与に関する契約違反によりパートナー契約を打ち切られたという。&lt;br&gt;
+&lt;br&gt;
+元々 Neo4j EE は有償の商用ライセンスと、非商用向けに無償の AGPLv3 ライセンスで提供されていたが、バージョン 3.4 では無断の販売やサービス提供を防ぐため、オープンソースライセンスとみなされなくすることを意図して無償ライセンスを &lt;a href="https://github.com/neo4j/neo4j/blob/3.4/enterprise/neo4j-enterprise/LICENSE.txt"&gt;AGPLv3 + Common Clause&lt;/a&gt; に変更した。しかし、それでも被告の PureThink などは EE をフォークした Open Native Graph DB (ONgDB) を EE 代替のフリーでオープンソースなソフトウェアなどと主張して販売を続けたという。そのため、Neo4j は商標権侵害や虚偽の広告、不正競争防止法違反などを理由に &lt;a href="https://www.courtlistener.com/docket/16272543/neo4j-inc-v-purethink-llc/"&gt;PureThink などを提訴&lt;/a&gt;し、バージョン 3.5 では商用ライセンスのみに変更した。&lt;br&gt;
+&lt;br&gt;
+&lt;a href="https://commonsclause.com/"&gt;Commons Clause&lt;/a&gt; はライセンシーにソフトウェアの販売を禁ずる条項で、オープンソースライセンスに追加することを意図して作られているが、追加するといわゆるオープンソースライセンスとはみなされなくなる。一方、&lt;a href="https://www.gnu.org/licenses/agpl-3.0.ja.html"&gt;AGPLv3&lt;/a&gt; ではより厳しい制限を課す条項の追加を禁じており、追加されている場合は削除できると定めている。被告側はこの点で Commons Clause を削除できると主張したが、1 審のカリフォルニア北部地区連邦地裁では AGPLv3 がより厳しい制限の追加を禁じているのはライセンシーに対してであり、ライセンサーに対する制限ではないと判断。ONgDB をフリーでオープンソースな EE の代替だと主張することなどを禁ずる事前差止命令を含む部分的な略式判決(&lt;a href="https://storage.courtlistener.com/recap/gov.uscourts.cand.335295/gov.uscourts.cand.335295.118.0.pdf"&gt;PDF&lt;/a&gt;)を出した。&lt;br&gt;
+&lt;br&gt;
+今年 2 月には連邦巡回区第 9 控訴裁判所が 1 審判決を支持する判決(&lt;a href="https://storage.courtlistener.com/recap/gov.uscourts.cand.335295/gov.uscourts.cand.335295.140.0.pdf"&gt;PDF&lt;/a&gt;)を出しており、Open Source Initiative (OSI) は&lt;a href="https://opensource.org/blog/court-affirms-its-false-advertising-to-claim-software-is-open-source-when-its-not"&gt;オープンソースライセンスでないものをオープンソースと呼ぶことを禁じる画期的な判決&lt;/a&gt;とする一方で、AGPLv3 ではより厳しい制限をライセンシーが削除できる点が無視されていることを示唆していた。&lt;br&gt;
+&lt;br&gt;
+今回、SFC のブログ記事は AGPLv3 の共同起草者である Bradley M. Kuhn 氏が執筆している。AGPLv3 第 7 条第 4 段落 (※) ではライセンシーが受け取ったソフトウェアのライセンス条項から AGPLv3 で定めるものよりも厳しい制限を課す条項を削除できること、この条項は今回 Neo4j が試みたようなことを防ぐために存在すること、元のライセンサーが対象外なら条項の存在意義が薄れることなどを指摘。AGPLv3 では一部の条項だけを抜き出して新たなライセンスを作ることを認めているにもかかわらず Neo4j は全文の使用を選択したのであり、Commons Clause の削除を止めることはできない。そのため SFC は市民の義務として、裁判所の結論が間違っていることを世間に知らせる必要があるとのことだ。&lt;br&gt;
+&lt;br&gt;
+※注:  第 3 条第 4 段落と表記されている部分もあるが第 3 条は 2 段落しかなく、内容から見て第 7 条第 4 段落の誤記とみられる&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+	&lt;a href="https://opensource.srad.jp/story/22/04/05/1613218/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://opensource.srad.jp/"&gt;オープンソースセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/gnu"&gt;GNU is Not Unix&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://opensource.srad.jp/story/22/04/05/1613218/&amp;amp;text=AGPLv3%20%E3%81%AB%20Commons%20Clause%20%E3%82%92%E8%BF%BD%E5%8A%A0%E3%81%99%E3%82%8B%E3%81%A8%E3%82%AA%E3%83%BC%E3%83%97%E3%83%B3%E3%82%BD%E3%83%BC%E3%82%B9%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9%E3%81%A7%E3%81%AA%E3%81%8F%E3%81%AA%E3%82%8B%E3%81%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://opensource.srad.jp/story/22/04/05/1613218/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://opensource.srad.jp/story/22/04/05/1613218/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://opensource.srad.jp/story/22/04/05/1613218/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/21/10/24/1818242"&gt;トランプ前大統領による新SNS、発表翌日にAGPLv3違反が指摘される&lt;/a&gt;
+			&lt;small&gt;2021年10月25日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/17/04/12/1347222"&gt;Twitterのライバルと目される「Mastodon」&lt;/a&gt;
+			&lt;small&gt;2017年04月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/15/08/15/2110204"&gt;Canonical、Ubuntu Oneの主要部分のソースコードを公開&lt;/a&gt;
+			&lt;small&gt;2015年08月16日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/13/08/06/0413252"&gt;プライバシに配慮したオープンソースの新しいWebメールソフトウェア「Mailpile」&lt;/a&gt;
+			&lt;small&gt;2013年08月07日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/11/02/19/002249"&gt;マイクロソフト、Windows Phone Marketplaceにてオープンソースは認めず&lt;/a&gt;
+			&lt;small&gt;2011年02月19日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
+<item rdf:about="https://srad.jp/story/22/04/05/1745229/">
+<title>ベラルーシ創業のゲーム会社 Wargaming がロシアおよびベラルーシからの事業撤退を発表</title>
+<link>https://srad.jp/story/22/04/05/1745229/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;caret 曰く、 World of Tanks" や "World of Warplanes"，"World of Warships" などのオンラインゲームを開発・提供する Wargaming は、今後ロシアおよびベラルーシでいかなる事業も所有・運営せず、両国から事業撤退すると発表した（Wargaming のプレスリリース、4Gamer.net, GAME Watch, AUTOMATON）。 Wargaming は 1998 年 8 月にベラルーシの首都ミンスクで創業した。2011 年に本社をキプロスに移転している。これまで同社は今回のロシアによるウクライナ侵攻を受けて、同社のウクライナ拠点である Wargaming Kiyv を通じてウクライナ赤十字社に 100 万ドル（約 1 億 2,200 万円）を寄付し、550 人ほどのキーウ拠点の従業員や家族らに対する転居の支援や給与の早期支払いのサポートを表明しており、ロシアを支持する声明を SNS 上に投稿した同社のクリエイティブ ディレクターを務めていた Sergey Burkatovskiy 氏を解雇している。 同社は 3 月 31 日 付けでロシアおよびベラルーシでの事業を Lesta Studio (旧 Wargaming Saint Petersburg) に移管したと発表。Lesta Studio は 1991 年創業で、 2011 年には Wargaming 傘下になっているものの、現在は提携関係は存在していないとしており、今後同社は両国事業の移管プロセスにて収益を得ることはなく、むしろ深刻な損失を受けることを予想しているとしている。移管プロセスの期間中において、両国での製品の利用は引き続き可能で、その後新しい事業主によって運営が継続される予定だとしている。 また、旧本社となるベラルーシのミンスクに位置する開発スタジオも閉鎖することを決定し、閉鎖を開始していると発表している。&lt;p&gt; &lt;a href="https://srad.jp/story/22/04/05/1745229/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/announce"&gt;アナウンス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/04/05/1745229/&amp;amp;text=%E3%83%99%E3%83%A9%E3%83%AB%E3%83%BC%E3%82%B7%E5%89%B5%E6%A5%AD%E3%81%AE%E3%82%B2%E3%83%BC%E3%83%A0%E4%BC%9A%E7%A4%BE%20Wargaming%20%E3%81%8C%E3%83%AD%E3%82%B7%E3%82%A2%E3%81%8A%E3%82%88%E3%81%B3%E3%83%99%E3%83%A9%E3%83%AB%E3%83%BC%E3%82%B7%E3%81%8B%E3%82%89%E3%81%AE%E4%BA%8B%E6%A5%AD%E6%92%A4%E9%80%80%E3%82%92%E7%99%BA%E8%A1%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/04/05/1745229/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/04/05/1745229/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/04/05/1745229/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/04/04/165209"&gt;ロシア民間航空局がハッキング。アノニマスを悪用するネット版偽旗作戦のリスクも&lt;/a&gt; &lt;small&gt;2022年04月05日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/04/03/174217"&gt;フランス軍情報当局トップがロシアのウクライナ侵攻を予測できなかったとして解任される&lt;/a&gt; &lt;small&gt;2022年04月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/22/04/02/0624254"&gt;NASA の宇宙飛行士、ソユーズで国際宇宙ステーションから地球に無事帰還&lt;/a&gt; &lt;small&gt;2022年04月02日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/22/03/31/1545243"&gt;ロシア、IT技術者の兵役を「延期」可能に&lt;/a&gt; &lt;small&gt;2022年04月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/03/31/1520228"&gt;チェルノブイリで塹壕を掘っていたロシア兵、急性放射線症候群で搬送か&lt;/a&gt; &lt;small&gt;2022年04月01日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/15/07/14/0521236"&gt;海戦をテーマにしたオンラインゲーム「World of Warships」、旭日旗をゲーム内から排除へ&lt;/a&gt; &lt;small&gt;2015年07月14日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/14/04/15/0856234"&gt;第二次大戦中に実在した巨大戦車「超重戦車マウス」、動態復元へ&lt;/a&gt; &lt;small&gt;2014年04月15日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-04-06T07:02:00+00:00</dc:date>
+<dc:subject>games</dc:subject>
+<slash:department>撤退</slash:department>
+<slash:section>mainpage</slash:section>
+<slash:comments>4</slash:comments>
+<slash:hit_parade>4,4,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;caret 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt; World of Tanks" や "World of Warplanes"，"World of Warships" などのオンラインゲームを開発・提供する Wargaming は、今後ロシアおよびベラルーシでいかなる事業も所有・運営せず、両国から事業撤退すると発表した（&lt;a href="https://wargaming.com/en/news/business-operations-worldwide/"&gt;Wargaming のプレスリリース&lt;/a&gt;、&lt;a href="https://www.4gamer.net/games/999/G999905/20220405037/"&gt;4Gamer.net&lt;/a&gt;, &lt;a href="https://game.watch.impress.co.jp/docs/news/1400423.html"&gt;GAME Watch&lt;/a&gt;, &lt;a href="https://automaton-media.com/articles/newsjp/20220405-197912/"&gt;AUTOMATON&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;Wargaming は 1998 年 8 月にベラルーシの首都ミンスクで創業した。2011 年に本社をキプロスに移転している。これまで同社は今回のロシアによるウクライナ侵攻を受けて、同社のウクライナ拠点である Wargaming Kiyv を通じてウクライナ赤十字社に 100 万ドル（約 1 億 2,200 万円）を寄付し、550 人ほどのキーウ拠点の従業員や家族らに対する転居の支援や給与の早期支払いのサポートを表明しており、ロシアを支持する声明を SNS 上に投稿した同社のクリエイティブ ディレクターを務めていた Sergey Burkatovskiy 氏を解雇している。&lt;br&gt; &lt;br&gt;同社は 3 月 31 日 付けでロシアおよびベラルーシでの事業を Lesta Studio (旧 Wargaming Saint Petersburg) に移管したと発表。Lesta Studio は 1991 年創業で、 2011 年には Wargaming 傘下になっているものの、現在は提携関係は存在していないとしており、今後同社は両国事業の移管プロセスにて収益を得ることはなく、むしろ深刻な損失を受けることを予想しているとしている。&lt;br&gt;移管プロセスの期間中において、両国での製品の利用は引き続き可能で、その後新しい事業主によって運営が継続される予定だとしている。&lt;br&gt; &lt;br&gt;また、旧本社となるベラルーシのミンスクに位置する開発スタジオも閉鎖することを決定し、閉鎖を開始していると発表している。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+	&lt;a href="https://srad.jp/story/22/04/05/1745229/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/announce"&gt;アナウンス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/04/05/1745229/&amp;amp;text=%E3%83%99%E3%83%A9%E3%83%AB%E3%83%BC%E3%82%B7%E5%89%B5%E6%A5%AD%E3%81%AE%E3%82%B2%E3%83%BC%E3%83%A0%E4%BC%9A%E7%A4%BE%20Wargaming%20%E3%81%8C%E3%83%AD%E3%82%B7%E3%82%A2%E3%81%8A%E3%82%88%E3%81%B3%E3%83%99%E3%83%A9%E3%83%AB%E3%83%BC%E3%82%B7%E3%81%8B%E3%82%89%E3%81%AE%E4%BA%8B%E6%A5%AD%E6%92%A4%E9%80%80%E3%82%92%E7%99%BA%E8%A1%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/04/05/1745229/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/04/05/1745229/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/04/05/1745229/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/04/04/165209"&gt;ロシア民間航空局がハッキング。アノニマスを悪用するネット版偽旗作戦のリスクも&lt;/a&gt;
+			&lt;small&gt;2022年04月05日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/04/03/174217"&gt;フランス軍情報当局トップがロシアのウクライナ侵攻を予測できなかったとして解任される&lt;/a&gt;
+			&lt;small&gt;2022年04月04日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://science.srad.jp/story/22/04/02/0624254"&gt;NASA の宇宙飛行士、ソユーズで国際宇宙ステーションから地球に無事帰還&lt;/a&gt;
+			&lt;small&gt;2022年04月02日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/22/03/31/1545243"&gt;ロシア、IT技術者の兵役を「延期」可能に&lt;/a&gt;
+			&lt;small&gt;2022年04月01日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/03/31/1520228"&gt;チェルノブイリで塹壕を掘っていたロシア兵、急性放射線症候群で搬送か&lt;/a&gt;
+			&lt;small&gt;2022年04月01日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/15/07/14/0521236"&gt;海戦をテーマにしたオンラインゲーム「World of Warships」、旭日旗をゲーム内から排除へ&lt;/a&gt;
+			&lt;small&gt;2015年07月14日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/14/04/15/0856234"&gt;第二次大戦中に実在した巨大戦車「超重戦車マウス」、動態復元へ&lt;/a&gt;
+			&lt;small&gt;2014年04月15日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://security.srad.jp/story/22/04/05/1621241/">
 <title>Jupyter NotebookおよびJupyterLabをターゲットとしたランサムウェア見つかる</title>
 <link>https://security.srad.jp/story/22/04/05/1621241/</link>
@@ -59,7 +186,8 @@
 <dc:subject>news</dc:subject>
 <slash:department>新型</slash:department>
 <slash:section>security</slash:section>
-<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<slash:comments>1</slash:comments>
+<slash:hit_parade>1,1,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/news_64.png"&gt;研究者によると、Jupyter NotebookおよびJupyterLabをターゲットにしたランサムウェアが登場したそうだ。このランサムウェアはPythonベースで作られたものであるという。多くのランサムウェアではGo、DLang、Nim、Rustなどの言語で作られる傾向がある。SecurityWeekによると、これは最初のPythonランサムウェアというわけではなく、2021年10月に発見されたVMwareESXiサーバーを狙ったものがPythonベースで作成されたものが存在しているとのこと（&lt;a href="https://blog.aquasec.com/"&gt;Aqua Blog&lt;/a&gt;、&lt;a href="https://www.securityweek.com/researchers-find-python-based-ransomware-targeting-jupyter-notebook-web-apps"&gt;SecurityWeek.Com&lt;/a&gt;、&lt;a href="https://thehackernews.com/2022/03/new-python-based-ransomware-targeting.html"&gt;The Hacker News&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 新しいランサムウェアのサンプルは、AquaSecurityの研究者によって発見された。データ専門家が使用することの多いオープンソースのWebアプリであるJupyter Notebookに特化したものとされ、サーバー上の特定のパスにあるすべてのファイルを暗号化。実行後に自身を削除するとしている。研究者はJupyter Notebookはデータの分析やデータモデルの構築に使用されることが多いことから、このランサムウェアの被害に遭った場合、組織に重大な損害をもたらす可能性があると指摘している。&lt;p&gt;
@@ -162,8 +290,8 @@ Forbesの記事によれば、ロシアのメディア検閲機関ロスコム�
 <dc:subject>news</dc:subject>
 <slash:department>なりふり構わず</slash:department>
 <slash:section>yro</slash:section>
-<slash:comments>11</slash:comments>
-<slash:hit_parade>11,10,1,0,0,0,0</slash:hit_parade>
+<slash:comments>24</slash:comments>
+<slash:hit_parade>24,23,4,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/news_64.png"&gt;少し前には&lt;a href="https://it.srad.jp/story/22/03/13/0039208/"&gt;ロシア語版 Wikipedia 編集者がベラルーシ当局に拘束された&lt;/a&gt;という話題が出ていたが、ロシア当局からウィキペディアに対し、ウクライナへの侵略行為に関する記事内容に関して修正もしくは削除するよう圧力がかけられているという（&lt;a href="https://forbesjapan.com/articles/detail/46726"&gt;Forbes&lt;/a&gt;、&lt;a href="https://jp.reuters.com/article/ukraine-crisis-russia-wikipedia-idJPKCN2LX0R9"&gt;ロイター&lt;/a&gt;、&lt;a href="https://www.kobe-np.co.jp/news/zenkoku/compact/202204/0015195171.shtml"&gt;神戸新聞NEXT&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 Forbesの記事によれば、ロシアのメディア検閲機関ロスコムナゾルは31日、ウクライナ関連の関する記述の削除をウィキペディア側に要求、削除しなければ、最高400万ルーブル（&lt;a href="https://keisanki.me/calculator/index/RUB/4000000"&gt;時価はこれくらい&lt;/a&gt;）の罰金を科すと脅迫してきたという。ロシアで新たに制定された法律では、ネット上の違法な情報の削除要請に応じない場合、最大400万ルーブルの支払いが求められる。同様にGoogleに関しても3月29日、YouTube動画の削除を求める要求をしているとのこと。&lt;br&gt; &lt;br&gt;
@@ -224,8 +352,8 @@ Forbesの記事によれば、ロシアのメディア検閲機関ロスコム�
 <dc:subject>money</dc:subject>
 <slash:department>とどめ</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>25</slash:comments>
-<slash:hit_parade>25,25,2,0,0,0,0</slash:hit_parade>
+<slash:comments>35</slash:comments>
+<slash:hit_parade>35,35,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/money_64.png"&gt;米財務省は4日、ロシア政府が米金融機関を介してドル建て国債の元利払いを行うことを認めない方針を決めた。ロシアはウクライナへの侵略行為による経済制裁で米金融機関に保有する外貨準備が凍結されている。しかし、国債の利払いは制裁措置の例外として扱われ、米国に保有する口座からドルによる国債利払いが続けられてきた（&lt;a href="https://jp.reuters.com/article/russia-bond-idJPKCN2LX00F"&gt;ロイター&lt;/a&gt;、&lt;a href="https://www.afpbb.com/articles/-/3398896"&gt;AFPBB News&lt;/a&gt;、&lt;a href="https://www.jiji.com/jc/article?k=2022040500450&amp;amp;g=int"&gt;時事ドットコム&lt;/a&gt;、&lt;a href="https://www.sankei.com/article/20220405-IC27257JX5NTRL62ZCTH4OMQA4/"&gt;産経新聞&lt;/a&gt;、&lt;a href="https://www.bloomberg.co.jp/news/articles/2022-04-05/R9UI4SDWLU6D01?srnd=cojp-v2"&gt;Bloomberg&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;ロシアは4日に約21億ドルの国債元本償還と利払いの期日を迎えている。支払いには30日の猶予期間が設けられているものの、米財務省によると、これを支払うためにはロシア国内にあるドル準備金を取り崩すか、新たなドル収入を得るか、デフォルトするかの三択になるという。これによりロシアは債務不履行（デフォルト）に陥る可能性が高まったとしている。ロイターの記事によれば、期限内に債務支払いを実施しなかったり、支払い通貨がドルやユーロといった指定されている国債に対し、ルーブルで支払った場合はデフォルトに該当するとされている。&lt;br&gt; &lt;br&gt;なおロイターによると、ロシア連邦証券保管振替機関（NSD）は、ロシア第2の国営銀行であるVTBが、米ドル建ておよびユーロ建て債の利息をルーブルで支払ったとする発表を行っているという（&lt;a href="https://jp.reuters.com/article/ukraine-crisis-russia-vtb-idJPKCN2LX0U4"&gt;ロイター&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/04/05/2150210/"&gt;すべて読む&lt;/a&gt;
 	
@@ -264,8 +392,8 @@ Ubuntuは2004年の最初のリリースからずっと年に2回のメジャー
 <dc:subject>ubuntu</dc:subject>
 <slash:department>ローリング</slash:department>
 <slash:section>linux</slash:section>
-<slash:comments>5</slash:comments>
-<slash:hit_parade>5,5,0,0,0,0,0</slash:hit_parade>
+<slash:comments>7</slash:comments>
+<slash:hit_parade>7,7,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/ubuntu_64.png"&gt;Rolling Rhinoは、Ubuntuの新しいコミュニティリミックスで、全く新しいリリースモデルを持つというユニークな工夫がされているのが特徴だそうだ。Ubuntu Rolling Rhino Remiでは、開発版に当たるdevelバージョンを継続的に追跡することにより、Ubuntuを&lt;a href="https://ja.wikipedia.org/wiki/%E3%83%AD%E3%83%BC%E3%83%AA%E3%83%B3%E3%82%B0%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9"&gt;ローリングリリース&lt;/a&gt;形式のOSに変更するという（&lt;a href="https://rollingrhinoremix.github.io/"&gt;Rolling Rhino Remix&lt;/a&gt;、&lt;a href="https://www.neowin.net/news/ubuntu-becomes-a-rolling-release-with-rolling-rhino/"&gt;Neowin&lt;/a&gt;、&lt;a href="https://www.theregister.com/2022/03/29/rolling_release_ubuntu_remix/"&gt;The Register&lt;/a&gt;）&lt;br&gt; &lt;br&gt;。
 
 Ubuntuは2004年の最初のリリースからずっと年に2回のメジャーアップデートを行う形式を維持してきた。Rolling Rhino RemixはUbuntuをローリングリリースディストリビューション化することで、大規模なアップグレードの手間をかけずに、デスクトップPCを利用するための新しい方法を提供するとしている。なおリリースによればLinux利用経験者向けのものであり、このディストリビューションを、初心者が導入することはおすすめしないとしている。&lt;p&gt;
@@ -311,8 +439,8 @@ Ubuntuは2004年の最初のリリースからずっと年に2回のメジャー
 <dc:subject>crime</dc:subject>
 <slash:department>集団じゃないと無理だな</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>46</slash:comments>
-<slash:hit_parade>46,45,11,4,0,0,0</slash:hit_parade>
+<slash:comments>63</slash:comments>
+<slash:hit_parade>63,62,11,4,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/crime_64.png"&gt;群馬県太田市緑町にある太陽光発電施設「&lt;a href="https://www.city.ota.gunma.jp/005gyosei/0090-001kankyo-seisaku/2011megasoloer.html"&gt;おおた太陽光発電所&lt;/a&gt;」で、一夜にして地下ケーブル2400m分が盗難されていたことがわかった。このケーブルは地下に埋設されていたもので、先月24日に管理会社から出力異常を知らせる連絡があったことから市職員が被害を確認したところ、盗難が確認されたという。盗難されたケーブルはが計2465メートルほどあり、重さに関しては計7トンほどにもおよぶという。被害総額はおよそ1300万円相当であるとしている。敷地を囲う金属製のフェンスが壊され、管理用マンホールの中のケーブルが切断されていたとしている。犯行は23日夕から24日朝にかけて行われた模様（&lt;a href="https://www3.nhk.or.jp/news/html/20220405/k10013567411000.html"&gt;NHK&lt;/a&gt;、&lt;a href="https://www.yomiuri.co.jp/national/20220405-OYT1T50042/"&gt;読売新聞&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/04/05/1636205/"&gt;すべて読む&lt;/a&gt;
 	
@@ -349,8 +477,8 @@ Ubuntuは2004年の最初のリリースからずっと年に2回のメジャー
 <dc:subject>beer</dc:subject>
 <slash:department>アルコールチェック義務化</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>32</slash:comments>
-<slash:hit_parade>32,31,2,1,1,0,0</slash:hit_parade>
+<slash:comments>34</slash:comments>
+<slash:hit_parade>34,33,2,1,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/beer_64.png"&gt;4月1日より道路交通法施行規則が改正され、これにともないアルコールチェック義務化が実施されている。この中には酒気帯び確認した結果をデータや日誌等で記録、1年間保存する義務が生じる。こうしたアルコールチェック義務化向けのサービスとして、東海理化は、社用車管理システム「FREEKEY社用車予約」のサービス提供を開始した。このサービスでは、社用車の予約や確認、アルコールチェック記録、車両点検記録、運転日報の記入、車のドアの施錠・解錠までをスマートフォン上のアプリで一元的に管理することができるという（&lt;a href="https://response.jp/article/2022/04/04/355902.html"&gt;レスポンス&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;アルコールチェック義務化では、白ナンバーの社用車や営業車を5台以上もしくは定員11人以上の車両1台以上保有している場合、事業者側が運転者に対して「運転者の酒気帯び」の有無を確認する義務が生じる。なおオートバイに関しては自動車0.5台相当として換算される。アルコールチェックの義務化は今年の4月と10月の2段階にわけて実施される。4月の段階では運転者が酒気を帯びていないか、目視等で確認することが求められる。2022年10月からは先の項目に加えて、アルコール検知器を使ったチェック義務が発生する（&lt;a href="https://www3.nhk.or.jp/lnews/fukui/20220330/3050010794.html"&gt;NHK&lt;/a&gt;、&lt;a href="https://mobility-service.pioneer.jp/contents/alcohol-checkpoint/"&gt;パイオニア&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/04/04/2127231/"&gt;すべて読む&lt;/a&gt;
 	
@@ -395,8 +523,8 @@ Ubuntuは2004年の最初のリリースからずっと年に2回のメジャー
 <dc:subject>announce</dc:subject>
 <slash:department>低減</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>34</slash:comments>
-<slash:hit_parade>34,34,12,8,4,1,0</slash:hit_parade>
+<slash:comments>37</slash:comments>
+<slash:hit_parade>37,37,14,8,4,1,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/announcements_64.png"&gt;&lt;a href="https://hardware.srad.jp/story/22/03/16/2141242/"&gt;3月16日に発生した福島県沖地震&lt;/a&gt;の影響で、&lt;a href="https://ja.wikipedia.org/wiki/%E6%A8%99%E6%BA%96%E9%9B%BB%E6%B3%A2"&gt;標準電波&lt;/a&gt;を発射している福島県のおおたかどや山標準電波送信所が被害を受けていたことが分かった。NICT情報通信研究機構によると地震の影響でアンテナ設備が一部損壊していたという。このため同施設では3月31日から2週間程度、安全確保のための緊急工事を行うとしている。この工事の期間、標準時を通報する標準電波の発射出力を低減する処置を行うとしている。出力に関しては通常は50kWだが、これを25kWに低減するとしている。一部地域では標準電波の受信が困難になる地域の発生が予想されるとしている（&lt;a href="https://www.nict.go.jp/publicity/topics/2022/03/31-1.html"&gt;NICT&lt;/a&gt;、&lt;a href="https://jjy.nict.go.jp/Pub/JJY40/index_.html"&gt;おおたかどや山標準電波送信所の運用情報&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/04/04/2058246/"&gt;すべて読む&lt;/a&gt;
 	
@@ -421,108 +549,6 @@ Ubuntuは2004年の最初のリリースからずっと年に2回のメジャー
 		
 			&lt;br&gt;&lt;a href="https://srad.jp/story/19/10/28/1622256"&gt;セシウム原子時計故障のため標準電波60kHzが一時精度劣化、電波時計には影響なし&lt;/a&gt;
 			&lt;small&gt;2019年10月29日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://srad.jp/story/22/04/04/212239/">
-<title>「学研の科学」復刊</title>
-<link>https://srad.jp/story/22/04/04/212239/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/books_64.png"&gt;1963〜2010年にわたって刊行された「学研の科学」が復刊されるそうだ。創刊号の付録は「水素エネルギーロケット」とのこと。このロケットは電池を使わずに手回しで発電し、水からつくった水素を爆発させて飛ばす仕組みだという。このほか本誌や学習まんが「ひみつシリーズ」に加え、オンラインコミュニティである「学研の科学 あそぶんだ研究所」でのワークショップやイベントがセットになっているとのこと。7月7日に発売予定で価格は2970円となっている（学研リリース）。&lt;p&gt; &lt;a href="https://srad.jp/story/22/04/04/212239/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/books"&gt;書籍&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/04/04/212239/&amp;amp;text=%E3%80%8C%E5%AD%A6%E7%A0%94%E3%81%AE%E7%A7%91%E5%AD%A6%E3%80%8D%E5%BE%A9%E5%88%8A" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/04/04/212239/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/04/04/212239/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/04/04/212239/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/20/01/23/1341215"&gt;大人の科学マガジン、今度は「レコード録音機」を発売&lt;/a&gt; &lt;small&gt;2020年01月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/10/07/28/013208"&gt;今度の「大人の科学マガジン」は和時計&lt;/a&gt; &lt;small&gt;2010年07月28日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/09/12/03/1031228"&gt;学研の「科学」と「学習」が休刊へ&lt;/a&gt; &lt;small&gt;2009年12月03日&lt;/small&gt; &lt;br&gt;&lt;a href="https://linux.srad.jp/story/05/10/13/1820252"&gt;不死身の虫、学研の付録にて日本上陸&lt;/a&gt; &lt;small&gt;2005年10月14日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-04-05T21:09:00+00:00</dc:date>
-<dc:subject>books</dc:subject>
-<slash:department>復刊</slash:department>
-<slash:section>mainpage</slash:section>
-<slash:comments>44</slash:comments>
-<slash:hit_parade>44,43,5,0,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/books_64.png"&gt;1963〜2010年にわたって刊行された「学研の科学」が復刊されるそうだ。創刊号の付録は「水素エネルギーロケット」とのこと。このロケットは電池を使わずに手回しで発電し、水からつくった水素を爆発させて飛ばす仕組みだという。このほか本誌や学習まんが「ひみつシリーズ」に加え、オンラインコミュニティである「学研の科学 あそぶんだ研究所」でのワークショップやイベントがセットになっているとのこと。7月7日に発売予定で価格は2970円となっている（&lt;a href="https://gkp-koushiki.gakken.jp/2022/04/01/46489/"&gt;学研リリース&lt;/a&gt;）。&lt;p&gt;
-	&lt;a href="https://srad.jp/story/22/04/04/212239/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/books"&gt;書籍&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/04/04/212239/&amp;amp;text=%E3%80%8C%E5%AD%A6%E7%A0%94%E3%81%AE%E7%A7%91%E5%AD%A6%E3%80%8D%E5%BE%A9%E5%88%8A" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/04/04/212239/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/04/04/212239/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/04/04/212239/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/20/01/23/1341215"&gt;大人の科学マガジン、今度は「レコード録音機」を発売&lt;/a&gt;
-			&lt;small&gt;2020年01月23日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/10/07/28/013208"&gt;今度の「大人の科学マガジン」は和時計&lt;/a&gt;
-			&lt;small&gt;2010年07月28日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/09/12/03/1031228"&gt;学研の「科学」と「学習」が休刊へ&lt;/a&gt;
-			&lt;small&gt;2009年12月03日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/05/10/13/1820252"&gt;不死身の虫、学研の付録にて日本上陸&lt;/a&gt;
-			&lt;small&gt;2005年10月14日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://hardware.srad.jp/story/22/04/04/165209/">
-<title>ロシア民間航空局がハッキング。アノニマスを悪用するネット版偽旗作戦のリスクも</title>
-<link>https://hardware.srad.jp/story/22/04/04/165209/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/announcements_64.png"&gt;ハッカー集団「Anonymous」によるサイバー攻撃が活発化し、最近ではロシアやベラルーシで活動を行っている国際組織をターゲットにした攻撃が増加しているそうだ。TECH+でも取り上げられているように、ここ1週間でもロシアの建築会社や新興財閥オリガルヒ系企業などへの攻撃が多発している。一方で一部の脅威者がAnonymousの名を悪用する形で攻撃を行う、いわゆるネット版の「偽旗作戦」が実行されるリスクも高まっているとの指摘も出ているらしい（TECH+、Security Affairs）。 
-
-最近、ロシア民間航空局（Rosaviatsia）がハッキングされ、攻撃者は同局のシステムから65テラバイト相当のデータが消去されたとする話題が出ている。The Aviation Heraldに掲載されたロシア民間航空局の声明によれば、この影響により、ロシア民間航空局のWebサイトには3月28日からアクセスできなくなっており、同局はコンピューターを使わず紙などを用いてサービス運用しているとされる（5ちゃんねる、The Aviation Herald、IBTimes）。 
-
-この記事では、原因についてはインターネットへのアクセスが不能になったこと、電子文書フローシステムの故障のためだとしている。ロシア民間航空局側はAnonymousの攻撃によるものと考えているようだ。一方でIBTimesの報道によれば、この件に関しては、Anonymousの一部関係者がロシア民間航空局のハッキングを否定しているとされ、真偽は不明となっている。&lt;p&gt; &lt;a href="https://hardware.srad.jp/story/22/04/04/165209/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/crime"&gt;犯罪&lt;/a&gt; | &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/internet"&gt;インターネット&lt;/a&gt; | &lt;a href="https://srad.jp/stories/announce"&gt;アナウンス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/storage"&gt;ストレージ&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/22/04/04/165209/&amp;amp;text=%E3%83%AD%E3%82%B7%E3%82%A2%E6%B0%91%E9%96%93%E8%88%AA%E7%A9%BA%E5%B1%80%E3%81%8C%E3%83%8F%E3%83%83%E3%82%AD%E3%83%B3%E3%82%B0%E3%80%82%E3%82%A2%E3%83%8E%E3%83%8B%E3%83%9E%E3%82%B9%E3%82%92%E6%82%AA%E7%94%A8%E3%81%99%E3%82%8B%E3%83%8D%E3%83%83%E3%83%88%E7%89%88%E5%81%BD%E6%97%97%E4%BD%9C%E6%88%A6%E3%81%AE%E3%83%AA%E3%82%B9%E3%82%AF%E3%82%82" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/22/04/04/165209/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/22/04/04/165209/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/22/04/04/165209/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/07/1547222"&gt;ウクライナ政府、民間IT技術者を集めてIT軍を組織&lt;/a&gt; &lt;small&gt;2022年03月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/19/01/30/0910254"&gt;Anonymous、ロシアの政治家などがやり取りしたメッセージなどのデータを公開&lt;/a&gt; &lt;small&gt;2019年01月31日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/16/02/01/1756230"&gt;アノニマスに憧れた高校生、ウイルス作成プログラム所持で書類送検&lt;/a&gt; &lt;small&gt;2016年02月02日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/15/12/17/0550238"&gt;アノニマス、「悪ふざけ」で欧州宇宙機関を攻撃&lt;/a&gt; &lt;small&gt;2015年12月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/15/11/25/0549229"&gt;アノニマスのISIS攻撃は有効か否か&lt;/a&gt; &lt;small&gt;2015年11月26日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/04/05/1745229"&gt;ベラルーシ創業のゲーム会社 Wargaming がロシアおよびベラルーシからの事業撤退を発表&lt;/a&gt; &lt;small&gt;2022年04月06日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-04-05T09:02:00+00:00</dc:date>
-<dc:subject>announce</dc:subject>
-<slash:department>闇</slash:department>
-<slash:section>hardware</slash:section>
-<slash:comments>19</slash:comments>
-<slash:hit_parade>19,19,2,1,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/announcements_64.png"&gt;ハッカー集団「Anonymous」によるサイバー攻撃が活発化し、最近ではロシアやベラルーシで活動を行っている国際組織をターゲットにした攻撃が増加しているそうだ。TECH+でも取り上げられているように、ここ1週間でもロシアの建築会社や新興財閥オリガルヒ系企業などへの攻撃が多発している。一方で一部の脅威者がAnonymousの名を悪用する形で攻撃を行う、いわゆるネット版の「偽旗作戦」が実行されるリスクも高まっているとの指摘も出ているらしい（&lt;a href="https://news.mynavi.jp/techplus/article/20220404-2312134/"&gt;TECH+&lt;/a&gt;、&lt;a href="https://securityaffairs.co/wordpress/129651/hacktivism/anonymous-hacked-thozis-corp.html"&gt;Security Affairs&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-最近、ロシア民間航空局（Rosaviatsia）がハッキングされ、攻撃者は同局のシステムから65テラバイト相当のデータが消去されたとする話題が出ている。The Aviation Heraldに掲載されたロシア民間航空局の声明によれば、この影響により、ロシア民間航空局のWebサイトには3月28日からアクセスできなくなっており、同局はコンピューターを使わず紙などを用いてサービス運用しているとされる（&lt;a href="https://hayabusa9.5ch.net/test/read.cgi/news/1648563287/"&gt;5ちゃんねる&lt;/a&gt;、&lt;a href="https://avherald.com/h?article=4f6a8fd6&amp;amp;opt=0"&gt;The Aviation Herald&lt;/a&gt;、&lt;a href="https://www.ibtimes.com/anonymous-denies-hacking-russian-civil-aviation-authority-rosaviatsia-3455247"&gt;IBTimes&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-この記事では、原因についてはインターネットへのアクセスが不能になったこと、電子文書フローシステムの故障のためだとしている。ロシア民間航空局側はAnonymousの攻撃によるものと考えているようだ。一方でIBTimesの報道によれば、この件に関しては、Anonymousの一部関係者がロシア民間航空局のハッキングを否定しているとされ、真偽は不明となっている。&lt;p&gt;
-	&lt;a href="https://hardware.srad.jp/story/22/04/04/165209/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://hardware.srad.jp/"&gt;ハードウェアセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/crime"&gt;犯罪&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/internet"&gt;インターネット&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/announce"&gt;アナウンス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/storage"&gt;ストレージ&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://hardware.srad.jp/story/22/04/04/165209/&amp;amp;text=%E3%83%AD%E3%82%B7%E3%82%A2%E6%B0%91%E9%96%93%E8%88%AA%E7%A9%BA%E5%B1%80%E3%81%8C%E3%83%8F%E3%83%83%E3%82%AD%E3%83%B3%E3%82%B0%E3%80%82%E3%82%A2%E3%83%8E%E3%83%8B%E3%83%9E%E3%82%B9%E3%82%92%E6%82%AA%E7%94%A8%E3%81%99%E3%82%8B%E3%83%8D%E3%83%83%E3%83%88%E7%89%88%E5%81%BD%E6%97%97%E4%BD%9C%E6%88%A6%E3%81%AE%E3%83%AA%E3%82%B9%E3%82%AF%E3%82%82" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://hardware.srad.jp/story/22/04/04/165209/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://hardware.srad.jp/story/22/04/04/165209/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://hardware.srad.jp/story/22/04/04/165209/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/07/1547222"&gt;ウクライナ政府、民間IT技術者を集めてIT軍を組織&lt;/a&gt;
-			&lt;small&gt;2022年03月08日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/19/01/30/0910254"&gt;Anonymous、ロシアの政治家などがやり取りしたメッセージなどのデータを公開&lt;/a&gt;
-			&lt;small&gt;2019年01月31日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/16/02/01/1756230"&gt;アノニマスに憧れた高校生、ウイルス作成プログラム所持で書類送検&lt;/a&gt;
-			&lt;small&gt;2016年02月02日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/15/12/17/0550238"&gt;アノニマス、「悪ふざけ」で欧州宇宙機関を攻撃&lt;/a&gt;
-			&lt;small&gt;2015年12月18日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/15/11/25/0549229"&gt;アノニマスのISIS攻撃は有効か否か&lt;/a&gt;
-			&lt;small&gt;2015年11月26日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/22/04/05/1745229"&gt;ベラルーシ創業のゲーム会社 Wargaming がロシアおよびベラルーシからの事業撤退を発表&lt;/a&gt;
-			&lt;small&gt;2022年04月06日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
