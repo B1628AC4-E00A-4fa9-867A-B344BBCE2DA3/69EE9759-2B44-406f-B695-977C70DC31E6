@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 08 Apr 2022 18:53:12 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 12 Apr 2022 09:07:51 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,146 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</title>
+		<link>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/#respond</comments>
+		
+		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
+		<pubDate>Tue, 12 Apr 2022 15:00:43 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30396</guid>
+
+					<description><![CDATA[<p>New Enumeration Checks in Visual Studio 2022</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/">New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community </a>page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of some new code analysis checks that can detect enumeration misuse errors, along with some improvements to an existing enumeration check.</p>
+<h2 id="overview">Overview</h2>
+<p>We introduced three new checks to find potential misuse of enumerations with bitwise operations. These checks were inspired by real bugs found in production code. We also improved a check that suggests using the C++11 scoped <code>enum</code> instead of its legacy counterpart. See the <a href="https://docs.microsoft.com/cpp/build/reference/analyze-code-analysis">documentation</a> on how to enable code analysis for your project.</p>
+<h2 id="bitwise-enumerations">Bitwise enumerations</h2>
+<p>Some enumerations hold values that are powers of two. Most of these are flags used to represent non-exclusive states that can be combined and queried using bitwise operations. The new checks are trying to detect wrong uses of such enumerations. Unfortunately, there is no clear definition of what enumerations should be considered bitwise, so our checks rely on a set of heuristics to infer the intent from the source code. First of all, let us consider an <code>enum</code> with only two elements:</p>
+<pre><code class="language-cpp">enum E
+{
+    A = 1,
+    B = 2
+};</code></pre>
+<p>It is not clear whether <code>E</code>&#8216;s values are intended to form the start of a sequence of powers of two <code>(1,2,4,8,...)</code>, or are simply intended to increment by 1 <code>(1,2,3,4,...)</code>. Without additional context, we therefore cannot tell whether <code>E</code> is a bitwise <code>enum</code>, intended to be used with bitwise operations, or if it is just a regular <code>enum</code>.</p>
+<pre><code class="language-cpp">enum E
+{
+    A = 1,
+    B = 2,
+    C = 4,
+    D = 8,
+    ALL = 15
+};</code></pre>
+<p>Here, the last <code>enum</code> constant is not a power of two. It is a common idiom to define a constant where all of the relevant bits are set. These constants usually have a value of <code>2^k-1</code> for some positive <code>k</code>. Our checks will consider <code>enum</code>s of this shape as bitwise. We have to be careful with the interplay of these two heuristics.</p>
+<pre><code class="language-cpp">enum E1
+{
+    A = 1,
+    B = 2,
+    C = 3
+};
+
+enum E2
+{
+    A = 1,
+    B = 2,
+    C = 4
+};</code></pre>
+<p>In the above example, we do not want to consider <code>E1</code> bitwise, despite its last element having the value of <code>2^2-1</code>. On the other hand, we definitely want to consider <code>E2</code> a bitwise <code>enum</code>.</p>
+<p>These heuristics worked reasonably well for the projects we tested our checks on. In case you encounter any false positives or false negatives, please let us know.</p>
+<h2 id="c26813">C26813</h2>
+<p><a href="https://aka.ms/cpp/warnings/C26813">C26813</a> will find code patterns where a bitwise enumeration&#8217;s value is being tested using <code>operator==</code>.
+In most cases, a variable holding values from a bitwise enumeration represents a bitfield. To query whether a particular enumerator value was set in this variable, bitwise operations should be used. Failing to do so will yield incorrect results:</p>
+<pre><code class="language-cpp">enum BitWise
+{
+    A = 1,
+    B = 2,
+    C = 4
+};
+
+void useEqualsWithBitwiseEnum(BitWise a) 
+{
+    BitWise a = A; // turn on flag A
+    a |= B; // turn on flag B
+
+    /*
+    *  Attempt to query if flag 'B' was set.
+    */
+
+    if (a == B) // Warning C26813: Use 'bitwise and' to check if a flag is set
+    {
+        foo(); // never reached, since a != B
+    }
+
+    if (a &amp; B)
+    {
+        bar(); // the branch is taken, as expected
+    }
+}</code></pre>
+<p>After running this check on some real world code we also encountered cases where the <code>enum</code> had power of two values, but was never used with bitwise operations. In those cases it might be good idea to change the values of the <code>enum</code> constants to make the intent clearer in the code.</p>
+<h2 id="c26827">C26827</h2>
+<p><a href="https://aka.ms/cpp/warnings/C26827">C26827</a> can help detect enumerator constants in bitwise enumerations where we forgot to add an initializer. Consider the following example:</p>
+<pre><code class="language-cpp">enum class AlmostBitWise
+{
+    A = 1,
+    B = 2,
+    C = 4,
+    D
+};
+
+int almostBitwiseEnums(AlmostBitWise a) 
+{
+    return (int)a|(int)AlmostBitWise::A; // Warning C26827: Did you forget to initialize an enum, or intend to use another type?
+}</code></pre>
+<p>Here, we use an <code>enum</code> constant in a bitwise operation while not all of its constants have the form of <code>2^k</code> or <code>2^k-1</code>. In fact, one of its constants <code>D</code> has the form of <code>2^k+1</code>. This pattern can happen when we add a new constant without defining its value.</p>
+<p>Unfortunately, there is a limitation of this check. It will only work with scoped <code>enum</code>s as the compiler will desugar regular enums into integers before the static analysis phase. We are looking into ways to improve our internal representation of the code to have a higher fidelity representation of how the code was written, and this will enable better diagnostics in the future.</p>
+<h2 id="c26828">C26828</h2>
+<p><a href="https://aka.ms/cpp/warnings/C26828">C26828</a> will flag bitwise expressions where values from different enumerations are mixed. Consider the following example:</p>
+<pre><code class="language-cpp">
+enum BitWiseA
+{
+    A = 1,
+    B = 2,
+    C = 4
+};
+
+enum class BitWiseB
+{
+    AA = 1,
+    BB = 2,
+    CC = 4,
+    All = 7
+};
+
+int overlappingBitwiseEnums(BitWiseA a) 
+{
+    return (int)a|(int)BitWiseB::AA; // Warning C26828: Different enum types have overlapping values. Did you want to use another enum constant here?
+}</code></pre>
+<p>Here <code>BitWiseA</code> and <code>BitWiseB</code> have overlapping values. It is unlikely that we wanted to use both in the same bitwise expression. It can be the result of a typo.</p>
+<p>This check has similar limitations to <code>C26827</code>.</p>
+<h2 id="improvements-to-c26812">Improvements to C26812</h2>
+<p><a href="https://aka.ms/cpp/warnings/C26812">C26812</a> suggests to use the new C++11 scoped <code>enum</code>s over legacy <code>enum</code>s. This check has been the part of our offerings for a really long time but had room for improvement. Previously, it diagnosed legacy <code>enum</code>s at their use-sites instead of at their declarations. This had several consequences:</p>
+<ul>
+<li>We did not emit a warning for unused enumerations.</li>
+<li>It was not possible to suppress all instances of this warning at the declaration. This was also reported by our users as a <a href="https://developercommunity.visualstudio.com/t/Warning-C26812-is-not-suppressible-at-en/1448578">Developer Community ticket</a>.</li>
+<li>It did not work well with the new <a href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">/external</a> feature. See the corresponding <a href="https://developercommunity.visualstudio.com/t/Code-Analysis-warning-C26812-is-reported/1637803">Developer Community ticket</a> for details.</li>
+<li>The location of the diagnostic is potentially far from the declaration, which makes it harder to address the warning.</li>
+</ul>
+<p>The new version of this check will emit the diagnostic on the declarations instead of the uses. This should improve the user experience in most cases. We also realized that addressing this check is sometimes costly or not possible at all (e.g., a library might need to be backward compatible). To address this, we removed this rule from the <code>NativeRecommendedRules</code> ruleset and created a new ruleset named <code>CppCoreCheckEnumRules</code> to include all 4 of the rules we mentioned in this blog post.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The upcoming Visual Studio 2022 17.2 Preview 3 will feature new checks to find hard-to-find misuses of enumerations. It will also include some quality of life improvements for the existing check that can help migrate a code base to scoped enums. The three new <code>enum</code> related checks are part of the <code>NativeRecommendedRules</code> ruleset and the updated warning was moved to <code>CppCoreCheckEnumRules</code>.</p>
+<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
+<p>The work that we do is heavily influenced by feedback we receive on <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/">New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Sign Up for the Pure Virtual C++ 2022 Conference</title>
 		<link>https://devblogs.microsoft.com/cppblog/sign-up-for-the-pure-virtual-cpp-2022-conference/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/sign-up-for-the-pure-virtual-cpp-2022-conference/#comments</comments>
@@ -721,167 +861,6 @@ int main() {
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/how-we-used-cpp20-to-eliminate-an-entire-class-of-runtime-bugs/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio Code C++ December 2021 Update: clang-tidy</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/#comments</comments>
-		
-		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
-		<pubDate>Tue, 14 Dec 2021 19:26:50 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[C++ extension]]></category>
-		<category><![CDATA[clang]]></category>
-		<category><![CDATA[clang-tidy]]></category>
-		<category><![CDATA[code analysis]]></category>
-		<category><![CDATA[CPP]]></category>
-		<category><![CDATA[cpptools]]></category>
-		<category><![CDATA[linter]]></category>
-		<category><![CDATA[static analysis]]></category>
-		<category><![CDATA[tidy]]></category>
-		<category><![CDATA[vs code]]></category>
-		<category><![CDATA[VSCode]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=29926</guid>
-
-					<description><![CDATA[<p>The latest insiders release of the C++ extension is here, bringing clang-tidy support to VS Code! Clang-tidy is a clang-based C++ linter tool that detects common errors in your code, like style violations and bugs that can be deduced via static analysis.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/">Visual Studio Code C++ December 2021 Update: clang-tidy</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The latest <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/1.8.0-insiders2">insiders release</a> of the C++ extension is here, bringing clang-tidy support to VS Code! <a href="https://clang.llvm.org/extra/clang-tidy/">Clang-tidy</a> is a clang-based C++ linter tool that detects common errors in your code, like style violations and bugs that can be deduced via static analysis. <a href="https://github.com/microsoft/vscode-cpptools/issues/2908">Clang-tidy integration</a> was one of our top asks on GitHub, so we’re excited to announce that it’s ready for you to try!</p>
-<h1 id="getting-started">Getting started</h1>
-<h2 id="do-i-need-to-install-clang-tidy">Do I need to install clang-tidy?</h2>
-<p>Nope! Clang-tidy now comes bundled with the C++ extension. But if you already have clang-tidy installed (and it’s on your environment’s path), the C++ extension will use that one instead. You can point the C++ extension to any clang-tidy binary by editing the C++ extension’s <strong>Clang Tidy: Path</strong> setting.</p>
-<h2 id="how-do-i-run-clang-tidy-in-vs-code">How do I run clang-tidy in VS Code?</h2>
-<p>To manually run clang-tidy, open the <strong>Command Palette (Ctrl + Shift + P)</strong> and type <strong>“Run Code Analysis.” </strong>You can run clang-tidy on the active file, on all open files, or on the entire workspace.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis.png"><img class="alignnone size-full wp-image-29937" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis.png" alt="Screenshot showing how to manually run clang-tidy from the Command Palette" width="2024" height="380" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis.png 2024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis-300x56.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis-1024x192.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis-768x144.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/run-code-analysis-1536x288.png 1536w" sizes="(max-width: 2024px) 100vw, 2024px" /></a></p>
-<p>If there are certain workspace files or folders that you <em>don’t</em> want to run clang-tidy on, add them to the <strong>Clang Tidy: Exclude</strong> setting (C_Cpp.codeAnalysis.exclude in settings.json).</p>
-<p>You can also set clang-tidy to run automatically whenever you open or save a file. To turn on automatic code analysis, open your project settings by selecting <strong>“Preferences: Open Settings (UI)”</strong> from the <strong>Command Palette (Ctrl + Shift + P).</strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui.png"><img class="alignnone size-full wp-image-29936" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui.png" alt="Screenshot showing how to open VS Code settings from the Command Palette" width="1742" height="184" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui.png 1742w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui-300x32.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui-1024x108.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui-768x81.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/open-settings-ui-1536x162.png 1536w" sizes="(max-width: 1742px) 100vw, 1742px" /></a></p>
-<p>Then search for <strong>“code analysis” </strong>to find all the clang-tidy settings and set <strong>Clang Tidy: Enabled</strong> to true.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting.png"><img class="alignnone size-full wp-image-29929" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting.png" alt="Screenshot of the Clang Tidy: Enabled setting in VS Code, which must be set to true in order for code analysis to run automatically in the background" width="1770" height="284" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting.png 1770w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting-300x48.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting-1024x164.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting-768x123.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-enable-setting-1536x246.png 1536w" sizes="(max-width: 1770px) 100vw, 1770px" /></a></p>
-<p><strong>Note:</strong> You can set clang-tidy settings globally (in the User tab) or at the workspace level.</p>
-<p>You can check if clang-tidy is running by looking for the fire icon in the blue status bar at the bottom of the window.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/fire-icon-hover.png"><img class="alignnone size-full wp-image-29935" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/fire-icon-hover.png" alt="Screenshot of the fire icon in the status bar. Users can hover over this icon to see the status of clang-tidy." width="590" height="192" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/fire-icon-hover.png 590w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/fire-icon-hover-300x98.png 300w" sizes="(max-width: 590px) 100vw, 590px" /></a></p>
-<p>To pause or cancel clang-tidy, click on the fire icon and then choose an option from the drop down.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy.png"><img class="alignnone size-full wp-image-29927" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy.png" alt="Screenshot showing the Cancel and Pause options for clang-tidy from a dropdown in VS Code" width="1746" height="242" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy.png 1746w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy-300x42.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy-1024x142.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy-768x106.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/cancel-pause-clang-tidy-1536x213.png 1536w" sizes="(max-width: 1746px) 100vw, 1746px" /></a></p>
-<h2 id="how-do-i-configure-clang-tidy-checks-and-check-options">How do I configure clang-tidy checks and check options?</h2>
-<p>If you have a .clang-tidy configuration file in your project directory, the C++ extension will honor the checks and options defined in that file. If you have multiple .clang-tidy configuration files in your workspace, clang-tidy will use the configuration file closest to the source file by searching up the path in its parent directories. Alternatively, you can specify a clang-tidy configuration with the <strong>Clang Tidy: Config</strong> setting. <strong>Clang Tidy: Config</strong> accepts checks and check options as a YAML/JSON-formatted string.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config.png"><img class="alignnone size-full wp-image-29928" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config.png" alt="Screenshot of the Clang Tidy: Config setting in VS Code, where users can pass a string in YAML/JSON format to specify clang-tidy checks and options" width="1860" height="376" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config.png 1860w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config-300x61.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config-1024x207.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config-768x155.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-config-1536x311.png 1536w" sizes="(max-width: 1860px) 100vw, 1860px" /></a></p>
-<p>If a source file doesn’t have a .clang-tidy configuration file in any of its parent directories, and the <strong>Clang Tidy: Config</strong> property is left empty, then the fallback configuration (defined in C_Cpp.codeAnalysis.clangTidy.fallbackConfig) will be used for that file.</p>
-<p>You can enable and disable more checks by using the <strong>Clang Tidy &gt; Checks: Enabled</strong> and <strong>Clang Tidy &gt; Checks: Disabled</strong> settings. The checks defined in these settings are run in addition to the checks in the .clang-tidy file.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting.png"><img class="alignnone size-full wp-image-29934" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting.png" alt="Screenshot of the Clang Tidy &gt; Checks: Enabled setting in VS Code, where users pick which clang-tidy settings to run on their project" width="1558" height="504" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting.png 1558w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting-300x97.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting-1024x331.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting-768x248.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-checks-setting-1536x497.png 1536w" sizes="(max-width: 1558px) 100vw, 1558px" /></a></p>
-<p>Selecting <strong>Add Item</strong> shows a list of all clang-tidy checks.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks.png"><img class="alignnone size-full wp-image-29940" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks.png" alt="Screenshot showing the list of available clang-tidy checks after selecting Add Item in the Clang Tidy &gt; Checks: Enabled settings" width="1630" height="1162" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks.png 1630w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks-300x214.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks-1024x730.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks-768x547.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/list-of-clang-tidy-checks-1536x1095.png 1536w" sizes="(max-width: 1630px) 100vw, 1630px" /></a></p>
-<p>You can add as many checks as you’d like to both the <strong>Clang Tidy &gt; Checks: Enabled</strong> and <strong>Clang Tidy &gt; Checks: Disabled</strong> settings.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks.png"><img class="alignnone size-full wp-image-29933" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks.png" alt="Screenshot of the Clang Tidy &gt; Checks: Disabled and Clang Tidy &gt; Checks: Disabled settings in VS Code, where users can choose which clang-tidy checks to run or not run for their workspace" width="1602" height="1244" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks.png 1602w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks-300x233.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks-1024x795.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks-768x596.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/enabled-and-disabled-checks-1536x1193.png 1536w" sizes="(max-width: 1602px) 100vw, 1602px" /></a></p>
-<h2 id="how-do-i-pass-command-line-args-to-clang-tidy">How do I pass command line args to clang-tidy?</h2>
-<p>If you typically pass <a href="https://clang.llvm.org/extra/clang-tidy/">command line options</a> to clang-tidy, you can specify those in the <strong>Clang Tidy: Args</strong> property. The <strong>Clang Tidy: Args</strong> setting takes precedence over the equivalent Clang Tidy settings in the editor (such as Clang Tidy &gt; Checks: Enabled and Clang Tidy &gt; Checks: Disabled).</p>
-<h1 id="viewing-check-results-in-the-editor">Viewing check results in the editor</h1>
-<p>The results of clang-tidy checks (warnings and errors) are displayed in the <strong>Problems panel</strong> and as squiggles beneath relevant sections of code.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane.png"><img class="alignnone size-full wp-image-29930" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane.png" alt="Screenshot of the results of clang-tidy checks showing up in the Problems pane in VS Code" width="1646" height="1312" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane.png 1646w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane-300x239.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane-1024x816.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane-768x612.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clang-tidy-problems-pane-1536x1224.png 1536w" sizes="(max-width: 1646px) 100vw, 1646px" /></a></p>
-<p>Clicking on the problem in the Problems panel takes you to the issue in your source file. To clear the code analysis squiggles, click on the Quick Actions lightbulb, and then select <strong>Clear code analysis squiggles.</strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles.png"><img class="alignnone size-full wp-image-29931" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles.png" alt="Screenshot of the &quot;Clear Code Analysis Squiggles&quot; Quick Action, which is visible when selecting the lightbulb next to underlined code " width="1172" height="388" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles.png 1172w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles-300x99.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles-1024x339.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/12/clear-code-analysis-squiggles-768x254.png 768w" sizes="(max-width: 1172px) 100vw, 1172px" /></a></p>
-<h1 id="clang-tidy-settings">Clang-tidy settings</h1>
-<p>Here’s a list of new VS Code settings to help you configure clang-tidy for your workspace.</p>
-<table>
-<tbody>
-<tr>
-<td width="282"><strong>Setting name</strong></td>
-<td width="60"><strong>Type</strong></td>
-<td width="84"><strong>Default value</strong></td>
-<td width="198"><strong>Description</strong></td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.enabled</p>
-<p>&nbsp;</td>
-<td width="60">Boolean</td>
-<td width="84">False</td>
-<td width="198">When true, clang-tidy will be enabled and run automatically if C_Cpp.codeAnalysis.runAutomatically is set to true</p>
-<p>&nbsp;</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.runAutomatically</td>
-<td width="60">Boolean</td>
-<td width="84">True</td>
-<td width="198">When true, runs clang-tidy on file open and file save.</p>
-<p>&nbsp;</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.path</td>
-<td width="60">String</td>
-<td width="84">Null (empty)</td>
-<td width="198">The full path to the clang-tidy executable.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.checks.enabled</td>
-<td width="60">Array of strings</td>
-<td width="84">Null (empty)</td>
-<td width="198">List of enabled clang-tidy checks. The values are appended to the Checks in a .clang-tidy file or C_Cpp › Code Analysis › Clang Tidy: Config.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.checks.disabled</td>
-<td width="60">Array of strings</td>
-<td width="84">Null (empty)</td>
-<td width="198">List of disabled clang-tidy checks. The values are appended to the Checks in a .clang-tidy file or C_Cpp › Code Analysis › Clang Tidy: Config, if any.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.config</td>
-<td width="60">String</td>
-<td width="84">Null (empty)</td>
-<td width="198">Specifies a clang-tidy configuration in YAML/JSON format: {Checks: &#8216;-*,clang-analyzer-*&#8217;, CheckOptions: [{key: x, value: y}]}. When empty, any found .clang-tidy files will be used.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.fallbackConfig</td>
-<td width="60">String</td>
-<td width="84">Null (empty)</td>
-<td width="198">Specifies a clang-tidy configuration in YAML/JSON format to be used as a fallback when C_Cpp › Code Analysis › Clang Tidy: Config is not set and no .clang-tidy file is found.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.args</td>
-<td width="60">Array of strings</td>
-<td width="84">Null (empty)</td>
-<td width="198">Command line arguments to pass to clang-tidy. These take precedence over the equivalent C_Cpp.codeAnalysis.clangTidy.* settings.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.exclude</td>
-<td width="60">String</td>
-<td width="84">Null (empty)</td>
-<td width="198">Configure glob patterns for excluding folders and files for code analysis.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.clangTidy.headerFilter</td>
-<td width="60">String</td>
-<td width="84">Null (empty)</td>
-<td width="198">A POSIX extended regular expression (ERE) matching the names of the headers to output diagnostics from. It overrides the HeaderFilterRegex option in a .clang-tidy file, if any.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.maxConcurrentThreads</p>
-<p>(User level only)</td>
-<td width="60">Int</td>
-<td width="84">Null (empty)</td>
-<td width="198">The maximum number of concurrent threads to use for code analysis. The default of null (empty) uses half the value inherited from C_Cpp: Max Concurrent Threads.</td>
-</tr>
-<tr>
-<td width="282">C_Cpp.codeAnalysis.maxMemory</p>
-<p>(User level only)</td>
-<td width="60">Int</td>
-<td width="84">Null (empty)</td>
-<td width="198">Fewer code analysis processes will run concurrently after this memory usage (in MB) is exceeded. The default of null (empty) uses the value inherited from C_Cpp: Max Memory.</td>
-</tr>
-</tbody>
-</table>
-<h1 id="coming-soon">Coming soon</h1>
-<p>Hang tight! Applying suggested fixes in the editor is coming soon.</p>
-<h1 id="what-do-you-think">What do you think?</h1>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today and join our Insiders program to access this initial release of clang-tidy integration. To join our Insiders program, go to <strong>File</strong> &gt; <strong>Preferences</strong> &gt; <strong>Settings</strong> and under <strong>Extensions</strong> &gt; <strong>C/C++,</strong> change the “<strong>C_Cpp: Update Channel</strong>” to “<strong>Insiders</strong>.” Then under <strong>Features </strong>&gt; <strong>Extensions</strong>, enable “<strong>Extensions</strong>:<strong> Auto Update</strong>.”</p>
-<p>If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>.</p>
-<p>We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/">Visual Studio Code C++ December 2021 Update: clang-tidy</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
