@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 13 Apr 2022 12:16:27 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 20 Apr 2022 20:23:17 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,92 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s new for C++ Debugging in Visual Studio Code</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/#respond</comments>
+		
+		<dc:creator><![CDATA[Julia Reid]]></dc:creator>
+		<pubDate>Wed, 20 Apr 2022 20:20:17 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30425</guid>
+
+					<description><![CDATA[<p>It’s been a minute since our last blog post about C++ in VS Code, but we’ve been working hard on new features and bug fixes! Today, we’re excited to fill you in on the latest and greatest C++ debugger improvements in VS Code,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/">What’s new for C++ Debugging in Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>It’s been a minute since our last blog post about C++ in VS Code, but we’ve been working hard on new features and bug fixes! Today, we’re excited to fill you in on the latest and greatest C++ debugger improvements in VS Code, including support for the Apple M1 chip, data breakpoints, and a new run/debug play button!</p>
+<h1 id="apple-silicon-arm64-m1-chip">Apple Silicon ARM64 (M1 chip)</h1>
+<p>Last year, we enabled language server support for Apple Silicon ARM64 architecture, which meant you could run the C++ extension’s language server (responsible for things like IntelliSense, code navigation, and autocomplete) natively on the Apple M1 chip. At the time, the C++ extension’s debugger binaries did not run natively on the M1 chip. Now, they do!</p>
+<p>With <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/v1.9.7">this latest release</a> of the C++ extension, you can seamlessly debug C++ programs when running VS Code on the M1 chip. Give it a try and let us know what you think! If you run into any issues, please follow up on the <a href="https://github.com/microsoft/vscode-cpptools/issues/7035">GitHub tracking issue (#7035)</a>.</p>
+<h1 id="data-breakpoints">Data breakpoints</h1>
+<p>In case you missed it, version 1.8.4 of the C++ extension brought support for <a href="https://github.com/microsoft/vscode-cpptools/issues/1410">data breakpoints (#1410)</a> while debugging C++ programs with GDB in VS Code. Data breakpoints break execution when a value stored at a specified memory address changes.</p>
+<p>To set a data breakpoint while debugging in VS Code, right click on a variable in the debug pane and select <strong>Break on Value Change</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change.png"><img class="alignnone size-full wp-image-30430" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change.png" alt="Screenshot of the context menu that appears when a user right clicks on a local variable in the Debug pane. The Break on Value Change menu item is selected." width="2626" height="1808" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change.png 2626w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change-300x207.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change-1024x705.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change-768x529.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change-1536x1058.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/break-on-value-change-2048x1410.png 2048w" sizes="(max-width: 2626px) 100vw, 2626px" /></a></p>
+<p>Immediately, you’ll see the data breakpoint listed in the <strong>Breakpoints</strong> section of the debug pane.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-in-window.png"><img class="alignnone size-full wp-image-30429" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-in-window.png" alt="Screenshot of the data breakpoint listed in the Breakpoints section of the Debug pane" width="948" height="304" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-in-window.png 948w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-in-window-300x96.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-in-window-768x246.png 768w" sizes="(max-width: 948px) 100vw, 948px" /></a></p>
+<p>In this example, if we continue running the program, the next time it breaks will be when local variable <code>i</code> changes value. Use the debug control panel to continue running the program.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/debug-continue.png"><img class="alignnone size-full wp-image-30427" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/debug-continue.png" alt="screenshot of the debug control panel, hovering over the continue button." width="598" height="144" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/debug-continue.png 598w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/debug-continue-300x72.png 300w" sizes="(max-width: 598px) 100vw, 598px" /></a></p>
+<p>Sure enough, execution breaks when <code>i</code> changes value from 1 to 2.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed.png"><img class="alignnone size-full wp-image-30428" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed.png" alt="Screenshot of the debugger pausing when local variable i changes value" width="2308" height="1630" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed.png 2308w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed-300x212.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed-1024x723.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed-768x542.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed-1536x1085.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/broke-when-i-changed-2048x1446.png 2048w" sizes="(max-width: 2308px) 100vw, 2308px" /></a></p>
+<h2 id="troubleshooting-data-breakpoints">Troubleshooting data breakpoints</h2>
+<p>In this same example program, if you set a data breakpoint on <code>msg</code> of type string, you might see an error message in the Debug Console that says: <code>Unable to set data breakpoint: Value does not fall within the expected range. (Parameter ‘size’)</code>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error.png"><img class="alignnone size-full wp-image-30426" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error.png" alt="Screenshot of the error message seen when a user tries to set a data breakpoint on a data type that is too large, like string." width="3030" height="1878" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error.png 3030w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error-300x186.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error-1024x635.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error-768x476.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error-1536x952.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/data-breakpoint-size-error-2048x1269.png 2048w" sizes="(max-width: 3030px) 100vw, 3030px" /></a></p>
+<p>This is because the string type is 32 bytes, and there’s a limitation on the size we can set data breakpoints on. This limitation comes from the fact that the architecture that your program runs on has a limited number of hardware data breakpoints it can use. The table below shows how many registers are available to use per architecture.</p>
+<table width="613">
+<thead>
+<tr>
+<td colspan="3"><strong>DATA BREAKPOINT HARDWARE LIMITATIONS</strong></td>
+</tr>
+<tr>
+<td><strong>Architecture</strong></td>
+<td><strong>Number of hardware supported data breakpoints</strong></td>
+<td><strong>Max byte size</strong></td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x86</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>x64</td>
+<td>4</td>
+<td>8</td>
+</tr>
+<tr>
+<td>ARM</td>
+<td>1</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ARM64</td>
+<td>2</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<h1 id=""></h1>
+<h1 id="quick-run-debug-play-button">Quick run/debug play button</h1>
+<p>We know that setting up tasks.json and launch.json to run and debug C++ files isn’t always fun. We’re excited to announce that, thanks to this latest release, running and debugging C++ files in VS Code has never been easier!</p>
+<p>With the <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/v1.9.7">1.9.7 update</a>, you’ll see a play button in the top right corner of the editor whenever a C or C++ file is active. It’s the same play button used by the Python extension, Java extension, and Code Runner extension.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button.png"><img class="alignnone size-full wp-image-30433" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button.png" alt="Screenshot of helloworld.cpp active in the editor with the run and debug play button in the title bar" width="3188" height="1996" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button.png 3188w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button-300x188.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button-1024x641.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button-768x481.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button-1536x962.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-play-button-2048x1282.png 2048w" sizes="(max-width: 3188px) 100vw, 3188px" /></a></p>
+<p>The play button has two modes: “Run C/C++ File” and “Debug C/C++ File.” The default mode is “Run C/C++ File,” and you can use the drop-down to switch modes.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-debug-drop-down.png"><img class="alignnone size-full wp-image-30432" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-debug-drop-down.png" alt="Screenshot of the drop-down menu in the run and debug play button" width="446" height="270" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-debug-drop-down.png 446w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/run-debug-drop-down-300x182.png 300w" sizes="(max-width: 446px) 100vw, 446px" /></a></p>
+<p>If you already have a launch.json file in your workspace, the play button will read from it when figuring out how to run and debug your C++ file. If you don’t have launch.json, the play button will create a temporary “quick debug” configuration on the fly, eliminating the need for launch.json altogether!</p>
+<p>We also simplified <strong>F5</strong> (<strong>Run &gt; Start Debugging</strong>) to use the same temporary “quick debug” configurations as the play button when your project doesn’t have launch.json. If you need to create launch.json to customize debugging, select <strong>Run &gt; Add Configuration&#8230; </strong>from the main menu.</p>
+<p><strong>Note: </strong>We&#8217;re still rolling out the run/debug play button, so you might not see it by default, but you can opt in by enabling <strong>C_Cpp: Debug Shortcut</strong> in User settings.</p>
+<h1 id="what-do-you-think">What do you think?</h1>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">Download the C++ extension for Visual Studio Code</a> today, give it a try, and let us know what you think. If you run into any issues, or have any suggestions, please report them in the <a href="https://github.com/Microsoft/vscode-cpptools/issues">Issues section of our GitHub repository</a>. We can be reached via the comments below or in email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. You can also find our team on Twitter at <a href="https://twitter.com/visualc">@</a><a href="https://twitter.com/visualc">VisualC</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/">What’s new for C++ Debugging in Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2022 Schedule Available</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/#respond</comments>
@@ -689,105 +775,6 @@ We&#8217;re pleased to announce that, as of today, code execution and static ana
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>GSL 4.0.0 is Available Now</title>
-		<link>https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/</link>
-		
-		<dc:creator><![CDATA[Dmitry Kobets]]></dc:creator>
-		<pubDate>Tue, 01 Feb 2022 15:45:22 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<category><![CDATA[Writing Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30051</guid>
-
-					<description><![CDATA[<p>GSL 4.0.0 has been released! Here is a summary of the changes.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/">GSL 4.0.0 is Available Now</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Version 4.0.0 of Microsoft’s implementation of the <a href="https://github.com/microsoft/GSL">C++ Core Guidelines Support Library</a> (GSL) is now available for you to download on the <a href="https://github.com/microsoft/gsl/releases">releases page</a>. This release maintains the safety guarantees that we have always offered and adds improvements to various parts of the library.</p>
-<h2 id="what-changed-in-this-release">What changed in this release?</h2>
-<ul>
-<li><a href="#deprecation-of-gslstring_span">Deprecation of <code>gsl::string_span</code></a></li>
-<li><a href="#removal-of-gsl-multi_span">Removal of <code>&lt;gsl/multi_span&gt;</code></a></li>
-<li><a href="#header-files-dropped-the-gsl_-prefix">Header files dropped the <code>gsl_</code> prefix</a></li>
-<li><a href="#changes-to-not_null">Changes to <code>not_null</code></a></li>
-<li><a href="#gslspan-and-stdspan-now-use-the-correct-specialization-of-gslat"><code>gsl::span</code> and <code>std::span</code> now use the correct specialization of <code>gsl::at</code></a></li>
-<li>The <code>zstring</code> family no longer requires empty brackets to be used: <a href="https://github.com/microsoft/GSL/issues/992">issue#992</a>
-<ul>
-<li>for example, <code>void foo(zstring&lt;&gt; str);</code> should now be <code>void foo(zstring str);</code></li>
-</ul>
-</li>
-<li><code>gsl::narrowing_error</code> now has a helpful <code>what()</code> message</li>
-<li><code>finally</code> and <code>final_action</code> are now <code>[[nodiscard]]</code></li>
-<li><a href="#gsl-will-work-in-environments-where-exceptions-are-disabled-with-some-caveats">GSL will work in environments where exceptions are disabled, with some caveats</a></li>
-<li>GSL will work in environments which do not support iostreams, via the addition of the <code>GSL_NO_IOSTREAMS</code> flag: <a href="https://github.com/microsoft/GSL/pull/935">#953</a></li>
-<li><a href="#C-compilers">Updated compiler support</a></li>
-<li><a href="#cmake-and-build-improvements">CMake and build improvements</a></li>
-</ul>
-<h2 id="deprecation-of-gslstring_span">Deprecation of <code>gsl::string_span</code></h2>
-<p><a href="https://github.com/isocpp/CppCoreGuidelines/pull/1680">isocpp/CppCoreGuidelines#1680</a> removed <code>string_span</code> from the C++ Core Guidelines. The recommendation is to use <code>std::string_view</code>, <code>std::span&lt;char&gt;</code> or <code>gsl::span&lt;char&gt;</code> instead. To more closely align Microsoft’s GSL with the C++ Core Guidelines, we deprecated our implementation of <code>string_span</code> and <code>zstring_span</code>, including <code>basic_string_span</code>, <code>basic_zstring_span</code>, and all related types. For the time being, we will continue to provide the <code>&lt;gsl/string_span&gt;</code> header, but it will not be actively worked on or maintained. A table of all supported and unsupported types/features can be found in the <a href="https://github.com/microsoft/GSL/blob/main/README.md">README.md</a>.</p>
-<h2 id="removal-of-gsl-multi_span">Removal of <code>&lt;gsl/multi_span&gt;</code></h2>
-<p><code>multi_span</code>, <code>strided_span</code>, and everything else in <code>&lt;gsl/multi_span&gt;</code> were deprecated over a year ago in <a href="https://github.com/microsoft/GSL/releases/tag/v3.0.0">GSL 3.0.0</a>, and it is time for them and their associated tests to be removed from the library.</p>
-<h2 id="header-files-dropped-the-gsl_-prefix">Header files dropped the <code>gsl_</code> prefix</h2>
-<p>All headers which previously contained a <code>gsl_</code> prefix in their name have had this prefix removed. For example, <code>&lt;gsl/gsl_algorithm&gt;</code> is now <code>&lt;gsl/algorithm&gt;</code>. The <code>gsl_</code> prefixed files still exist and pass through to the updated files, but will be removed in a future release.</p>
-<h2 id="changes-to-not_null">Changes to <code>not_null</code></h2>
-<p>To more closely align Microsoft’s GSL with the C++ Core Guidelines, <code>gsl::not_null</code> now accepts only types which are <em>comparable</em> to <code>nullptr</code>. Previously, it accepted only types which are <em>assignable</em> from <code>nullptr</code>, but this was stricter than what was intended by the <a href="http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslview-views">Core Guidelines</a>.</p>
-<p>The functions <code>make_not_null</code> and <code>make_strict_not_null</code>, and the <code>not_null</code> comparison operators, are now all <code>noexcept</code>.</p>
-<h2 id="gslspan-and-stdspan-now-use-the-correct-specialization-of-gslat"><code>gsl::span</code> and <code>std::span</code> now use the correct specialization of <code>gsl::at</code></h2>
-<p><code>gsl::span</code> and <code>std::span</code> now have their own separate specializations of <code>gsl::at</code>, to ensure consistent behavior between the two versions of span. Both overloads are included when importing <code>&lt;gsl/span&gt;</code>. The <code>std::span</code> overload can be separately included from <code>&lt;gsl/util&gt;</code>.</p>
-<h2 id="gsl-will-work-in-environments-where-exceptions-are-disabled-with-some-caveats">GSL will work in environments where exceptions are disabled, with some caveats</h2>
-<p><code>gsl::narrow</code> is the only part of the library which may throw exceptions and has been moved into its own header <code>&lt;gsl/narrow&gt;</code>. This header is included in <code>&lt;gsl/gsl&gt;</code> only if exceptions are enabled. This allows users of the library who are working in environments without exceptions to use all of the other components of the library.</p>
-<p>Note: <code>gsl::narrow_cast</code> is still in <code>&lt;gsl/util&gt;</code>, since it does not throw exceptions.</p>
-<h2 id="updated-compiler-support">Updated compiler support</h2>
-<p>The list of supported compilers/toolsets has been updated with newer versions. More info on compiler support can be found in the <a href="https://github.com/microsoft/GSL/blob/main/README.md#supported-compilers--toolsets">README.md</a>.</p>
-<table>
-<thead>
-<tr>
-<th>Compiler/Toolset</th>
-<th>Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>XCode</td>
-<td>13.2.1 &amp; 12.5.1</td>
-</tr>
-<tr>
-<td>GCC</td>
-<td>11.1.0 &amp; 10.3.0</td>
-</tr>
-<tr>
-<td>Clang</td>
-<td>12.0.0 &amp; 11.0.0</td>
-</tr>
-<tr>
-<td>Visual Studio with MSVC</td>
-<td>VS2022 (17.0) &amp; VS2019 (16.11)</td>
-</tr>
-<tr>
-<td>Visual Studio with LLVM</td>
-<td>VS2022 (17.0) &amp; VS2019 (16.11)</td>
-</tr>
-</tbody>
-</table>
-<h2 id="cmake-and-build-improvements">CMake and build improvements</h2>
-<ul>
-<li>GSL Install logic is now guarded by a cmake option <code>GSL_INSTALL</code>: <a href="https://github.com/microsoft/GSL/pull/964">#964</a></li>
-<li>Fix bug which prevented the library from being built on a 32-bit host and then being used on a 64-bit machine: <a href="https://github.com/microsoft/GSL/pull/893">#893</a></li>
-<li>Build will now use <code>CMAKE_CXX_STANDARD</code> if it&#8217;s provided <a href="https://github.com/microsoft/GSL/pull/953">#953</a></li>
-<li>Clean up <code>GSL_SUPPRESS</code> warning for intel compilers: <a href="https://github.com/microsoft/GSL/pull/906">#906</a></li>
-<li>Fix build failure for C++20 compilers which don&#8217;t have <code>std::span</code>: <a href="https://github.com/microsoft/GSL/pull/993">#993</a></li>
-<li>Cleaned up some static analysis warnings</li>
-<li>The cmake cache variable <code>VS_ADD_NATIVE_VISUALIZERS</code> has been renamed to <code>GSL_VS_ADD_NATIVE_VISUALIZERS</code>: <a href="https://github.com/microsoft/GSL/pull/941">#941</a></li>
-</ul>
-<h2 id="summary">Summary</h2>
-<p>This has been a list of the changes in the GSL 4.0.0 release. You can download the code at the <a href="https://github.com/microsoft/GSL">GSL GitHub page</a>. Please stay tuned for future releases!</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/gsl-4-0-0-is-available-now/">GSL 4.0.0 is Available Now</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
