@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 21 Apr 2022 18:59:08 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 22 Apr 2022 01:35:05 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,164 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg April 2022 Release is Now Available</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Fri, 22 Apr 2022 01:35:05 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30452</guid>
+
+					<description><![CDATA[<p>The April 2022 release of the vcpkg package manager is available. This blog post summarizes changes from March 1st, 2022 to March 30th, 2022 for the microsoft/vcpkg and microsoft/vcpkg-tool GitHub repos.<br />
+Some stats for this period:</p>
+<p>24 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/">vcpkg April 2022 Release is Now Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.04.12">April 2022 release of the vcpkg package manager is available</a>. This blog post summarizes changes from March 1<sup>st</sup>, 2022 to March 30<sup>th</sup>, 2022 for the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.04.12">microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/pull/441">microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>24 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>272 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>1,926 total libraries</strong> available in the vcpkg public registry. When including all available versions, there are <strong>9,431 versioned ports</strong>. Vcpkg continues to maintain the largest C/C++ open-source catalog on the market.</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.04.12">April release of the main vcpkg repo</a> includes <strong>281 merged PRs</strong> by <strong>83 people</strong>.</li>
+<li>The main vcpkg repo has <strong>4.5k forks</strong> and <strong>15.5k stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<h4 id="vcpkg-artifacts-merged-into-microsoft-vcpkg-tool-repo">vcpkg artifacts merged into Microsoft/vcpkg-tool repo</h4>
+<p>vcpkg artifacts is our preview experience for acquiring binary packages, intended for developer tools like compilers, platform SDKs, and debuggers. This is a major step towards accepting external contributions for the vcpkg artifacts feature.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/428">Microsoft/vcpkg-tool#428</a></p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-can-use-tar-exe-from-windows-10">vcpkg can use tar.exe from Windows 10</h4>
+<p>To reduce our external dependency count for better reliability and performance, vcpkg now uses the Windows 10 in-box copy of tar to unzip our core dependencies. This removes the need for msiexec.exe during core operation on Windows 10 (though certain ports may still require it).</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/406">Microsoft/vcpkg-tool#406</a></p>
+<p>&nbsp;</p>
+<h4 id="anonymous-aws-s3-access-added-for-binary-caching-experience">Anonymous AWS S3 access added for binary caching experience</h4>
+<p>This works via a new x-aws-config option in vcpkg.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/434">Microsoft/vcpkg-tool#434</a> (thank you <a href="https://github.com/AenBleidd">@AenBleidd</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="improved-port-installation-error-logging-in-vcpkg-ci-system">Improved port installation error logging in vcpkg CI system</h4>
+<p>When modifying a port, vcpkg builds not only the port itself, but all other ports depending on it or that are dependencies of the port. This is handled by our CI system, which must successfully complete this operation to accept PRs. We have improved the logging of which ports are being broken by a PR so that port maintainers have an easier time diagnosing what went wrong.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/468">Microsoft/vcpkg-tool#468</a></p>
+<p>&nbsp;</p>
+<h4 id="general-object-storage-interface-for-binary-caching">General object storage interface for binary caching</h4>
+<p>Provides a consistent interface for using binary caching with different cloud providers.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/456">Microsoft/vcpkg-tool#456</a> (thank you <a href="https://github.com/day253">@day253</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="progress-with-visual-studio-integration-experience">Progress with Visual Studio integration experience</h4>
+<p>We have not yet finished our improved Visual Studio integration experience for vcpkg, but progress was made this release, including signed PowerShell scripts and a packaging step that was added to the tool.</p>
+<p>PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/451">Microsoft/vcpkg-tool#451</a> &amp; <a href="https://github.com/microsoft/vcpkg-tool/pull/399">Microsoft/vcpkg-tool#399</a></p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-tool-no-longer-depends-on-ninja">vcpkg tool no longer depends on ninja</h4>
+<p>Ninja is no longer a dependency of the vcpkg tool, reducing the overhead of installing 3<sup>rd</sup> party tools for vcpkg to function. Some individual ports may still require Ninja and it will be acquired in these circumstances as part of their build scripts.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/372">Microsoft/vcpkg-tool#372</a> (thank you <a href="https://github.com/Neumann-A">@Neumann-A</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="git_askpass-support">GIT_ASKPASS support</h4>
+<p>An environment variable has been added for GIT_ASKPASS. This is used to point git toward a binary that implements git’s credential manager interface and can be used for private repository authentication.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/441">Microsoft/vcpkg-tool/#441</a> (thank you <a href="https://github.com/horenmar">@horenmar</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="removed-many-uses-of-stdregex-in-the-vcpkg-code">Removed many uses of std::regex in the vcpkg code</h4>
+<p>We’ve been removing uses of <code>std::regex</code> throughout the code to improve vcpkg performance.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/427">Microsoft/vcpkg-tool/#427</a></p>
+<p>&nbsp;</p>
+<h4 id="instructions-for-using-vcpkg-in-arch-linux">Instructions for using vcpkg in Arch Linux</h4>
+<p>Added user <a href="https://github.com/microsoft/vcpkg/pull/23676">instructions for Arch Linux</a> during vcpkg bootstrap.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg/pull/23676">Microsoft/vcpkg/#23676</a> (thank you <a href="https://github.com/bwrsandman">@bwrsandman</a>!).</p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-works-again-with-cmake-versions-3-19">vcpkg works again with CMake versions &lt;= 3.19</h4>
+<p>Fixed a bug that was breaking the vcpkg CMake toolchain file for CMake versions 3.19 and earlier.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg/pull/23410">Microsoft/vcpkg/#23410</a> (thank you <a href="https://github.com/dg0yt">@dg0yt</a>!)</p>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,731</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,776</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,667</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,691</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>880</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,315</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>826</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,641</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,713</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>While vcpkg supports a much larger variety of target platforms x architectures, the list above is routinely tested to ensure updated ports don’t break other ports in the catalog.</p>
+<p><em>Fun fact:</em> we have so many x64-windows ports now that it takes over 24 hours to build them as part of our package testing process. We had to <a href="https://github.com/microsoft/vcpkg/pull/23601">increase the timeout on these builds</a> to compensate for the added time.</p>
+<p>&nbsp;</p>
+<h3 id="documentation">Documentation</h3>
+<p>Minor documentation changes were made for several vcpkg functions. We also want to thank our community contributor <a href="https://github.com/zhangfuwen">@zhangfuwen</a> for <a href="https://github.com/microsoft/vcpkg/pull/23690">updating our Android usage documentation</a> as well.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos between March 1 – March 30, 2022:</p>
+<ul>
+<li>autoantwort (22 commits)</li>
+<li>dg0yt (17 commits)</li>
+<li>Thomas1664 (12 commits)</li>
+<li>Neumann-A (11 commits)</li>
+<li>coryan (4 commits)</li>
+<li>horenmar (3 commits)</li>
+<li>Ryan-rsm-McKenzie (3 commits)</li>
+<li>RT222 (3 commits)</li>
+<li>chausner (3 commits)</li>
+<li>Pospelove (2 commits)</li>
+<li>hkaiser (1 commit)</li>
+<li>ZeeWanderer (1 commit)</li>
+<li>cenit (1 commit)</li>
+<li>Hoikas (1 commit)</li>
+<li>mathisloge (1 commit)</li>
+<li>day253 (1 commit)</li>
+<li>xvitaly (1 commit)</li>
+<li>bhardwajs (1 commit)</li>
+<li>AenBleidd (1 commit)</li>
+<li>mprather (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.04.12">full April release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/">vcpkg April 2022 Release is Now Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s new for C++ Debugging in Visual Studio Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/#comments</comments>
@@ -743,38 +901,6 @@ int main()
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vscode-embedded-development/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Execution and Static Analysis Support for MSVC on Compiler Explorer</title>
-		<link>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 01 Mar 2022 18:41:11 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30113</guid>
-
-					<description><![CDATA[<p>Compiler Explorer is a popular resource for visualizing the assembly output of various compilers, trying out different compiler versions and flags, and testing many popular libraries.<br />
-We&#8217;re pleased to announce that, as of today, code execution and static analysis are now available for MSVC on Compiler Explorer.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/">Execution and Static Analysis Support for MSVC on Compiler Explorer</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://godbolt.org/">Compiler Explorer</a> is a popular resource for visualizing the assembly output of various compilers, trying out different compiler versions and flags, and testing many popular libraries.</p>
-<p>We&#8217;re pleased to announce that, as of today, code execution and static analysis are now available for MSVC on Compiler Explorer. Execution on CE has been one of our <a href="https://developercommunity.visualstudio.com/t/allow-code-execution-on-godboltorg-for-msvc-compil/663829">highest voted tickets on Developer Community</a>, so we hope many of you will find it useful. The static analysis tool provided is the same as offered in <a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-with-github-actions/">GitHub Actions</a> and in the IDE as <a href="https://devblogs.microsoft.com/cppblog/in-editor-code-analysis-in-visual-studio-2019-preview-2/">background code analysis</a>.</p>
-<p>To enable code execution, tick the &#8220;Execute the code&#8221; box in the &#8220;Output…&#8221; menu. Now, every time the code is compiled, it will be run and the output will be displayed in the Output window.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1.png"><img class="aligncenter wp-image-30121 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1.png" alt="Execute the code and compile to binary options highlighted in the output menu" width="866" height="308" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1.png 866w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-300x107.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-768x273.png 768w" sizes="(max-width: 866px) 100vw, 866px" /></a></p>
-<p>To enable static analysis, select &#8220;Static Analysis&#8221; from the &#8220;Add tool…&#8221; menu. Output from the tool will be written to a new Static Analysis window. You can find out more about our toolchain&#8217;s static analysis capabilities in our <a href="https://docs.microsoft.com/en-us/cpp/code-quality/code-analysis-for-c-cpp-overview?view=msvc-170">code analysis documentation</a>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-1.png"><img class="aligncenter wp-image-30122 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-1.png" alt="Static analysis highlighted in the add tool menu" width="849" height="311" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-1.png 849w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-1-300x110.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce1-1-768x281.png 768w" sizes="(max-width: 849px) 100vw, 849px" /></a></p>
-<p>You can see the static analysis in action below.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2.png"><img class="aligncenter wp-image-30128 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2.png" alt="Static analysis finding an issue with the code" width="3838" height="874" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2.png 3838w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2-300x68.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2-1024x233.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2-768x175.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2-1536x350.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/ce2-2048x466.png 2048w" sizes="(max-width: 3838px) 100vw, 3838px" /></a></p>
-<p>A huge thanks to Matt Godbolt and Patrick Quist from the Compiler Explorer team for their support. On the Microsoft side, much of this work was done by Tim Myers and Dale Hirt.</p>
-<p>You can let us know what you think of the new support on Twitter <a href="https://twitter.com/visualc">@visualc</a> or in the comments below.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/">Execution and Static Analysis Support for MSVC on Compiler Explorer</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/execution-and-static-analysis-support-for-msvc-on-compiler-explorer/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
