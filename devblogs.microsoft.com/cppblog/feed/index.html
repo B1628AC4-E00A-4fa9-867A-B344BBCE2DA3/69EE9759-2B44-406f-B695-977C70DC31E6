@@ -28,6 +28,151 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>OpenMP Task Support for C++ in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
+		<pubDate>Tue, 26 Apr 2022 15:00:14 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30401</guid>
+
+					<description><![CDATA[<p>The MSVC compiler adds support for OpenMP tasks with the /openmp:llvm flag.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/">OpenMP Task Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In our <a href="https://devblogs.microsoft.com/cppblog/openmp-updates-and-fixes-for-cpp-in-visual-studio-2019-16-10/">previous blog post</a> about OpenMP support in Visual Studio 2019 version 16.10, we announced support for the <strong>-openmp:llvm</strong> switch to enable the compiler to target LLVM’s OpenMP runtime library on x86, x64, and arm64 platforms. In that release, <strong>-openmp:llvm</strong> included some correctness fixes and support for unsigned indices in parallel for loops, but otherwise only supported the same OpenMP 2.0 features as <strong>-openmp</strong>.</p>
+<h2 id="openmpllvm-support-for-tasks">-openmp:llvm support for tasks</h2>
+<p>Starting with <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2022 version 17.2</a>, we have added support for the first major new OpenMP feature specific to the <strong>-openmp:llvm</strong> flag: the <code>task</code> directive as defined by the OpenMP 3.1 standard, including the accompanying <code>if</code>, <code>private</code>, <code>firstprivate</code>, <code>shared</code>, <code>default</code>, <code>untied</code>, <code>mergeable</code>, and <code>final</code> clauses, and the associated <code>taskwait</code> and <code>taskyield</code> directives. The compiler does not yet support <code>task</code> clauses added in later versions of the OpenMP standard.</p>
+<p>The OpenMP <code>task</code> directive is used to specify a unit of work that can be done in parallel by any thread. A task executes once when a thread becomes available, instead of executing once per thread as a parallel region would. Creating tasks is a useful alternative to the OpenMP <code>parallel for</code> directive when the number of iterations is not known at the start of the calculation, such as when operating on a linked list or implementing a recursive algorithm.</p>
+<p>The following is a simple example of using the <code>task</code> directive to sum the elements of an array by splitting the array into pieces and having each task sum one piece.</p>
+<pre><code class="language-cpp">#include &lt;stdio.h&gt;
+
+int sumArrayImpl(int* arr, int arrayLength) {
+  if (arrayLength == 1)
+     return arr[0];
+  if (arrayLength == 0)
+     return 0;
+
+  int left, right;
+  int halfLength = arrayLength / 2;
+  #pragma omp task default(none) firstprivate(arr, halfLength), shared(left) final(halfLength &gt;= 2)
+  {
+     left = sumArray(arr, halfLength);
+  }
+  #pragma omp task default(none) firstprivate(arr, halfLength, arrayLength) shared(right) final(halfLength &gt;= 2)
+  {
+     right = sumArray(arr + halfLength, halfLength + (arrayLength % 2));
+  }
+  #pragma omp taskwait
+     return left + right;
+}
+
+int sumArray(int* array, int arrayLength)
+   #pragma omp parallel
+   {
+      #pragma omp single
+      { 
+         printf("Sum = %dn", sumArrayImpl(array, arrayLength));
+      }
+   }
+}</code></pre>
+<p>Although this example does not do enough work for each element to see a speedup over a sequential for loop, and is consistent enough that a <code>parallel for</code> directive could accomplish the same degree of paralellism, it has a similar form to more complicated examples that would see a speedup and illustrates many of the <code>task</code> directive clauses.</p>
+<p>The <code>private</code>, <code>firstprivate</code>, <code>shared</code>, and <code>default</code> clauses specify the scope of variables used in a task, following a similar pattern to the same clauses on the <code>parallel</code> directive. Note that marking a pointer as <code>firstprivate</code> means that each task will have its own copy of the pinter. The underlying array is still shared across all tasks.</p>
+<p>The <code>final</code> clause prevents creating an excessive number of tasks by causing any further child tasks to be executed sequentially when the clause’s condition is true. An <code>if</code> clause, conversely, causes the current <code>task</code> region to execute sequentially, but it can still create child tasks that execute in parallel. The <code>taskwait</code> directive allows for synchronization between tasks by waiting until a task’s children complete before continuing.</p>
+<p>A few <code>task</code> clauses and an additional task-related directive are missing from this example. The <code>taskyield</code> directive allows the runtime to suspend a task’s execution in order to execute other tasks, and is useful when a task may need to wait for some other work to complete. The <code>mergeable</code> and <code>untied</code> clauses on the <code>task</code> directive are optimization hints. An <code>untied</code> task that yields may resume on any thread, instead of only resuming on the thread that spawned the task. A <code>mergeable</code> task allows the runtime to reuse the data environment of its parent for the child task.</p>
+<p>Now, let&#8217;s take a look at an example that shows the usefulness of <code>task</code> in a scenario where <code>parallel for</code> is insufficient. For this example, we&#8217;ll be using a data structure designed for storing words called a Trie tree. In a Trie tree, each word is stored as a path through the tree, terminating in a node marked with <code>sequenceEnd == true</code>. A node with <code>sequenceEnd == true</code> may still have children if it is a substring of another word. For example, a Trie tree containing the words &#8220;car&#8221;, &#8220;care&#8221;, and &#8220;cars&#8221; would start with a <code>c</code> node, which has an <code>a</code> as a child, which in turn has an <code>r</code> as a child. The <code>r</code> node would be marked as an end node and also have two children, an <code>e</code> leaf and an <code>s</code> leaf, both also marked as terminating nodes, like so:</p>
+<pre><code class="language-text">c
+ 
+  a
+   
+    r*
+   / 
+  e*  s*   </code></pre>
+<p>A <code>parallel for</code> could not traverse a tree like this because there is no random access iterator, but a tree traversal can still take advantage of parallelism by creating a task for each node visited. Consider the following code for counting and printing out all of the words in a trie tree:</p>
+<pre><code class="language-cpp">struct TrieNode {
+   TrieNode* parent;
+   std::unordered_map&lt;char, TrieNode*&gt; children;
+
+   bool sequenceEnd;
+   char currentChar;
+
+   void Print();
+   void PrintAllWordsWithSubstring();
+
+   ~TrieNode();
+};
+
+void TrieNode::Print() {
+  if (parent) {
+     parent-&gt;Print();
+     std::cout &lt;&lt; currentChar;
+  }
+}
+
+int totalWords;
+
+void TrieNode::PrintAllWordsWithSubstring() {
+   #pragma omp task
+   {
+      for (auto child : this-&gt;children) {
+         child.second-&gt;PrintAllWordsWithSubstring();
+      }
+
+      if (this-&gt;sequenceEnd) {
+          #pragma omp critical
+          {
+             this-&gt;Print();
+             std::cout &lt;&lt; std::endl;
+          }
+
+          #pragma omp atomic
+             ++totalWords;
+      }
+   }
+}
+
+void PrintAllWords(TrieNode* root) {
+   totalWords = 0;
+
+   #pragma omp parallel
+   {
+      #pragma omp single
+      root-&gt;PrintAllWordsWithSubstring();
+   }
+}</code></pre>
+<p>In this example, the <code>PrintAllWordsWithSubstring</code> member function recursively creates a new task for each node. The <code>this</code> pointer is implicitly <code>firstprivate</code> inside the <code>task</code> region. Choosing the correct data-sharing attributes for variables is especially important for <code>task</code> because a task&#8217;s execution is deferred instead of executed immediately, as a <code>parallel</code> region is. As a result, the function that creates the task may return before the <code>task</code> region is executed and any <code>shared</code> variables on the stack may fall out of scope. If the <code>this</code> pointer was shared, a task in a member function couldn&#8217;t reliably access member variables. To see the difference more clearly, consider the following broken alternative implementation of <code>TrieNode::PrintAllWordsWithSubstring</code>:</p>
+<pre><code class="language-cpp">void TrieNode::PrintAllWordsWithSubstring() {
+   for (auto child : this-&gt;children) {
+      #pragma omp task shared(child)
+      {
+         // This line will cause an Access Violation.
+         child.second-&gt;PrintAllWordsWithSubstring();
+      }
+   }
+
+   if (this-&gt;sequenceEnd) {
+      this-&gt;Print();
+      std::cout &lt;&lt; std::endl;
+
+      #pragma omp atomic
+         ++totalWords;
+   }
+}</code></pre>
+<p>If a variable is only read and never written to inside a <code>parallel</code> region, marking it as <code>shared</code> doesn&#8217;t change the end result. No writes will occur during the execution of the <code>parallel</code> region, so all threads will see the same value. However, code outside of a <code>task</code> region may execute concurrently with the execution of a <code>task</code>. In the flawed implementation above, by the time the recursive call to <code>PrintAllWordsWithSubstring(child.second)</code> is made, the iterator will likely already have reached the end of <code>children</code> and <code>child.second</code> will no longer have a valid value.</p>
+<h2 id="our-openmp-plans">Our OpenMP Plans</h2>
+<p>As of 17.2, all of the OpenMP 2.5 standard is supported, as well as tasks and parallel for loops with unsigned indices from the OpenMP 3.1 standard. We have started the long process to support newer versions of the OpenMP standard. Our ultimate goal is to support the most recent OpenMP standard by leveraging LLVM&#8217;s OpenMP runtime, but this will take time. Our next step for OpenMP will be to support the remaining features added in the OpenMP 3.1 standard. Which features are added first will depend on your feedback. We would love to hear from you which specific OpenMP 3.1 features you would like to see first.</p>
+<h2 id="feedback">Feedback</h2>
+<p>We encourage you to try out this update in the latest <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2022 version 17.2 Preview</a>. If you encounter a correctness issue in code generated with the <strong>-openmp:llvm</strong> switch or bugs in the libomp140 DLLs shipped with Visual Studio, please let us know. We can be reached via the comments below, via twitter (<a href="https://twitter.com/visualc">@visualc</a>) or via <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/">OpenMP Task Support for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2022 is Today</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/#respond</comments>
@@ -723,7 +868,7 @@ int overlappingBitwiseEnums(BitWiseA a)
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
+			<slash:comments>3</slash:comments>
 		
 		
 			</item>
@@ -804,54 +949,6 @@ int overlappingBitwiseEnums(BitWiseA a)
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-github-codespaces-and-visual-studio-code-for-cplusplus-development/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Enhancing Game Developer Productivity with Visual Studio 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/enhancing-game-developer-productivity/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/enhancing-game-developer-productivity/#comments</comments>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Thu, 31 Mar 2022 16:18:24 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[game dev]]></category>
-		<category><![CDATA[productivity]]></category>
-		<category><![CDATA[unreal engine]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30338</guid>
-
-					<description><![CDATA[<p>In this blog, we will discuss how much faster you can get to code with speedier C++ IntelliSense ready and opening a file. Learn how search improved with faster with C++ Find All References and indexed Find in Files.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/enhancing-game-developer-productivity/">Enhancing Game Developer Productivity with Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
-<p>Since the launch of Visual Studio 2022, we have been continuously making performance improvements to enhance game developer productivity. In my <a href="https://www.youtube.com/watch?v=y8kt5842PT4">Microsoft Game Dev talk for GDC</a>, I shared why Visual Studio is the ultimate IDE for game developers. I also partnered with the folks at Double Fine Productions to <a href="https://developer.microsoft.com/en-us/games/events/gdc/psychonauts2">demonstrate their most loved features when developing the Award-winning Psychonauts 2.</a> Next, I shared features that Double Fine is most excited for in VS2022. Lastly, <a href="https://developer.microsoft.com/en-us/games/blog/microsoft-perforce-reimagining-game-production/">Microsoft Game Dev announced</a> that a set of GitHub Actions for Perforce Helix Core on Azure, authored directly by Perforce, is now available.</p>
-<p>In this blog, I will show you some amazing speed improvements when searching and getting to code by discussing our measurements from large codebases such as Unreal Engine and Chromium. See how much faster you can get to code with speedier C++ IntelliSense ready and opening a file. Search faster with C++ Find All References and indexed Find in Files.</p>
-<p>While game developers and developers with large codebases will benefit from these improvements the most, all C++ developers will gain increased productivity with these changes.</p>
-<h1 id="testing-methodology">Testing Methodology</h1>
-<p>We tested using an Unreal Engine 4 sample project on a desktop with an Intel Core i7-9700 @ 3Ghz, 64GB RAM, and an SSD. The tests took place on Visual Studio 2019 16.11 and Visual Studio 2022 17.1. The results were averaged over 3 runs. For Find in Files, we benchmarked using the Chromium repo, with more than 300,000 files.</p>
-<h1 id="results">Results</h1>
-<h2 id="getting-to-code">Getting to Code</h2>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022.png"><img class="aligncenter size-full wp-image-30340" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022.png" alt="Image gettocodevs2022" width="1652" height="992" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022.png 1652w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/gettocodevs2022-1536x922.png 1536w" sizes="(max-width: 1652px) 100vw, 1652px" /></a></p>
-<p>When opening a file on Visual Studio 2019, it took 2.02 seconds for code to show up. In Visual Studio 2022, you can see the same action completing in only 0.82 seconds, resulting in a 2.44X speed up. In Visual Studio 2019, the time it took for semantic colorization to show up after opening a file was 12.9 seconds. You will experience that the same action is 2.22X faster in VS2022, taking 5.8 seconds.</p>
-<p>For Unreal Engine projects, you will experience additional speed up for IntelliSense readiness. <a href="https://devblogs.microsoft.com/cppblog/18x-faster-intellisense-for-unreal-engine-projects-in-visual-studio-2022/">Learn more in this blog post.</a></p>
-<h2 id="code-search">Code Search</h2>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022.png"><img class="aligncenter size-full wp-image-30341" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022.png" alt="Image searchvs2022" width="1652" height="992" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022.png 1652w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/03/searchvs2022-1536x922.png 1536w" sizes="(max-width: 1652px) 100vw, 1652px" /></a></p>
-<p>In Visual Studio 2022, you will see a speed up of 1.74X when using C++ Find All References (Shift + F12). The action was completed in 17.36 seconds; compared to Visual Studio 2019, the action took a little over half a minute.
-For Find in Files in Visual Studio 2019, searching through 300,000 files in the Chromium repo took 30 seconds. In Visual Studio 2022, you will notice that the same action will take 1.5 seconds, a 20X improvement!</p>
-<h1 id="analysis">Analysis</h1>
-<p>You will notice several optimizations to the IntelliSense engine that created more efficiency in getting to code scenarios. Find All References was also enhanced by eliminating inefficiencies during search.</p>
-<p>For Find in Files, you can now take advantage of indexed search. To enable indexed searching, go to <em>Tools &gt; Options &gt; Environment &gt; Preview Features</em> and ensure “Enable indexing for faster find experience” is checked. For more details, <a href="https://devblogs.microsoft.com/visualstudio/code-search-in-visual-studio-is-about-to-get-much-faster/">please see this blog post.</a></p>
-<h1 id="feedback-wanted">Feedback Wanted!</h1>
-<p>Your feedback through <a href="https://developercommunity.visualstudio.com/">Developer Community</a>, surveys, and social media channels has made these improvements possible. We thank you for your valuable comments.
-These enhancements are a continuation of our focus on improving productivity for game developers. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like ones detailed in this blogpost. If you are a game developer, <a href="http://aka.ms/VSGameDevSurvey">let us know your thoughts in our 2022 Visual Studio Game Developer Survey</a>.</p>
-<p>In addition, please continue to help shape the development of Visual Studio by talking to us in the comments below, on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
-<h1 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h1>
-<p><a href="https://visualstudio.microsoft.com/downloads/">Download the latest version of Visual Studio 2022</a> to take advantage of these productivity benefits today!</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/enhancing-game-developer-productivity/">Enhancing Game Developer Productivity with Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/enhancing-game-developer-productivity/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
