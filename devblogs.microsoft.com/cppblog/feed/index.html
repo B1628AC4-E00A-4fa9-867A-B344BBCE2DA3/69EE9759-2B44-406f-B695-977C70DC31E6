@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 13 May 2022 13:56:14 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 17 May 2022 00:00:51 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,175 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg May 2022 Release is Now Available</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Tue, 17 May 2022 00:00:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30565</guid>
+
+					<description><![CDATA[<p>The May 2022 release of the vcpkg package manager is available. This blog post summarizes changes from March 31st, 2022 to May 10th, 2022 for the Microsoft/vcpkg and Microsoft/vcpkg-tool GitHub repos.<br />
+Some stats for this period:</p>
+<p>10 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/">vcpkg May 2022 Release is Now Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.05.10">May 2022 release of the vcpkg package manager is available</a>. This blog post summarizes changes from March 31<sup>st</sup>, 2022 to May 10<sup>th</sup>, 2022 for the <a href="https://github.com/microsoft/vcpkg/">Microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>10 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>422 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>1,936 total libraries</strong> available in the vcpkg public registry.</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.05.10">May release of the main vcpkg repo</a> includes <strong>238 commits</strong> by <strong>63 people</strong>.</li>
+<li>The main vcpkg repo has <strong>4.5k forks</strong> and <strong>15.7k stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<h4 id="vcpkg-artifacts-update">vcpkg Artifacts update</h4>
+<p>This is our first significant update to vcpkg artifacts since we introduced them in December. The changes and additions are all on the artifact metadata used in populating catalogs of available artifacts. As such this section is mainly of interest to people working on preparing their own catalogs of artifacts.</p>
+<p>The experience is still in preview and retains a focus on embedded developers, but will expand to C++ scenarios targeting Linux, macOS, and Windows soon.</p>
+<h5 id="metadata-format-changes">Metadata format changes</h5>
+<p>Based on our experiences in expanding the available artifacts in registries we encountered the need to describe more in the registry metadata and realized some of the existing capabilities could be better named.</p>
+<p>You will observe all the examples below are in json. When first released, vcpkg artifact catalogs could be created as either yaml or json and our examples were in yaml. Going forward we are normalizing to use json only.</p>
+<p>The current “settings” has been renamed “exports” as that is functionally what it is doing. Similarly, the “variables” block has been renamed “environment” as it is setting environment variables.</p>
+<p>There are a few additions as well, all to the exports block:</p>
+<ul>
+<li>contents: categorized files/contents, documentation, etc.</li>
+<li>aliases: named commands for use by the consumer or Visual Studio / Visual Studio Code integration</li>
+</ul>
+<p>We also found the need to be able to support value expansion within demand blocks based on activation.</p>
+<p>The examples in the sections below are snippets, see the default <a href="https://github.com/microsoft/vcpkg-ce-catalog">vcpkg artifact registry</a> for complete entries.</p>
+<h5 id="settings-to-exports">Settings to exports</h5>
+<p>We had a “settings” block that was part of the “demands” block. This block is now named “exports” as it better describes what this block does as it is exporting the configuration into the environment.</p>
+<pre class="prettyprint">"demands": {
+    "exports": {
+        "tools": {
+            "cmake": "bin/cmake",
+            "cmake_gui": "bin/cmake-gui",
+            "ctest": "bin/ctest"
+        },
+        "paths": {
+            "path": "bin"
+        }
+    }
+}</pre>
+<h5 id="variables-to-environment">Variables to environment</h5>
+<p>There was a variables block used to store the environment variables that are exported from the artifact. “Variables” is not as clear as it could be, as such the name has been changed to “environment” to better convey what this section does. The environment block is part of the exports block.</p>
+<pre class="prettyprint">"exports": {
+  "environment": {
+      "CLFAGS": "-Wall -Wextra -Werror"
+  }
+}</pre>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/473">Microsoft/vcpkg-tool#473</a></p>
+<p>&nbsp;</p>
+<h4 id="added-cloud-object-storage-support-for-binary-caching">Added Cloud Object Storage support for binary caching</h4>
+<p>Cloud Object Storage (COS) is a distributed storage service from Tencent Cloud accessible via HTTP/HTTPS. A recent community PR enables vcpkg users to use COS for binary caching. <a href="https://vcpkg.io/en/docs/users/binarycaching.html">Binary caching</a> saves copies of library binaries in a shared location that can be accessed by vcpkg for future fast installs, potentially across multiple development environments locally and in CI.</p>
+<p>PRs: <a href="https://github.com/microsoft/vcpkg/pull/23538">Microsoft/vcpkg#23538</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/476">Microsoft/vcpkg-tool#476</a> (thank you <a href="https://github.com/day253">@day253</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="added-software-package-data-exchange-spdx-v2-2-1-support">Added Software Package Data Exchange (SPDX) v2.2.1 support</h4>
+<p>Software Package Data Exchange (SPDX) establishes a standard for software bill of materials (SBOM). It allows the expression of components, licenses, copyrights, security references and other metadata relating to software (<a href="https://en.wikipedia.org/wiki/Software_Package_Data_Exchange">Source: Wikipedia</a>). In this release, <em>experimental</em> support was added for the latest SPDX standard to vcpkg which makes it possible to easily track all dependencies that vcpkg installs on your system. This is very important for organizations with security compliance needs, including US-based organizations selling software to the United States government. While vcpkg needs to support SPDX for our own internal compliance needs, this can also be leveraged by vcpkg users shipping their own software. We are still working on this experience, but the prototype is in this tool release.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/296">Microsoft/vcpkg-tool#296</a></p>
+<p>&nbsp;</p>
+<h4 id="warn-on-classic-mode-build-failure-if-version-constraints-werent-met">Warn on classic mode build failure if version constraints weren’t met</h4>
+<p>Tracking has been added for version constraints in vcpkg classic mode. Classic mode is when you specify ports to install in the command line via vcpkg install &lt;PORT&gt;, rather than installing via a manifest. The version constraints are displayed to the user in case of a build failure. While it is by design that classic mode does not force users to rebuild dependencies that are out-of-date, knowing the version constraints is a big help for debugging. This display appears for install commands only.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/494">Microsoft/vcpkg-tool#494</a></p>
+<p>&nbsp;</p>
+<h4 id="improved-console-output-for-port-operations">Improved console output for port operations</h4>
+<p>Cleaned up console output when vcpkg is installing, modifying, or removing ports. New behavior also publishes additional test results to improve diagnostics. We’ve gotten a lot of user feedback that vcpkg is more verbose than people feel is productive – this is just one step toward a more concise vcpkg!</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/437">Microsoft/vcpkg-tool#437</a></p>
+<p>&nbsp;</p>
+<h4 id="secrets-are-stripped-from-curl-errors-before-printing-them">Secrets are stripped from curl errors before printing them</h4>
+<p>For security reasons, secrets listed in curl errors (e.g. x-azblob SAS) are no longer displayed when the errors are printed in vcpkg output in the console window.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/499">Microsoft/vcpkg-tool#499</a></p>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,744</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,793</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,689</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,705</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>925</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,327</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>874</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,649</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,724</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms x architectures, the list above is routinely tested to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos between March 31 – May 10, 2022:</p>
+<ul>
+<li>Thomas1664 (36 commits)</li>
+<li>chausner (33 commits)</li>
+<li>autoantwort (23 commits)</li>
+<li>dg0yt (18 commits)</li>
+<li>Neumann-A (11 commits)</li>
+<li>RT222 (7 commits)</li>
+<li>daschuer (4 commits)</li>
+<li>Pospelove (4 commits)</li>
+<li>coryan (3 commits)</li>
+<li>ZeeWanderer (2 commits)</li>
+<li>mathisloge (2 commits)</li>
+<li>cenit (2 commits)</li>
+<li>AenBleidd (2 commits)</li>
+<li>day253 (2 commits)</li>
+<li>Ryan-rsm-McKenzie (1 commit)</li>
+<li>evpobr (1 commit)</li>
+<li>yurybura (1 commit)</li>
+<li>luncliff (1 commit)</li>
+<li>wrobelda (1 commit)</li>
+<li>wravery (1 commit)</li>
+<li>horenmar (1 commit)</li>
+<li>podsvirov (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.05.10">full May release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/">vcpkg May 2022 Release is Now Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2022 Recordings Available</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-videos-available/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-videos-available/#respond</comments>
@@ -812,146 +981,6 @@ All times UTC on the 26th April.</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</title>
-		<link>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Tue, 12 Apr 2022 15:00:43 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30396</guid>
-
-					<description><![CDATA[<p>New Enumeration Checks in Visual Studio 2022</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/">New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community </a>page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of some new code analysis checks that can detect enumeration misuse errors, along with some improvements to an existing enumeration check.</p>
-<h2 id="overview">Overview</h2>
-<p>We introduced three new checks to find potential misuse of enumerations with bitwise operations. These checks were inspired by real bugs found in production code. We also improved a check that suggests using the C++11 scoped <code>enum</code> instead of its legacy counterpart. See the <a href="https://docs.microsoft.com/cpp/build/reference/analyze-code-analysis">documentation</a> on how to enable code analysis for your project.</p>
-<h2 id="bitwise-enumerations">Bitwise enumerations</h2>
-<p>Some enumerations hold values that are powers of two. Most of these are flags used to represent non-exclusive states that can be combined and queried using bitwise operations. The new checks are trying to detect wrong uses of such enumerations. Unfortunately, there is no clear definition of what enumerations should be considered bitwise, so our checks rely on a set of heuristics to infer the intent from the source code. First of all, let us consider an <code>enum</code> with only two elements:</p>
-<pre><code class="language-cpp">enum E
-{
-    A = 1,
-    B = 2
-};</code></pre>
-<p>It is not clear whether <code>E</code>&#8216;s values are intended to form the start of a sequence of powers of two <code>(1,2,4,8,...)</code>, or are simply intended to increment by 1 <code>(1,2,3,4,...)</code>. Without additional context, we therefore cannot tell whether <code>E</code> is a bitwise <code>enum</code>, intended to be used with bitwise operations, or if it is just a regular <code>enum</code>.</p>
-<pre><code class="language-cpp">enum E
-{
-    A = 1,
-    B = 2,
-    C = 4,
-    D = 8,
-    ALL = 15
-};</code></pre>
-<p>Here, the last <code>enum</code> constant is not a power of two. It is a common idiom to define a constant where all of the relevant bits are set. These constants usually have a value of <code>2^k-1</code> for some positive <code>k</code>. Our checks will consider <code>enum</code>s of this shape as bitwise. We have to be careful with the interplay of these two heuristics.</p>
-<pre><code class="language-cpp">enum E1
-{
-    A = 1,
-    B = 2,
-    C = 3
-};
-
-enum E2
-{
-    A = 1,
-    B = 2,
-    C = 4
-};</code></pre>
-<p>In the above example, we do not want to consider <code>E1</code> bitwise, despite its last element having the value of <code>2^2-1</code>. On the other hand, we definitely want to consider <code>E2</code> a bitwise <code>enum</code>.</p>
-<p>These heuristics worked reasonably well for the projects we tested our checks on. In case you encounter any false positives or false negatives, please let us know.</p>
-<h2 id="c26813">C26813</h2>
-<p><a href="https://aka.ms/cpp/warnings/C26813">C26813</a> will find code patterns where a bitwise enumeration&#8217;s value is being tested using <code>operator==</code>.
-In most cases, a variable holding values from a bitwise enumeration represents a bitfield. To query whether a particular enumerator value was set in this variable, bitwise operations should be used. Failing to do so will yield incorrect results:</p>
-<pre><code class="language-cpp">enum BitWise
-{
-    A = 1,
-    B = 2,
-    C = 4
-};
-
-void useEqualsWithBitwiseEnum(BitWise a) 
-{
-    BitWise a = A; // turn on flag A
-    a |= B; // turn on flag B
-
-    /*
-    *  Attempt to query if flag 'B' was set.
-    */
-
-    if (a == B) // Warning C26813: Use 'bitwise and' to check if a flag is set
-    {
-        foo(); // never reached, since a != B
-    }
-
-    if (a &amp; B)
-    {
-        bar(); // the branch is taken, as expected
-    }
-}</code></pre>
-<p>After running this check on some real world code we also encountered cases where the <code>enum</code> had power of two values, but was never used with bitwise operations. In those cases it might be good idea to change the values of the <code>enum</code> constants to make the intent clearer in the code.</p>
-<h2 id="c26827">C26827</h2>
-<p><a href="https://aka.ms/cpp/warnings/C26827">C26827</a> can help detect enumerator constants in bitwise enumerations where we forgot to add an initializer. Consider the following example:</p>
-<pre><code class="language-cpp">enum class AlmostBitWise
-{
-    A = 1,
-    B = 2,
-    C = 4,
-    D
-};
-
-int almostBitwiseEnums(AlmostBitWise a) 
-{
-    return (int)a|(int)AlmostBitWise::A; // Warning C26827: Did you forget to initialize an enum, or intend to use another type?
-}</code></pre>
-<p>Here, we use an <code>enum</code> constant in a bitwise operation while not all of its constants have the form of <code>2^k</code> or <code>2^k-1</code>. In fact, one of its constants <code>D</code> has the form of <code>2^k+1</code>. This pattern can happen when we add a new constant without defining its value.</p>
-<p>Unfortunately, there is a limitation of this check. It will only work with scoped <code>enum</code>s as the compiler will desugar regular enums into integers before the static analysis phase. We are looking into ways to improve our internal representation of the code to have a higher fidelity representation of how the code was written, and this will enable better diagnostics in the future.</p>
-<h2 id="c26828">C26828</h2>
-<p><a href="https://aka.ms/cpp/warnings/C26828">C26828</a> will flag bitwise expressions where values from different enumerations are mixed. Consider the following example:</p>
-<pre><code class="language-cpp">
-enum BitWiseA
-{
-    A = 1,
-    B = 2,
-    C = 4
-};
-
-enum class BitWiseB
-{
-    AA = 1,
-    BB = 2,
-    CC = 4,
-    All = 7
-};
-
-int overlappingBitwiseEnums(BitWiseA a) 
-{
-    return (int)a|(int)BitWiseB::AA; // Warning C26828: Different enum types have overlapping values. Did you want to use another enum constant here?
-}</code></pre>
-<p>Here <code>BitWiseA</code> and <code>BitWiseB</code> have overlapping values. It is unlikely that we wanted to use both in the same bitwise expression. It can be the result of a typo.</p>
-<p>This check has similar limitations to <code>C26827</code>.</p>
-<h2 id="improvements-to-c26812">Improvements to C26812</h2>
-<p><a href="https://aka.ms/cpp/warnings/C26812">C26812</a> suggests to use the new C++11 scoped <code>enum</code>s over legacy <code>enum</code>s. This check has been the part of our offerings for a really long time but had room for improvement. Previously, it diagnosed legacy <code>enum</code>s at their use-sites instead of at their declarations. This had several consequences:</p>
-<ul>
-<li>We did not emit a warning for unused enumerations.</li>
-<li>It was not possible to suppress all instances of this warning at the declaration. This was also reported by our users as a <a href="https://developercommunity.visualstudio.com/t/Warning-C26812-is-not-suppressible-at-en/1448578">Developer Community ticket</a>.</li>
-<li>It did not work well with the new <a href="https://devblogs.microsoft.com/cppblog/customized-warning-levels-and-code-analysis-for-external-headers/">/external</a> feature. See the corresponding <a href="https://developercommunity.visualstudio.com/t/Code-Analysis-warning-C26812-is-reported/1637803">Developer Community ticket</a> for details.</li>
-<li>The location of the diagnostic is potentially far from the declaration, which makes it harder to address the warning.</li>
-</ul>
-<p>The new version of this check will emit the diagnostic on the declarations instead of the uses. This should improve the user experience in most cases. We also realized that addressing this check is sometimes costly or not possible at all (e.g., a library might need to be backward compatible). To address this, we removed this rule from the <code>NativeRecommendedRules</code> ruleset and created a new ruleset named <code>CppCoreCheckEnumRules</code> to include all 4 of the rules we mentioned in this blog post.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>The upcoming Visual Studio 2022 17.2 Preview 3 will feature new checks to find hard-to-find misuses of enumerations. It will also include some quality of life improvements for the existing check that can help migrate a code base to scoped enums. The three new <code>enum</code> related checks are part of the <code>NativeRecommendedRules</code> ruleset and the updated warning was moved to <code>CppCoreCheckEnumRules</code>.</p>
-<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
-<p>The work that we do is heavily influenced by feedback we receive on <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/">New Enumeration Checks in Visual Studio 2022 version 17.2 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-enumeration-checks-in-visual-studio-2022-version-17-2-preview-3/feed/</wfw:commentRss>
-			<slash:comments>6</slash:comments>
 		
 		
 			</item>
