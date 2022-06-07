@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 19 May 2022 17:01:05 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 07 Jun 2022 08:59:59 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,56 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Backend Updates in Visual Studio 2022 version 17.2</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-2/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-2/#respond</comments>
+		
+		<dc:creator><![CDATA[Chris Pulido]]></dc:creator>
+		<pubDate>Tue, 07 Jun 2022 16:00:37 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30628</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2022 version 17.2 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a list of improvements for you to review.</p>
+<p>OpenMP: The task directive as defined by OpenMP 3.1 is supported for -openmp:llvm,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-2/">MSVC Backend Updates in Visual Studio 2022 version 17.2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In <a href="https://visualstudio.microsoft.com/vs/">Visual Studio 2022</a> version 17.2 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a list of improvements for you to review.</p>
+<ul>
+<li>OpenMP: The <code>task</code> directive as defined by OpenMP 3.1 is supported for <code>-openmp:llvm</code>, including all the clauses. Note that the compiler does not yet support `task` clauses added in later versions of OpenMP. See more details in <a href="https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/">OpenMP Task Support for C++ in Visual Studio</a>.</li>
+<li>Implemented Intel intrinsic functions for the AVX512-FP16 instruction set extension. More information about these functions can be found on the <a href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#avx512techs=AVX512_FP16">Intel Intrinsics Guide</a>.</li>
+<li>Implemented Intel intrinsic functions <code>_castf32_u32</code>, <code>_castf64_u64</code>, <code>_castu32_f32</code>, and <code>_castu64_f64</code> to cast between floating point values and integer values without conversion on x64 and x86. More information about these functions can be found on the <a href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_cast&amp;techs=Other">Intel Intrinsics Guide</a>.</li>
+<li>New ARM64 compiler flags: <code>/Zc:arm64-aliased-neon-types-</code> and <code>/Zc:arm64-aliased-neon-types</code>. When you pass <code>/Zc:arm64-aliased-neon-types-</code> to <code>cl.exe</code>, the compiler will treat NEON intrinsic types as distinct types for ARM64 as defined by the <a href="https://github.com/ARM-software/abi-aa/blob/main/aapcs64/aapcs64.rst#appendix-support-for-advanced-simd-extensions">Procedure Call Standard for the Arm 64-bit Architecture</a>, which is consistent with Clang and GCC. This flag is opt-in, so ARM64 NEON intrinsic code that compiled with previous versions of MSVC will still compile when you upgrade. <code>/Zc:arm64-aliased-neon-types</code> (without the minus sign at the end) is the default behavior.
+<ul>
+<li>For example, consider two function declarations, <code>void foo(float32x4_t)</code> and <code>void foo(int32x4_t)</code>. By default, MSVC considers these two the same declaration, and attempting to define them both would lead to a multiple definition error. With <code>/Zc:arm64-aliased-neon-types-</code>, MSVC will treat them as Clang and GCC would.</li>
+</ul>
+</li>
+<li>New ARM64 compiler flags: <code>/arch:armv8.0</code> and <code>/arch:armv8.1</code>. These new flags allow the compiler to generate instructions that were introduced and required by the specified architecture extension. `/arch:armv8.0` is the current default behavior and is the same as if you didn’t specify it. In 17.2, <code>/arch:armv8.1</code> allows the <code>_Interlocked*</code> intrinsic functions to use the appropriate atomic instruction that was introduced with the ARMv8.1 extension, FEAT_LSE.</li>
+<li>New and improved optimizations
+<ul>
+<li>The <a href="https://en.cppreference.com/w/c/numeric/math/log2">C standard library functions <code>log2</code> and <code>log2f</code></a> have been implemented as compiler intrinsic functions on x64 and ARM64. This allows the compiler to perform optimizations with <code>log2</code> and <code>log2f</code> under <code>/fp:fast</code> x64 and ARM64.</li>
+<li>Improved auto-vectorizer loop recognition. The auto-vectorizer now recognizes the average pattern and more cases of decrementing induction variables.</li>
+<li>More <a href="https://en.wikipedia.org/wiki/Peephole_optimization">peephole optimizations</a> for multiple targets.</li>
+<li>Improved load/store pairing on ARM64.</li>
+</ul>
+</li>
+<li>ARM64EC
+<ul>
+<li>Compiler flags incompatible with the <code>/arm64EC</code> flag are now rejected. This includes all CLR flags, <code>/Gy-</code>, and <code>/Gw-</code>.</li>
+<li>Added the <code>/MACHINE:ARM64EC</code> flag to <code>link.exe</code>, and removed it from <code>lib.exe</code>. For <code>lib.exe</code>, you should specify <code>/MACHINE:ARM64X</code>.</li>
+<li>When <code>/arm64EC</code> is passed to <code>cl.exe</code> and <code>cl.exe</code> also invokes <code>link.exe</code>, <code>/MACHINE:ARM64EC</code> will be passed by default to <code>link.exe</code>.</li>
+</ul>
+</li>
+</ul>
+<p>Do you want to experience the new improvements of the C++ backend? Please <a href="https://visualstudio.microsoft.com/vs/">download the latest Visual Studio 2022</a> and give it a try! Any feedback is welcome. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>)</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-2/">MSVC Backend Updates in Visual Studio 2022 version 17.2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-2/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg May 2022 Release: artifacts using JSON, COS and SPDX support, and more</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-may-2022-release-is-now-available/#comments</comments>
@@ -945,42 +995,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-debugging-in-visual-studio-code/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2022 Schedule Available</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/#respond</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Wed, 13 Apr 2022 15:00:26 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30411</guid>
-
-					<description><![CDATA[<p>Pure Virtual C++ 2022 is a free, one-day virtual conference for the whole C++ community. The schedule is now available. You can find the full set of abstracts, alongside calendar files to download on the website.<br />
-All times UTC on the 26th April.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/">Pure Virtual C++ 2022 Schedule Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png"><img class="wp-image-27841 size-large aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png" alt="Pure Virtual C++ logo" width="640" height="168" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-300x79.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-768x202.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png 1376w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>Pure Virtual C++ 2022 is a free, one-day virtual conference for the whole C++ community. The schedule is now available. You can find the full set of abstracts, alongside calendar files to download <a tabindex="0" href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/" data-cke-saved-href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">on the website</a>.</p>
-<p>All times UTC on the 26th April.</p>
-<ul>
-<li>14:04 &#8211; What&#8217;s New In C++23, Sy Brand</li>
-<li>14:37 &#8211; Cute C++ Tricks, Part 2 of N: More code you should learn from and never write, Daisy Hollman</li>
-<li>15:12 &#8211; Embedded development with VS and VS Code, Marc Goodner</li>
-<li>15:47 &#8211; Everything I learned about static analysis and program safety in C++, Sunny Chatterjee</li>
-<li>16:22 &#8211; Persistent Representation of C++ for Fun and Profit, Gabriel Dos Reis</li>
-</ul>
-<p>Yes, I know the times look a bit weird, it&#8217;ll work out on the day!</p>
-<p>Look forward to seeing you there!</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/">Pure Virtual C++ 2022 Schedule Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-schedule-available/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
