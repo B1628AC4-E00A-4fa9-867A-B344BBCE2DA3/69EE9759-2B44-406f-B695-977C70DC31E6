@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 15 Jun 2022 15:52:57 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 22 Jun 2022 01:29:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,145 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg June 2022 Release is Now Available: Force Download vcpkg Dependencies, Documentation Changes, and More</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Wed, 22 Jun 2022 01:29:22 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30681</guid>
+
+					<description><![CDATA[<p>The June 2022 release of the vcpkg package manager is available. This includes a hotfix that fixed a regression in the binary caching experience. This blog post summarizes changes from May 11th, 2022 to June 15th, 2022 for the microsoft/vcpkg and microsoft/vcpkg-tool GitHub repos.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/">vcpkg June 2022 Release is Now Available: Force Download vcpkg Dependencies, Documentation Changes, and More</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.06.16.1">June 2022 release of the vcpkg package manager is available</a>. This includes a hotfix that fixed a regression in the binary caching experience. This blog post summarizes changes from May 11<sup>th</sup>, 2022 to June 15<sup>th</sup>, 2022 for the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.04.12">microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/pull/441">microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>In the past month, the <a href="https://isocpp.org/blog/2022/06/results-summary-2022-annual-cpp-developer-survey-lite">ISO C++ 2022 Annual Developer Survey results</a> were released. We want to thank the C++ community for taking the time to provide feedback on vcpkg in the survey. This year, 19% (+4% year over year) of respondents indicated they were using vcpkg. We hope to see more and more of the community adopting package managers in their workflows going forward.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>20 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>292 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>1,956 total libraries</strong> available in the vcpkg public registry. When including all available versions, there are <strong>10,016 port versions </strong>(new milestone!).</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.06.16.1">June release of the main vcpkg repo</a> includes <strong>247 commits</strong>.</li>
+<li><strong>93 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has <strong>4.6k forks</strong> and <strong>15.9k stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<h4 id="force-vcpkg-to-download-binary-dependencies-rather-than-use-system-ones">Force vcpkg to download binary dependencies rather than use system ones</h4>
+<p>The vcpkg tool depends on several tools to do its work, including ninja and CMake. From the beginning, vcpkg has been able to download copies of these tools automatically does so by default if the tools are not detected on the system at an appropriate version. The downside of this is that in some cases, vcpkg may assume that an incompatible system version of a tool is valid and attempt to use it, only to fail.</p>
+<p>In this release, we merged a PR from a community contributor that adds support for an environment variable called VCPKG_FORCE_DOWNLOADED_BINARIES. If this variable is set, vcpkg will ignore any existing system binaries and always download its own copies of the tools it depends on. This results in a more self-contained vcpkg that will reliably run across many machines with different OS flavors and system packages. This behavior is off by default however, so please set this variable if this is a scenario that interests you. Note: this environment variable is effectively the opposite of VCPKG_FORCE_SYSTEM_BINARIES, which always forces the use of system binaries.</p>
+<p>PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/138">Microsoft/vcpkg-tool#138</a>, <a href="https://github.com/microsoft/vcpkg/pull/24674">Microsoft/vcpkg#24674</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/536">Microsoft/vcpkg-tool#536</a> (thank you @<a href="https://github.com/christophe-calmejane">christophe-calmejane</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="documentation-changes">Documentation changes</h4>
+<p>We are revamping our documentation based on user feedback. Here is a summary of changes made in this release:</p>
+<ul>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/install.md">New documentation article for the vcpkg install command</a>.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/integrate.md">New documentation article for the vcpkg integrate command</a>.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/search.md">New documentation article for the vcpkg search command</a>.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/common-options.md">New documentation article for Common Command Options</a>. This provides a reference for different options available for vcpkg commands run in the command line.</li>
+<li>New documentation in <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/config-environment.md">Environment and Configuration</a> on the new environment variable: VCPKG_FORCE_DOWNLOADED_BINARIES.</li>
+<li>Split content on <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/buildsystems/cmake-integration.md">CMake</a>, <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/buildsystems/msbuild-integration.md">MSBuild</a>, <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/buildsystems/manual-integration.md">manual integration</a>, and the <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/buildsystems/export-command.md">export command</a> into separate documentation articles.</li>
+<li>Added documentation describing criteria for vcpkg releases.</li>
+<li>Wording changes, fixed links, and other improvements for several other articles.</li>
+</ul>
+<p>This is just the start of what will hopefully be a much longer list of changes over the coming months. We will continue to improve our documentation with each release.</p>
+<p>PRs: <a href="https://github.com/microsoft/vcpkg/pull/24764">Microsoft/vcpkg#24764</a>, <a href="https://github.com/microsoft/vcpkg/pull/24756">Microsoft/vcpkg#24756</a>, <a href="https://github.com/microsoft/vcpkg/pull/24755">Microsoft/vcpkg#24755</a>, <a href="https://github.com/microsoft/vcpkg/pull/24754">Microsoft/vcpkg#24754</a>, <a href="https://github.com/microsoft/vcpkg/pull/24737">Microsoft/vcpkg#24737</a>, <a href="https://github.com/microsoft/vcpkg/pull/24649">Microsoft/vcpkg#24649</a>, <a href="https://github.com/microsoft/vcpkg/pull/24647">Microsoft/vcpkg#24647</a>, <a href="https://github.com/microsoft/vcpkg/pull/24456">Microsoft/vcpkg#24456</a></p>
+<p>&nbsp;</p>
+<h4 id="helper-port-for-less-common-build-systems">Helper port for less common build systems</h4>
+<p>Through a community contribution by <a href="https://github.com/Neumann-A">Neumann-A</a>, the helper function vcpkg-cmake-get-vars was moved to its own port so it can be independently maintained and versioned. For context, this helper extracts compiler flags and paths to the compiler and linker so the user can build the port. If you are contributing or changing a port that uses a build system that we <a href="https://vcpkg.io/en/docs/maintainers/portfile-functions.html">do not already have a helper for</a>, this new port is for you.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg/pull/24636">Microsoft/vcpkg#24636</a> (thanks <a href="https://github.com/Neumann-A">@Neumann-A</a>!)</p>
+<p>&nbsp;</p>
+<h4 id="fixed-vcpkg-commands-failing-when-a-custom-port-is-installed">Fixed vcpkg commands failing when a custom port is installed</h4>
+<p>Power users of vcpkg may be familiar with overlay ports, a feature that makes it possible to override ports with alternate versions. Users modifying the behavior of vcpkg itself may also be accustomed to switching between different branches in their fork of the vcpkg repo. Due to a bug, if you installed an overlay port or branch switched out of a branch with currently installed ports, then attempted to run a vcpkg command again (e.g. install or remove), vcpkg would throw an error, expecting the data about the custom-installed ports to be available despite the fact that it is no longer relevant to the new operation. Thanks to a community contribution, now when you run a command in this context, vcpkg will no longer fail.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/516">Microsoft/vcpkg-tool#516</a> (thanks <a href="https://github.com/Neumann-A">@Neumann-A</a>!)</p>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,761</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,810</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,706</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,725</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>928</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,341</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>875</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,671</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,744</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms x architectures, the list above is routinely tested to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos in this release:</p>
+<ul>
+<li>Thomas1664 (13 commits)</li>
+<li>Neumann-A (10 commits)</li>
+<li>autoantwort (10 commits)</li>
+<li>dg0yt (10 commits)</li>
+<li>Ryan-rsm-McKenzie (5 commits)</li>
+<li>DragonJoker (5 commits)</li>
+<li>m-kuhn (3 commits)</li>
+<li>Hoikas (3 commits)</li>
+<li>RT222 (3 commits)</li>
+<li>myd7349 (2 commits)</li>
+<li>winsoft666 (2 commits)</li>
+<li>hmoffatt (2 commits)</li>
+<li>AenBleidd (2 commits)</li>
+<li>daschuer (1 commit)</li>
+<li>eao197 (1 commit)</li>
+<li>yurybura (1 commit)</li>
+<li>danielaparker (1 commit)</li>
+<li>coryan (1 commit)</li>
+<li>longhuan2018 (1 commit)</li>
+<li>luncliff (1 commit)</li>
+<li>klalumiere (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.06.15">full June release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/">vcpkg June 2022 Release is Now Available: Force Download vcpkg Dependencies, Documentation Changes, and More</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What&#8217;s New in CMake for VS Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-cmake-for-vs-code/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-cmake-for-vs-code/#respond</comments>
@@ -794,43 +933,6 @@ clang: error: no input files
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/customizing-github-codespaces-for-cpp-projects/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2022 Pre-Conference Sessions Available</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-pre-conference-sessions-available/</link>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Fri, 22 Apr 2022 15:00:57 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30461</guid>
-
-					<description><![CDATA[<p>Our pre-conference sessions for Pure Virtual C++ 2022 are now online. Find them here, and hope to see you at the main event on 26th April!<br />
-Session list:</p>
-<p>MSVC C++20/23 update &#8211; Stephan T. Lavavej<br />
-Indexed Find in Files &#8211; Christian Gunderman<br />
-Dependent Breakpoints &#8211;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-pre-conference-sessions-available/">Pure Virtual C++ 2022 Pre-Conference Sessions Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png"><img class="aligncenter wp-image-27841 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png" alt="Pure Virtual C++ logo" width="640" height="168" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-300x79.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-768x202.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png 1376w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>Our pre-conference sessions for <a href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">Pure Virtual C++ 2022</a> are now online. Find them <a href="https://aka.ms/purevirtualcpp/ondemand">here</a>, and hope to see you at the main event on 26th April!</p>
-<p>Session list:</p>
-<ul type="disc">
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/msvc-cpp-20-23-update/">MSVC C++20/23 update</a> &#8211; Stephan T. Lavavej</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/indexed-find-in-files">Indexed Find in Files</a> &#8211; Christian Gunderman</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/dependent-breakpoints/">Dependent Breakpoints</a> &#8211; Sy Brand</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/stay-calm-and-stress-free-by-using-a-package-manager-an-overview-of-vcpkg/">Stay calm and stress-free by using a package manager: an overview of vcpkg</a> &#8211; Augustin Popa</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/targeting-macos-from-visual-studio/">Targeting macOS from Visual Studio</a> &#8211; Sinem Akinci</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/data-breakpoints-in-visual-studio-code/">Data Breakpoints in Visual Studio Code</a> &#8211; Julia Reid</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/hot-reload-for-cpp/">Hot Reload for C++</a> &#8211; David Li</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/productivity-in-visual-studio/">Productivity in Visual Studio</a> &#8211; Kyle Reed</li>
-<li lang="en-US"><a href="https://docs.microsoft.com/en-us/events/pure-virtual-cpp-2022/clang-tidy-in-visual-studio-code/">clang-tidy in Visual Studio Code</a> &#8211; Julia Reid</li>
-</ul>
-<p>There&#8217;s one session on Visual Studio for Unreal Engine and Game Developers which will be uploaded soon.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-pre-conference-sessions-available/">Pure Virtual C++ 2022 Pre-Conference Sessions Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
