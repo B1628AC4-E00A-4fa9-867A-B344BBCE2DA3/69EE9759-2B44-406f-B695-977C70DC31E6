@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 22 Jun 2022 01:29:22 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 27 Jun 2022 10:41:41 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,303 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++23&#8217;s Deducing this: what it is, why it is, how to use it</title>
+		<link>https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Mon, 27 Jun 2022 10:41:41 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30707</guid>
+
+					<description><![CDATA[<p>Find out how C++23's Deducing this feature can help make your code better.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/">C++23&#8217;s Deducing this: what it is, why it is, how to use it</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://wg21.link/p0847">Deducing <code>this</code></a> (P0847) is a C++23 feature which gives a new way of specifying member functions. Usually when we call an object&#8217;s member function, the object is <em>implicitly</em> passed to the member function, despite not being present in the parameter list. P0847 allows us to make this parameter <em>explicit</em>, giving it a name and <code>const</code>/reference qualifiers. For example:</p>
+<pre><code class="language-cpp">struct implicit_style {
+    void do_something(); //object is implicit
+};
+
+struct explicit_style {
+    void do_something(this explicit_style&amp; self); //object is explicit
+};</code></pre>
+<p>The explicit object parameter is distinguished by the keyword <code>this</code> placed before the type specifier, and is only valid for the first parameter of the function.</p>
+<p>The reasons for allowing this may not seem immediately obvious, but a bunch of additional features fall out of this almost by magic. These include de-quadruplication of code, recursive lambdas, passing <code>this</code> by value, and a version of the <a href="https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/">CRTP</a> which doesn&#8217;t require the base class to be templated on the derived class.</p>
+<p>This post will walk through an overview of the design, then many of the cases you can use this feature for in your own code.</p>
+<p>For the rest of this blog post I&#8217;ll refer to the feature as &#8220;explicit object parameters&#8221;, as it makes more sense as a feature name than &#8220;deducing <code>this</code>&#8220;. Explicit object parameters are supported in MSVC as of Visual Studio 2022 version 17.2. A good companion to this post is Ben Deane&#8217;s talk <a href="https://www.youtube.com/watch?v=jXf--bazhJw">Deducing <code>this</code> Patterns</a> from CppCon.</p>
+<h2 id="overview">Overview</h2>
+<p>The paper which proposed this feature was written by <a href="https://twitter.com/atomgalaxy">Gašper Ažman</a>, <a href="https://twitter.com/ben_deane">Ben Deane</a>, <a href="https://twitter.com/BarryRevzin">Barry Revzin</a>, and <a href="https://twitter.com/TartanLlama">myself</a>, and was guided by the experience of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html#acknowledgements">many experts in the field</a>. Barry and I began writing a version of this paper after we each implemented <a href="https://en.cppreference.com/w/cpp/utility/optional"><code>std::optional</code></a> and came across the same problem. We would be writing the <code>value</code> function of <code>optional</code> and, like good library developers, we&#8217;d try to make it usable and performant in as many use-cases as we could. So we&#8217;d want <code>value</code> to return a <code>const</code> reference if the object it was called on was <code>const</code>, we&#8217;d want it to return an rvalue if the object it was called on was an rvalue, etc. It ended up looking like this:</p>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+class optional {
+  // version of value for non-const lvalues
+  constexpr T&amp; value() &amp; {
+    if (has_value()) {
+      return this-&gt;m_value;
+    }
+    throw bad_optional_access();
+  }
+
+  // version of value for const lvalues
+  constexpr T const&amp; value() const&amp; {
+    if (has_value()) {
+      return this-&gt;m_value;
+    }
+    throw bad_optional_access();
+  }
+
+  // version of value for non-const rvalues... are you bored yet?
+  constexpr T&amp;&amp; value() &amp;&amp; {
+    if (has_value()) {
+      return std::move(this-&gt;m_value);
+    }
+    throw bad_optional_access();
+  }
+
+  // you sure are by this point
+  constexpr T const&amp;&amp; value() const&amp;&amp; {
+    if (has_value()) {
+      return std::move(this-&gt;m_value);
+    }
+    throw bad_optional_access();
+  }
+  // ...
+};</code></pre>
+<p>(If you&#8217;re not familiar with the <code>member_function_name() &amp;</code> syntax, this is called &#8220;ref-qualifiers&#8221; and you can find more info <a href="https://akrzemi1.wordpress.com/2014/06/02/ref-qualifiers/">on Andrzej Krzemieński&#8217;s blog</a>. If you&#8217;re not familiar with rvalue references (<code>T&amp;&amp;</code>) you can read up on move semantics <a href="https://stackoverflow.com/questions/3106110/what-is-move-semantics">on this Stack Overflow question</a>)</p>
+<p>Note the near-identical implementations of four versions of the same function, only differentiated on whether they&#8217;re <code>const</code> and whether they move the stored value instead of copying it.</p>
+<p>Barry and I would then move on to some other function and have to do the same thing. And again and again, over and over, duplicating code, making mistakes, building maintenance headaches for the future versions of ourselves. &#8220;What if&#8221;, we thought, &#8220;you could just write this?&#8221;</p>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+struct optional {
+  // One version of value which works for everything
+  template &lt;class Self&gt;
+  constexpr auto&amp;&amp; value(this Self&amp;&amp; self) {
+    if (self.has_value()) {
+        return std::forward&lt;Self&gt;(self).m_value;
+    }
+    throw bad_optional_access();
+  }</code></pre>
+<p>(If you&#8217;re not familiar with <code>std::forward</code>, you can read about perfect forwarding <a href="https://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c">on Eli Bendersky&#8217;s blog</a>)</p>
+<p>This does the same thing as the above four overloads, but in a single function. Instead of writing different versions of <code>value</code> for <code>const optional&amp;</code>, <code>const optional&amp;&amp;</code>, <code>optional&amp;</code>, and <code>optional&amp;&amp;</code>, we write one function template which <em>deduces</em> the <code>const</code>/<code>volatile</code>/reference (cvref for short) qualifiers of the object the it is called on. Making this change for almost every function in the type would cut down our code by a huge amount.</p>
+<p>So we wrote a version of what eventually got standardised, soon discovered that Gašper and Ben were working on a different paper for the exact same feature, we joined forces, and here we all are several years later.</p>
+<h3 id="design">Design</h3>
+<p>The key design principle we followed was that it should <em>do what you expect</em>. To achieve this, we touched as few places in the standard as we possibly could. Notably, we didn&#8217;t touch overload resolution rules or template deduction rules, and name resolution was only changed a little bit (as a treat).</p>
+<p>As such, say we have a type like so:</p>
+<pre><code class="language-cpp">struct cat {
+    template &lt;class Self&gt;
+    void lick_paw(this Self&amp;&amp; self);
+};</code></pre>
+<p>The template parameter <code>Self</code> will be deduced based on all of the same template deduction rules you&#8217;re already familiar with. There&#8217;s no additional magic. You don&#8217;t have to use the names <code>Self</code> and <code>self</code>, but I think they&#8217;re the clearest options, and this follows what several other programming languages do.</p>
+<pre><code class="language-cpp">cat marshmallow;
+marshmallow.lick_paw();                         //Self = cat&amp;
+
+const cat marshmallow_but_stubborn;
+marshmallow_but_stubborn.lick_paw();            //Self = const cat&amp;
+
+std::move(marshmallow).lick_paw();              //Self = cat
+std::move(marshmallow_but_stubborn).lick_paw(); //Self = const cat</code></pre>
+<p>One name resolution change is that inside such a member function, you are not allowed to explicitly or implicitly refer to <code>this</code>.</p>
+<pre><code class="language-cpp">struct cat {
+    std::string name;
+
+    void print_name(this const cat&amp; self) {
+        std::cout &lt;&lt; name;       //invalid
+        std::cout &lt;&lt; this-&gt;name; //also invalid
+        std::cout &lt;&lt; self.name;  //all good
+    }
+};</code></pre>
+<h2 id="use-cases">Use Cases</h2>
+<p>For the rest of this post, we&#8217;ll look at all the different uses of this feature (at least the ones discovered so far that I know of!) Many of these examples were taken straight from the paper.</p>
+<h3 id="de-duplication-quadruplication">De-duplication/quadruplication</h3>
+<p>We&#8217;ve already seen how the feature can be applied to a type such as <code>optional</code> to avoid having to write four overloads of the same function.</p>
+<p>Note also that this lowers the burden on initial implementation and maintenance of dealing with rvalue member functions. Quite often developers will write only <code>const</code> and non-<code>const</code> overloads for member functions, since in many cases we don&#8217;t really want to write another two whole functions just to deal with rvalues. With deduced qualifiers on <code>this</code>, we get the rvalue versions for free: we just need to write <code>std::forward</code> in the right places to get the runtime performance gains which come with avoiding unnecessary copies:</p>
+<pre><code class="language-cpp">class cat {
+    toy held_toy_;
+
+public:
+    //Before explicit object parameters
+    toy&amp; get_held_toy() { return held_toy_; }
+    const toy&amp; get_held_toy() const { return held_toy_; }
+
+    //After
+    template &lt;class Self&gt;
+    auto&amp;&amp; get_held_toy(this Self&amp;&amp; self) {
+        return self.held_toy_;
+    }
+
+    //After + forwarding
+    template &lt;class Self&gt;
+    auto&amp;&amp; get_held_toy(this Self&amp;&amp; self) {
+        return std::forward&lt;Self&gt;(self).held_toy_;
+    }
+};</code></pre>
+<p>Of course for a simple getter like this, whether or not this change is worth it for your specific use case is up to you. But for more complex functions, or cases where you are dealing with large objects which you want to avoid copying, explicit object parameters make this much easier to handle.</p>
+<h3 id="crtp">CRTP</h3>
+<p>The Curiously Recurring Template Pattern (CRTP) is a form of compile-time polymorphism which allows you to extend types with common pieces of functionality without paying the runtime costs of virtual functions. This is sometimes referred to as <em>mixins</em> (this isn&#8217;t <em>all</em> the CRTP can be used for, but it is the most common use). For example, we could write a type <code>add_postfix_increment</code> which can be mixed in to another type in order to define postfix increment in terms of prefix increment:</p>
+<pre><code class="language-cpp">template &lt;typename Derived&gt;
+struct add_postfix_increment {
+    Derived operator++(int) {
+        auto&amp; self = static_cast&lt;Derived&amp;&gt;(*this);
+
+        Derived tmp(self);
+        ++self;
+        return tmp;
+    }
+};
+
+struct some_type : add_postfix_increment&lt;some_type&gt; {
+    // Prefix increment, which the postfix one is implemented in terms of
+    some_type&amp; operator++();
+};</code></pre>
+<p>Templating a base class on its derived cast and <code>static_cast</code>ing <code>this</code> inside the function can be a bit arcane, and the problem gets worse when you have multiple levels of CRTP. With explicit object parameters, since we didn&#8217;t change template deduction rules, <em>the type of the explicit object parameter can be deduced to a derived type</em>. More concretely:</p>
+<pre><code class="language-cpp">struct base {
+    template &lt;class Self&gt;
+    void f(this Self&amp;&amp; self);
+};
+
+struct derived : base {};
+
+int main() {
+    derived my_derived;
+    my_derived.f();
+}</code></pre>
+<p>In the call <code>my_derived.f()</code>, the type of <code>Self</code> inside <code>f</code> is <code>derived&amp;</code>, <em>not</em> <code>base&amp;</code>.</p>
+<p>This means that we can define the above CRTP example like so:</p>
+<pre><code class="language-cpp">struct add_postfix_increment {
+    template &lt;typename Self&gt;
+    auto operator++(this Self&amp;&amp; self, int) {
+        auto tmp = self;
+        ++self;
+        return tmp;
+    }
+};
+
+struct some_type : add_postfix_increment {
+    // Prefix increment, which the postfix one is implemented in terms of
+    some_type&amp; operator++();
+};</code></pre>
+<p>Note that now <code>add_postfix_increment</code> is not a template. Instead, we&#8217;ve moved the customisation to the postfix <code>operator++</code>. This means we don&#8217;t need to pass <code>some_type</code> as a template argument anywhere: everything &#8220;just works&#8221;.</p>
+<h3 id="forwarding-out-of-lambdas">Forwarding out of lambdas</h3>
+<p>Copying captured values out of a closure is simple: we can just pass around the object as usual. Moving captured values out of a closure is also simple: we can just call <code>std::move</code> on it. A problem occurs when we need to perfect-forward a captured value based on whether the closure is an lvalue or rvalue.</p>
+<p>One use case I stole from <a href="https://wg21.link/p2445">P2445</a> is for lambdas which can be used in both &#8220;retry&#8221; and &#8220;try or fail&#8221; contexts:</p>
+<pre><code class="language-cpp">auto callback = [m=get_message(), &amp;scheduler]() -&gt; bool {
+    return scheduler.submit(m);
+};
+callback(); // retry(callback)
+std::move(callback)(); // try-or-fail(rvalue)</code></pre>
+<p>The question here is: how do we forward <code>m</code> based on the value category of the closure? Explicit object parameters give us the answer. Since a lambda generates a class with an <code>operator()</code> member function of the given signature, all the machinary I&#8217;ve just explained works for lambdas too.</p>
+<pre><code class="language-cpp">auto closure = [](this auto&amp;&amp; self) {
+    //can use self inside the lambda
+};</code></pre>
+<p>This means we can perfect-forward based on the value category of the closure inside the lambda. P2445 gives a <code>std::forward_like</code> helper, which forwards some expression based on the value category of another:</p>
+<pre><code class="language-cpp">auto callback = [m=get_message(), &amp;scheduler](this auto &amp;&amp;self) -&gt; bool {
+    return scheduler.submit(std::forward_like&lt;decltype(self)&gt;(m));
+};</code></pre>
+<p>Now our original use case works, and the captured object will be copied or moved depending on how we use the closure.</p>
+<h3 id="recursive-lambdas">Recursive lambdas</h3>
+<p>Since we now have the ability to name the closure object in a lambda&#8217;s parameter list, this allows us to do recursive lambdas! As above:</p>
+<pre><code class="language-cpp">auto closure = [](this auto&amp;&amp; self) {
+    self(); //just call ourself until the stack overflows
+};</code></pre>
+<p>There are more useful uses for this than just overflowing stacks, though. Consider, for example, the ability to do visitation of recursive data structures without having to define additional types or functions? Given the following definition of a binary tree:</p>
+<pre><code class="language-cpp">struct Leaf { };
+struct Node;
+using Tree = std::variant&lt;Leaf, Node*&gt;;
+struct Node {
+    Tree left;
+    Tree right;
+};</code></pre>
+<p>We can count the number of leaves like so:</p>
+<pre><code class="language-cpp">int num_leaves(Tree const&amp; tree) {
+    return std::visit(overload( //see below
+        [](Leaf const&amp;) { return 1; },                       
+        [](this auto const&amp; self, Node* n) -&gt; int {              
+            return std::visit(self, n-&gt;left) + std::visit(self, n-&gt;right); 
+        }
+    ), tree);
+}</code></pre>
+<p><code>overload</code> here is some facility to create an overload set from multiple lambdas, and is commonly used for <code>variant</code> visitation. See <a href="https://en.cppreference.com/w/cpp/utility/variant/visit">cppreference</a>, for example.</p>
+<p>This counts the number of leaves in the tree through recursion. For each function call in the call graph, if the current is a <code>Leaf</code>, it returns <code>1</code>. Otherwise, the overloaded closure calls itself through <code>self</code> and recurses, adding together the leaf counts for the left and right subtrees.</p>
+<h3 id="pass-this-by-value">Pass <code>this</code> by value</h3>
+<p>Since we can define the qualifiers of the now-explicit object parameter, we can choose to take it by value rather than by reference. For small objects, this can give us better runtime performance. In case you&#8217;re not familiar with how this affects code generation, here&#8217;s an example.</p>
+<p>Say we have this code, using regular old implicit object parameters:</p>
+<pre><code class="language-cpp">struct just_a_little_guy {
+    int how_smol;
+    int uwu();
+};
+
+int main() {
+    just_a_little_guy tiny_tim{42};
+    return tiny_tim.uwu();
+}</code></pre>
+<p>MSVC generates the following assembly:</p>
+<pre><code class="language-asm">sub     rsp, 40                           
+lea     rcx, QWORD PTR tiny_tim$[rsp]
+mov     DWORD PTR tiny_tim$[rsp], 42     
+call    int just_a_little_guy::uwu(void)  
+add     rsp, 40                            
+ret     0</code></pre>
+<p>I&#8217;ll walk through this line-by-line.</p>
+<ul>
+<li><code>sub rsp, 40</code> allocates 40 bytes on the stack. This is 4 bytes to hold the <code>int</code> member of <code>tiny_tim</code>, 32 bytes of <a href="https://stackoverflow.com/questions/30190132/what-is-the-shadow-space-in-x64-assembly"><em>shadow space</em> </a>for <code>uwu</code> to use, and 4 bytes of padding.</li>
+<li>The <code>lea</code> instruction loads the address of the <code>tiny_tim</code> variable into the <code>rcx</code> register, which is where <code>uwu</code> is expecting the implicit object parameter (due to the <a href="https://docs.microsoft.com/cpp/build/x64-calling-convention?view=msvc-170">calling conventions</a> used).</li>
+<li>The <code>mov</code> stores <code>42</code> into the <code>int</code> member of <code>tiny_tim</code>.</li>
+<li>We then call the <code>uwu</code> function.</li>
+<li>Finally we de-allocate the space we allocated on the stack before and return.</li>
+</ul>
+<p>What happens if we instead specify <code>uwu</code> to take its object parameter by value, like this?</p>
+<pre><code class="language-cpp">struct just_a_little_guy {
+    int how_smol;
+    int uwu(this just_a_little_guy);
+};</code></pre>
+<p>In that case, the following code is generated:</p>
+<pre><code class="language-asm">mov     ecx, 42                           
+jmp     static int just_a_little_guy::uwu(this just_a_little_guy) </code></pre>
+<p>We just move <code>42</code> into the relevant register and jump (<code>jmp</code>) to the <code>uwu</code> function. Since we&#8217;re not passing by-reference we don&#8217;t need to allocate anything on the stack. Since we&#8217;re not allocating on the stack we don&#8217;t need to de-allocate at the end of the function. Since we don&#8217;t need to deallocate at the end of the function we can just jump straight to <code>uwu</code> rather than jumping there and then back into this function when it returns, using <code>call</code>.</p>
+<p>These are the kinds of optimisations which can prevent &#8220;death by a thousand cuts&#8221; where you take small performance hits over and over and over, resulting in slower runtimes that are hard to find the root cause of.</p>
+<h3 id="sfinae-unfriendly-callables">SFINAE-unfriendly callables</h3>
+<p>This issue is a bit more esoteric, but does actually happen in real code (I know because I got a bug report on my extended implementation of <code>std::optional</code> which hit this exact issue in production). Given a member function of <code>optional</code> called <code>transform</code>, which calls the given function on the stored value only if there is one, the problem looks like this:</p>
+<pre><code class="language-cpp">struct oh_no {
+    void non_const();
+};
+
+tl::optional&lt;oh_no&gt; o;
+o.transform([](auto&amp;&amp; x) { x.non_const(); }); //does not compile</code></pre>
+<p>The error which MSVC gives for this looks like:</p>
+<blockquote><p>error C2662: &#8216;void oh_no::non_const(void)&#8217;: cannot convert &#8216;this&#8217; pointer from &#8216;const oh_no&#8217; to &#8216;oh_no &amp;&#8217;</p></blockquote>
+<p>So it&#8217;s trying to pass a <code>const oh_no</code> as the implicit object parameter to <code>non_const</code>, which doesn&#8217;t work. But where did that <code>const oh_no</code> come from? The answer is inside the implementation of <code>optional</code> itself. Here is a deliberately stripped-down version:</p>
+<pre><code class="language-cpp">template &lt;class T&gt;
+struct optional {
+    T t;
+
+    template &lt;class F&gt;
+    auto transform(F&amp;&amp; f) -&gt; std::invoke_result_t&lt;F&amp;&amp;, T&amp;&gt;;
+
+    template &lt;class F&gt;
+    auto transform(F&amp;&amp; f) const -&gt; std::invoke_result_t&lt;F&amp;&amp;, const T&amp;&amp;&gt;;
+};</code></pre>
+<p>Those <code>std::invoke_result_t</code>s are there to make <code>transform</code> <a href="https://stackoverflow.com/questions/35033306/what-does-it-mean-when-one-says-something-is-sfinae-friendly">SFINAE-friendly</a>. This basically means that you can check whether a call to <code>transform</code> would compile and, if it wouldn&#8217;t, do something else instead of just aborting the entire compilation. However, there&#8217;s a bit of a hole in the language here.</p>
+<p>When doing overload resolution on <code>transform</code>, the compiler has to work out which of those two overloads is the best match given the types of the arguments. In order to do so, it has to instantiate the declarations of both the <code>const</code> and non-<code>const</code> overloads. If you pass an invocable to <code>transform</code> which is not <em>itself</em> SFINAE-friendly, and isn&#8217;t valid for a <code>const</code> qualified implicit object (which is the case with my example) then instantiating the declaration of the <code>const</code> member function will be a hard compiler error. Oof.</p>
+<p>Explicit object parameters allow you to solve this problem because the cvref qualifiers are <em>deduced</em> from the expression you call the member function on: if you never call the function on a <code>const optional</code> then the compiler never has to try and instantiate that declaration. Given <code>std::copy_cvref_t</code> from <a href="https://wg21.link/p1450">P1450</a>:</p>
+<pre><code class="language-cpp">template &lt;class T&gt;
+struct optional {
+    T t;
+
+    template &lt;class Self, class F&gt;
+    auto transform(this Self&amp;&amp; self, F&amp;&amp; f) 
+    -&gt; std::invoke_result_t&lt;F&amp;&amp;, std::copy_cvref_t&lt;Self, T&gt;&gt;;
+};</code></pre>
+<p>This allows the above example to compile while still allowing <code>transform</code> to be SFINAE-friendly.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope this has helped clarify the function and utility of explicit object parameters. You can try out the feature in <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">Visual Studio version 17.2</a>. If you have any questions, comments, or issues with the feature, you can comment below, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/">C++23&#8217;s Deducing this: what it is, why it is, how to use it</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg June 2022 Release is Now Available: Force Download vcpkg Dependencies, Documentation Changes, and More</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-june-2022-release-is-now-available-force-download-vcpkg-dependencies-documentation-changes-and-more/#respond</comments>
@@ -717,214 +1014,6 @@ You can find the schedule here.<br />
 <p>You can find the schedule <a href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">here</a>.</p>
 <p>&nbsp;</p>
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/">Pure Virtual C++ 2022 is Today</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Customizing GitHub Codespaces for C++ Projects</title>
-		<link>https://devblogs.microsoft.com/cppblog/customizing-github-codespaces-for-cpp-projects/</link>
-		
-		<dc:creator><![CDATA[Michael Price]]></dc:creator>
-		<pubDate>Mon, 25 Apr 2022 16:57:46 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Containers]]></category>
-		<category><![CDATA[GitHub]]></category>
-		<category><![CDATA[Linux]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30481</guid>
-
-					<description><![CDATA[<p>A walkthrough for creating a GitHub Codespace, customizing the Codespace development container, and configuring Visual Studio Code for developing in a C++ project such as microsoft/vcpkg-tool.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/customizing-github-codespaces-for-cpp-projects/">Customizing GitHub Codespaces for C++ Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<blockquote><p>&#8220;There&#8217;s no worse punishment than worthless, hopeless labor.&#8221; — <em>The Myth of Sisyphus</em> by Albert Camus</p></blockquote>
-<p>Configuring a development environment for a non-trivial C++ project is a process that can be error-prone, tedious, and time-consuming. For would-be contributors to projects, struggling with these initial steps can be a frustrating introduction to a project. Even seasoned developers may run into issues with their existing development environments when working on projects that have different, and sometimes conflicting, dependencies.</p>
-<p>A <a href="https://devblogs.microsoft.com/cppblog/using-github-codespaces-and-visual-studio-code-for-cplusplus-development/">GitHub Codespace</a> provides a cloud-hosted development container that can be customized specifically for a project, even permitting different customizations for different branches. In this walkthrough, you&#8217;ll learn how to create a codespace, customize the development container, and configure Visual Studio Code&#8217;s C++ extensions by walking through the steps for the <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a> repository.</p>
-<p>&nbsp;</p>
-<h2 id="preparation">Preparation</h2>
-<p>&nbsp;</p>
-<h3 id="availability-of-github-codespaces">Availability of GitHub Codespaces</h3>
-<p>GitHub Codespaces are currently available to GitHub accounts that are members of organizations on a <a href="https://docs.github.com/en/get-started/learning-about-github/githubs-products#github-team">GitHub Team</a> or <a href="https://docs.github.com/en/get-started/learning-about-github/githubs-products#github-enterprise">GitHub Enterprise Cloud</a> plan. Access for individual users is currently in <a href="https://github.com/features/codespaces/signup">beta</a> testing. An organization owner can <a href="https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/enabling-codespaces-for-your-organization">enable or disable codespaces for an organization</a> and <a href="https://docs.github.com/en/billing/managing-billing-for-github-codespaces/managing-spending-limits-for-codespaces">set spending limits</a> with only a few clicks. Organization owners can also apply policies that <a href="https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/restricting-access-to-machine-types">restrict what machine types</a> are available to repositories in order to prevent excessive resource usage. If you are a C++ developer that currently does not have access to this feature, we&#8217;d like to <a href="https://www.surveymonkey.com/r/QLCBY56">learn more (survey link)</a> about your environment and interest in the feature.</p>
-<h3 id="preparing-your-vcpkg-tool-repository">Preparing your vcpkg-tool repository</h3>
-<p>vcpkg-tool is the repository for the front-end executable of the <a href="https://vcpkg.io/">vcpkg dependency manager</a>, which helps you manage C and C++ libraries for your project. The vcpkg ecosystem currently has around 2000 distinct <a href="https://vcpkg.io/en/packages.html">packages</a> in its catalog. You can learn more about vcpkg at the <a href="https://devblogs.microsoft.com/cppblog/category/vcpkg/">Microsoft C++ Blog</a>. Since you are unlikely to have permissions to modify the <a href="https://github.com/microsoft/vcpkg-tool">microsoft/vcpkg-tool</a> directly, you should use GitHub&#8217;s fork feature to obtain a copy of the repository into an account that you control. Navigate to <a href="https://github.com/microsoft/vcpkg-tool">https://github.com/microsoft/vcpkg-tool</a>, login, and click the <strong>Fork</strong> button for the repository. On the following page, click the <strong>Create fork</strong> button.</p>
-<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/github-fork-vcpkg-tool.png" alt="Screenshot of page to create a fork for the microsoft/vcpkg-tool repository." /></p>
-<p>After a few seconds, you should have a vcpkg-tool repository that you control and from which you can submit pull requests to the upstream repository. Since this is an active repository, the requirements for building it might have changed since this was written. So that you can reliably follow along, you should create a branch from commit <code>48006ab</code> and work from that point in history. To create a branch from that specific commit, append <code>/tree/48006ab</code> to the URL for your forked vcpkg-tool repository to browse the repository at that point in history, then click the dropdown branch button on the left of the page (it should show the commit hash <code>48006ab73a</code>), type in the desired name for your branch, and then click <strong>Create branch: &lt;your-branch-name-here&gt; from &#8216;48006ab&#8217;</strong>. Now, let&#8217;s explore the repository some to get an understanding of what is required to be able to build and test the project.</p>
-<p>&nbsp;</p>
-<h2 id="using-github-dev-to-explore-a-repository-with-visual-studio-code">Using github.dev to Explore a Repository with Visual Studio Code</h2>
-<p><a href="https://github.dev">github.dev</a> is an instance of Visual Studio Code running in the browser, with no backing computation or storage behind it. It allows you to use many of the editor features of Visual Studio Code, including source control operations and many extensions, without requiring a clone of the repository or any tools beyond a web browser. It is a great way to explore a repository or to make simple changes that do not require building or testing your code. We&#8217;ll use it to explore our newly created repository so that we know what we need to do to properly set up a build and test environment for our codespace later on. This allows us to do a lot of the &#8220;busy work&#8221; without incurring charges for a codespace environment.</p>
-<p>Press the <strong>.</strong> (period) key on your keyboard to open up github.dev for that repository. Alternatively, you can change the <code>github.com</code> domain for the URL to <code>github.dev</code> and load that web page. This works for any GitHub repository. After Visual Studio Code loads in the browser, you should notice that the Remote &#8220;Quick Access&#8221; status bar button in the lower left will indicate that you are connected directly to GitHub.</p>
-<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/github-dev-remote-quick-access.png" alt="Screenshot of the Remote &quot;Quick Access&quot; status bar showing a connection to GitHub" width="418" height="63" /></p>
-<p>Feel free at this time to familiarize yourself with the features of Visual Studio Code by opening up the Command Palette by pressing <strong>Ctrl+Shift+P</strong> (<strong>Cmd+Shift+P</strong> on macOS) and running the <strong>Get Started: Open Walkthrough.</strong>.. command and selecting a walkthrough. Once you feel comfortable progressing, continue on with our exploration of the repository.</p>
-<h3 id="build-and-test-prerequisites">Build and Test Prerequisites</h3>
-<p>If you read through the Markdown (<code>.md</code>) files in the root of the repository and in the <code>docs/</code> directory, you&#8217;ll find a handful of tools that will need to be installed in order to build and test the repository. You may find further requirements in the root <code>CMakeLists.txt</code> file, such as requiring a C++17-capable compiler. The collection of things that must exist on the system in order to work in the project are:</p>
-<ul>
-<li>A C++17-capable compiler that CMake recognizes</li>
-<li>CMake 3.15 or higher</li>
-<li>A build system that CMake can generate files for (e.g. Ninja)</li>
-<li>A copy of the <a href="https://github.com/microsoft/vcpkg">primary vcpkg repository</a>, and an environment variable <code>VCPKG_ROOT</code> that you&#8217;ve set to its location</li>
-<li>clang-format for formatting source code according to the style provided by the <code>.clang-format</code> file</li>
-</ul>
-<p>Now we are ready to create our codespace!</p>
-<p>&nbsp;</p>
-<h2 id="creating-and-managing-your-codespace">Creating and Managing Your Codespace</h2>
-<p>There are several ways you can create a new codespace for your newly forked vcpkg-tool repository.</p>
-<ul>
-<li>On the default page for your repository on github.com, you can click the <strong>&lt;&gt; Code</strong> button, click the <strong>Codespaces</strong> tab, and click the <strong>Create codespace on <em>&lt;branch-name&gt;</em></strong> button where <strong><em>&lt;branch-name&gt;</em></strong> is the name of the currently selected branch.. This button is actually a <a href="https://docs.microsoft.com/windows/win32/windowsribbon/windowsribbon-controls-splitbutton">split button</a>, that allows you to select customizations for your codespace environment such as the checked-out branch, the machine type, the region to use for the the GitHub-managed cloud instance, and the development container (i.e. devcontainer) configuration file to use.</li>
-<li>At <a href="https://github.com/codespaces">https://github.com/codespaces</a>, you can click the <strong>New codespace</strong> button and select the repository and the customization options you&#8217;d like (as described above).</li>
-<li>From within Visual Studio Code, you can create a codespace in two ways:
-<ul>
-<li>Open the Command Palette and run the <strong>Codespaces: Create New Codespace</strong> command and follow the prompts to provide the repository and customization options you&#8217;d like.</li>
-<li>If you have the GitHub Codespaces extension installed, you can open the Remote Explorer in the side bar, hovering your mouse over the <strong>GITHUB CODESPACES</strong> section and clicking the <strong>+</strong> icon. You will be prompted for options similar to those if you ran the command from the Command Palette.</li>
-</ul>
-</li>
-<li>You can create, manage, and connect to a codespace by using the <a href="https://cli.github.com/">GitHub CLI tool</a> and the <code>gh codespaces create</code> <a href="https://cli.github.com/manual/gh_codespace_create">command</a>.</li>
-</ul>
-<p>Because we should already have our default page for the newly forked repository open, we&#8217;ll use that method. Click the <strong>&lt;&gt; Code</strong> button, click the <strong>Codespaces</strong> tab, and click the selection arrow on the <strong>Create codespace&#8230;</strong> split button and select <strong>Configure and create codespace</strong>. Now click the split button to load the page where we can select our customizations.</p>
-<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/github-new-codespace-ext.png" alt="Screenshot of creating a codespace from within the repository on github.com" /></p>
-<p>On the next page, select the options you&#8217;d like. Make sure that the branch you created earlier is selected, so that the codespace loads with the correct branch already checked out. Normally, you should let <strong>Region</strong> remain the default unless you know that you want your devcontainer virtual machine to be created in a specific cloud region. We&#8217;ll come back to <strong>Dev container configuration</strong> later on in the walkthrough.</p>
-<h3 id="selecting-a-machine-type">Selecting a Machine Type</h3>
-<p>The most impactful option to choose when you are creating a new codespace is the machine type. The machine type is the combination of virtualized hardware resources that will be available to your codespace, including number of CPU cores, amount of RAM, and the size of filesystem storage. The machine types that are allowed for a codespace are controlled by a combination of organization and account settings and constraints specified by the repository for which the codespace is being created. Currently, the available machine types and their <a href="https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-codespaces">costs</a> (storage is an additional $0.07/GB-month) are*:</p>
-<ul>
-<li>2-core, 4GB RAM, 32GB disk &#8211; $0.18/hour</li>
-<li>4-core, 8GB RAM, 32GB disk &#8211; $0.36/hour</li>
-<li>8-core, 16GB RAM, 64GB disk &#8211; $0.72/hour</li>
-<li>16-core, 32GB RAM, 128GB disk &#8211; $1.44/hour</li>
-<li>32-core, 64GB RAM, 128GB disk &#8211; $2.88/hour</li>
-</ul>
-<p><sub>* Monetary units are in USD</sub></p>
-<p>We&#8217;ll choose the cheapest available machine type while we work to get the codespace and the development container created and customized. Select the <strong>2-core</strong> option from the <strong>Machine type</strong> drop-down button and click <strong>Create codespace</strong>.</p>
-<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/github-create-codespace-dialog-vcpkg-tool.png" alt="Screenshot of codespace creation dialog" /></p>
-<p>You should see a new page load in the browser that shows status information on the starting of the codespace and the initiation of a connection to the codespace. Once the codespace is ready to go, an instance of Visual Studio Code will load in the browser, remotely connected to the codespace.</p>
-<h3 id="managing-your-codespace">Managing Your Codespace</h3>
-<p>Your cloud-hosted codespace is available for you to connect to for as long as it exists. In order to control costs, a codespace will automatically shut down after a period of no activity, meaning you don&#8217;t have to worry about running up a large bill because you forgot to stop it before ending your workday. When you restart the codespace and reconnect, it will be in the same state it was when it shut down. Any non-committed or not-yet-pushed changes are still present, just as you left them.</p>
-<p>You can manage your codespace directly from within Visual Studio Code by choosing one of the <strong>Codespaces:</strong> commands in the Command Palette, or you can execute the fundamental commands (starting, stopping, etc&#8230;) from the <a href="https://github.com/codespaces">GitHub Codespaces web page</a>. You can also use the GitHub CLI to manage your codespaces if you prefer working from a terminal window or scripting actions. A subset of the Command Palette commands are also available if you click on the Remote &#8220;Quick Access&#8221; status bar button, which now shows you that you are connected to a codespace.</p>
-<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/04/github-codespaces-remote-quick-access.png" alt="Screenshot of the Remote &quot;Quick Access&quot; status bar showing a connection to a codespace" width="471" height="59" /></p>
-<p>Let&#8217;s go ahead and stop your newly created codespace and reconnect, so that you are comfortable with the experience. Run the <strong>Codespaces: Stop Current Codespace</strong> from the Command Palette. You could restart the codespace by clicking on the <strong>Restart codespace</strong> button, but let&#8217;s see what the experience is like from the main GitHub Codespaces web page. Navigate in your browser to <a href="https://github.com/codespaces">https://github.com/codespaces</a>. There, you should see your new codespace listed. If you click on the <strong>&#8230;</strong> to the right of your codespace entry, you&#8217;ll get a menu of management commands. If you would like to try out Visual Studio Code outside of the browser, and have it installed, click on <strong>Open in Visual Studio Code</strong>. Otherwise, click <strong>Open in browser</strong> to restart and connect to the codespace.</p>
-<p>After you start your codespace, you can see a change on the GitHub Codespaces web page: your codespace has the <em>Active</em> label applied to it, and there&#8217;s a new <strong>Stop codespace</strong> action available. Now that you know how to start and stop your codespace and connect to it in different ways, let&#8217;s customize the development container used for it so that we can build the vcpkg-tool repository.</p>
-<p>&nbsp;</p>
-<h2 id="customizing-your-development-container">Customizing Your Development Container</h2>
-<p>Development containers, or <em>devcontainers</em>, are customized environments capable of building a specific project, delivered using a container technology like Docker. Codespaces uses devcontainers for customizing the codespace environment, but the idea and tools are distinct and can be used for local container environments as well. In order to enable the use of devcontainers by the tools that recognize them, you have to add certain files into your repository. This allows the definition of your devcontainer to evolve along with the project itself, including tracking evolving requirements along different branches of your repository. Let&#8217;s add a <a href="https://code.visualstudio.com/docs/remote/create-dev-container">devcontainer specification</a> to our vcpkg-tool fork. GitHub recently added the ability to have <a href="https://github.blog/2022-04-20-codespaces-multi-repository-monorepo-scenarios/">multiple devcontainer definitions in your repository</a>. If you have multiple devcontainer definitions, you will be prompted for which one to use whenever you initially create a codespace.</p>
-<p>From within your codespace, run the <strong>Codespaces: Add Development Container Configuration Files&#8230;</strong> command from the Command Palette. Follow the prompts and select the <strong>C++</strong> container configuration definition, the <strong>ubuntu21.04</strong> operating system version, and any of the <em>additional features to install</em> that you want (you won&#8217;t strictly need them for this walkthrough). Visual Studio Code will create a <code>.devcontainer</code> directory in the root of your project and it will contain a <code>devcontainer.json</code> file, a <code>Dockerfile</code> file, and a <code>reinstall-cmake.sh</code> file. The <code>reinstall-cmake.sh</code> file is just a helper file used by <code>Dockerfile</code> to help customize the version of CMake that gets installed on the system, and we can ignore its contents. You may also notice two notifications from Visual Studio Code asking whether you&#8217;d like to install recommended extensions for Docker or if you&#8217;d like to rebuild the container. Ignore them for now. Let&#8217;s take a look at the two relevant files and how we need to change them.</p>
-<h3 id="the-dockerfile">The Dockerfile</h3>
-<p><code>Dockerfile</code> is the file that Docker uses to assemble a container image. The syntax is <a href="https://docs.docker.com/engine/reference/builder/">well documented</a> by Docker and is fairly straightforward to understand. The Dockerfile that was created for us specifies the base container image to use, copies the CMake helper script to it, and optionally runs it on the container that is being built. The Dockerfile also has commented-out commands that would use vcpkg to install specific libraries and another set of commented-out commands that would install additional packages provided by the operating system&#8217;s package manager.</p>
-<p>For our case, you&#8217;ll want to make the following changes (shown in &#8220;diff&#8221; format) to make sure that we are using a capable version of CMake, <code>clang-format</code> is installed, and that we have a copy of the vcpkg repository with the <code>VCPKG_ROOT</code> environment variable set. If you have additional packages you&#8217;d like installed, you can add them to the command after <code>clang-format</code>. After you make the changes, save the file.</p>
-<pre><code class="language-diff">diff --git a/.devcontainer/Dockerfile b/.devcontainer/Dockerfile
-index 7072fc9..4c8e31a 100644
---- a/.devcontainer/Dockerfile
-+++ b/.devcontainer/Dockerfile
-@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
-
- # [Optional] Install CMake version different from what base image has already installed. 
- # CMake reinstall choices: none, 3.21.5, 3.22.2, or versions from https://cmake.org/download/
--ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
-+ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="3.23"
-
- # Optionally install the cmake for vcpkg
- COPY ./reinstall-cmake.sh /tmp/
-@@ -19,5 +19,9 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then 
- # RUN su vscode -c "${VCPKG_ROOT}/vcpkg install &lt;your-port-name-here&gt;"
-
- # [Optional] Uncomment this section to install additional packages.
--# RUN apt-get update &amp;&amp; export DEBIAN_FRONTEND=noninteractive 
--#     &amp;&amp; apt-get -y install --no-install-recommends &lt;your-package-list-here&gt;
- No newline at end of file
-+RUN apt-get update &amp;&amp; export DEBIAN_FRONTEND=noninteractive 
-+    &amp;&amp; apt-get -y install --no-install-recommends clang-format
-+
-+# Obtain vcpkg repository and set VCPKG_ROOT
-+RUN git clone --depth 1 https://github.com/microsoft/vcpkg /vcpkg
-+ENV VCPKG_ROOT="/vcpkg"
- No newline at end of file</code></pre>
-<h3 id="devcontainer-json">devcontainer.json</h3>
-<p><code>devcontainer.json</code> is the file that the tools use to drive the devcontainer creation process. It has an <a href="https://github.com/microsoft/dev-container-spec">open and evolving specification</a> and should soon have a <a href="https://github.com/microsoft/dev-container-spec/issues/9">published reference implementation</a> as well. Currently, the syntax for the JSON is documented by Visual Studio Code <a href="https://code.visualstudio.com/docs/remote/devcontainerjson-reference">documentation</a>.</p>
-<p>We&#8217;ll want to make the following change (shown in &#8220;diff&#8221; format) to our devcontainer.json file. This change will tweak the Visual Studio Code extensions that are installed. Feel free to add any additional extensions to the list that you are interested in using. After you make the change, save the file.</p>
-<pre><code class="language-diff">diff --git a/.devcontainer/devcontainer.json b/.devcontainer/devcontainer.json
-index 60ce4dc..11560db 100644
---- a/.devcontainer/devcontainer.json
-+++ b/.devcontainer/devcontainer.json
-@@ -15,8 +15,8 @@
-
-        // Add the IDs of extensions you want installed when the container is created.
-        "extensions": [
--               "ms-vscode.cpptools",
--               "ms-vscode.cmake-tools"
-+               "ms-azuretools.vscode-docker",      // Tools for working with Dockerfiles
-+               "ms-vscode.cpptools-extension-pack" // Collection of C and C++ extensions, including CMake
-        ],
-
-        // Use 'forwardPorts' to make a list of ports inside the container available locally.</code></pre>
-<p>Now that we&#8217;ve modified our container configuration files, we need to rebuild the codespace container for the changes to apply. If the notification from Visual Studio Code about rebuilding the devcontainer is still visible, you can click <strong>Rebuild Now</strong> on that notification, otherwise, you can rebuild the container by clicking the Remote &#8220;Quick Access&#8221; status bar button and selecting <strong>Rebuild Container</strong> or by running the <strong>Codespaces: Rebuild Container</strong> command from the Command Palette.</p>
-<p>Since a new Docker container image has to be created, this could take a short while. GitHub offers the ability to use GitHub Actions to <a href="https://docs.github.com/en/codespaces/prebuilding-your-codespaces/about-codespaces-prebuilds">generate prebuilt images</a> if it turns out that you might need to create these custom container images regularly.</p>
-<p>Once the codespace is restarted and Visual Studio Code has reconnected, we should check and make sure that we have suitable C++ compilers installed on the system. We can do that by running some commands in the Terminal pane, which you can open up by pressing <strong>Ctrl+`</strong> (<em>note: that is a &#8216;backtick&#8217;</em>). The commands and your results should look like:</p>
-<pre><code class="language-bash">@michaelbprice ➜ /workspaces/vcpkg-tool (main ✗) $ which g++ &amp;&amp; g++ -dumpversion &amp;&amp; g++ -std=c++17
-/usr/bin/g++
-10
-g++: fatal error: no input files
-compilation terminated.
-@michaelbprice ➜ /workspaces/vcpkg-tool (main ✗) $ which clang++ &amp;&amp; clang++ -dumpversion &amp;&amp; clang++ -std=c++17
-/usr/bin/clang++
-12.0.0
-clang: error: no input files
-@michaelbprice ➜ /workspaces/vcpkg-tool (main ✗) $</code></pre>
-<p>You will also notice that on the Activity Bar on the left side of Visual Studio Code, we now have icons for Docker and CMake, just as we expected. Next, we&#8217;ll configure the extensions in the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack">C/C++ Extension Pack</a> so that we can build, test, and work with the C++ code in the project.</p>
-<p>&nbsp;</p>
-<h2 id="configuring-visual-studio-code-for-c">Configuring Visual Studio Code for C++</h2>
-<p>We have been consistently making improvements to the C++ experience in Visual Studio Code, much of which we&#8217;ve documented in <a href="https://devblogs.microsoft.com/cppblog/category/visual-studio-code/">blog posts on the Microsoft C++ Blog</a>. This section will describe the changes you need to make, but won&#8217;t go into a lot of the details. We suggest exploring our other blog posts and <a href="https://code.visualstudio.com/docs/cpp/introvideos-cpp">documentation</a> to get a better understanding.</p>
-<h3 id="configuring-cmake-with-cmakepresets-json">Configuring CMake with CMakePresets.json</h3>
-<p>CMake introduced a <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html?highlight=presets#manual:cmake-presets(7)">presets</a> feature in version 3.19 which has continued to evolve in subsequent releases. This feature allows for the definition of idiomatic configuration, build, and test command lines for a project. This increases consistency for developers and reduces the startup overhead for new contributors. It also provides a useful way to document the common patterns in a way that is &#8220;live&#8221; and is less likely to become stale documentation. In addition to all of those benefits for individual users, it also simplifies automated systems like continuous integration systems.</p>
-<p>For our purposes, you should add the following <code>CMakePresets.json</code> file in the root of the repository. It must live directly beside the project&#8217;s root <code>CMakeLists.txt</code> file in order for CMake to locate it. You can do this via the Command Palette by making sure the root of the repository is selected in the Explorer and running the command <strong>File: New File</strong>. Then provide the name <code>CMakePresets.json</code> and copy the contents from here into the open JSON file in the source editor.</p>
-<pre><code class="language-json">{
-    "version": 3,
-    "configurePresets": [
-        {
-            "name": "base",
-            "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${workspaceRoot}/out",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${workspaceRoot}/out/install/${presetName}"
-            }
-        },
-        {
-            "name": "benchmark-base",
-            "hidden": true,
-            "cacheVariables": { "VCPKG_BUILD_BENCHMARKING": "On" }
-        },
-        {
-            "name": "debug",
-            "displayName": "Debug",
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-        },
-        {
-            "name": "release",
-            "displayName": "Release",
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-        },
-        {
-            "name": "debug-benchmarks",
-            "displayName": "Debug + Benchmarks",
-            "inherits": [ "debug", "benchmark-base"]
-        },
-        {
-            "name": "release-benchmarks",
-            "displayName": "Release + Benchmarks",
-            "inherits": [ "release", "benchmark-base" ]
-        }
-    ]
-}</code></pre>
-<p>After saving that file, delete the existing CMake cache and reconfigure by running the <strong>CMake: Delete Cache and Reconfigure</strong> command from the Command Palette. Select whichever configuration you are interested in. After configuration completes you should now be able to build the project! Click the <strong>Build</strong> button in the status bar or press the <strong>F7</strong> key.</p>
-<h3 id="configuring-intellisense-for-visual-studio-code">Configuring IntelliSense for Visual Studio Code</h3>
-<p>Congratulations! Because this project is using CMake and we are using the Visual Studio Code CMake extension, IntelliSense was set up based on the information that the CMake extension determined. There&#8217;s nothing additional you need to do in order to enable IntelliSense and use all of its great productivity features.</p>
-<p>&nbsp;</p>
-<h2 id="summary">Summary</h2>
-<p>Using GitHub Codespaces and Visual Studio Code makes it easy to set up a repeatable, isolated, and accessible development environment for your C++ projects on GitHub. You can configure your environment to have all of the tools and features that a new contributor would need to get started quickly and be productive. Say goodbye to the days of new contributors struggling through hours or days of trying to get a system working, and bid farewell to having to push your not-yet-ready changes just so you can work from a different system.</p>
-<h3 id="call-to-action">Call to Action</h3>
-<p>If you are a member of an organization using GitHub Team or GitHub Enterprise Cloud, contact your organization owner today to <a href="https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/enabling-codespaces-for-your-organization">get started</a>. If you aren&#8217;t a member of such an organization, <a href="https://github.com/features/codespaces/signup">sign up</a> for the GitHub Codespaces beta program now and optionally <a href="https://www.surveymonkey.com/r/QLCBY56">fill out our survey</a> to help us understand the demand from the C++ community. Once you have access, use this walkthrough to guide you to setting up your first codespace for C++ and then try it out on your own projects!</p>
-<p>The vcpkg ecosystem is currently an <a href="https://devblogs.microsoft.com/cppblog/vcpkg-april-2022-release-is-now-available/">active, open-source community</a>. If you are interested in contributing to the vcpkg or vcpkg-tool projects, we&#8217;d love to have your help (<a href="https://twitter.com/vcpkg_io/status/1515008498458931200">we are also currently hiring</a>), and we encourage you to read and carefully follow the contribution sections of the respective repositories. We want to hear about your experiences with GitHub Codespaces and C++ in Visual Studio Code. Please let us know more what you liked and what improvements you&#8217;d like to see by contacting us on Twitter <a href="https://twitter.com/visualc">@VisualC</a> or by using the <a href="https://twitter.com/search?q=%23CodespacePlusPlus">#CodespacePlusPlus</a> hashtag. You can also email us at <a href="mailto://visualcpp@microsoft.com">visualcpp@microsoft.com</a>. If you have specific features to request or bugs to report, you can open a <a href="https://github.com/github/feedback/discussions/categories/codespaces-feedback">discussion on GitHub Codespaces</a> or you can file bugs with us at the <a href="https://developercommunity.visualstudio.com/search?space=62&amp;q=%5Bvs-cpp-roadmap&amp;stateGroup=active">Microsoft Developer Community site</a>.</p>
-<p><strong>Happy Coding!</strong></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/customizing-github-codespaces-for-cpp-projects/">Customizing GitHub Codespaces for C++ Projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
 		
