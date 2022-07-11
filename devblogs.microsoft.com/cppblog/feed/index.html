@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 27 Jun 2022 16:58:17 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 11 Jul 2022 16:04:16 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,63 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>VS2022 Performance Enhancements: Faster C++ Development</title>
+		<link>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/#respond</comments>
+		
+		<dc:creator><![CDATA[David Li]]></dc:creator>
+		<pubDate>Mon, 11 Jul 2022 16:04:16 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[performance]]></category>
+		<category><![CDATA[game]]></category>
+		<category><![CDATA[Game Development]]></category>
+		<category><![CDATA[perf]]></category>
+		<category><![CDATA[search]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30753</guid>
+
+					<description><![CDATA[<p>Introduction<br />
+Building on top of our performance wins in earlier releases of VS2022, we are excited to announce additional improvements in Visual Studio 2022 17.3! Whether you are a game developer, work with large codebases, or have a small C++ project,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/">VS2022 Performance Enhancements: Faster C++ Development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
+<p>Building on top of our <a href="https://aka.ms/VS2022CppPerf1">performance wins</a> in earlier releases of VS2022, we are excited to announce additional improvements in Visual Studio 2022 17.3! Whether you are a game developer, work with large codebases, or have a small C++ project, your C++ development experience in Visual Studio 17.3 will feel even faster!</p>
+<p>In this blog, I will share the incredible speed improvements you will experience when VS indexes your codebase and colorizes your C++ code for the first time. In addition, learn about the new Go to All experience that will show results as you type.</p>
+<h1 id="testing-methodology">Testing Methodology</h1>
+<p>Measuring indexing and time to colorization, we used an Unreal Engine 5 blank C++ project on a desktop with an Intel Core i7-9700 CPU @ 3Ghz, 64GB RAM, and an SSD. For indexing improvements, we benchmarked using both UE5 and the more than 300,000 file Chromium repo. The tests took place on Visual Studio 2019 16.11 and Visual Studio 2022 17.2 and 17.3. For both scenarios, we used system logs to track the duration of the operations.</p>
+<h1 id="results">Results</h1>
+<h2 id="population-indexing-improvements">Population (Indexing) Improvements</h2>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png"><img class="aligncenter size-full wp-image-30755" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png" alt="Image indexchromium" width="2003" height="1376" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png 2003w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-300x206.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-1024x703.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-768x528.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-1536x1055.png 1536w" sizes="(max-width: 2003px) 100vw, 2003px" /></a></p>
+<p>In Visual Studio 2019 16.11, it takes roughly 26 minutes for the Chromium repo to fully index. In Visual Studio 2022 17.3, waiting for indexing to finish will only take a bit over 6 minutes, a 4.17X speed up. When indexing a large solution like the Chromium repo for the first time, you will save up to 20 minutes with the latest version of Visual Studio.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png"><img class="aligncenter size-full wp-image-30756" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png" alt="Image indexue5" width="1836" height="1146" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png 1836w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-300x187.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-1024x639.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-768x479.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-1536x959.png 1536w" sizes="(max-width: 1836px) 100vw, 1836px" /></a></p>
+<p>When getting to code in a new Unreal Engine 5 solution, you will see a huge improvement in the latest version of VS2022 versus VS2019. In VS2019 16.11, fully indexing a brand-new C++ UE5 solution took 144 seconds. When using VS2022 17.3, fully indexing the same UE5 solution is now 2X faster at 72 seconds. Whether you are creating a new UE5 project or cloning from an existing repo, your code will index much faster in 17.3.</p>
+<h2 id="time-to-colorization">Time to Colorization</h2>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png"><img class="aligncenter size-full wp-image-30754" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png" alt="Image colorue5" width="2001" height="1222" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png 2001w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-300x183.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-1024x625.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-768x469.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-1536x938.png 1536w" sizes="(max-width: 2001px) 100vw, 2001px" /></a></p>
+<p>Building on top of the improvements in VS2022 17.2, time to colorization is even faster in Visual Studio 2022 17.3. Compared to VS2019 16.11, you will see your UE5 code colorize from a cold start in 7.6 seconds, a 4.3X improvement.</p>
+<h2 id="go-to-responsiveness">Go To Responsiveness</h2>
+<p>In Visual Studio 2022 17.3, your Go to All experience will feel faster! Previously, results appeared after you stopped typing. In the new experience, results will show as you type. You will now spend less time getting the result you desire.</p>
+<p style="text-align: center;"><strong><span style="font-size: 18pt;">Before</span></strong></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotobefore.gif"><img class="aligncenter size-full wp-image-30766" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotobefore.gif" alt="Image gotobefore" width="454" height="385" /></a></p>
+<p style="text-align: center;"><strong><span style="font-size: 18pt;">After</span></strong></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotoafter.gif"><img class="aligncenter size-full wp-image-30767" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotoafter.gif" alt="Image gotoafter" width="454" height="385" /></a></p>
+<p>In addition to the new Go to All experience, you can now search and interact with code more efficiently with Contextual Code Previews in our All-In-One Search experience. For more information, please see this <a href="https://devblogs.microsoft.com/visualstudio/sneak-peek-and-edit-your-code-while-you-search/">blog</a>.</p>
+<h2 id="git-branch-switching">Git Branch Switching</h2>
+<p>In addition to C++ and search improvements, we have also significantly improved the branch switching experience. Please refer to this <a href="https://aka.ms/VS2022-BranchSwitchingPerformance">blog</a> for more information.</p>
+<p>&nbsp;</p>
+<h1 id="feedback-wanted">Feedback Wanted!</h1>
+<p>Your feedback through <a href="https://developercommunity.visualstudio.com/">Developer Community</a>, surveys, and social media channels has made these improvements possible. We thank you for your valuable comments.
+These enhancements are a continuation of our focus on improving productivity for game developers. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like ones detailed in this blogpost. If you are a game developer, <a href="http://aka.ms/VSGameDevSurvey">let us know your thoughts in our 2022 Visual Studio Game Developer Survey</a>.</p>
+<p>In addition, please continue to help shape the development of Visual Studio by talking to us in the comments below, on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
+<h1 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h1>
+<p><a href="https://visualstudio.microsoft.com/downloads/">Download the latest version of Visual Studio 2022</a> to take advantage of these productivity benefits today!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/">VS2022 Performance Enhancements: Faster C++ Development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++23&#8217;s Deducing this: what it is, why it is, how to use it</title>
 		<link>https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/#comments</comments>
@@ -990,32 +1047,6 @@ void PrintAllWords(TrieNode* root) {
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>11</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2022 is Today</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/</link>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 26 Apr 2022 07:20:56 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30507</guid>
-
-					<description><![CDATA[<p>Pure Virtual C++ 2022 is today at 14:00 UTC!<br />
-Join us on Learn TV for a free one-day virtual conference for the whole C++ community.<br />
-You can find the schedule here.<br />
-&#160;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/">Pure Virtual C++ 2022 is Today</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png"><img class="aligncenter size-large wp-image-27841" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png" alt="Pure Virtual C++ logo" width="640" height="168" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-1024x269.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-300x79.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image-768x202.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2021/04/word-image.png 1376w" sizes="(max-width: 640px) 100vw, 640px" /></a>Pure Virtual C++ 2022 is today at 14:00 UTC!</p>
-<p>Join us on <a href="https://docs.microsoft.com/en-us/learn/tv/">Learn TV</a> for a free one-day virtual conference for the whole C++ community.</p>
-<p>You can find the schedule <a href="https://visualstudio.microsoft.com/pure-virtual-cpp-event/">here</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-is-today/">Pure Virtual C++ 2022 is Today</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
