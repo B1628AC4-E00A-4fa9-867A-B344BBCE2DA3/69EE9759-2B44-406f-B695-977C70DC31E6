@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 12 Jul 2022 18:07:10 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 14 Jul 2022 19:35:58 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,180 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</title>
+		<link>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/#respond</comments>
+		
+		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
+		<pubDate>Thu, 14 Jul 2022 19:35:58 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30706</guid>
+
+					<description><![CDATA[<p>New std::optional Checks in Visual Studio 2022</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/">New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of some new experimental code analysis checks that can detect unwrapping of empty <code>std::optional</code>s. The experimental checks can be enabled by using the <code>CppCoreCheckExperimentalRules</code> ruleset. Note that the experimental checks are not part of the <code>Microsoft All Rules</code> ruleset. While these checks are marked experimental, they look promising in our internal, preliminary testing. Unless we get reports about crashes or excessive number of false positives, we plan to move these checks to the <code>NativeRecommendedRules</code> ruleset (which is the default ruleset) in the next release.</p>
+<h2 id="overview">Overview</h2>
+<p><code>std::optional</code> <a href="https://en.cppreference.com/w/cpp/utility/optional">was introduced in C++17</a> to represent a value that may or may not be present. It is often used as the return type for a function that may fail.
+We introduced two new checks, <code>C26829</code> and <code>C26830</code>, to find unwrap operations of empty <code>std::optional</code>s. Unwrapping an empty optional is undefined behavior. It can result in a crash, or worse, reading uninitialized memory
+depending on the implementation. In some cases, the latter is a vulnerability that an adversarial actor could exploit. The <a href="https://developercommunity.visualstudio.com/t/Detect-unguarded-dereferences-of-std::op/1430703">C++ Developer Community ask</a> was one of the top voted feature requests for the static analysis team as dereferencing empty optionals has been a major source of real errors in many C++ projects.</p>
+<h2 id="modeling-optionals">Modeling optionals</h2>
+<p>In order to warn when (potentially) empty optionals are unwrapped, the analyzer needs to precisely model the semantics of <code>std::optional</code>.</p>
+<h3 id="basic-assumptions">Basic assumptions</h3>
+<p>Usually, the use of <code>std::optional</code>s is a stronger signal about the presence of values compared to pointer types. Let us look at the following code snippet:</p>
+<pre><code class="language-cpp">void f(int* p);
+void g(std::optional&lt;int&gt;&amp; p);</code></pre>
+<p>In many codebases, we cannot know whether <code>nullptr</code> is a valid argument to function <code>f</code>. The function might have a precondition that it does not accept null pointers and the codebase might never pass a null value to <code>f</code>. A warning for null pointer dereference in the body of function <code>f</code> would be considered false positives by some developers.
+Usually, marking such pointers with <code>gsl::not_null</code> (<code>void f(gsl::not_null&lt;int*&gt; p);</code>) or replacing them with references (<code>void f(int&amp; p);</code>) can make the code clearer.</p>
+<p>In case of function <code>g</code>, however, the use of <code>std::optional</code> makes it explicit that it handles the lack of values gracefully. Therefore, while we tend to not warn on pointer parameters that don&#8217;t have null checks, we will warn on unwrapping <code>std::optional</code>s that might be empty.
+Unfortunately, there are some rare cases where this assumption would not hold. Let us look at the code snippet below:</p>
+<pre><code class="language-cpp">std::optional&lt;int&gt; lookup(std::string_view key) {
+    const static std::map myMap{std::pair{"Foo"sv, 1}, std::pair{"Bar"sv, 2}};
+    auto it = myMap.find(key);
+    return it == myMap.end() ? std::nullopt : std::optional{it-&gt;second};
+}</code></pre>
+<p>While the function <code>lookup</code> might fail in the general case, a particular invocation of the function might have an argument that guarantees success (e.g., it might be <code>lookup("Foo")</code>). This guarantee is an invariant of the program that we currently cannot express using <a href="https://docs.microsoft.com/cpp/c-runtime-library/sal-annotations">SAL annotations</a> and cannot infer using function-local reasoning. The experimental versions of these checks might emit false positive warnings in those cases. We are actively looking into ways to mitigate this problem. Some of the options are improving existing annotations to be able to communicate this invariant, or believe certain assertions. Until we settle on a solution, it is always possible to either suppress these warnings or to check that the optional has a value before unwrapping it make the warning disappear.</p>
+<p>Our modeling also assumes that whenever an optional is passed to a function by non-const reference, the called function might reset the optional. This assumption helps us catch more problems at the cost of more false positives.
+As we gain more real-world experience with these checks we might revisit some of these assumptions/decisions in the future.</p>
+<h3 id="basic-operations">Basic operations</h3>
+<p>This section describes the details of the modeling using a notation borrowed from our automatic regression tests. This notation helps us document our expectations regarding the semantics of the analyzed program and check whether the analyzer&#8217;s understanding matches our intuition.
+Program points that should be deduced as reachable are annotated with <code>__espx_expect_reached()</code>. On the other hand, program points that should be deduced as unreachable are annotated with <code>__espx_expect_unreached()</code>.
+Looking at the reachability of certain program points can help us understand how the analysis engine reasoned about the values in the program. We can also query some values directly using annotations like <code>__espx_expect_always_true(cond)</code>. Our analysis tool will evaluate the expression <code>cond</code> and will report a failure when it cannot prove that the value always evaluates to true.</p>
+<p>Our analysis engine understands that the default constructor of <code>std::optional</code> will create an empty optional. Moreover, it understands the basic ways to check if an optional is empty:</p>
+<pre><code class="language-cpp">void default_ctor_creates_empty()
+{
+    std::optional&lt;int&gt; opt;
+    if (opt)
+        __espx_expect_unreached();
+    else
+        __espx_expect_reached();
+
+    if (opt.has_value())
+        __espx_expect_unreached();
+    else
+        __espx_expect_reached();
+
+    int x = opt.value_or(5);
+    __espx_expect_always_true(x == 5);
+}</code></pre>
+<p>The test case above shows that the engine can discover that <code>opt</code> evaluates to false, so the true branch of the first if statement is never reached, and the false branch is always reached. The engine also understands that the <code>value_or</code> will return its argument when it is invoked on an empty optional. Conversely, it also understands that <code>value_or</code> will return the internal value of an optional when it had a value:</p>
+<pre><code class="language-cpp">void value_ctor_creates_non_empty()
+{
+    std::optional&lt;int&gt; opt{2};
+    __espx_expect_always_true((bool)opt);
+
+    int x = opt.value_or(5);
+    __espx_expect_always_true(x == 2);
+}</code></pre>
+<p>Our analyzer also understand value types. It knows that the copy of an optional has a value if and only if the copied optional also had a value. Moreover, the contained value is the copy of the original:</p>
+<pre><code class="language-cpp">void copied_non_empty_optional_is_not_empty()
+{
+    std::optional&lt;int&gt; opt{2};
+    auto opt2 = opt;
+    __espx_expect_always_true((bool)opt);
+    __espx_expect_always_true((bool)opt2);
+
+    __espx_expect_always_true(opt.value() == opt2.value());
+}</code></pre>
+<p>The analyzer also understands that the value inside an optional is always at the same address and two different optional objects are living at different addresses:</p>
+<pre><code class="language-cpp">void accessor_produces_stable_addresses()
+{
+    std::optional&lt;int&gt; opt{2};
+    __espx_expect_always_true(&amp;opt.value() == &amp;opt.value());
+    int* ptr = &amp;opt.value();
+    opt = std::optional&lt;int&gt;{2};
+    __espx_expect_always_true(&amp;opt.value() == ptr);
+    std::optional&lt;int&gt; opt2{opt};
+    __espx_expect_always_true(&amp;opt.value() != &amp;opt2.value());
+}</code></pre>
+<p>Surprisingly, a moved-from optional that used to have a valid value is not empty. It holds the moved-from value:</p>
+<pre><code class="language-cpp">void moved_from_optional_is_not_empty()
+{
+    std::optional&lt;int&gt; opt{2};
+    auto opt2 = std::move(opt);
+    __espx_expect_always_true((bool)opt);
+    __espx_expect_always_true(*opt2 == 2);
+}</code></pre>
+<p>This might be a potential source of confusion. While we currently will not warn for using the moved-from object in the original optional, we are looking into how can we teach our existing <a href="https://devblogs.microsoft.com/cppblog/new-code-analysis-checks-in-visual-studio-2019-use-after-move-and-coroutine/">use-after-move check</a> to find such errors by piggy-backing on the engine&#8217;s understanding of <code>std::optional</code>.</p>
+<h3 id="symbolic-reasoning">Symbolic reasoning</h3>
+<p>Our analysis engine is using symbolic reasoning to model the emptiness of optionals. Whenever the engine learns new facts about these symbols, this knowledge automatically and retroactively applied to the state of the objects. Consider the following example:</p>
+<pre><code class="language-cpp">void constraints_correctly_applied(std::optional&lt;int&gt; optVal)
+{
+    bool b = (bool)optVal;                         // Program point: A.
+    if (b)                                         // Program point: B.
+    {
+       __espx_expect_always_true((bool)optVal);    // Program point: C.
+    }
+}</code></pre>
+<p>In the code snippet above, we have no information about the emptiness of <code>optVal</code> at program point <code>A</code>. However, the analyzer knows that the value of the variable <code>b</code> is inherently entangled to the emptiness of <code>optVal</code>. We branch on <code>b</code> at program point <code>B</code>. In the true branch, we know that the value of <code>b</code> is true. As a result, we also learned that <code>optVal</code> is not empty. As a result, <code>(bool)optVal</code> will evaluate to true at program point <code>C</code>. To summarize, we might learn new facts about the state of <code>optVal</code> from expressions that will not even refer to <code>optVal</code> syntactically. This is the power of symbolic reasoning.</p>
+<h3 id="modeling-exceptions">Modeling exceptions</h3>
+<p>The analyzer understands whether accessor methods like <code>std::optional::value</code> will or will not throw an exception based on the known state of the object. It can use this information to help the analysis skip certain execution paths that cannot happen at runtime. This helps reducing the number of false positives and improve the performance of the analysis. The code snippet below demonstrates the behavior of the analysis.</p>
+<pre><code class="language-cpp">void exception_modeling(std::optional&lt;int&gt; unknown)
+{
+    std::optional&lt;int&gt; nonEmpty{2};
+    std::optional&lt;int&gt; empty{};
+
+    try
+    {
+        unknown.value();
+        __espx_expect_reached();
+    }
+    catch(...)
+    {
+        __espx_expect_reached();
+    }
+
+    try
+    {
+        nonEmpty.value();
+        __espx_expect_reached();
+    }
+    catch(...)
+    {
+        __espx_expect_unreached();
+    }
+
+    try
+    {
+        empty.value();
+        __espx_expect_unreached();
+    }
+    catch(...)
+    {
+        __espx_expect_reached();
+    }
+}</code></pre>
+<h3 id="other-considerations">Other considerations</h3>
+<p>Our analysis engine also understands nested optionals. There are many more modeled methods that we did not mention explicitly, including <code>swap</code>. Unfortunately, the current version of our modeling will not precisely model the semantics of free functions operating on <code>std::optional</code>s, like <code>std::swap</code> or the comparison operators. We have partial modeling in place for <code>std::make_optional</code> and <code>std::in_place</code> constructors. We plan to make the modeling more comprehensive in the future, but we feel like the current modeling should be sufficient to find most errors.</p>
+<h2 id="emitting-warnings">Emitting warnings</h2>
+<p>The analyzer will emit <code>C26829</code> when an empty optional is unwrapped. On the other hand, it will emit <code>C26830</code> when a <strong>potentially</strong> empty optional is unwrapped. The emitted warnings will also include a path that describes the execution that could trigger the problem. In the future, we plan to include key events in the emitted diagnostics that will highlight parts of the code that are important to understand the warning. The highlighted snippets might include the program points where the emptiness of the optional was checked and calls where the emptiness of the optional might have been changed.</p>
+<pre><code class="language-cpp">void unwrap_empty()
+{
+  std::optional&lt;int&gt; o;
+  *o = 5; // C26829 emitted
+}
+
+void unwrap_maybe_empty(std::optional&lt;int&gt; o)
+{
+  *o = 5; // C26830 emitted
+}</code></pre>
+<p>In function <code>unwrap_empty</code> above, we will see a <code>C26829</code>. In this case the analyzer is confident that the optional was empty. This usually happens when we forget to initialize an optional or accidentally write a negated condition.
+In function <code>unwrap_maybe_empty</code>, however, we will see a <code>C26830</code>. In this case the engine is not sure whether the optional is empty, and the unwrap operation is not guarded.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The upcoming Visual Studio 2022 17.3 Preview 3 will feature new checks to find hard-to-find misuses of <code>std::optional</code>s. These are experimental checks that need to be enabled explicitly by using the <code>CppCoreCheckExperimentalRules</code> ruleset or adding <code>C26829</code> and <code>C26830</code> to your custom ruleset. <code>C26829</code> is a high-confidence warning that should have very few false positives. <code>C26830</code> is a medium confidence check that should not be too noisy for most projects.
+Depending on the bugs reported and our experience with these checks in the coming weeks, either <code>C26829</code> only or both of these warnings might be turned on by default in 17.4.</p>
+<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
+<p>The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Checks. Stay tuned for more C++ static analysis blogs. In the meanwhile, we would love to learn more about your experience with our static analysis tools. Comment below, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/">New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Integrated Terminal in Visual Studio: New SSH integration for Linux targeting</title>
 		<link>https://devblogs.microsoft.com/cppblog/integrated-terminal-in-visual-studio-new-ssh-integration-for-linux-targeting/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/integrated-terminal-in-visual-studio-new-ssh-integration-for-linux-targeting/#comments</comments>
@@ -901,36 +1075,6 @@ Persistent Representation of C++ for Fun and Profit – Gabriel Dos Reis</p>
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2022-videos-available/">Pure Virtual C++ 2022 Recordings Available</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>MSVC’s STL Completes /std:c++20</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvcs-stl-completes-stdc20/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvcs-stl-completes-stdc20/#comments</comments>
-		
-		<dc:creator><![CDATA[Casey Carter]]></dc:creator>
-		<pubDate>Tue, 10 May 2022 18:01:31 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30539</guid>
-
-					<description><![CDATA[<p>We are happy to announce that the final C++20 Standard Library features are now stabilized and available in /std:c++20 mode in both Visual Studio 2022 version 17.2 and Visual Studio 2019 version 16.11.14. This notably includes several proposals approved as Defect Reports (DRs) by the C++ Standard Committee against the C++20 Standard Library that made extensive design changes to &#60;format&#62;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvcs-stl-completes-stdc20/">MSVC’s STL Completes /std:c++20</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that the final C++20 Standard Library features are now stabilized and available in <code>/std:c++20</code> mode in both Visual Studio 2022 version 17.2 and Visual Studio 2019 version 16.11.14. This notably includes <a href="https://github.com/microsoft/STL/projects/9">several proposals approved as Defect Reports (DRs)</a> by the C++ Standard Committee against the C++20 Standard Library that made extensive design changes to <code>&lt;format&gt;</code> and <code>&lt;ranges&gt;</code> as recently as October 2021. <span data-ogsc="rgb(31, 73, 125)">You can now use the complete list of C++20 features in production in a binary compatible way with other supported language version modes.</span></p>
-<h2 id="c20-complete-again">C++20 Complete&#8230; Again??!?</h2>
-<p>We <a href="https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/">previously announced</a> that MSVC had completed all features in C++20 for Visual Studio version 16.11.0, and that we had added the <code>/std:c++20</code> option to indicate that most C++20 features were stabilized and considered production-ready. We delayed making some library features (<code>&lt;format&gt;</code>, <code>&lt;ranges&gt;</code>, and the portions of <code>&lt;chrono&gt;</code> that use <code>&lt;format&gt;</code>) available under <code>/std:c++20</code> since there were substantial and important changes in the works for those features in the Standard Committee. We didn&#8217;t want to release those features in their current form and later apply changes that would break users of <code>/std:c++20</code>. Those features continued to be available only under <code>/std:c++latest</code> while the Committee finalized the changes and we implemented them.</p>
-<h2 id="defect-reports">Defect Reports</h2>
-<p>The DRs include both source and <abbr title="Application Binary Interface">ABI</abbr>-breaking changes to features in <code>&lt;format&gt;</code> and <code>&lt;ranges&gt;</code>. The amazing community of contributors that has grown up around the STL since open-sourcing has been implementing the DRs in the Visual Studio 2022 release series under <code>/std:c++latest</code> just as if they were C++23 features. Our plan has been to make the final result available under <code>/std:c++20</code> once all the DRs are done, and then backport that work to Visual Studio 2019 to complete the C++20 story for customers who haven&#8217;t yet moved to Visual Studio 2022. We accomplished the first goal for Visual Studio 2022 17.2 Preview 2.</p>
-<p>The backporting work went miraculously well considering that we had to merge a hundred commits from the development branch into the 16.11 release branch and get everything working without regressing that stable release series. We managed to complete the work in time to ship the 16.11 C++20 backport simultaneously with the completion of C++20 support in 17.2.</p>
-<h2 id="go-ye-forth-and-code">Go Ye Forth And Code</h2>
-<p>We&#8217;re happy to make these last bits of C++20 available to customers who need production stability guarantees. Please let us know about any problems or questions you have with the C++20 support in either Visual Studio 2019 version 16.11.14 or Visual Studio 2022 version 17.2, either via <a href="https://github.com/microsoft/STL/issues">the STL&#8217;s GitHub issue tracker</a>, <a href="https://developercommunity.visualstudio.com/report?space=62&amp;entry=problem">Developer Community</a>, or commenting below.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvcs-stl-completes-stdc20/">MSVC’s STL Completes /std:c++20</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvcs-stl-completes-stdc20/feed/</wfw:commentRss>
-			<slash:comments>5</slash:comments>
 		
 		
 			</item>
