@@ -1,4 +1,404 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 13 Jun 2022 04:46:58 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[tscをGoに移植]]></title><description><![CDATA[筆者はTypeScript型チェッカーtscをRustではなく、Goに移植しようと思います。拡張可能なRustプラットフォームSWCの作者の発言としては、奇妙に聞こえるかもしれません。理由を説明した…]]></description><link>https://postd.cc/tsc-go/</link><guid isPermaLink="false">https://postd.cc/tsc-go/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[TypeScript]]></category><category><![CDATA[Go言語]]></category><category><![CDATA[tsc]]></category><category><![CDATA[SWC]]></category><pubDate>Mon, 13 Jun 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>筆者はTypeScript型チェッカー<strong>tsc</strong>をRustではなく、Goに移植しようと思います。拡張可能なRustプラットフォーム<a href="https://swc.rs/">SWC</a>の作者の発言としては、奇妙に聞こえるかもしれません。理由を説明したいと思います。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 27 Jul 2022 03:17:38 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[React Server Componentsの仕組み：詳細ガイド]]></title><description><![CDATA[React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい…]]></description><link>https://postd.cc/how-react-server-components-work/</link><guid isPermaLink="false">https://postd.cc/how-react-server-components-work/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 27 Jul 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい新機能です。
+Plasmicでは、<a href="https://plasmic.app/">Reactのビジュアルビルダー</a>を開発しており、Reactのパフォーマンスには大きな関心を持もっています。
+当社のクライアントの多くは、Plasmicを使用して高いパフォーマンスが求められるマーケティングサイトやECサイトを構築しています。
+したがって、RSCはまだReact 18の初期実験機能ですが、Plasmicではその仕組みを詳しく調べています。
+このブログ記事では、これまでに分かったことを紹介したいと思います。
+Plasmicのメンバーによる<a href="https://www.reddit.com/r/reactjs/comments/s8r0ve/how_react_server_components_work_an_indepth_guide/">ツイートまとめ</a>もご覧ください。</p>
+<ul class="toc-for-article">
+    <li><a href="#01">React Server Componentsとは何か</a></li>
+    <li><a href="#02">サーバサイドレンダリングとの違いは？</a></li>
+    <li><a href="#03">RSCを使うメリット</a></li>
+    <li><a href="#04">RSCの全体像</a></li>
+    <li><a href="#05">サーバコンポーネントとクライアントコンポーネントの分断</a></li>
+    <li>
+        <a href="#06">RSCレンダリングの流れ</a>
+        <ul>
+            <li><a href="#07">1. サーバがレンダリングリクエストを受け取る</a></li>
+            <li><a href="#08">2. サーバがルートコンポーネント要素をJSON形式にシリアライズ</a></li>
+            <li><a href="#09">3. ブラウザがReactツリーを再構築</a></li>
+            <li><a href="#10">Suspenseとの互換性は問題ないか？</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#11">RSCワイヤーフォーマット</a>
+        <ul>
+            <li><a href="#12">RSCフォーマットを使う</a></li>
+            <li><a href="#13">単にプレーンHTMLを出力すればよいのでは？</a></li>
+            <li><a href="#14">クライアントコンポーネントからデータを取得するだけよりもメリットがある？</a></li>
+            <li><a href="#15">サーバサイドレンダリングはどうなる？</a></li>
+        </ul>
+    </li>
+    <li><a href="#16">サーバコンポーネントがレンダリングしているコンテンツのアップデート</a></li>
+    <li><a href="#17">RSCにメタフレームワークを使うべき理由</a></li>
+    <li><a href="#18">RSCは実用化の準備ができているのか？</a></li>
+</ul>
+<h2>React Server Componentsとは何か<a name="01"></a></h2>
+<p>React Server Components（RSC）は、サーバとクライアント（ブラウザ）が連携してReactアプリケーションのレンダリングを行うことを可能にします。
+Webページを表示する際にレンダリングされる一般的なReact要素ツリーは、通常異なるReactコンポーネントがさらに多くのReactコンポーネントをレンダリングする構成になっています。
+RSCは、このツリーを構成する一部のコンポーネントが<em>サーバによって</em>レンダリングされ、他のコンポーネントが<em>ブラウザによって</em>レンダリングされることを可能にします。🤯</p>
+<p>これはReactチームによる概略図です。
+最終的なゴールは、オレンジのコンポーネントはサーバ側でレンダリングされ、青のコンポーネントはクライアント側でレンダリングされるようなReactツリーです。</p>
+<p><img src="https://www.plasmic.app/blog/static/images/react-server-components.png"></p>
+<h2>サーバサイドレンダリングとの違いは？<a name="02"></a></h2>
+<p><strong>RSCはサーバサイドレンダリング（SSR）ではありません</strong>。
+どちらも名前に「サーバ」が含まれ、どちらもサーバ上で動いているので少し混乱しますね。
+しかし、両者はそれぞれ独立した直交する機能であると理解した方がずっと分かりやすいでしょう。
+RSCはSSRを必要とせず、その逆もまたしかりです。
+SSRは、Reactツリーを生HTMLにレンダリングするための環境をシミュレーションします。
+<em>サーバコンポーネントとクライアントコンポーネントを区別せず、どちらも同じようにレンダリングします。</em></p>
+<p>SSRとRSCを組み合わせ、サーバコンポーネントでサーバサイドレンダリングを行い、ブラウザ上で適切にハイドレーションすることも可能です。
+両者を併用する方法については、後日別の記事で詳しく話したいと思います。</p>
+<p>SSRについてはひとまず無視し、RSCだけにフォーカスしましょう。</p>
+<h2>RSCを使うメリット<a name="03"></a></h2>
+<p>RSC以前のReactコンポーネントはすべてクライアントコンポーネントであり、ブラウザ上で実行されます。
+Reactページにアクセスすると、ブラウザは必要なReactコンポーネントすべてのコードをダウンロードし、React要素ツリーを構築してDOMにレンダリングします（SSRを使用している場合は、DOMをハイドレーションします）。
+これらの処理がブラウザ上で行われることで React アプリケーションはインタラクティブに（イベントハンドラをインストールし、ステートを追跡し、イベントに応じてReactツリーに変更を加え、DOMを効率的にアップデートできるように）なります。
+では、サーバ上でレンダリングを行うメリットは何でしょうか。
+ブラウザよりサーバ上でレンダリングを行った方がよい理由はいくつかあります。</p>
+<ul>
+<li>サーバは、データベース、GraphQLエンドポイント、ファイルシステムなどのデータソースにもっとダイレクトにアクセスできます。パブリックAPIエンドポイントを経由することなく、必要なデータを直接取得でき、通常データソースに近い場所に配置されているため、ブラウザよりも素早くデータを取得できます。</li>
+<li>サーバは、たとえばマークダウンをHTMLに変換してレンダリングするためのnpmパッケージなどの「重い」コードモジュールを手軽に利用できます。それは、これらの依存関係を使用するたびにダウンロードする必要がないからです。ブラウザの場合、使用するコードをすべてJavaScriptのバンドルとしてダウンロードする必要があります。</li>
+</ul>
+<p>要するに、<strong>RSCはサーバとブラウザが互いに得意な処理を行えるようにするのです</strong>。
+サーバコンポーネントはデータの取得とコンテンツのレンダリング、クライアントコンポーネントはステートフルなインタラクティビティに注力できるため、ページの読み込み速度が速くなるほか、JavaScriptのバンドルサイズが小さくなり、ユーザ体験が改善されます。</p>
+<h2>RSCの全体像<a name="04"></a></h2>
+<p>では、まずその仕組みについて直感的に理解することから始めましょう。</p>
+<p>筆者の子供たちはカップケーキのデコレーションは<em>大好き</em>なのですが、焼くことに関してはさほど興味を示しません。
+カップケーキを一から作らせ、デコレーションまでさせるのは、きっと（かわいらしい）悪夢のような経験になるでしょう。
+小麦粉と砂糖、バターを用意し、オーブンの使用を許可し、さまざまな取扱説明書を延々と読んで聞かせなくてはいけません。
+そんなことをしていては、丸一日かかってしまいます。
+しかし筆者ならば、オーブンで焼く作業をずっと速く行えます。
+一部の作業を事前に行っておけば（原材料をそのまま渡すのではなく、カップケーキを焼き、アイシングを作り、それらを渡す）、子供たちは楽しいデコレーションにもっと早く取り掛かれます。
+さらに良いことに、子供たちがオーブンを使用することについて心配する必要がありません。
+素晴らしい！</p>
+<p><img src="https://www.plasmic.app/blog/static/images/cake.jpg"></p>
+<p>RSCの目的は、この役割分担を可能にすることです。
+サーバが得意な作業は事前にサーバに行わせてから、残りの作業をブラウザに引き継ぐのです。
+そうすることで、サーバがブラウザに渡すデータ量も減らすことができます。
+袋いっぱいの小麦粉とオーブンに比べ、小さなカップケーキ12個の方がはるかに効率的に運べます。</p>
+<p>一部のコンポーネントはサーバ側で、残りはクライアント側でレンダリングされるようなページのReactツリーを想像してみてください。
+RSCのハイレベルな戦略を簡略化すると以下のような形になります。
+サーバは、いつも通りサーバコンポーネントをレンダリングし、Reactコンポーネントを<code class="language-text">div</code>や<code class="language-text">p</code>などのネイティブHTML要素に変換します。
+しかし、ブラウザ上でレンダリングされるクライアントコンポーネントに遭遇すると、代わりにプレースホルダを出力します。
+サーバは、プレースホルダーに適切なクライアントコンポーネントとpropsを適用するように指示を加えます。
+ブラウザはこの出力を受け取り、クライアントコンポーネントで穴埋めを行います。
+これで完成です。</p>
+<p><strong>実際の仕組みはそんなに単純ではありません</strong>。
+詳細については後ほど話しますが、まずは全体像を頭に入れておくと有益です。</p>
+<h2>サーバコンポーネントとクライアントコンポーネントの分断<a name="05"></a></h2>
+<p>ところで、サーバコンポーネントとは何でしょうか。
+サーバ用とクライアント用のコンポーネントはどのようにして区別するのでしょうか。</p>
+<p>Reactチームでは、コンポーネントが記述されたファイルの拡張子を基に定義しています。
+<code class="language-text">.server.jsx</code>で終わるファイルにはサーバコンポーネント、<code class="language-text">.client.jsx</code>で終わるファイルにはクライアントコンポーネントが含まれています。
+これらいずれの拡張子ももたないファイルには、サーバ用としてもクライアント用としても使用できるコンポーネントが含まれています。</p>
+<p>これは実用的な定義であり、人間にとってもバンドラーにとっても区別が容易です。
+特にバンドラーにとっては、ファイル名を調べることでクライアントコンポーネントを区別し、処理方法を変えられるようになりました。
+後述しますが、バンドラーはRSCが適切に機能する上で重要な役割を果たします。</p>
+<p>サーバコンポーネントはサーバ上で、クライアントコンポーネントはクライアント上で実行されるため、それぞれできることにさまざまな制限があります。
+その中でも最も重要なのが、<strong>クライアントコンポーネントはサーバコンポーネントをインポートできない</strong>ということです。
+それは、サーバコンポーネントはブラウザ上で実行できず、ブラウザ上では機能しないコードが含まれる可能性があるためです。
+クライアントコンポーネントがサーバコンポーネントに依存する場合、不正な依存関係がブラウザバンドルに入り込んでしまうことになります。
+つまり、以下のようなクライアントコンポーネントは不正ということになってしまうため、この最後の点は難題になり得ます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// ClientComponent.client.jsx</span>
+<span class="token comment">// 悪い例:</span>
+<span class="token keyword">import</span> ServerComponent <span class="token keyword">from</span> <span class="token string">'./ServerComponent.server'</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">ClientComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ServerComponent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>しかし、クライアントコンポーネントがサーバコンポーネントをインポートできず、サーバコンポーネントのインスタンスを生成できないのであれば、どうすれば以下のようにサーバコンポーネントとクライアントコンポーネントが交互に配置されたReactツリーができるのでしょうか。またどうすれば、クライアントコンポーネント（青い丸）の下にサーバコンポーネント（オレンジ色の丸）を配置できるのでしょうか。</p>
+<p><img src="https://www.plasmic.app/blog/static/images/react-server-components.png"></p>
+<p>クライアントコンポーネントからサーバコンポーネントをインポートしてレンダリングすることはできませんが、コンポジションは使用できます。
+つまり、クライアントコンポーネントは単なる不透明な<code class="language-text">ReactNode</code>であるpropsを取り込むことはでき、<code class="language-text">ReactNode</code>がサーバコンポーネントによってレンダリングされることも可能です。
+以下に例を挙げます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// ClientComponent.client.jsx</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">ClientComponent</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> children <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Hello from client land</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// ServerComponent.server.jsx</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">ServerComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">Hello from server land</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// OuterServerComponentはクライアントコンポーネントも</span>
+<span class="token comment">// サーバーコンポーネントもインスタンス化することができ、</span>
+<span class="token comment">// ClientComponentのchildrenとして&lt;ServerComponent/>を渡します。</span>
+<span class="token keyword">import</span> ClientComponent <span class="token keyword">from</span> <span class="token string">'./ClientComponent.client'</span>
+<span class="token keyword">import</span> ServerComponent <span class="token keyword">from</span> <span class="token string">'./ServerComponent.server'</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">OuterServerComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ClientComponent</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ServerComponent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ClientComponent</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この制限は、RSCを有効に活用するためのコンポーネントの配置を検討する上で大きな影響があります。</p>
+<h2>RSCレンダリングの流れ<a name="06"></a></h2>
+<p>それでは、Reactサーバコンポーネントをレンダリングするときに実際何が起こるのか、肝心な部分を詳しく見ていきましょう。
+ここで説明することをすべて理解しなくてもサーバコンポーネントは使えますが、仕組みについて直感的な理解は得られると思います。</p>
+<h3>1. サーバがレンダリングリクエストを受け取る<a name="07"></a></h3>
+<p>レンダリングの一部はサーバが行わなくてはならないため、RSCを使用する場合、ページのレンダリングは必ずサーバで始まります。
+その際、APIコールによってReactコンポーネントのレンダリングが開始します。
+この「ルート」コンポーネントは必ずサーバコンポーネントであり、他のサーバコンポーネントまたはクライアントコンポーネントをレンダリングする場合もあります。
+サーバは、リクエストに含まれる情報をもとに、使用するサーバコンポーネントとpropsを判断します。
+このリクエストは、通常特定のURLでページリクエストの形で届きますが、Shopify Hydrogenはより<a href="https://shopify.dev/custom-storefronts/hydrogen/framework/server-state">きめ細かい方法</a>を使用しており、Reactチームの公式デモでは<a href="https://github.com/reactjs/server-components-demo/blob/main/server/api.server.js">raw実装</a>を行っています。</p>
+<h3>2. サーバがルートコンポーネント要素をJSON形式にシリアライズ<a name="08"></a></h3>
+<p>ここでの最終目的は、最初のルートサーバコンポーネントをHTMLのタグとクライアントコンポーネントのプレースホルダで構成されるツリーとしてレンダリングすることです。
+次に、そのツリーをシリアライズしてブラウザに送ります。
+ブラウザ側では、受け取ったデータをデシリアライズし、プレースホルダを実際のクライアントコンポーネントに置き換え、最終結果をレンダリングします。</p>
+<p>上の例に沿って見てみましょう。
+<code class="language-text">&lt;OuterServerComponent/&gt;</code>をレンダリングしたい場合、<code class="language-text">JSON.stringify(&lt;OuterServerComponent /&gt;)</code>を実行すればシリアライズされた要素ツリーが得られるでしょうか？</p>
+<p>惜しいですが、少し違います。😅
+React要素とは実際のところどういうものだったか、思い出してみてください。
+<code class="language-text">type</code>というフィールドに文字列または関数をとるオブジェクトです。
+<code class="language-text">type</code> には、文字列なら<code class="language-text">&quot;div&quot;</code>のようなhtmlのタグ名が、関数ならReactコンポーネントのインスタンスが入ります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// &lt;div>oh my&lt;/div> を返す場合</span>
+<span class="token operator">></span> React<span class="token punctuation">.</span><span class="token function">createElement</span><span class="token punctuation">(</span><span class="token string">"div"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> title<span class="token operator">:</span> <span class="token string">"oh my"</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+  $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>element<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  type<span class="token operator">:</span> <span class="token string">"div"</span><span class="token punctuation">,</span>
+  props<span class="token operator">:</span> <span class="token punctuation">{</span> title<span class="token operator">:</span> <span class="token string">"oh my"</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token operator">...</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// &lt;MyComponent>oh my&lt;/MyComponent> を返す場合</span>
+<span class="token operator">></span> <span class="token keyword">function</span> <span class="token function">MyComponent</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span>children<span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token operator">></span> React<span class="token punctuation">.</span><span class="token function">createElement</span><span class="token punctuation">(</span>MyComponent<span class="token punctuation">,</span> <span class="token punctuation">{</span> children<span class="token operator">:</span> <span class="token string">"oh my"</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">{</span>
+  $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>element<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  type<span class="token operator">:</span> MyComponent   <span class="token comment">// MyComponent 関数への参照 function</span>
+  props<span class="token operator">:</span> <span class="token punctuation">{</span> children<span class="token operator">:</span> <span class="token string">"oh my"</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">type</code>にHTMLタグではなくコンポーネントを指定した場合、typeフィールドはコンポーネントとして定義した関数（訳注: 原文ではcomponent function。本記事では、以降「コンポーネント関数」と訳します）を参照します。
+しかし、関数はJSON 形式にシリアライズできません。</p>
+<p>すべての要素をJSON文字列に適切に変換するために、Reactはこれらのコンポーネント関数の参照に適切に対処する特別な<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter">置換関数</a>を<code class="language-text">JSON.stringify()</code>に渡します。
+そのa関数は、<a href="https://github.com/facebook/react/blob/42c30e8b122841d7fe72e28e36848a6de1363b0c/packages/react-server/src/ReactFlightServer.js#L368">ReactFlightServer.jsにあるresolveModelToJSON()</a>です。</p>
+<p>具体的には、シリアライズ対象のReact要素に対して以下の処理を行います。</p>
+<ul>
+<li>HTMLのbaseタグ（<code class="language-text">type</code>フィールドには、「<code class="language-text">div</code>」のような文字列が入ります）の場合、すでにシリアライズ可能です。特別な処理は必要ありません。</li>
+<li>サーバコンポーネントの要素の場合、サーバコンポーネント関数（<code class="language-text">type</code>フィールドに格納されている）とそのpropsを呼び出し、その結果をシリアライズします。これは実質的にサーバーコンポーネントのレンダリングに相当します。つまり、全てのサーバーコンポーネントをただのHTMLタグに変換するのです。</li>
+<li>クライアントコンポーネントの場合も、すでにシリアライズ可能です。<code class="language-text">type</code>フィールドはすでにコンポーネント関数ではなく、モジュール参照オブジェクトを指し示しています。このモジュール参照オブジェクトとは一体何なのでしょう。</li>
+</ul>
+<h4>「モジュール参照」オブジェクトとは何か</h4>
+<p>RSCでは、React要素の<code class="language-text">type</code>フィールドに「モジュール参照」と呼ばれる新しい値を導入できます。
+コンポーネント関数の代わりに、コンポーネント関数へのシリアライズ可能な「参照」を渡すのです。
+例えば、<code class="language-text">ClientComponent</code>という要素は以下のような形を取ることができます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>element<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token comment">// type フィールドが、実際のコンポーネント関数の代わりに参照オブジェクトを持つようになりました</span>
+  type<span class="token operator">:</span> <span class="token punctuation">{</span>
+    $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>module<span class="token punctuation">.</span>reference<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment">// ClientComponent は以下のファイルから default export されます</span>
+    name<span class="token operator">:</span> <span class="token string">"default"</span><span class="token punctuation">,</span>
+    <span class="token comment">// ClientComponent を default export しているファイルのパス</span>
+    filename<span class="token operator">:</span> <span class="token string">"./src/ClientComponent.client.js"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  props<span class="token operator">:</span> <span class="token punctuation">{</span> children<span class="token operator">:</span> <span class="token string">"oh my"</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>しかし、このマジックのような処理はどこで行われているのでしょうか。
+クライアントコンポーネント関数への参照は、どこでシリアライズ可能な「モジュール参照」オブジェクトに変換されているのでしょうか。</p>
+<p>なんと、この手品のような処理はバンドラーが行なっているのです。
+Reactチームは、webpack向けの公式RSCサポートを、<code class="language-text">react-server-dom-webpack</code>で<a href="https://github.com/facebook/react/blob/main/packages/react-server-dom-webpack/src/ReactFlightWebpackNodeLoader.js">webpackローダ</a>または<a href="https://github.com/facebook/react/blob/main/packages/react-server-dom-webpack/src/ReactFlightWebpackNodeRegister.js">node-register</a>として公開しています。
+サーバコンポーネントが<code class="language-text">*.client.jsx</code>ファイルから何かをインポートする際、実際のインポート対象を取得する代わりに、そのファイル名とエクスポート名が含まれたモジュール参照オブジェクトだけを取得しています。
+クライアントコンポーネント関数が、サーバ上に構築されるReactツリーの一部に組み込まれることはありません。</p>
+<p><a href="#08">このセクションの冒頭で</a><code class="language-text">&lt;OuterServerComponent /&gt;</code>をシリアライズしようとした例を思い出してください。
+最終的には以下のようなJSONツリーになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token comment">//「モジュール参照」を持つ ClientComponent のプレースホルダー</span>
+  $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>element<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  type<span class="token operator">:</span> <span class="token punctuation">{</span>
+    $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>module<span class="token punctuation">.</span>reference<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    name<span class="token operator">:</span> <span class="token string">"default"</span><span class="token punctuation">,</span>
+    filename<span class="token operator">:</span> <span class="token string">"./src/ClientComponent.client.js"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  props<span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token comment">// ClientComponent に渡される children（ここでは &lt;ServerComponent />）</span>
+    children<span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token comment">// ServerComponentは html タグに直でレンダリングされます。</span>
+      <span class="token comment">// ServerComponent への参照が一切なく、直でspanをレンダリングしていることに注目してください。</span>
+      $$<span class="token keyword">typeof</span><span class="token operator">:</span> <span class="token function">Symbol</span><span class="token punctuation">(</span>react<span class="token punctuation">.</span>element<span class="token punctuation">)</span><span class="token punctuation">,</span>
+      type<span class="token operator">:</span> <span class="token string">"span"</span><span class="token punctuation">,</span>
+      props<span class="token operator">:</span> <span class="token punctuation">{</span>
+        children<span class="token operator">:</span> <span class="token string">"Hello from server land"</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h4>シリアライズ可能なReactツリー</h4>
+<p>このプロセスの終わりには、サーバ上に以下のようなReactツリーができていることが望まれます。
+これをブラウザに送信して「仕上げ」を行います。</p>
+<p><img src="https://www.plasmic.app/blog/static/images/react-server-components-placeholders.png"></p>
+<p><strong>propsはすべてシリアライズ可能であること</strong></p>
+<p>Reactツリー全体をJSON形式にシリアライズするため、クライアントコンポーネントまたはHTMLのbaseタグに渡すpropsもすべてシリアライズ可能でなくてはなりません。
+これはつまり、サーバコンポーネントからイベントハンドラをpropsとして渡すことはできないということです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// 悪い例: サーバーコンポーネントは props として子孫コンポーネントに関数を渡すことができません。なぜなら関数はシリアライズできないからです。</span>
+<span class="token keyword">function</span> <span class="token function">SomeServerComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">alert</span><span class="token punctuation">(</span><span class="token string">'OHHAI'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">Click me!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>しかし、1つ留意すべき点として、RSCプロセスの際にクライアントコンポーネントに遭遇しても、決してクライアントコンポーネント関数を呼び出したり、クライアントコンポーネントに「降りて行く」ことはありません。
+したがって、別のクライアントコンポーネントのインスタンスを生成するクライアントコンポーネントがある場合、以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">SomeServerComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ClientComponent1</span></span><span class="token punctuation">></span></span><span class="token plain-text">Hello world!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ClientComponent1</span></span><span class="token punctuation">></span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">ClientComponent1</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span>children<span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment">// クライアントからクライアントコンポーネントに props として関数を渡すのは可</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ClientComponent2</span></span> <span class="token attr-name">onChange</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token operator">...</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ClientComponent2</span></span><span class="token punctuation">></span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>このRSC JSONツリーには、<code class="language-text">ClientComponent2</code>は一切出てきません。
+その代わり、<code class="language-text">ClientComponent1</code>のモジュール参照とpropsをもつ要素だけがあります。
+そのため、<code class="language-text">ClientComponent1</code>がpropsとしてイベントハンドラを<code class="language-text">ClientComponent2</code>に渡すのは、全く正常なことです。</p>
+<h3>3. ブラウザがReactツリーを再構築<a name="09"></a></h3>
+<p>ブラウザは、サーバからJSON出力を受け取ったら、ブラウザ上でレンダリングするReactツリーの再構築を開始しなくてはいけません。
+<code class="language-text">type</code>がモジュール参照である要素に遭遇した場合、実際のクライアントコンポーネント関数への参照に置き換える必要があります。
+この作業には、再びバンドラーの助けが必要になります。
+バンドラーを用いてサーバ上でクライアントコンポーネント関数をモジュール参照に置き換えたように、今度はバンドラーを用いてブラウザ上でモジュール参照を実際のクライアントコンポーネント関数に置き換えます。
+再構築されたReactツリーは以下のようになります。異なる点は、ネイティブのタグとクライアントコンポーネントが置き換わっていることだけです。</p>
+<p><img src="https://www.plasmic.app/blog/static/images/react-server-components-client.png"></p>
+<p>あとは、いつも通りこのツリーをレンダリングし、DOMにコミットするだけです。</p>
+<h3>Suspenseとの互換性は問題ないか？<a name="10"></a></h3>
+<p>問題ありません。
+Suspenseは、上で述べたすべてのステップで欠かせない役割を果たします。</p>
+<p>Suspenseはそれ自体が壮大なテーマであり、それ単体でブログ記事1本分に相当するものなので、この記事ではあえて軽く触れるだけに留めています。
+ごく簡単に説明すると、Suspenseは何か準備ができていないもの（データのフェッチ、コンポーネントの遅延インポートなど）を必要とする際、ReactコンポーネントからPromiseをスローすることを可能にします。
+それらのPromiseは、Suspenseの境界でキャッチされます。
+Suspenseサブツリーのレンダリング時にPromiseがスローされると、ReactはPromiseが解決されるまでサブツリーのレンダリングを停止し、再度トライします。</p>
+<p>RSC出力を生成するためにサーバ上でサーバコンポーネント関数を呼び出すと、それらの関数が必要なデータを取得する際にPromiseを返す場合があります。
+<a href="https://github.com/facebook/react/blob/42c30e8b122841d7fe72e28e36848a6de1363b0c/packages/react-server/src/ReactFlightServer.js#L416">スローされたPromiseに遭遇</a>すると、プレースホルダを出力します。
+Promiseが解決すると、再びサーバコンポーネント関数を呼び出し、成功すれば完成したチャンクを出力します。
+RSC出力ストリームを作成しているのであり、Promiseがスローされると停止し、解決すると追加のチャンクをストリーミングします。</p>
+<p>同様に、ブラウザ上では上の<code class="language-text">fetch()</code>コールからRSC JSON出力ストリームを作成します。
+このプロセスも、出力の中にSuspenseのプレースホルダがあり（サーバがスローされたPromiseに遭遇している）、ストリーム内にまだプレースホルダのコンテンツを見つけていない（<a href="https://github.com/facebook/react/blob/main/packages/react-client/src/ReactFlightClientStream.js">詳細はこちら</a>）場合、Promiseをスローすることになるかもしれません。
+あるいは、クライアントコンポーネントのモジュール参照に遭遇したものの、まだブラウザ上にクライアントコンポーネント関数が読み込まれていない場合も、Promiseをスローする可能性があります。
+その場合、バンドラーのランタイムが動的に<a href="https://github.com/facebook/react/blob/main/packages/react-server-dom-webpack/src/ReactFlightClientWebpackBundlerConfig.js">必要なチャンクを取得</a>する必要があります。</p>
+<p>Suspenseのおかげで、サーバコンポーネントがデータを取得する間にサーバはRSC出力をストリーミングし、ブラウザは受け取ったデータから徐々にレンダリングし、必要になったクライアントコンポーネントバンドルを動的に取得します。</p>
+<h2>RSCワイヤーフォーマット<a name="11"></a></h2>
+<p>具体的にサーバは何を出力しているのでしょうか。
+「JSON」と「ストリーム」の文字を見て疑念を抱いたのであれば、それは正しい反応です。
+では、サーバはブラウザにどのようなデータをストリーミングしているのでしょうか。</p>
+<p>IDがタグ付けされたJSONの塊が各行に一つ追加された、単純なフォーマットです。
+以下は、<code class="language-text">&lt;OuterServerComponent/&gt;</code>の例のRSC出力です。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">M1:{&quot;id&quot;:&quot;./src/ClientComponent.client.js&quot;,&quot;chunks&quot;:[&quot;client1&quot;],&quot;name&quot;:&quot;&quot;}
+J0:[&quot;$&quot;,&quot;@1&quot;,null,{&quot;children&quot;:[&quot;$&quot;,&quot;span&quot;,null,{&quot;children&quot;:&quot;Hello from server land&quot;}]}]</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<p>上のスニペットでは、<code class="language-text">M</code>で始まる行はクライアントコンポーネントのモジュール参照を定義しており、クライアントバンドルの中からコンポーネント関数を検索するのに必要な情報が含まれています。
+<code class="language-text">J</code>で始まる行は、実際のReact要素ツリーを定義しており、<code class="language-text">M</code>行で定義されたクライアントコンポーネントを参照する<code class="language-text">@1</code>などが含まれます。</p>
+<p>このフォーマットは非常にストリーミングしやすく、クライアントは1行読み終えるとすぐにJSONのスニペットを解析して処理を進めることができます。
+サーバがレンダリング中にSuspense境界に遭遇した場合、各チャンクが解決される度たびにそれと一致する複数の<code class="language-text">J</code>行が出てきます。</p>
+<p>もう少し興味深い例を見てみましょう。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// Tweets.server.js</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> fetch <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-fetch'</span> <span class="token comment">// React の Suspense 対応した fetch()</span>
+                                    
+<span class="token keyword">import</span> Tweet <span class="token keyword">from</span> <span class="token string">'./Tweet.client'</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Tweets</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> tweets <span class="token operator">=</span> <span class="token function">fetch</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">/tweets</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ul</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>tweets<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">tweet</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Tweet</span></span> <span class="token attr-name">tweet</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>tweet<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+      <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ul</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Tweet.client.js</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Tweet</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> tweet <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">alert</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Written by </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>tweet<span class="token punctuation">.</span>username<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>tweet<span class="token punctuation">.</span>body<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// OuterServerComponent.server.js</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">OuterServerComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ClientComponent</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ServerComponent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Suspense</span></span> <span class="token attr-name">fallback</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token string">'Loading tweets...'</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Tweets</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Suspense</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ClientComponent</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この場合、RSCストリームはどのように見えるでしょうか。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">M1:{&quot;id&quot;:&quot;./src/ClientComponent.client.js&quot;,&quot;chunks&quot;:[&quot;client1&quot;],&quot;name&quot;:&quot;&quot;}
+S2:&quot;react.suspense&quot;
+J0:[&quot;$&quot;,&quot;@1&quot;,null,{&quot;children&quot;:[[&quot;$&quot;,&quot;span&quot;,null,{&quot;children&quot;:&quot;Hello from server land&quot;}],[&quot;$&quot;,&quot;$2&quot;,null,{&quot;fallback&quot;:&quot;Loading tweets...&quot;,&quot;children&quot;:&quot;@3&quot;}]]}]
+M4:{&quot;id&quot;:&quot;./src/Tweet.client.js&quot;,&quot;chunks&quot;:[&quot;client8&quot;],&quot;name&quot;:&quot;&quot;}
+J3:[&quot;$&quot;,&quot;ul&quot;,null,{&quot;children&quot;:[[&quot;$&quot;,&quot;li&quot;,null,{&quot;children&quot;:[&quot;$&quot;,&quot;@4&quot;,null,{&quot;tweet&quot;:{...}}}]}],[&quot;$&quot;,&quot;li&quot;,null,{&quot;children&quot;:[&quot;$&quot;,&quot;@4&quot;,null,{&quot;tweet&quot;:{...}}}]}]]}]</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">J0</code>行には新たな子が追加されています。
+<code class="language-text">children</code>が参照<code class="language-text">@3</code>を指している新しい<code class="language-text">Suspense</code>境界です。
+興味深いことに、この時点ではまだ<code class="language-text">@3</code>は定義されていません。
+サーバはツイートの読み込みを完了すると、<code class="language-text">M4</code>と<code class="language-text">J3</code>の行を出力します。
+前者は<code class="language-text">Tweet.client.js</code>コンポーネントへのモジュール参照を定義し、後者は<code class="language-text">@3</code>を置き換えるべき別のReact要素ツリーを定義します（ここでも、<code class="language-text">J3</code>のchildrenは<code class="language-text">M4</code>で定義された<code class="language-text">Tweet</code>コンポーネントを参照しています）。</p>
+<p>バンドラーが<code class="language-text">ClientComponent</code>と<code class="language-text">Tweet</code>を二つの異なるバンドルに自動的に入れており、それによってブラウザが<code class="language-text">Tweet</code>バンドルのダウンロードを遅らせることができる点も、ここで述べておくべきでしょう。</p>
+<h3>RSCフォーマットを使う<a name="12"></a></h3>
+<p>このRSCストリームをブラウザ上で実際のReact要素に変換するにはどうすればよいのでしょうか。
+<code class="language-text">react-server-dom-webpack</code>には、RSCレスポンスを用いてReact要素ツリーを再構築する<a href="https://github.com/facebook/react/blob/main/packages/react-server-dom-webpack/src/ReactFlightDOMClient.js">エントリーポイント</a>があります。
+以下はルートクライアントコンポーネントを簡略化した例です。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> createFromFetch <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-server-dom-webpack'</span>
+<span class="token keyword">function</span> <span class="token function">ClientRootComponent</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment">// RSC API のエンドポイントから fetch() を実行します。</span>
+  <span class="token comment">// react-server-dom-webpack はフェッチした結果を受け取り、</span>
+  <span class="token comment">// React の要素ツリーを再構築することができます。</span>
+  <span class="token keyword">const</span> response <span class="token operator">=</span> <span class="token function">createFromFetch</span><span class="token punctuation">(</span><span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">'/rsc?...'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Suspense</span></span> <span class="token attr-name">fallback</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token keyword">null</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>response<span class="token punctuation">.</span><span class="token function">readRoot</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment">/* Returns a React element! */</span><span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Suspense</span></span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">react-server-dom-webpack</code>に、APIエンドポイントからのRSCレスポンスを読むよう指示します。
+次に、<code class="language-text">response.readRoot()</code>が、レスポンスストリームが処理されると更新されるReact要素を返します。
+ストリームがまだ読まれる前に、直ちにPromiseがスローされます。
+これは、まだコンテンツが用意できていないからです。
+最初の<code class="language-text">J0</code>が処理されると、対応するReact要素ツリーが作成され、返されたPromiseが解決されます。
+Reactはレンダリングを再開しますが、まだ準備ができていない<code class="language-text">@3</code>の参照に遭遇すると、新たなPromiseがスローされます。
+そのPromiseは<code class="language-text">J3</code>を読んだ時点で解決され、Reactは再びレンダリングを開始し、今回は完了します。
+したがって、RSCレスポンスをストリーミングしながら、Suspense境界によって定義されたチャンク単位で要素ツリーの更新とレンダリングを完了するまで継続します。</p>
+<h3>単にプレーンHTMLを出力すればよいのでは？<a name="13"></a></h3>
+<p>なぜ全く新しいワイヤーフォーマットを発明する必要があるのでしょうか。
+クライアント側における目的は、React要素ツリーを再構築することです。
+HTMLは、解析しなければReact要素を作成できないため、この目的はHTMLよりもこのフォーマットから行う方がずっと簡単に果たせます。
+React要素ツリーを再構築することで、DOMへのコミットを最小限に留めつつReactツリーへのその後の変更をマージできるようになるため、これは重要なプロセスです。</p>
+<h3>クライアントコンポーネントからデータを取得するだけよりもメリットがある？<a name="14"></a></h3>
+<p>このコンテンツを取得するために、どちらにしてもサーバにAPIリクエストを送信する必要があるのであれば、現在のようにリクエストを送信してデータだけを取得し、クライアント側ですべてのレンダリングを行うよりも、RSCを使った方が本当によいのでしょうか。</p>
+<p>最終的には、何をレンダリングして画面上に表示するのかによります。
+RSCでは、ユーザに向けて表示されるコンテンツに直接マッピングされる、非正規化された「処理済み」のデータを受け取ります。
+したがって、取得するデータの一部だけをレンダリングしたい場合や、レンダリング自体に大量のJavaScriptが必要なため、ブラウザへのダウンロードを避けたい場合はメリットがあります。
+さらに、レンダリングを行うために複数回データを取得する必要があり、ウォーターフォールにおいてそれぞれ互いに依存し合う場合、ブラウザよりもデータのレイテンシがはるかに低いサーバ上でデータを取得した方がよいでしょう。</p>
+<h3>サーバサイドレンダリングはどうなる？<a name="15"></a></h3>
+<p>SSRがどうなるのか気になる方が多いのはよく分かります。
+React 18ではSSRとRSCの併用が可能なため、サーバ上でHTMLを生成し、ブラウザ上でRSCを用いてHTMLをハイドレーションすることが可能です。
+このテーマについてはまた別の機会に詳しく話したいと思います。</p>
+<h2>サーバコンポーネントがレンダリングしているコンテンツのアップデート<a name="16"></a></h2>
+<p>ある製品のページから別の製品のページに切り替えたい場合など、サーバコンポーネントに新しいコンテンツをレンダリングさせる必要がある場合はどうすればよいでしょうか。</p>
+<p>この場合も、レンダリングはサーバ側で行われるため、新しいコンテンツをRSCワイヤーフォーマットで取得するためにはサーバに新たなAPIコールを行う必要があります。
+よいニュースは、ブラウザが新しいコンテンツを受け取ると、クライアントコンポーネントにステートハンドラとイベントハンドラを保持しつつ、新しいReact要素ツリーを構築し、前のReactツリーとの差分を取るための通常の差分検出処理を行い、DOMに対する必要最小限のアップデートを判断できるという点です。
+クライアントコンポーネントにとっては、このアップデートはすべてブラウザ上で行われた場合と比べても何ら違いがありません。</p>
+<p>現時点では、Reactツリー全体をルートサーバコンポーネントから再レンダリングする必要がありますが、将来的にはこれをサブツリーに対して行えるようになるかもしれません。</p>
+<h2>RSCにメタフレームワークを使うべき理由<a name="17"></a></h2>
+<p>Reactチームは、RSCは当初プレーンなReactプロジェクトで直接使用するのではなく、Next.jsやShopify Hydrogenのように<a href="https://github.com/josephsavona/rfcs/blob/server-components/text/0000-server-components.md#adoption-strategy">メタフレームワーク経由での導入</a>を意図していると述べています。
+これはなぜでしょうか。
+メタフレームワークにはどのようなメリットがあるのでしょうか。</p>
+<p>メタフレームワークの使用は必須ではありませんが、作業が楽になります。
+メタフレームワークが提供するラッパーや抽象化は使いやすいため、サーバ上でRSCストリームを生成し、ブラウザ上で消費することを考える必要がありません。
+また、メタフレームワークはサーバサイドレンダリングもサポートしており、サーバコンポーネントを使用している場合にサーバが生成したHTMLを適切にハイドレーションできるよう、必要な<a href="https://github.com/Shopify/hydrogen/issues/250">作業</a>を<a href="https://github.com/vercel/next.js/issues/30994">実施</a>しています。</p>
+<p>上で説明したように、クライアントコンポーネントを適切に送信し、ブラウザ上で使用するためにはバンドラーの助けも必要です。
+webpackインテグレーションはすでにあり、現在はShopifyが<a href="https://github.com/facebook/react/pull/22952">viteへのインテグレーション</a>に取り組んでいます。
+RSCに必要なプラグインの多くはパブリックnpmパッケージとして公開されていないため、これらのプラグインはReactリポジトリの一部でなくてはいけません。
+しかし、一度開発されれば、メタフレームワークなしでこれらのプラグインを使用できるようになるはずです。</p>
+<h2>RSCは実用化の準備ができているのか？<a name="18"></a></h2>
+<p>RSCは、現在<a href="https://nextjs.org/docs/advanced-features/react-18">Next.jsの実験的な機能</a>として提供されており、<a href="https://hydrogen.shopify.dev/">Shopify Hydrogenの現在の開発者プレビュー</a>段階にありますが、どちらもまだ本番環境で使用できる状態ではありません。
+今後のブログ記事では、これらのフレームワークがそれぞれRSCをどのように使用しているのか詳しく説明したいと思います。</p>
+<p>しかし、RSCが今後のReactを大きく左右する存在であることは間違いありません。RSCは、ページの読み込み速度向上、JavaScriptバンドルの軽量化、Time To Interactive（TTI）の短縮という課題に対するReactの答えであり、Reactを使用して複数ページのアプリケーションを構築する方法に関するより包括的なテーゼです。未完成ではあるものの、注目すべき時が近づいています。</p>
+<p><em>この記事の草案をレビューしてくれた<a href="https://twitter.com/Nutlope">Hassan</a>と<a href="https://twitter.com/jplhomer">Josh</a>に感謝します。</em></p>]]></content:encoded></item><item><title><![CDATA[tscをGoに移植]]></title><description><![CDATA[筆者はTypeScript型チェッカーtscをRustではなく、Goに移植しようと思います。拡張可能なRustプラットフォームSWCの作者の発言としては、奇妙に聞こえるかもしれません。理由を説明した…]]></description><link>https://postd.cc/tsc-go/</link><guid isPermaLink="false">https://postd.cc/tsc-go/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[TypeScript]]></category><category><![CDATA[Go言語]]></category><category><![CDATA[tsc]]></category><category><![CDATA[SWC]]></category><pubDate>Mon, 13 Jun 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>筆者はTypeScript型チェッカー<strong>tsc</strong>をRustではなく、Goに移植しようと思います。拡張可能なRustプラットフォーム<a href="https://swc.rs/">SWC</a>の作者の発言としては、奇妙に聞こえるかもしれません。理由を説明したいと思います。</p>
 <h2>なぜtscを移植するのか</h2>
 <p>TypeScriptの普及が進むにつれて、大規模プロジェクトではあるジレンマに直面しています。<strong>型チェックは、ワークフローの中で最も時間がかかるプロセスの一つになっているのです</strong>。開発者は、イテレーションのサイクルを遅らせることなく、型安全を保証することを望んでいます。
 <strong>tsc</strong>（TypeScript Compiler）は、型の妥当性をチェックし、コードをJavaScriptにコンパイルします。コードの量が多いほど、コンパイルには時間がかかります。中規模から大規模のTypeScriptプロジェクトでは、このコンパイルに膨大な時間がかかります。開発者はワークフローのトランスパイル部分をSWCに置き換えることができますが、それでも型チェックはボトルネックとなっています。</p>
@@ -1974,259 +2374,4 @@ package/README.md</code><span aria-hidden="true" class="line-numbers-rows" style
 <p>最後にもう1点。前述のとおり、この記事は全体にバイアスがかかっています。当社がこのCDN設計を取り上げているのは、それをとても簡単に実現できるプラットフォームを当社が構築したからです（皆さんもぜひお試しください）。このプラットフォームの機能を利用すれば、FlyでCDNを容易に構築できるだけでなく、アプリケーション全体を簡単に配信することも可能です。エッジ配信用に設計されたアプリケーションは、CDNを全く必要としない場合もあります。</p>
 <hr>
 <p>詳細については<a href="https://community.fly.io/t/the-5-hour-cdn/946">こちら</a>までお問い合わせください。</p>
-<p>最終更新日：2021年3月16日（*訳註　翻訳時の原文記載更新日）</p>]]></content:encoded></item><item><title><![CDATA[フロントエンドのテストは皆のためのもの]]></title><description><![CDATA[テストとは人によって反応が分かれるものの1つであり、大喜びする人もいれば、見ないようにして去ろうとする人もいます。あなたがどちらの側であるにせよ、ここではフロントエンドのテストは皆のためのものである…]]></description><link>https://postd.cc/frontend-testing-is-for-everyone/</link><guid isPermaLink="false">https://postd.cc/frontend-testing-is-for-everyone/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[デバッグ]]></category><category><![CDATA[まとめ]]></category><pubDate>Mon, 13 Sep 2021 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>テストとは人によって反応が分かれるものの1つであり、大喜びする人もいれば、見ないようにして去ろうとする人もいます。あなたがどちらの側であるにせよ、ここでは<strong>フロントエンドのテストは皆のためのものである</strong>ということを説明します。実際、テストには多くの種類があり、それがテストに対して初めに恐れや混乱を感じる一因なのかもしれません。</p>
-<p>この記事では、特に有名で広く利用されている種類のテストを扱います。なかには目新しいものはないと感じる読者の方もいらっしゃるかもしれませんが、少なくとも復習にはなるでしょう。どちらにせよ、筆者の目標は、この記事を通じて世の中のさまざまな種類のテストについて理解を深めてもらうことです。ここではユニットテスト、統合テスト、アクセシビリティテスト、ビジュアルリグレッションテストなどを一緒に見ていきます。</p>
-<p>さらに、Mocha、Jest、Puppeteer、Cypressなど、各種類のテストに使用されているライブラリとフレームワークも紹介します。専門用語はあまり使わないようにしますので、ご心配は無用です。ただし、これから扱う事例を理解するには、ある程度フロントエンドの開発経験があったほうがいいでしょう。</p>
-<p>それでは始めましょう。</p>
-<h3>目次</h3>
-<ul>
-<li><a href="#h-what-is-testing">テストとは？</a></li>
-<li><a href="#h-different-tests-look-at-different-parts-of-the-project">プロジェクトのどの部分をチェックするかはテストごとに異なる</a></li>
-<li><a href="#h-unit-testing">ユニットテスト</a></li>
-<li><a href="#h-integration-testing">統合テスト</a></li>
-<li><a href="#h-end-to-end-e2e-testing">エンドツーエンド（E2E）テスト</a></li>
-<li><a href="#h-accessibility-testing">アクセシビリティテスト</a></li>
-<li><a href="#h-visual-regression-testing">ビジュアルリグレッションテスト</a></li>
-<li><a href="#h-performance-testing">パフォーマンステスト</a></li>
-<li><a href="#h-wrapping-up">まとめ</a></li>
-</ul>
-<h2 id="h-what-is-testing">テストとは？</h2>
-<blockquote>
-<p>「ソフトウェアのテストとは、テスト対象のソフトウェア製品またはサービスの品質に関する情報を利害関係者に提供するために行われる調査である」
--Cem Kaner, “<a href="http://kaner.com/pdfs/ETatQAI.pdf">Exploratory Testing</a>”（2006年11月17日）</p>
-</blockquote>
-<p><img src="https://i2.wp.com/css-tricks.com/wp-content/uploads/2021/05/24gR1Ckg.png?resize=1000%2C750&#x26;ssl=1"></p>
-<p>テストの最も基本的な定義は、開発の可能な限り早い段階でエラーを発見するための自動化されたツールです。テストによって、本稼働前に問題を修正できます。またテストには、アクセシビリティなど、特定の観点からのチェック漏れを思い出させてくれる役割もあります。</p>
-<p>要するに、フロントエンドのテストは、こちらの意図通りにユーザーがサイトを閲覧し、サイト上で機能を使用できるかを検証するものです。</p>
-<p>フロントエンドのテストはアプリケーションのクライアントサイドのために存在します。例えば、フロントエンドのテストでは、「削除」ボタンを押すことで画面からアイテムが適切に削除されるかを確認できます。
-一方、データベースから実際に削除されたかの確認は、別途バックエンドのテストでカバーします。
-一言で言えば、フロントエンドのテストとはクライアントサイドのエラーを発見し、コードのデプロイ前に修正することです。</p>
-<h2 id="h-different-tests-look-at-different-parts-of-the-project">プロジェクトのどの部分をチェックするかはテストごとに異なる</h2>
-<p><img src="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/05/sbLag5lf.png?resize=1000%2C750&#x26;ssl=1"></p>
-<p>テストの種類ごとに、プロジェクトのどの側面をカバー出来るのかは異なります。ですので、各種類の役割を理解することは重要です。種類ごとの目的を混同すると、テストスイートが乱雑で信頼できないものとなってしまいます。</p>
-<p>理想的には、さまざまなタイプの潜在的な問題を明らかにするため、複数の異なる種類のテストを実施するのが良いでしょう。中には<strong>カバレッジ</strong>の分析機能がついたテストもあり、コードのどの程度の割合（%）をチェックできるかを明示できます。これは素晴らしい機能であり、カバレッジを100%にしようとする開発者もいますが、筆者はこの指標のみには頼りません。最も重要なのは、あり得るすべてのエッジケースをカバーし、考慮することです。</p>
-<p>このことを念頭に置いて、さまざまな種類のテストに注目していきましょう。ちなみに、これらのテストを全て実施する必要はありません。大事なのは、テストを区別することができ、それによって特定の状況でどのテストを使用すべきかを理解することです。</p>
-<h2 id="h-unit-testing">ユニットテスト</h2>
-<ul>
-<li><strong>レベル</strong>：低</li>
-<li><strong>範囲</strong>：アプリケーションの関数とメソッドをテストする</li>
-<li><strong>ツール候補</strong>：<a href="https://github.com/avajs/ava">AVA</a>、<a href="https://jasmine.github.io/">Jasmine</a>、<a href="https://jestjs.io/">Jest</a>、<a href="https://karma-runner.github.io/latest/index.html">Karma</a>、<a href="https://mochajs.org/">Mocha</a></li>
-</ul>
-<p>ユニットテストは、様々なテスト方法がある中での最も基本的な構成要素です。このテストでは個々のコンポーネントをチェックし、意図したとおりに機能するかを確認します。この種のテストはあらゆるフロントエンドのアプリケーションに必要不可欠です。なぜなら、コードベースとアプリの信頼性の大幅な向上につながるためです。ユニットテストではエッジケースなどを検討し、カバーすることもできます。</p>
-<p>ユニットテストはAPIのテストにおいて特に有効です。本番APIを呼び出すのではなく、ハードコードされた（「モック」）データを使用することで、常に一貫したテストを確実に実行することができます。</p>
-<p>例えば、以下の非常にシンプルな（そして原始的な）関数を見てみましょう。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> <span class="token function-variable function">sayHello</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">name</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>name<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-    <span class="token keyword">return</span> <span class="token string">"Hello human!"</span><span class="token punctuation">;</span>
-  <span class="token punctuation">}</span>
-
-  <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Hello </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">!</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>繰り返しますが、これは基本的なケースです。それでも、ユーザーがアプリケーションに名前を入力しなかった場合という小規模なエッジケースをカバーできていることが分かります。nameが入力されていれば、“<code class="language-text">Hello ${name}!</code>”が表示されます。<code class="language-text">${name}</code>はユーザーが入力すると想定される部分です。</p>
-<p>「なぜそんな些細なことをテストする必要があるの？」と思われるかもしれません。これには、以下のとても重要な理由があります。</p>
-<ul>
-<li>関数が出力し得る結果について深く考えるきっかけとなります。たいていはエッジケースを実際に発見し、コードでそのケースをカバーするのに役立ちます。</li>
-<li>コードの一部がこのエッジケースに依存する場合があります。誰かが重要な部分を削除したときに、テストプログラムが、このコードは重要なので削除してはならないという警告を発します。</li>
-</ul>
-<p>ユニットテストは小規模でシンプルなものが多いです。以下は例その例です。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token function">describe</span><span class="token punctuation">(</span><span class="token string">"sayHello function"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-  <span class="token function">it</span><span class="token punctuation">(</span><span class="token string">"should return the proper greeting when a user doesn't pass a name"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-    <span class="token function">expect</span><span class="token punctuation">(</span><span class="token function">sayHello</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toEqual</span><span class="token punctuation">(</span><span class="token string">"Hello human!"</span><span class="token punctuation">)</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>
-
-  <span class="token function">it</span><span class="token punctuation">(</span><span class="token string">"should return the proper greeting with the name passed"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-    <span class="token function">expect</span><span class="token punctuation">(</span><span class="token function">sayHello</span><span class="token punctuation">(</span><span class="token string">"Evgeny"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toEqual</span><span class="token punctuation">(</span><span class="token string">"Hello Evgeny!"</span><span class="token punctuation">)</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>describeとitはただのシンタックスシュガーで、最も重要な行はexpectとtoEqualです。describeとitはテストを論理的なブロックに分け、ターミナルに出力します。expect関数は検証対象の入力に、toEqualは望ましい出力に対応します。アプリケーションのテストに使える関数とメソッドは多種多様です。</p>
-<p>ユニットのプログラム開発用ライブラリであるJestを使用してみましょう。上記の例では、JestはsayHello関数をタイトルとしてターミナルで表示します。it関数内のすべては単独のテストとみなされ、ターミナルで関数のタイトルの下に報告されます。すべてが非常に読みやすく表示されています。</p>
-<p><img src="https://i2.wp.com/css-tricks.com/wp-content/uploads/2021/05/Rnlr5AaA.png?w=853&#x26;ssl=1">
-<em>緑のチェックマークは両方のテストに通過したことを意味します。やった！</em></p>
-<h2 id="h-integration-testing">結合テスト</h2>
-<ul>
-<li><strong>レベル</strong>：中</li>
-<li><strong>範囲</strong>：ユニット間のインタラクションをテストする</li>
-<li><strong>ツール候補</strong>：<a href="https://github.com/avajs/ava">AVA</a>、<a href="https://jestjs.io/">Jest</a>、<a href="https://testing-library.com/">Testing Library</a> </li>
-</ul>
-<p><img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/T9H4dkPU.png?resize=1000%2C750&#x26;ssl=1"></p>
-<p>ユニットテストが単独の機能の動作をテストするものだとすれば、結合テストは複数の要素が問題なく連動するかを確かめるものです。結合テストが非常に重要なのは、コンポーネント間の相互作用をテストできるからです。アプリケーションが、単独で機能する独立した部分のみで構成されることは（あったとしても）非常に稀です。ですから、結合テストに頼る必要があります。</p>
-<p>ユニットテストを実施した関数をもう一度使用しましょう。今回はシンプルなReactアプリケーションの中で使用します。例えば、ボタンをクリックすると画面にあいさつが表示されるとします。これは、関数だけではなく、HTML DOMやボタンの機能もテストに関係することを意味します。これらすべてが一体となってどのように機能するかをテストしましょう。</p>
-<p>以下はテスト対象の<code class="language-text">&lt;Greeting /&gt;</code>コンポーネントのコードです。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">Greeting</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>showGreeting<span class="token punctuation">,</span> setShowGreeting<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-
- <span class="token keyword">return</span> <span class="token punctuation">(</span>  
-   <span class="token operator">&lt;</span>div<span class="token operator">></span>  
-     <span class="token operator">&lt;</span>p data<span class="token operator">-</span>testid<span class="token operator">=</span><span class="token string">"greeting"</span><span class="token operator">></span><span class="token punctuation">{</span>showGreeting <span class="token operator">&amp;&amp;</span> <span class="token function">sayHello</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">></span>  
-     <span class="token operator">&lt;</span>button data<span class="token operator">-</span>testid<span class="token operator">=</span><span class="token string">"show-greeting-button"</span> onClick<span class="token operator">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setShowGreeting</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">></span>Show Greeting<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">></span>  
-   <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">></span>
- <span class="token punctuation">)</span><span class="token punctuation">;</span>  
-<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>以下は結合テストの例です。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token function">describe</span><span class="token punctuation">(</span><span class="token string">'&lt;Greeting />'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-  <span class="token function">it</span><span class="token punctuation">(</span><span class="token string">'shows correct greeting'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-    <span class="token keyword">const</span> screen <span class="token operator">=</span> <span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>Greeting <span class="token operator">/</span><span class="token operator">></span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-     <span class="token keyword">const</span> greeting <span class="token operator">=</span> screen<span class="token punctuation">.</span><span class="token function">getByTestId</span><span class="token punctuation">(</span><span class="token string">'greeting'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-     <span class="token keyword">const</span> button <span class="token operator">=</span> screen<span class="token punctuation">.</span><span class="token function">getByTestId</span><span class="token punctuation">(</span><span class="token string">'show-greeting-button'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-
-     <span class="token function">expect</span><span class="token punctuation">(</span>greeting<span class="token punctuation">.</span>textContent<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toBe</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-     fireEvent<span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span>button<span class="token punctuation">)</span><span class="token punctuation">;</span>  
-     <span class="token function">expect</span><span class="token punctuation">(</span>greeting<span class="token punctuation">.</span>textContent<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toBe</span><span class="token punctuation">(</span><span class="token string">'Hello human!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
- <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>describeとitはユニットテストで確認したとおりです。これらはテストをロジックごとに分割します。特別にエミュレートしたDOMに<code class="language-text">&lt;Greeting /&gt;</code>コンポーネントを表示するrender関数を設定しており、実際のDOMに触れることなくコンポーネントとのインタラクションをテストできます。そうしなければコストがかかる可能性があります。</p>
-<p>次に、テストプログラムはテストID（#greetingと#show-greeting-button）を通じてそれぞれ<code class="language-text">&lt;p&gt;</code>と<code class="language-text">&lt;button&gt;</code>の要素を取得しています。テストIDを使用するのは、エミュレートしたDOMから必要なコンポーネントを取得するのが比較的容易であるためです。他にもコンポーネントを取得する方法はありますが、筆者はこの方法を最もよく使っています。</p>
-<p>7行目からやっと実際の結合テストが始まります。まずは<code class="language-text">&lt;p&gt;</code>タグが空であることを確認し、次にclickイベントをシミュレーションすることでボタンをクリックします。最後に、<code class="language-text">&lt;p&gt;</code>タグの中身が“Hello human!”であることを確認します。これで終了です。テストするのは、ボタンをクリックした後に、テキストが空のパラグラフに格納されるということだけです。これでコンポーネントはカバーされました。</p>
-<p>もちろん、名前の入力欄にインプットを追加して、その入力内容をgreeting関数で使用することもできます。しかし、ここではもう少しシンプルな内容にしました。インプットの使用については、他の種類のテストをカバーするときに説明します。</p>
-<p>以下は、結合テストを実行したときのターミナルの表示です。
-<img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/s_E32271F2C12EE856B0A0138BD6634D2E534F561CE231B7ED84F3864DF6AF3CD6_1620061978349_Screenshot2021-04-27at21.18.08.png?w=715&#x26;ssl=1">
-<em>完璧！<code class="language-text">&lt;Greeting /&gt;</code>コンポーネントは、ボタンをクリックしたときに正しいあいさつを返しています。</em></p>
-<h2 id="h-end-to-end-e2e-testing">エンドツーエンド（E2E）テスト</h2>
-<ul>
-<li><strong>レベル</strong>：高</li>
-<li><strong>範囲</strong>：何をすべきか、およびどのような結果が期待されているかに関して、プログラムに指示を出し、実際のブラウザでのユーザーとの間のインタラクションをテストする</li>
-<li><strong>ツール候補</strong>：<a href="https://www.cypress.io/">Cypress</a>、<a href="https://github.com/puppeteer/puppeteer">Puppeteer</a></li>
-</ul>
-<p>E2Eテストはこのリストの中で最高レベルのテストです。このテストは、ユーザーにとってアプリケーションがどう見えるか、ユーザーがどのようにアプリケーションとインタラクトするかという点のみを扱います。コードや実装とは一切関係ありません。</p>
-<p>E2Eテストではブラウザに対し、何をすべきか、何をクリックすべきか、そして何を入力すべきかについて指示を出します。あらゆる種類のインタラクションを作成し、エンドユーザーが体験するとおりにさまざまな機能やフローをテストできます。このテストは、アプリケーションをくまなくクリックしてインタラクションを行い、すべてが機能していることを確かめるという、まさにロボットとしての役割を果たすものです。</p>
-<p>E2Eテストは結合テストとやや似ています。しかし、E2Eテストは、モックアップではなく実際のDOMを有する実際のブラウザで実行されるものです。これらのテストでは通常、実際のデータと実際のAPIを使用します。</p>
-<p>ユニットテストと結合テストでカバレッジ100%を目指しても良いでしょう。しかし、実際にブラウザでアプリケーションを実行したとき、ユーザーは予想外の挙動に直面する可能性があります。E2Eテストは、それに対する完璧な解決策となるのです。</p>
-<p>以下では、極めて有名なテスト用ライブラリの<a href="https://www.cypress.io/">Cypress</a>を使用した例を見てみましょう。前述したコンポーネントのE2EテストのためだけにCypressを使用します。ただし、今回はブラウザ内で実行し、機能をいくつか追加しています。</p>
-<p>繰り返しになりますが、アプリケーションのコードを見る必要はありません。ここでの想定は、何らかのアプリケーションがあり、それをユーザーとしてテストしたいということだけです。私たちはどのボタンをクリックすべきか、それらのボタンのIDが何であるかを知っています。それだけでテストを始めるには十分です。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token function">describe</span><span class="token punctuation">(</span><span class="token string">'Greetings functionality'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-  <span class="token function">it</span><span class="token punctuation">(</span><span class="token string">'should navigate to greetings page and confirm it works'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-    cy<span class="token punctuation">.</span><span class="token function">visit</span><span class="token punctuation">(</span><span class="token string">'http://localhost:3000'</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-nav-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-input'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">type</span><span class="token punctuation">(</span><span class="token string">'Evgeny'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> delay<span class="token operator">:</span> <span class="token number">400</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-show-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-text'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">should</span><span class="token punctuation">(</span><span class="token string">'include.text'</span><span class="token punctuation">,</span> <span class="token string">'Hello Evgeny!'</span><span class="token punctuation">)</span>  
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>  
-<span class="token punctuation">}</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>このE2Eテストは前述の結合テストとそっくりで、コマンドが非常によく似ています。主な違いは実際のブラウザで実行されることです。</p>
-<p>まずcy.visitを使用して、アプリケーションが存在する特定のURLへ移動します。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript">cy<span class="token punctuation">.</span><span class="token function">visit</span><span class="token punctuation">(</span><span class="token string">'http://localhost:3000'</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p>次にcy.getを使用してIDからナビゲーションボタンを取得し、テストプログラムに対してボタンをクリックするよう指示します。このアクションによって<Greetings />コンポーネントを有するページに移動します。筆者はこのコンポーネントを個人Webサイトに追加し、そのURLへのルートを設定しています。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript">cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-nav-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p>さらに、続けてinputタグに“Evgeny”と入力し、#greetings-show-buttonボタンをクリックし、最後に望ましいあいさつが出力されていることを確認します。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript">cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-input'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">type</span><span class="token punctuation">(</span><span class="token string">'Evgeny'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> delay<span class="token operator">:</span> <span class="token number">400</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
-cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-show-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-text'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">should</span><span class="token punctuation">(</span><span class="token string">'include.text'</span><span class="token punctuation">,</span> <span class="token string">'Hello Evgeny!'</span><span class="token punctuation">)</span>  </code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>実際のブラウザで、テストプログラムによってボタンがクリックされるのを見るのは非常に壮観です。以下は、何が起きているか分かるように、テストのスピードを遅くしたものです。通常、テストはすべて非常に速いスピードで実行されます。</p>
-<p><img src="https://i2.wp.com/css-tricks.com/wp-content/uploads/2021/05/ezgif.com-resize.gif?resize=1200%2C749&#x26;ssl=1"></p>
-<p>以下はターミナルの出力です。</p>
-<p><img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/nPIhU_4A.png?w=927&#x26;ssl=1"></p>
-<h2 id="h-accessibility-testing">アクセシビリティテスト</h2>
-<ul>
-<li>レベル：高</li>
-<li>範囲：アクセシビリティ標準の基準に従い、アプリケーションのインターフェイスをテストする</li>
-<li>ツール候補：<a href="https://github.com/accesslint/accesslint.js/tree/master">AccessLint</a>、<a href="https://github.com/dequelabs/axe-core">axe-core</a>、<a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a>、<a href="https://pa11y.org/">pa11y</a></li>
-</ul>
-<blockquote>
-<p>Webのアクセシビリティとは、Webサイト、ツール、テクノロジーが、障害のある人でも利用できるように設計・開発されていることを意味する
--<a href="https://www.w3.org/WAI/fundamentals/accessibility-intro/#what">W3C</a></p>
-</blockquote>
-<p>アクセシビリティテストは、障害のある人がWebサイトへアクセスし、効果的に使用できるようにするためのものです。これらのテストでは、アクセシビリティを考慮したWebサイトを実装するための基準に従っているかを検証します。</p>
-<p>例えば、目が見えない人の多くはスクリーンリーダーを使用します。スクリーンリーダーはWebサイトをスキャンし、障害のあるユーザーでも理解可能な形式（通常は音声）で情報提供することを目指すものです。開発者としては、スクリーンリーダーの負担を軽くしたいと思うでしょう。そんなとき、アクセシビリティテストは、どこから着手すればよいかを把握する助けとなります。</p>
-<p>アクセシビリティテストのツールは<a href="https://css-tricks.com/accessibility-testing-tools/">多種多様</a>です。自動化されているものもあれば、手動で検証するものもあります。例えば、ChromeはすでにDevToolsに<a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a>というツールを搭載しています。名前をご存じの方もいるでしょう。</p>
-<p><img src="https://i2.wp.com/css-tricks.com/wp-content/uploads/2021/05/r95FRXzA.png?resize=1000%2C796&#x26;ssl=1"></p>
-<p>ここではLighthouseを使用して、E2Eテストのセクションで作成したアプリケーションを検証してみます。Chrome DevToolsでLighthouseを開き、「Accessibility」テストオプションをクリックし、レポートを「Generate」します。</p>
-<p><img src="https://i2.wp.com/css-tricks.com/wp-content/uploads/2021/05/lighthouse-start.png?resize=1000%2C471&#x26;ssl=1"></p>
-<p>やるべきことは、たったのこれだけです。あとはLighthouseがテストを実行し、素晴らしいレポートを作成します。レポートには、スコア、実行したテストのサマリー、スコアの改善余地の概要が記載されます。</p>
-<p><img src="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/05/Nb047kMQ.png?resize=1000%2C551&#x26;ssl=1"></p>
-<p>しかし、これは特定の観点からアクセシビリティを測定するためのツールの1つにすぎません。アクセシビリティテストにはあらゆる種類のツールが存在します。ですから、何をテストするのか、そのためにどのようなツールを用意するのかについて計画を立てるのは価値があることです。</p>
-<h2 id="h-visual-regression-testing">ビジュアルリグレッションテスト</h2>
-<ul>
-<li><strong>レベル</strong>：高</li>
-<li><strong>範囲</strong>：コードの変更によって生じる視覚的な差異など、アプリケーションの視覚的な構造をテストする</li>
-<li><strong>ツール候補</strong>：<a href="https://docs.cypress.io/guides/tooling/visual-testing">Cypress</a>、<a href="https://percy.io/">Percy</a>、<a href="https://applitools.com/">Applitools</a></li>
-</ul>
-<p>E2Eテストは、場合によっては、アプリケーションの直近の変更によってインターフェイスの見た目が崩れていないかを確認するのに不十分なことがあります。一部を変更したコードを本番環境にプッシュした結果、他の部分のレイアウトが変になってしまったということはありませんか？そんな経験をしたのは、あなただけではありません。大抵の場合、コードベースを変更すると、アプリの視覚的な構造やレイアウトは崩れてしまいます。</p>
-<p>それを解決するのがビジュアルリグレッションテストです。その仕組みは非常に単純で、ページやコンポーネントのスクリーンショットを撮り、過去の成功したテストのスクリーンショットと比較するだけです。テストでスクリーンショットに差異が見つかった場合、何らかの通知が行われます。</p>
-<p><a href="https://percy.io/">Percy</a>というビジュアルリグレッションツールを使って、ビジュアルリグレッションテストの仕組みを見てみましょう。ビジュアルリグレッションテストの方法は他にも数多くありますが、筆者は動作を見るならPercyが分かりやすいと考えています。<a href="https://css-tricks.com/testing-for-visual-regressions-with-percy/">Paul Ryanが執筆したこちらのCSS-Tricksの記事</a>では、Percyについて詳しく説明しています。
-ここではコンセプトを説明するため、非常にシンプルな例を試してみます。</p>
-<p>Greetingアプリケーションのボタンを入力欄の下に動かして、レイアウトを意図的に崩しました。このエラーをPercyで発見してみましょう。</p>
-<p>PercyはCypressと相性が良いので、<a href="https://docs.percy.io/docs/cypress">インストールガイド</a>に従い、既存のE2Eテストと共にPercyのリグレッションテストを実行できます。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token function">describe</span><span class="token punctuation">(</span><span class="token string">'Greetings functionality'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-  <span class="token function">it</span><span class="token punctuation">(</span><span class="token string">'should navigate to greetings page and confirm everything is there'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>  
-    cy<span class="token punctuation">.</span><span class="token function">visit</span><span class="token punctuation">(</span><span class="token string">'http://localhost:3000'</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-nav-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-input'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">type</span><span class="token punctuation">(</span><span class="token string">'Evgeny'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> delay<span class="token operator">:</span> <span class="token number">400</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greetings-show-button'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  
-    cy<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'#greeting-text'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">should</span><span class="token punctuation">(</span><span class="token string">'include.text'</span><span class="token punctuation">,</span> <span class="token string">'Hello Evgeny!'</span><span class="token punctuation">)</span>  
-
-
-    <span class="token comment">// Percy test</span>
-     cy<span class="token punctuation">.</span><span class="token function">percySnapshot</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment">// HIGHLIGHT</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>  
-<span class="token punctuation">}</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>E2Eテストの末尾に1行だけ<code class="language-text">cy.percySnapshot()</code>を追加しました。これによってスクリーンショットを取得し、Percyに送信して比較します。たったこれだけです。テストが終わると、リグレッションを確認するためのリンクが送られてきます。以下はターミナルの出力です。</p>
-<p><img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/s_E32271F2C12EE856B0A0138BD6634D2E534F561CE231B7ED84F3864DF6AF3CD6_1620062291768_Screenshot2021-05-01at17.07.14.png?w=852&#x26;ssl=1">
-<em>なんと、E2Eテストを問題なく通過してしまいました。このように、E2Eテストは常に視覚的なエラーを発見できるわけではないことが分かります。</em></p>
-<p>以下がPercyの出力です。
-<img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/quuMXWdA.gif?resize=2018%2C1173&#x26;ssl=1">
-<em>明らかに何かが変わっており、修正が必要です。</em></p>
-<h2 id="h-performance-testing">パフォーマンステスト</h2>
-<ul>
-<li>レベル：高</li>
-<li>範囲：アプリケーションのパフォーマンスと安定性をテストする</li>
-<li>ツール候補：<a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a>、<a href="https://developers.google.com/speed/pagespeed/insights/">PageSpeed Insights</a>、<a href="https://webpagetest.org/">WebPageTest</a>、<a href="https://github.com/marcelduran/yslow/">YSlow</a></li>
-</ul>
-<p>パフォーマンステストはアプリケーションの速度を確認するのに適しています。パフォーマンスがビジネスにとって極めて重要である場合（最近は<a href="https://css-tricks.com/the-core-web-vitals-hype-train/">Core Web VitalsとSEOでも注目されている</a>ようです）、コードベースの変更がアプリケーションの速度に悪影響を与えていないかを確認することは必須でしょう。</p>
-<p>パフォーマンステストは、一連のテストフローに組み込むことも、手動で実行することもできます。これらのテストをどう実行するか、どれくらいの頻度で実行するかはあなた次第です。一部の開発者はいわゆる<a href="https://css-tricks.com/your-first-performance-budget-with-lighthouse/">「パフォーマンスバジェット」</a>を作成しており、アプリの容量を計算するテストを実行しています。容量が一定の閾値を超えた場合、テストは失敗となり、デプロイが出来なくなります。あるいは、Lighthouseはパフォーマンス指標も測定できるので、折に触れて手動でテストを行うという手段もあります。2つを組み合わせて、<a href="https://css-tricks.com/continuous-performance-analysis-with-lighthouse-ci-and-github-actions/">Lighthouseをテストスイートに組み込む</a>のもいいでしょう。</p>
-<p>パフォーマンステストは、パフォーマンスに関連するあらゆるものを測定できます。アプリケーションの読み込み速度、最初のバンドルの容量、さらに特定の機能の速度さえ測定可能です。パフォーマンステストは、ある程度広い範囲を対象としているのです。</p>
-<p>ここでLighthouseを使用した簡単なテストを紹介します。LighthouseはCore Web Vitalsに重点を置いており、またインストールや設定の必要なくChromeのDevToolsから容易にアクセス可能であるため、パフォーマンステストを理解するのに適していると思います。</p>
-<p><img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/05/s_E32271F2C12EE856B0A0138BD6634D2E534F561CE231B7ED84F3864DF6AF3CD6_1620062379377_Screenshot2021-05-03at17.17.14.png?resize=1000%2C612&#x26;ssl=1">
-<em>あまり良いスコアではありませんが、少なくともどんな状況かは分かります。さらに、改善余地についていくつかのアドバイスが提示されています。</em></p>
-<h2 id="h-wrapping-up">まとめ</h2>
-<p>以下はこの記事で紹介したテストの内訳です。</p>
-<table>
-<thead>
-<tr>
-<th>種類</th>
-<th>レベル</th>
-<th>範囲</th>
-<th>ツールの例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ユニット</td>
-<td>低</td>
-<td>アプリケーションの関数とメソッドをテストする。</td>
-<td><a href="https://github.com/avajs/ava">AVA</a><br><a href="https://jasmine.github.io/">Jasmine</a><br><a href="https://jestjs.io/">Jest</a><br><a href="https://karma-runner.github.io/latest/index.html">Karma</a><br><a href="https://mochajs.org/">Mocha</a></td>
-</tr>
-<tr>
-<td>結合</td>
-<td>中</td>
-<td>ユニット間のインタラクションをテストする。</td>
-<td><a href="https://github.com/avajs/ava">AVA</a><br><a href="https://jestjs.io/">Jest</a><br><a href="https://testing-library.com/">Testing Library</a></td>
-</tr>
-<tr>
-<td>エンドツーエンド</td>
-<td>高</td>
-<td>何をすべきか、およびどのような結果が期待されているかに関して、プログラムに指示を出し、実際のブラウザでのユーザーとの間のインタラクションをテストする。</td>
-<td><a href="https://www.cypress.io/">Cypress</a><br><a href="https://github.com/puppeteer/puppeteer">Puppeteer</a></td>
-</tr>
-<tr>
-<td>アクセシビリティ</td>
-<td>高</td>
-<td>アクセシビリティ標準の基準に従い、アプリケーションのインターフェイスをテストする。</td>
-<td><a href="https://github.com/accesslint/accesslint.js/tree/master">AccessLint</a><br><a href="https://github.com/dequelabs/axe-core">axe-core</a><br><a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a><br><a href="https://pa11y.org/">pa11y</a></td>
-</tr>
-<tr>
-<td>ビジュアルリグレッション</td>
-<td>高</td>
-<td>コードの変更によって生じる視覚的な差異など、アプリケーションの視覚的な構造をテストする。</td>
-<td><a href="https://applitools.com/">Applitools</a><br><a href="https://docs.cypress.io/guides/tooling/visual-testing">Cypress</a><br><a href="https://percy.io/">Percy</a></td>
-</tr>
-<tr>
-<td>パフォーマンス</td>
-<td>高</td>
-<td>アプリケーションのパフォーマンスと安定性をテストする。</td>
-<td><a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a><br><a href="https://developers.google.com/speed/pagespeed/insights/">PageSpeed Insights</a><br><a href="https://webpagetest.org/">WebPageTest</a><br><a href="https://github.com/marcelduran/yslow/">YSlow</a></td>
-</tr>
-</tbody>
-</table>
-<p>結局、テストは皆のためのものなのでしょうか？その答えはイエスです。開発のあらゆる段階で、アプリケーションのさまざまな側面をテストすることができるライブラリ、サービス、ツールは数多く存在します。ですから少なくとも、コードを基準や予想に照らして測定・テストできるようにしてくれる何かが見つかるはずです。さらに、一部のツールはコードや設定さえ必要ありません。</p>
-<p>筆者の経験では、多くの開発者はテストを軽視しており、単純にアプリをくまなくクリックしたり、開発後チェックを実施したりすれば、コードの変更によって発生し得るバグを避けられると考えています。アプリケーションが意図した通りに動作し、可能な限り多くの人にとってインクルーシブなものとなり、効率的に実行され、また優れた設計となることを確実にしたいならば、自動か手動かを問わず、テストをワークフローの中心に据える必要があります。</p>
-<p>テストの種類やその機能が分かったところで、皆さんの業務にもテストを導入してみてはいかがでしょうか。</p>]]></content:encoded></item></channel></rss>
+<p>最終更新日：2021年3月16日（*訳註　翻訳時の原文記載更新日）</p>]]></content:encoded></item></channel></rss>
