@@ -1,4 +1,189 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 27 Jul 2022 03:17:38 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[React Server Componentsの仕組み：詳細ガイド]]></title><description><![CDATA[React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい…]]></description><link>https://postd.cc/how-react-server-components-work/</link><guid isPermaLink="false">https://postd.cc/how-react-server-components-work/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 27 Jul 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい新機能です。
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 31 Aug 2022 02:47:47 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[モダンWebにおけるキャッシングのための新HTTP標準]]></title><description><![CDATA[一般ユーザー向けの大規模なWebサイトや、モダンWeb上で動作するWebアプリケーションを運営する場合、CDNなどのキャッシングサービスによって静的コンテンツをキャッシュすることが極めて重要です。 …]]></description><link>https://postd.cc/status-targeted-caching-headers/</link><guid isPermaLink="false">https://postd.cc/status-targeted-caching-headers/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[HTTP]]></category><category><![CDATA[キャッシング]]></category><pubDate>Wed, 31 Aug 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>一般ユーザー向けの大規模なWebサイトや、モダンWeb上で動作するWebアプリケーションを運営する場合、CDNなどのキャッシングサービスによって静的コンテンツをキャッシュすることが極めて重要です。</p>
+<p>しかしこうしたサービスは、非常に複雑で分かりにくいものです。</p>
+<p>幸い、IETF（Internet Engineering Task Force）のHTTPワーキンググループがこの状況を改善すべく、HTTPの新標準策定に取り組んでいます。
+最近、同ワーキンググループでは、キャッシングのデバッグとキャッシュ設定の管理を容易にすることを目的とした、HTTPヘッダに関する2つの新標準案の発表に向けて活発な動きがありました。</p>
+<p>このことが何を意味し、どのように機能するのか、そしてWeb制作に携わる開発者全てがなぜ注目すべきなのかについて見ていきます。</p>
+<h2>新標準</h2>
+<p>この記事で取り上げる標準案は以下の2つです。</p>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-cache-header/">Cache-Statusヘッダ</a></li>
+<li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-targeted-cache-control/">Targeted Cache-Controlヘッダ</a></li>
+</ul>
+<p>これらはHTTP標準を改訂し、CDNを活用した現在のWebに対応したものにすることを目的としており、Fastly、Akamai、Cloudflareといった人気の高いCDNが用いている既存の手法を取り入れた仕様を提供します。
+ここに挙げた企業はいずれも自ら標準の策定に携わっています。</p>
+<p>どちらの標準案も比較的新しい仕様です。Cache-Statusは2021年に複数回にわたるレビューが行われており、現在は（8月以降）最終レビューと正式なRFCとしての発表を待っているところです。
+一方、Targeted Cache-Controlヘッダは現在標準案として採用されていますが、最後のフィードバックを募っているところです。
+どちらもIETFの支持を得ており、既に多くの議論が行われています。
+今後大きな変更が行われる可能性は低いものの、どちらもまだ新しいため、現時点ではまだ幅広いサポートは期待できないでしょう。</p>
+<h2>キャッシングが重要な理由</h2>
+<p>ユーザ向けの注目度の高いWebアプリケーションを運営する場合、キャッシュとCDNはエンドユーザに優れたパフォーマンスを妥当なコストで提供するうえで不可欠です。
+キャッシュとCDNはWebサーバの手前でリバースプロキシの役割を果たし、以下を保証します。</p>
+<ul>
+<li>コンテンツのキャッシング。全ての訪問者から直接バックエンドサーバに対して静的コンテンツのリクエストが行われないようにし、リクエストの頻度を減らすため。</li>
+<li>トラフィックの急増に耐えうるコンテンツデリバリ。静的キャッシュはアプリケーションサーバよりも規模の拡大がはるかに容易であるため。</li>
+<li>コンテンツリクエストのバッチ処理。1000件のキャッシュミスが同時に発生しても、バックエンドサーバへのリクエストが1件で済むようにするため。</li>
+<li>コンテンツの物理的分散。ユーザの所在地にかかわらず、レスポンスが迅速に届くようにするため。</li>
+</ul>
+<p>注目度の高いWebサイトを運営するなら、モダンWebにコンテンツをホスティングするうえでこれら全てが必須となります。
+ネットが広く普及している今、トラフィックの急増とレイテンシの問題はネット利用者の増加に伴い解決が困難になる一方です。</p>
+<p>Troy Huntが、自身が運営する人気サイト「Pwned Passwords」について執筆した、<a href="https://www.troyhunt.com/serverless-to-the-max-doing-big-things-for-small-dollars-with-cloudflare-workers-and-azure-functions/">キャッシングの仕組みを詳しく説明した記事</a>が参考になります。
+記事では以下の具体例が紹介されています。</p>
+<ul>
+<li>毎週彼のドメインから477.6GBのサブリソースが配信されている</li>
+<li>そのうち476.7GBはキャッシュから配信されている（キャッシュヒット率99.8%）</li>
+<li>同サイトのAPIには毎週3240万件のクエリが送信されている</li>
+<li>そのうち3230万件はキャッシュから配信されている（キャッシュ率99.6%）</li>
+<li>残りのAPIエンドポイントは、Azureのサーバレス関数が対処する</li>
+</ul>
+<p>このサイトのホスティング（1日数百万件ものパスワードチェック）に要する費用は、1日3セント程度です。
+これだけのトラフィックを全て自前のサーバで処理した場合、膨大なコストがかかります。
+合理的なキャッシングの仕組みを構築すれば、迅速かつ効果的に、安く処理できます。これは大きな問題です。</p>
+<h2>解決すべき問題は何か</h2>
+<p>これは結構なことなのですが、キャッシング設定の構築とデバッグは容易ではありません。</p>
+<p>主な問題は、一定の規模になるとほとんどの場合、任意のリクエストパスに多数のキャッシングレイヤーが関与することです。
+ほとんどの構成では、独自のキャッシング機能が組み込まれた何らかのロードバランサ、APIゲートウェイ、リバースプロキシがバックエンドサーバの手前に配置され、さらにその前には広く分散された低レイテンシ拠点からエンドユーザにこのコンテンツを提供するグローバルCDNがあります。
+さらに、バックエンドサーバ自体も内部の結果をキャッシュする場合があり、企業やプロバイダが独自のキャッシングプロキシを運用していることもあり、多くのクライアント（特にWebブラウザ）が独自のキャッシング機能を備えています（こうしたクライアントにも、Service Workerなどのキャッシングレイヤーがさらに備わっている場合もあり、一層複雑にしています）。</p>
+<p>各レイヤーには異なるキャッシング構成が求められます。
+例えば、ブラウザはユーザ固有のデータをキャッシュできる場合がありますが、CDNがこうしたデータをキャッシュできてはいけません。
+また、新しいコンテンツができるだけ早くエンドユーザに見えるようにするため全てのレイヤーのキャッシュに適用されなくてはいけません。</p>
+<p>これらのレイヤーと、各レイヤー独自の構成がどう作用し合うのかを予測するのも複雑であり、さまざまな形で好ましくない結果につながる可能性があります。</p>
+<ul>
+<li>コンテンツが一切キャッシュされず、トラフィックがバックエンドサーバに過剰な負荷をかける。</li>
+<li>コンテンツはキャッシュされるが、分散CDNではない下位のレイヤーに限定される。</li>
+<li>古いレスポンスが想定よりも長くキャッシュに保持され、コンテンツのアップデートを困難にする。</li>
+<li>キャッシュから間違ったレスポンスが配信され、ドイツのユーザにフランス語のコンテンツが提供されたり、ひどいケースでは未認証のユーザにログインコンテンツが提供されたりする。</li>
+<li>リクエストがCDNを全く通らず、バックエンドまたはリバースプロキシから直接配信される。</li>
+<li>WebサイトまたはAPIのキャッシングが一貫して行われず、古いデータと新しいデータが混在した全く役に立たないデータが読み出される。</li>
+</ul>
+<p>これはかなりひどい状態です。</p>
+<p>多くのキャッシュ設定が、リクエストやレスポンスのメタデータ自体（Cache-Controlヘッダなど）の中に存在することが、事態を一層悪くしています。
+これは正確な設定を実現するうえでは非常に効果的ですが、設定自体がこれらのレイヤーを通過して、途中でキャッシュされる可能性があることも意味します。</p>
+<p>知らず知らずのうちに誤って「これを永久にキャッシュする」というレスポンスをキャッシュした場合、極めて面倒なことになってしまいます。
+全てのレイヤーのキャッシュを強制的に無効化して問題を解決するのは、想像するより難しいことです。</p>
+<p><img src="https://imgs.xkcd.com/comics/refresh_types.png">
+<em>ピッタリのXKCDは常に存在する（訳注: XKCD とはアメリカの風刺系web漫画サイト）</em></p>
+<h2>Cache-Statusはどう役立つか？</h2>
+<p>明確な問題の1つは、キャッシングシステム内のトレーサビリティです。
+レスポンスはどこから来たのか？なぜそのレスポンスが送信されたのか？</p>
+<p>そのレスポンスはキャッシュから返されたのか、それともサーバから送信されたのか？
+キャッシュから返された場合、どのキャッシュか？
+それはあとどれくらい有効か？
+キャッシュから返されたのではない場合、それはなぜか？
+その新しいレスポンスは後で使用するために保存されたものか？</p>
+<p><a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-cache-header/">Cache-Statusレスポンスヘッダ</a>は、これら全ての情報がレスポンス自体に含まれるようにし、リクエストを見た全てのCDNおよびその他のキャッシュを1つの一貫した形式で提供するための構造を提供します。
+ヘッダは以下のようなものになります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Cache-Status: OriginCache; hit; ttl=1100, &quot;CDN Company Here&quot;; fwd=uri-miss;</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<h3>Cache-Statusヘッダの形式</h3>
+<p>ヘッダの形式は以下になります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Cache-Status: CacheName; param; param=value; param..., CacheName2; param; param...</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>キャッシュのリストであり、それぞれゼロ以上のステータスパラメータを持ちます。
+キャッシュはレスポンス順に並びます。
+最初のキャッシュがオリジンサーバに最も近く、最後のキャッシュがクライアントに最も近いものです。</p>
+<p>レスポンスがこのヘッダとともにキャッシュされると、その後のレスポンスでもそれが保持されます。
+しかし、今回のレスポンスがどこに保存され、前回のレスポンスがどこから来たのかを右側のパラメータ値から判断することも可能です。</p>
+<p>パラメータ付きのキャッシュはカンマで区切られ、パラメータ自体はセミコロンで区切られます（現在は標準化されている<a href="https://datatracker.ietf.org/doc/rfc8941/">構造化ヘッダRFC</a>のsf-listとsf-item構文）。
+キャッシュ名は、スペースなど本来無効な文字が含まれる場合は引用符で囲まれることがあります。</p>
+<h3>Cache-Statusヘッダパラメータ</h3>
+<p>各キャッシュの挙動を説明するため、いくつかのパラメータと値を定義します。</p>
+<ul>
+<li><code class="language-text">hit</code> - リクエストが上流に送られることなく、レスポンスはこのキャッシュから返されます</li>
+<li>
+<p><code class="language-text">fwd=&lt;reason&gt;</code> - これが設定されている場合、リクエストが次の上流レイヤーに送信されています。これには次のような理由が付いてきます。</p>
+<ul>
+<li><code class="language-text">fwd=bypass</code> - キャッシュはこのリクエストを処理しないよう構成されている</li>
+<li><code class="language-text">fwd=method</code> - 使用したHTTPメソッドにより、リクエストを転送する必要がある</li>
+<li><code class="language-text">fwd=uri-miss</code> - リクエストURIと一致するキャッシュデータはなかった</li>
+<li><code class="language-text">fwd=vary-miss</code> - URIと一致するキャッシュデータはあったが、Varyヘッダに含まれるヘッダが一致しなかった</li>
+<li><code class="language-text">fwd=miss</code> - 一致するキャッシュデータはなかった（理由が不明な場合など、他の理由による）</li>
+<li><code class="language-text">fwd=stale</code> - 一致するキャッシュデータはあったが、古い（stale）データである</li>
+<li><code class="language-text">fwd=partial</code> - 一致するキャッシュデータはあったが、レスポンスの一部に対してのみ（前回のリクエストがRangeヘッダを使用したなど）</li>
+<li><code class="language-text">fwd=request</code> - リクエストがキャッシュされていないデータを要求した（Cache-Controlヘッダで）</li>
+</ul>
+</li>
+<li><code class="language-text">fwd-status=&lt;status&gt;</code> - fwdが設定されている場合、次のホップから受け取ったレスポンスステータスです</li>
+<li><code class="language-text">stored</code> - fwdが設定されている場合、このキャッシュが受信したレスポンスを後で使用するために保管したかどうかを示します</li>
+<li><code class="language-text">collapsed</code> - fwdが設定されている場合、リクエストが他のリクエストと一緒に畳まれているかどうかを示します（同等のリクエストが既に処理中のため、複製されていない）</li>
+<li><code class="language-text">ttl=&lt;ttl&gt;</code> - このキャッシュがこのレスポンスをあとどれくらい（秒数）「fresh」（鮮度が高い）と見なすか</li>
+<li><code class="language-text">key</code> - このキャッシュのレスポンスのキー（実装固有）</li>
+<li><code class="language-text">detail</code> - 追加の実装固有情報のための自由形式フィールド</li>
+</ul>
+<p>これらを使用することで、以下のようなレスポンスヘッダを解釈できます。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Cache-Status: ExampleCache; hit; ttl=30; key=/abc</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>これは、ExampleCacheがリクエストを受信し、キャッシュの中（key / abcの下）にレスポンスがあったのでそれを返し、そこから30秒間はそのキャッシュを返し続けることを意味します。</p>
+<p>以下のようなもっと複雑な例も検討してみましょう。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Cache-Status:
+    Nginx; hit,
+    Cloudflare; fwd=stale; fwd-status=304; collapsed; ttl=300,
+    BrowserCache; fwd=vary-miss; fwd-status=200; stored</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p><em>（可読性を上げるために改行しています）</em></p>
+<p>これは、ブラウザがリクエストを送信したが、Varyヘッダに含まれるヘッダが一致しなかったため、同じURIで保持するキャッシュレスポンスを使用しなかったことを意味します。</p>
+<p>リクエストは次にCloudflareが受信し、Cloudflareは一致するレスポンスをキャッシュしていましたが（<code class="language-text">Nginx; hit</code>というレスポンス。Nginxのキャッシュから読み出されたレスポンスであることを意味する）、そのレスポンスは古くなっています。</p>
+<p>これに対処するため、CloudflareはNginxにレスポンスを再検証するようリクエストを送信し、Nginxは304（変更なし）レスポンスをCloudflareに返して既存のキャッシュレスポンスがまだ有効であることを伝えています。
+送信されたリクエストは折り畳まれており、同じコンテンツについて同時に複数のリクエストがCloudflareに届いたが、上流に送信されたリクエストは1つだけであることを意味します。
+Cloudflareは次の5分間、再検証されたデータを提供し続けます。</p>
+<p>有益な情報がたくさん含まれています。
+注意深く読み解くことで、このヘッダだけでもレスポンスのコンテンツがどこから来たのか、リクエストパス全体に沿って現在どのようにキャッシュされているのかが正確に分かります。</p>
+<p>（キャッシング構成のデバッグに不慣れな人には、上記は手ごわそうに聞こえるかもしれませんが、これらの情報が1カ所にまとめられていることで、同じ情報を一から導き出すより何倍も負担が軽減されます。）</p>
+<h3>Cache-Statusの実践</h3>
+<p>これは全く新しい概念ではありませんが、全てのキャッシュを1カ所にまとめることで、一貫したデータの単一の供給源を提供することに本当のメリットがあります。</p>
+<p>現在、各キャッシュプロバイダがさまざまな（それぞれ微妙に一致しない）ヘッダを使用しており、Nginxの<a href="https://support.cpanel.net/hc/en-us/articles/4402904983703-How-to-add-the-X-Cache-Status-header-to-NGINX-to-assist-with-optimizing-and-troubleshooting-cache-settings">X-Cache-Status</a>、Cloudflareの<a href="https://developers.cloudflare.com/cache/about/default-cache-behavior#cloudflare-cache-responses">CF-Cache-Status</a>、Fastlyの<a href="https://developer.fastly.com/reference/http/http-headers/X-Served-By/">X-Served-By</a>や<a href="https://developer.fastly.com/reference/http/http-headers/X-Cache/">X-Cache</a>などがあります。それぞれ、ここに含めることができる情報の一部を提供しており、今後は徐々にCache-Statusに置き換わっていくことが望まれます。
+現在、ほとんどの主要コンポーネントとプロバイダはデフォルトでCache-Statusを搭載していませんが、Fastly、Akamai、Facebookなど多数の企業が標準化プロセスに関わっているため、多くのWebサービスやツールに採用される日はそう遠くないと思います。
+実際、<a href="https://github.com/squid-cache/squid/commit/5fdc549054b11eb8bbc7e9640d6d071fa1ef742b">Squid</a>の組み込みサポートや<a href="https://github.com/caddyserver/cache-handler#readme">Caddyのキャッシングハンドラー</a>、<a href="https://gist.github.com/mnot/74ba8ed638a3d85659aa2868b9240d50">Fastlyのドロップインレシピ</a>など、既に進展が見られています。
+2021年8月にRFCの発表があったばかりなのでまだかなり新しいですが、今後も引き続きサポートが広がっていくことを期待しています。
+CDNまたはキャッシングコンポーネントの開発者は、ユーザのデバッグを支援するためにCache-Statusを採用することをお勧めします（これらのサービスを使っているのであれば、Cache-Statusの導入を求めることをお勧めします）。</p>
+<h2>Targeted Cache-Controlのメリット</h2>
+<p>既存の<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">Cache-Controlヘッダ</a>は、キャッシングがこれほど複雑化する前（1999年）に設計されたものです。
+当時はIE 4.5がリリースされたばかりで、RIMが最初のBlackberryの発売準備を進めており、インタラクティブWebページの第一波を表す「Web 2.0」という言葉が生まれた時代でした。
+テラバイト単位のデータをキャッシュするためにマルチレイヤーCDNアーキテクチャを構成することは大きなテーマではなかったのです。</p>
+<p>時代は変わりました。</p>
+<p>1999年に定義されたCache-Controlヘッダはリクエスト／レスポンスヘッダであり、リクエスト（どのようなキャッシュレスポンスを受け入れるか）とレスポンス（このレスポンスを今後どのようにキャッシュするか）に関するさまざまなキャッシングパラメータを定義できます。</p>
+<p>ここではリクエストの構成については特に注目していませんが、レスポンスキャッシュの構成は非常に重要です。
+レスポンスのCache-Controlは現在、以下のようにレスポンスの処理方法をキャッシュに伝えるディレクティブのリストによって定義されます。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Cache-Control: max-age=600, stale-while-revalidate=300, private</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>これは、「このコンテンツを10分間キャッシュし、次に、これを再検証する間、古いコンテンツを最大5分間配信する。ただし、これはプライベート（シングルユーザのブラウザなど）キャッシュでのみ行う」という意味です。</p>
+<p>ここで設定されたルールは、同じリクエストを処理する全てのキャッシュが同様に従わなくてはならず、ツールとしてはやや粒度が粗いと言えます。
+制御ルールの対象をエンドユーザのキャッシュに制限することは可能であり（<code class="language-text">private</code>を使用）、過去には、共有されたキャッシュ（CDNなど）にしか適用されないいくつかの重複したディレクティブ（<code class="language-text">s-maxage</code>や<code class="language-text">proxy-revalidate</code>など）を追加していましたが、それ以上の精度や柔軟性を望むことはできません。
+これはつまり、以下のことは行えないことを意味します。</p>
+<ul>
+<li>ブラウザとCDNで、stale-while-revalidateに異なる時間を設定する</li>
+<li>レスポンスに対し、内部のキャッシングロードバランサにおける全てのリクエストで再検証が必要だが、CDNでは不要とのフラグを付ける</li>
+<li>CDNでのキャッシングは有効にしつつ、外部の共有キャッシュ（エンタープライズプロキシなど）にはコンテンツをキャッシュしないよう伝える</li>
+</ul>
+<p>これでは、多くの高度なユースケースに対応できません。
+ほとんどのキャッシングコンポーネントでは、これに対処するためにコンポーネント内のルールを定義するための構成オプションが用意されていますが、これはこれで柔軟性に欠け、レスポンスに応じて異なるルールを構成するのが難しくなります。</p>
+<p><a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-targeted-cache-control/">Targeted Cache-Control</a>は、全てのキャッシュではなく特定のキャッシュのみを対象としたCache-Controlのディレクティブを設定するための新しいヘッダを定義することで、この問題の解決を図るものです。</p>
+<h3>Targeted Cache-Controlの仕組み</h3>
+<p>Targeted Cache-Controlを使用するには、サーバが以下のような形式のレスポンスヘッダを設定する必要があります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">&lt;Target&gt;-Cache-Control: param, param=value, param...</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>ヘッダのプレフィックスには、これを適用する特定の対象が入ります。
+構文は、<a href="https://datatracker.ietf.org/doc/rfc8941/">Structured Fields</a>の標準形式を使用するため、厳密にはCache-Controlが使用する構文とは若干異なりますが、実質的にはほとんど同じです。</p>
+<p>ここで使用する対象には、固有のサービスやコンポーネントの名前、あるいはキャッシュクラスなどが入ります。
+仕様で定義する対象は1つだけ（<code class="language-text">CDN-Cache-Control</code>。全ての分散CDNキャッシュに適用し、他のキャッシュには適用しない）ですが、後から他のクラスを定義することもできます。
+将来的には、<code class="language-text">Client-Cache-Control</code>がHTTPクライアントにおけるキャッシングのみを対象にルールを設定し、<code class="language-text">ISP-</code>がインターネットサービスプロバイダ、<code class="language-text">Organization-</code>が企業組織のキャッシュを対象とする、といったことも可能です。</p>
+<p>これらのヘッダを使用するには、それをサポートする各キャッシュがマッチする対象のリストを優先順に定義（固定またはユーザ定義）します。他により具体的なマッチがなければ、最初にマッチした<code class="language-text">&lt;target&gt;-Cache-Control</code>ヘッダまたは通常の<code class="language-text">Cache-Control</code>ヘッダ（あれば）を使用します。</p>
+<p>全体として、既存のキャッシングの仕組みに既になじみがある場合、かなりシンプルで使いやすいと感じるでしょう。Targetedヘッダは特定の対象とマッチし、キャッシングのルールは対象に応じて自由に設定でき、ベストマッチが優先されます。以下の例をご覧ください。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">Client-Cache-Control: must-revalidate
+CDN-Cache-Control: max-age=600, stale-after-revalidate=300
+Squid-Cache-Control: max-age=60
+Cache-Control: no-store</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これは以下のような意味になります。</p>
+<ul>
+<li>エンドクライアント（少なくとも、筆者が考案した<code class="language-text">Client-Cache-Control</code>ヘッダを認識するもの）は、このコンテンツをキャッシュできるが、使用する前に毎回再検証しなくてはならない</li>
+<li>全てのCDNがコンテンツを10分間キャッシュでき、次に、これを再検証する間、古いレスポンスをさらに5分間使用できる</li>
+<li>Squid（キャッシング機能を備えたリバースプロキシ）は、コンテンツを60秒間だけキャッシュできる（<code class="language-text">stale-while-revalidate</code>指示はないため、古い間は暗黙的に使用できない）</li>
+<li>Targeted Cache-Control指示を理解できないものは、このコンテンツをキャッシュしてはならない</li>
+</ul>
+<h3>Targeted Cache-Controlの実践</h3>
+<p>Cache-Statusよりも新しく、標準化プロセスの早い段階にあるため、まだ変更が加わる可能性があります。フィードバックがある場合、<a href="https://github.com/httpwg/http-extensions/blob/main/draft-ietf-httpbis-targeted-cache-control.md">ここから</a>GitHubにアクセスして仕様書を入手し、同じレポジトリ内で問題を報告（または<a href="https://datatracker.ietf.org/wg/httpbis/about/">ワーキンググループのメーリングリスト</a>にメッセージを送信）し、意見を述べることができます。
+とは言え、仕様書自体はFastly、Akamai、Cloudflareの代表者が執筆しているため、業界のサポートは既に十分得られており、作業はもうかなり進んでいるため、大きな変更が加えられる可能性は低いと思われます。</p>
+<p>現状、<a href="https://blog.cloudflare.com/cdn-cache-control/">Cloudflare</a>と<a href="https://www.akamai.com/blog/news/targeted-cache-control">Akamai</a>が既にサポートしているため、これらのキャッシュを使用する場合、今から<code class="language-text">CDN-Cache-Control</code>、<code class="language-text">Akamai-Cache-Control</code>、<code class="language-text">Cloudflare-CDN-Cache-Control</code>を使用した正確な構成を開始できます。今後他の多くのツールやサービスについても同様のサポートが行われる可能性が高いため、引き続き注目してください。</p>
+<h2>今後の展望</h2>
+<p>2021年、キャッシングは依然として複雑ですが、Cache-StatusとTargeted Cache-Controlが急速に成熟しており、これらによって構成とデバッグはかなり容易になると見られます。キャッシングに携わっている方は注目する価値があります。</p>
+<p>IETFが最近取り組んでいるHTTP標準は2つだけですが、Webの発展に寄与したい方や今後登場する予定の標準について知りたい方は、<a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/">Rate-Limitingヘッダ</a>、<a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-proxy-status/">Proxy-Status</a>、<a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-digest-headers/">HTTPメッセージダイジェスト</a>、<a href="https://datatracker.ietf.org/doc/rfc8942/">HTTPクライアントヒント</a>など他にも多数あるのでチェックしてみてください。
+HTTPは発展途上の標準であり、今後も続々登場します。
+これらのいずれかに興味のある方は、<a href="https://datatracker.ietf.org/wg/httpbis/about/">ワーキンググループのメーリングリスト</a>に参加し、新たな開発情報をチェックしたり意見を共有したりすることをお勧めします。</p>
+<p><em>HTTPリクエスト、キャッシング、エラーのテストやデバッグをご希望の方は、<a href="https://httptoolkit.tech/">HTTP Toolkit</a>でHTTPの傍受、調査、模擬をお試しください。</em></p>
+<p><em>10か月前(※訳注：2022年8月の翻訳記事公開時点)に<a href="https://twitter.com/pimterry">Tim Perry</a>が公開</em></p>]]></content:encoded></item><item><title><![CDATA[React Server Componentsの仕組み：詳細ガイド]]></title><description><![CDATA[React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい…]]></description><link>https://postd.cc/how-react-server-components-work/</link><guid isPermaLink="false">https://postd.cc/how-react-server-components-work/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 27 Jul 2022 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>React Server Components（RSC）は、ページの読み込みパフォーマンスやバンドルサイズのほか、Reactアプリケーションの書き方に近い将来大きな影響を与えることになる、素晴らしい新機能です。
 Plasmicでは、<a href="https://plasmic.app/">Reactのビジュアルビルダー</a>を開発しており、Reactのパフォーマンスには大きな関心を持もっています。
 当社のクライアントの多くは、Plasmicを使用して高いパフォーマンスが求められるマーケティングサイトやECサイトを構築しています。
 したがって、RSCはまだReact 18の初期実験機能ですが、Plasmicではその仕組みを詳しく調べています。
@@ -2312,66 +2497,4 @@ package/README.md</code><span aria-hidden="true" class="line-numbers-rows" style
 <p>Railsは、package.jsonファイルを使用し、npmを通じてパッケージを管理しない場合、これらのパッケージに依存し、更新を行う方法を見つけなければなりません。いくつかアイデアはあるものの、まだ具体化には至っていません。それまでの間は、単純にこれらのESMパッケージをダウンロードして、vendorディレクトリにローカルで保存すると良いでしょう。</p>
 <p>このように、これまで紹介した技術はいずれも有望で、またES6、HTTP2、インポートマップの普及は飛躍的な進歩を実現しましたが、webpack（とWebpacker）を必要とするアプリが依然として数多く存在するのは明らかです。しかし、それは問題ではありません。私たちは無駄をなくすことで前進してきました。webpackやWebpackerはまだ完全にはなくなりませんが、不要になった人は大いに満足するでしょう。</p>
 <p>この基本的な考え方に反する新たなエビデンスが出てこない限り、Rails 7.0のデフォルト設定はインポートマップに基づくものとし、Webpackerによるアプローチはオプションの選択肢にとどめる予定です。</p>
-<p>複雑化したフロントエンドを修正し、シンプルな状態に回帰する動きは非常に遅れていました。しかし、ES6、HTTP2、インポートマップがまさにそれを実現してくれるでしょう。本当にうれしい限りです。</p>]]></content:encoded></item><item><title><![CDATA[CDNは5時間で開発できる]]></title><description><![CDATA[「CDN」（content delivery network）という言葉からは、Googleのような大企業がいくつもの巨大なハードウェアを管理し、1秒当たり何百ギガビットものデータを処理する様子が想…]]></description><link>https://postd.cc/the-5-hour-cdn/</link><guid isPermaLink="false">https://postd.cc/the-5-hour-cdn/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[CDN]]></category><pubDate>Mon, 18 Oct 2021 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p>「CDN」（content delivery network）という言葉からは、Googleのような大企業がいくつもの巨大なハードウェアを管理し、1秒当たり何百ギガビットものデータを処理する様子が想像されます。しかし、CDNは単なるWebアプリケーションです。私たちのイメージとは違いますが、それが事実です。8年前に買ったノートパソコンを使って、コーヒーショップの席に座りながらでも、きちんと機能するCDNを構築できます。この記事では、これから5時間でCDNを開発しようとするときに、<a href="https://github.com/fly-apps/nginx-cluster">直面するかもしれないこと</a>を紹介します。</p>
-<p>まずはCDNの機能を明らかにしておきましょう。CDNはセントラルリポジトリ（通称：<code class="language-text">オリジン</code>）からファイルを吸い上げ、ユーザーに近い場所でコピーを保存します。初期のオリジンはCDNのFTPサーバーでした。現在、オリジンは単なるWebアプリとなり、CDNはプロキシサーバーとして機能しています。つまり、私たちが構築しようとしているCDNとは分散キャッシングプロキシです。</p>
-<h2>プロキシによるキャッシュ</h2>
-<p>HTTPが定義するキャッシュ機能は<a href="https://portswigger.net/research/practical-web-cache-poisoning">非常に細かく複雑で</a>、取っつき難いものです。ですから、一からから構築したい欲求は抑えて、他の人が作ってくれたものを利用しましょう。</p>
-<p>CDNにはいくつかの選択肢があります。<a href="https://varnish-cache.org/">Varnish</a>（スクリプト、Edge Side Includes、開発者ブログあり）、<a href="https://trafficserver.apache.org/">Apache Traffic Server</a>（導入すれば、今年新たにATSを採用する唯一のチームとなるでしょう）、<a href="https://www.nginx.com/">NGINX</a>（当社も既に利用しています）のどれを利用しても構いません。しかし、これだけは断言できますが、どれを選んでも使いこなすのは大変です。全部試してみて、一番使いやすいものを選びましょう。</p>
-<p>（NetlifyはATSで構築されています。CloudflareはNGINX、FastlyはVarnishを利用しています。）</p>
-<p>これから構築するCDNは、基本的な水準には達していません。しかし、全く使えないものでもありません。やるべきことは、昔ながらのRailsで開発し、複数の都市で実行するだけです。もしオーストラリアのユーザーをシドニーのサーバーに、チリのユーザーをサンティアゴのサーバーに誘導できれば、それをCDNと呼んで差し支えないでしょう。</p>
-<h2>トラフィックのルーティング</h2>
-<p>ユーザーを最寄りのサーバーにルーティングするという問題に対しては、基本的に3つの選択肢があります。</p>
-<ol>
-<li>エニーキャスト：ルーティング可能なアドレスのブロックを取得し、BGP4を通じて複数箇所に対して転送します。あとはTwitterで「コミュニティ」や「ルートリフレクタ」について詳しいふりをしていましょう。代わりにインターネットがルーティングを済ませてくれます。この方法のデメリットは、難易度が高く、インターネットに任せてもうまくいかない場合があることです。メリットは、知ったかぶりできることくらいでしょうか。</li>
-<li>DNS：特殊なDNSサーバーを稼働し、IPジオロケーションに基づく特定のサーバーのアドレスを返します。デメリットは、インターネットにおいて、位置を特定できるDNSソースアドレスの利用が減っていることです。メリットとしては、助けを借りずにどこにでも導入できます。</li>
-<li>ゲームのサーバーと同様の方式：複数のサーバーにpingを送り、ベストなサーバーを利用します。デメリットとしてはクライアントが必要になります。しかし、あなたはクライアントを持っていないので、ここでは関係ありません。</li>
-</ol>
-<p>通常、この3つの選択肢のうち（1）と（2）をそれぞれ少しずつ利用することになるでしょう。DNSのロードバランシングは非常にシンプルです。自力で構築する必要はなく、DNSimpleなどの企業のサービスを利用してDNSをホストし、アドレスを返すための規則を定義するだけで済みます。</p>
-<p>エニーキャストは難易度が高いです。説明すべきことがたくさんありますが、この記事ではこれ以上踏み込みません。その代わり、<a href="https://fly.io/">当社のサービス</a>を利用すれば、エニーキャストアドレス付きのアプリを2分で実装できます。当社の宣伝のようになってしまいましたが、事実でもあります。</p>
-<p>CDNの開発に戻ります。NGINXをそれぞれの都市群に設定し、トラフィックのルーティングのためにDNSかエニーキャストを実行したら、もう90%完了です。しかし、残りの10%に数カ月かかります。</p>
-<h2>インターネットの障害</h2>
-<p>深海の底に敷き詰められた海底ケーブルは、<a href="https://www.theguardian.com/business/2008/feb/01/internationalpersonalfinancebusiness.internet">常に近くを航行する船に切断される危険にさらされています</a>。とはいえ、陸が海に比べて安全というわけではありません。昔のネットワーク技術者は、「ショベルでうんと深く掘ると、バックボーン（回線）がダメになる」とよく口ずさんでいたものです。回線が切断される懸念は、サーバー1台を1カ所で稼働させるだけならあまり気にならないでしょう。2台以上稼働すると徐々に気になってきます。世界中でサーバーを稼働するとなると心配で夜も眠れません。</p>
-<p>しかし、幸いにも、1つのNGINXを複数の都市で稼働すれば、大きな冗長性をすぐに確保できます。サーバーの1つが何らかの理由でダウンしたとしても、多くのサーバーにトラフィックを送信可能です。1台のサーバーがオフラインになっても、残りのサーバーは引き続きほとんどのユーザーにサービスを提供できます。</p>
-<p>これを実現するための作業は、退屈ですが簡単です。まずはヘルスチェックを行います（ちなみに、CDNのリージョンがダウンすると通常は通信速度が遅くなります。そのため、ヘルスチェックで検知できるはずです）。すると、NGINXのサーバーがダウンしたタイミングが分かります。それに応じて、DNSを変更するスクリプトを実行したり、BGPのルートを取り消したり（場合によっては単にそのリージョンのBGP4サービスを停止したり）します。</p>
-<p>これはサーバーの障害なので発見するのは簡単ですが、インターネットの障害は発見しづらくなります。複数のロケーションから外部のヘルスチェックを実施しなければならないからです。しかし、複数の視点を持つ、基本的なモニタリングは難しくありません。当社では<a href="https://www.datadoghq.com/product/synthetic-monitoring/">Datadog</a>と<a href="https://updown.io/">updown.io</a>を利用しており、<a href="https://fly.io/blog/building-clusters-with-serf/">独自の社内サービスも開発中です</a>。必要な情報は、<code class="language-text">cURL</code>で分かる情報と大差ないはずです。繰り返しになりますが、CDNに関して特に注意すべきことは、リージョンの通信速度が遅くなることであって、インターネットが完全に遮断されることではありません。</p>
-<p>ちなみに、こうしたモニタリングのオプションは全て、他のデータセンターから自分のデータセンターへの通信をモニタリングするものです。データセンター間のトラフィックは、出発点としては悪くありませんし、通信量も膨大です。しかし、ユーザーはデータセンターに（おそらく）住んではいないため、代表的なトラフィックとは言えません。あなたのサイトが非常に人気なら、実際のクライアントの状況がよく分かるようなモニタリングが望ましいでしょう。そうしたニーズに応えて、何百もの企業が、通常は密かに埋め込まれたJavaScriptのバグという形態でRUM（リアルユーザーモニタリング）サービスを販売しています。私が好きなRUMはお酒のほうのラムですけどね。これをたくさん飲みながら、<a href="https://www.honeycomb.io/">Honeycomb.io</a>を利用して自分でモニタリング用のコードを追加します。</p>
-<p>インターネットのくだらない問題には本当にうんざりします。しかし、幸いにも、多くの人がインターネットを利用する中で解決策を編み出しているため、この問題についてそれほど語る必要はありません。キャッシュの仕組みはもっと面白いものです。以下では「玉ねぎ（※後述参照）」についてお話ししましょう。</p>
-<h2>黄金のキャッシュヒット率</h2>
-<p>キャッシュの効率性の指標を「キャッシュ率」といいます。キャッシュ率は、オリジンからデータを読み込む場合に対して、キャッシュからデータを読み込む場合の割合を測定したものです。</p>
-<p>キャッシュ率80%とは、「リクエストを受信したとき、80%はキャッシュからデータを提供できるが、残りの20%はリクエストをオリジンに転送しなければならない」という意味です。CDNのようなサービスを構築する場合、キャッシュ率が高いほうが良いです。</p>
-<p>前述のGitHubリポジトリのリンクにアクセスすると、当社の<a href="https://github.com/fly-apps/nginx/">素朴なNGINX設定</a>ファイルで、サーバーの設定が分離された単独サーバーとなっていることに気づくかもしれません。これを20カ所で導入すると、20台の個別サーバーを所有していることになります。実にシンプルです。しかし、シンプルさの代償として、リージョンごとの冗長性がありません。20台のサーバーは全て、オリジンにリクエストを送信する必要があります。この構造は脆弱で、キャッシュ率は低くなるでしょう。もっと良い方法がほかにあるはずです。</p>
-<p>各リージョンに2台目のサーバーを追加すれば、冗長性を簡単に高めることができます。しかし、これはキャッシュ率を大幅に低下させかねません。サーバーを1台のみにするメリットは、全てのユーザーに1つのキャッシュをホスティングすれば良い点です。サーバーが2台だと、オリジン1台当たりのリクエスト件数は2倍になり、キャッシュがないケースも倍増します。</p>
-<p>この問題を解決するには、サーバー同士がコミュニケーションを取り、相手のサーバーがコンテンツをキャッシュしている場合はそれを要求できるようにすれば良いでしょう。そのための最も簡単な方法は、キャッシュシャードの作成です。データを分割し、各サーバーがその一部を保持するようにして、リクエストを受けたサーバーは適切な部分のキャッシュシャードを保持しているサーバーにリクエストを転送します。</p>
-<p>これは複雑に思えますが、NGINXに搭載されたロードバランサーはハッシュベースのロードバランシングをサポートしています。この機能ではリクエストをハッシュ化し、サーバーが利用可能であると想定して「同じリクエスト」を同じサーバーに転送します。このブログ記事のホーム版をご覧の方は、こちらから<a href="https://github.com/fly-apps/nginx-cluster">すぐに使えるNGINXクラスタの例</a>を確認できます。このクラスタでは、ピアを発見し、URLをハッシュ化し、利用可能なサーバーを通じてリクエストを送信します。</p>
-<p><img src="https://fly.io/blog/2021-03-16/consistent-hashing.png?2/3&#x26;centered"></p>
-<p><code class="language-text">a.jpg</code>のリクエストがNGINXインスタンスに到達すると、全てのインスタンスがリクエストをクラスタ内の同じサーバーに転送します。<code class="language-text">b.jpg</code>についても同様です。この設定によって、サーバーはロードバランサーのプロキシとストレージの一部としての両方の機能を果たします。さらに先進的な機能をCDNに搭載したい場合は、これらのレイヤーを分離することもできます。</p>
-<blockquote>
-<h2>PRのためのちょっとした余談</h2>
-<p>クラスタNGINXの例ではFlyを利用しています。当社は、Flyの機能は本当に素晴らしいと考えています。<a href="https://fly.io/blog/persistent-storage-and-fast-remote-builds/">永続ボリューム</a>はNGINXのアップグレード間もキャッシュ率を高水準に維持することに寄与します。<a href="https://fly.io/blog/incoming-6pn-private-networks/">暗号化されたプライベートネットワーキング</a>は、NGINX間の安全・簡単なコミュニケーションを実現し、<a href="https://twitter.com/colmmacc/status/1057018254940504064?lang=en">mTLSの複雑な設定</a>の手間を省きます。ビルトインのDNSサービスディスカバリーは、サーバーを追加・削除するときにクラスタを最新に保つのに役立ちます。こうした機能がCDNとあまりに完璧にマッチしているではないかと思われるかもしれませんね。それは当社がこれらの機能をCDN型のワークロード専用に構築したからです。
-もちろん、上記の機能は全てFly以外でも実現できます。しかし、<a href="https://fly.io/docs/speedrun/">Flyなら簡単です</a>。</p>
-</blockquote>
-<h2>玉ねぎのレイヤー</h2>
-<p>2つの真実をお伝えしましょう。高いキャッシュ率は善、インターネットは悪です。一石二鳥を好む人なら、キャッシュ率の問題と、インターネットのルーティングがうまくいかない問題を同時に解決できればありがたいと思うでしょう。どちらの問題の解決にも、インターネットがHTTPリクエストを雑に処理しないようにすることが必要となります。キャッシュ率を高めるには、コントロールできないインターネットは迂回して、適切に機能して信頼が置けるネットワークを通じてオリジンへのリクエストを送信することです。</p>
-<p>CDNは通常、顧客のオリジンに近いリージョンへサーバーを設置しています。当社のNGINXの例をバージニア州に設定すれば、即座にAWSの最大のリージョン近くにサーバーを所有したことになります。そして、あなたには間違いなくAWSを利用している顧客がいるはずです。これが大規模で強力な独占企業に寄り添うメリットです。</p>
-<p><img src="https://fly.io/blog/2021-03-16/proxy-region-to-origin.png?2/3&#x26;centered"></p>
-<p>NGINXとプロキシを少し調整すれば、オリジンサーバーへのリクエストを全てバージニア経由で送信できます。これはうれしいことです。というのも、あなたのバージニアのサーバーと、顧客の<code class="language-text">us-east-1</code>（AWSのバージニア州北部リージョン）のサーバーの間には、インターネットに比べてデータ通信を妨げる罠が少ないからです。これで特定の顧客のリクエストを処理する単独の正式なサーバーの組み合わせが設定できました。</p>
-<p>うれしいことに、上記の設定はキャッシュ率を改善するだけでなく、インターネットによるルーティングを回避することも可能です。さらに、追加のCDN機能の基礎としての役割も果たします。</p>
-<p>CDNを選ぼうとすると、「シールディング」や「リクエスト集約」といった言葉を目にします。オリジンのシールディングとは通常、単に全てのトラフィックを所定のデータセンターを通じて送信することを意味します。オリジンサーバーへのトラフィックを最小化するだけでなく、自分のCDNリージョンが利用しているIPが分かる可能性が高いので、シンプルなL4ファイアウォール規則によってアクセスを制御できます。</p>
-<p>また、リクエストの集約もオリジンのトラフィックを最小化できます。この方法は、多くのユーザーが同じコンテンツにアクセスしようとする大規模なイベントで特に有効です。10万人のユーザーが一斉に、<a href="https://fly.io/blog/the-5-hour-content-delivery-network/#">あなたが執筆した最新のブログ記事にアクセス</a>し、しかもその記事がまだキャッシュされていない場合、オリジンに10万件のリクエストが同時に送信される可能性があります。これはほとんどのオリジンが処理しきれないレベルのトラフィックです。この問題を解決するには、特定のURLを「ロック」し、1つのNGINXサーバーがリクエストをオリジンに送信している間、他のクライアントはファイルがキャッシュされるまで一時停止するようにすれば良いのです。当社のクラスタNGINXの例では、<a href="https://github.com/fly-apps/nginx-cluster/blob/main/nginx.conf#L114-L115">この設定はわずか2行で済みます</a>。</p>
-<h2>それでも通信が遅いときは</h2>
-<p>1つのリージョンを通じてリクエストを送信してキャッシュ率を高めるのは、ちょっとした裏技のようなものです。CDN全体の目的は、ユーザーのために速度を速めることにあります。オーストラリアからバージニアにリクエストを送れば、速度はほんの少しだけ速くなります。コンテンツをキャッシュしたNGINXサーバーからの応答は、ほぼ必ずオリジンサーバーよりも速いからです。しかし、これでも速度は遅く、満足とは言えません。</p>
-<p>この問題は玉ねぎのレイヤーを増やすことで解決できます。</p>
-<p><img src="https://fly.io/blog/2021-03-16/proxy-region-to-origin-2.png?2/3&#x26;centered"></p>
-<p>オーストラリアからのリクエストを、シンガポールを通じてバージニアに送信すれば良いのです。オーストラリアからバージニアまでの14,624kmは光の速さでも時間がかかります。そこで、オーストラリアからの距離が4,300kmのシンガポールへリクエストを送信し、シンガポールのキャッシュを利用することで、はっきりと分かるような遅延を回避します。この場合、キャッシュが存在しないと、直接バージニアにリクエストを送信する場合より通信速度が少し遅くなります。しかし、ここでの差は「イライラするほどの遅さ」と「イライラするほどの遅さよりも150ミリ秒遅い」の違い程度のわずかなものです。</p>
-<p>汎用的なCDNを構築している場合は、これは良い方法といえます。各リージョンのキャッシュデータを集積するいくつかの広域リージョンを設定すればよいのです。</p>
-<p>汎用的なCDNではなく、単にアプリケーションの速度を速めたい場合、この解決策には不安があります。アプリケーションの一部を複数のリージョンに分散させるほうが良いでしょう。</p>
-<h2>まとめ</h2>
-<p>CDNの基本的な考え方は目新しいものではなく、簡単に理解できます。一方で、CDNの構築は従来、野心的なチームのための事業であり、個人の開発者が週末に手掛けるようなプロジェクトではありませんでした。</p>
-<p>しかし今や、有用なCDNを構築するための基本要素をNGINXなどのツールで利用できるようになってずいぶん経ちました。<a href="https://github.com/fly-apps/nginx-cluster">自宅で前述のGitHubリポジトリを試した</a>方は、ここで取り扱っている最も複雑な設計のイテレーション、つまりリージョンごとの冗長性を有し、リクエストのリージョン間ルーティングの基本的な制御が可能な設計でさえも、ほとんどの場合はNGINXを設定するだけで済むことに気づいたでしょう。しかも、その設定もそれほど複雑ではありません。当社が追加した「コード」は、アドレスのプラグインに必要な<code class="language-text">bash</code>だけです。</p>
-<p>これでCDNの出来上がりです。単純なキャッシュなら問題なくこなせます。ただし、複雑なアプリで利用するには足りない部分があります。</p>
-<p>特に、この記事ではキャッシュの期限切れについて全く取り上げませんでした。CDNを利用するときに必ずと言っていいほど起きるのが、ローンチのリリースに恥ずかしいタイプミスがあり、気づくのが遅れ、あらゆるキャッシュサーバーに誤字入りのコピーが保存されることです。分散されたキャッシュの削除は、CDNにとって厄介で大きな問題です。この問題だけでまるまる1本記事が書けるでしょう。</p>
-<p>CDNレイヤーはアプリの機能を追加する場所としても非常に優れています。画像の最適化、WAF、APIレート制限、ボット検知などの機能が利用できます。これらのテーマだけで10本記事が書けるでしょう。</p>
-<p>最後にもう1点。前述のとおり、この記事は全体にバイアスがかかっています。当社がこのCDN設計を取り上げているのは、それをとても簡単に実現できるプラットフォームを当社が構築したからです（皆さんもぜひお試しください）。このプラットフォームの機能を利用すれば、FlyでCDNを容易に構築できるだけでなく、アプリケーション全体を簡単に配信することも可能です。エッジ配信用に設計されたアプリケーションは、CDNを全く必要としない場合もあります。</p>
-<hr>
-<p>詳細については<a href="https://community.fly.io/t/the-5-hour-cdn/946">こちら</a>までお問い合わせください。</p>
-<p>最終更新日：2021年3月16日（*訳註　翻訳時の原文記載更新日）</p>]]></content:encoded></item></channel></rss>
+<p>複雑化したフロントエンドを修正し、シンプルな状態に回帰する動きは非常に遅れていました。しかし、ES6、HTTP2、インポートマップがまさにそれを実現してくれるでしょう。本当にうれしい限りです。</p>]]></content:encoded></item></channel></rss>
