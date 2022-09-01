@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 31 Aug 2022 02:20:31 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 01 Sep 2022 18:50:15 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,72 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Importing ST projects into Visual Studio Code</title>
+		<link>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/#respond</comments>
+		
+		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
+		<pubDate>Thu, 01 Sep 2022 18:50:15 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[embedded]]></category>
+		<category><![CDATA[IoT]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[Visual Studio Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30966</guid>
+
+					<description><![CDATA[<p>In the world of Arm microcontrollers there are many silicon vendors, one of the largest is STMicroelectronics. ST has a large catalog of available devices with many capabilities as well as supporting development boards for evaluating them. They also produce STM32CubeIDE,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/">Importing ST projects into Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In the world of Arm microcontrollers there are many silicon vendors, one of the largest is <a href="https://www.st.com/">STMicroelectronics</a>. ST has a large catalog of available devices with many capabilities as well as supporting development boards for evaluating them. They also produce <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a>, a custom IDE to use when targeting their devices, and <a href="https://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm32-software-development-tools/stm32-configurators-and-code-generators/stm32cubemx.html">STM32CubeMX</a>, a configuration tool used in configuring properties of their devices and generating projects.</p>
+<p>If you are a developer already using ST’s products I’m not telling you anything new. You may not be aware though of the work we have been doing to <a href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">enable embedded developers in Visual Studio Code</a>. This embedded experience relies on the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifacts capabilities</a> to help acquire toolchains and configure the dev environment. To make it easier for developers using ST devices to try Visual Studio Code we have been working with ST to enable importing STM32CubeIDE projects.</p>
+<p>We accomplish this by generating a CMake project from the ST project. ST provides many sample projects across their portfolio. We’ve validated builds across ST’s sample projects with this mechanism, over 3,000 of them. At present we have a 94% pass rate which we are continuing to improve. This gives us confidence that our approach will be successful for importing your own ST projects. Our embedded tools extension also enables device flashing and debugging through the importer, though we have only validated this on the hardware we have.</p>
+<p>This post is going to go over how this project importer functionality works in conjunction with vcpkg and ST’s tools.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png"><img class="alignnone size-full wp-image-30967" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png" alt="A STM32 project in VSCode" width="1430" height="951" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-300x200.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-1024x681.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-768x511.png 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></a></p>
+<h4 id="using-st-projects-in-visual-studio-code">Using ST projects in Visual Studio Code</h4>
+<p>This post assumes some familiarity with ST devices, development tools, and embedded development generally. If you need some background, we recommend the following articles on getting started with STM32 from <a href="https://shawnhymel.com/">Shawn Hymel</a>.</p>
+<ul>
+<li><a href="https://www.digikey.com/en/maker/projects/getting-started-with-stm32-introduction-to-stm32cubeide/6a6c60a670c447abb90fd0fd78008697">Introduction to STM32CubeIDE</a></li>
+<li><a href="https://www.digikey.com/en/maker/projects/getting-started-with-stm32-introduction-to-freertos/ad275395687e4d85935351e16ec575b1">Introduction to FreeRTOS </a></li>
+</ul>
+<p>We rely on vcpkg for managing dependencies like CMake and Ninja, which includes acquiring them and making them available for use in your development environment. You can learn more about how we vcpkg in our <a href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">Visual Studio Code embedded development overview</a>. You can install it in a single shell command for your platform.</p>
+<p>Linux/macOS</p>
+<pre>. &lt;(curl https://aka.ms/vcpkg-init.sh -L)</pre>
+<p>PowerShell</p>
+<pre>iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
+<p>You will need the Embedded Tools extension version 0.3.0 or greater installed in Visual Studio Code to use the ST project importer.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png"><img class="alignnone size-full wp-image-30968" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png" alt="Embedded Tools extension page from VS Code" width="624" height="171" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3-300x82.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
+<p>Today our importer requires that you have the <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a> software installed in the default location for your platform. We have been testing this capability with STM32CubeIDE 1.9.0 and STM32CubeMX 6.5.0. If you have multiple instances installed side by side we do not have the ability to control which is selected.</p>
+<p>It is also necessary to acquire the board support package for your device in STM32CubeIDE. This is so that we can use the compilers and supporting applications provided by ST from within Visual Studio Code.</p>
+<p>There will be a lighter weight package available from ST in the future. We plan to enable acquisition of the dependencies here via vcpkg as well.</p>
+<p>With our prerequisites installed, from within Visual Studio Code in the command pallet (&lt;Ctrl&gt;+&lt;Shift&gt;+&lt;P&gt;) run “Create project from ST project”.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png"><img class="alignnone size-full wp-image-30969" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png" alt="Create ST project in VS Code command pallate" width="1456" height="189" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png 1456w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-300x39.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-1024x133.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-768x100.png 768w" sizes="(max-width: 1456px) 100vw, 1456px" /></a></p>
+<p>Navigate to where your ST .cproject is and select it. You can then select either the debug or release configuration. Now you can select Build to compile your firmware with CMake. To debug select the Debug view, then select the launch button. This will run the STM32 programmer to flash the firmware onto the device and connect using GDB. From here all of our embedded development views (<a href="https://docs.microsoft.com/cpp/embedded/serial-monitor?view=msvc-170&amp;tabs=visual-studio">serial</a>, <a href="https://docs.microsoft.com/cpp/embedded/rtos-view?view=msvc-170&amp;tabs=visual-studio">RTOS</a>, and <a href="https://docs.microsoft.com/cpp/embedded/peripheral-view?view=msvc-170&amp;tabs=visual-studio">peripherals</a>) are available.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png"><img class="alignnone size-full wp-image-30970" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png" alt="STM32 FreeRTOS project debugging in VS Code" width="1430" height="815" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-300x171.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-1024x584.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-768x438.png 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></a></p>
+<p>If your project has an .ioc file you can open the context menu and open STM32CubeMX for your project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png"><img class="alignnone wp-image-30971" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png" alt="VS Code context menu for CubeMX .ioc file" width="655" height="366" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png 1106w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-1024x572.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-768x429.png 768w" sizes="(max-width: 655px) 100vw, 655px" /></a></p>
+<p>If you make changes to your project in STM32CubeMX they will be recognized and the CMake cache will regenerate.</p>
+<p>After you close Visual Studio Code for your next session with your project you will need to launch Visual Studio Code from a vcpkg activated prompt. To do so in your shell navigate to the project folder containing vcpkg-configuration.json, run vcpkg activate, then code .</p>
+<p>In a future release this will no longer be necessary, activation will happen automatically.</p>
+<h4 id="understanding-cmake-interaction">Understanding CMake interaction</h4>
+<p>You can see the simple CMakeLists.txt that is generated in the root of the project where the .cproject is located. This has a dependency on generated CMake files under the cmake directory. There are paths in these files that are set to the discovered location of the ST compilers on your machine. If you intend to move to CMake from the ST project format we advise that you adjust these files to your needs, particularly for use in a team where the paths may vary.</p>
+<p>The other thing to be aware of is that sometimes in the STM32CubeIDE samples, the project may be in a subdirectory of the source code. If you do not see your project files in the file view this may be why. Select the CMake targets view and you should see everything that CMake has used to generate the build.</p>
+<p>Following from the above point we recommend that when generating projects using STM32CubeMX you leave the default selected in the Project Manager for “Generate Under Root”. This will keep your .cproject in the root of the folder with the generated source files. This is how STM32CubeIDE generates projects by default as well.</p>
+<p>If you open the project again in STM32CubeIDE you will need to exclude the build directory used by CMake from your project. Right click the build directory and select Resource Configurations &gt; Exclude from Build.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png"><img class="alignnone size-full wp-image-30973" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png" alt="STM32IDE context menu for resource configuration" width="354" height="361" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png 354w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-294x300.png 294w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-48x48.png 48w" sizes="(max-width: 354px) 100vw, 354px" /></a></p>
+<p>Then select both Debug and Release in the Exclude from build dialog.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png"><img class="alignnone wp-image-30974" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png" alt="STM32 IDE build exclusions dialog" width="498" height="325" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png 732w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions-300x196.png 300w" sizes="(max-width: 498px) 100vw, 498px" /></a></p>
+<h4 id="send-us-your-feedback">Send us your feedback</h4>
+<p>We hope that these new capabilities will enable you to choose Visual Studio Code for your embedded development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/">Importing ST projects into Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg August 2022 Release is Now Available: CMake Version Update, Updated FAQ, Cross-compilation Fix for Apple Silicon</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-august-2022-release-is-now-available-cmake-version-update-updated-faq-cross-compilation-fix-for-apple-silicon/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-august-2022-release-is-now-available-cmake-version-update-updated-faq-cross-compilation-fix-for-apple-silicon/#respond</comments>
@@ -995,63 +1061,6 @@ Depending on the bugs reported and our experience with these checks in the comin
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrated-terminal-in-visual-studio-new-ssh-integration-for-linux-targeting/feed/</wfw:commentRss>
 			<slash:comments>10</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>VS2022 Performance Enhancements: Faster C++ Development</title>
-		<link>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/#comments</comments>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Mon, 11 Jul 2022 16:04:16 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[game]]></category>
-		<category><![CDATA[Game Development]]></category>
-		<category><![CDATA[perf]]></category>
-		<category><![CDATA[search]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30753</guid>
-
-					<description><![CDATA[<p>Introduction<br />
-Building on top of our performance wins in earlier releases of VS2022, we are excited to announce additional improvements in Visual Studio 2022 17.3! Whether you are a game developer, work with large codebases, or have a small C++ project,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/">VS2022 Performance Enhancements: Faster C++ Development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
-<p>Building on top of our <a href="https://aka.ms/VS2022CppPerf1">performance wins</a> in earlier releases of VS2022, we are excited to announce additional improvements in Visual Studio 2022 17.3! Whether you are a game developer, work with large codebases, or have a small C++ project, your C++ development experience in Visual Studio 17.3 will feel even faster!</p>
-<p>In this blog, I will share the incredible speed improvements you will experience when VS indexes your codebase and colorizes your C++ code for the first time. In addition, learn about the new Go to All experience that will show results as you type.</p>
-<h1 id="testing-methodology">Testing Methodology</h1>
-<p>Measuring indexing and time to colorization, we used an Unreal Engine 5 blank C++ project on a desktop with an Intel Core i7-9700 CPU @ 3Ghz, 64GB RAM, and an SSD. For indexing improvements, we benchmarked using both UE5 and the more than 300,000 file Chromium repo. The tests took place on Visual Studio 2019 16.11 and Visual Studio 2022 17.2 and 17.3. For both scenarios, we used system logs to track the duration of the operations.</p>
-<h1 id="results">Results</h1>
-<h2 id="population-indexing-improvements">Population (Indexing) Improvements</h2>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png"><img class="aligncenter size-full wp-image-30755" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png" alt="Image indexchromium" width="2003" height="1376" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium.png 2003w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-300x206.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-1024x703.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-768x528.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexchromium-1536x1055.png 1536w" sizes="(max-width: 2003px) 100vw, 2003px" /></a></p>
-<p>In Visual Studio 2019 16.11, it takes roughly 26 minutes for the Chromium repo to fully index. In Visual Studio 2022 17.3, waiting for indexing to finish will only take a bit over 6 minutes, a 4.17X speed up. When indexing a large solution like the Chromium repo for the first time, you will save up to 20 minutes with the latest version of Visual Studio.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png"><img class="aligncenter size-full wp-image-30756" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png" alt="Image indexue5" width="1836" height="1146" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5.png 1836w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-300x187.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-1024x639.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-768x479.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/indexue5-1536x959.png 1536w" sizes="(max-width: 1836px) 100vw, 1836px" /></a></p>
-<p>When getting to code in a new Unreal Engine 5 solution, you will see a huge improvement in the latest version of VS2022 versus VS2019. In VS2019 16.11, fully indexing a brand-new C++ UE5 solution took 144 seconds. When using VS2022 17.3, fully indexing the same UE5 solution is now 2X faster at 72 seconds. Whether you are creating a new UE5 project or cloning from an existing repo, your code will index much faster in 17.3.</p>
-<h2 id="time-to-colorization">Time to Colorization</h2>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png"><img class="aligncenter size-full wp-image-30754" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png" alt="Image colorue5" width="2001" height="1222" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5.png 2001w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-300x183.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-1024x625.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-768x469.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/colorue5-1536x938.png 1536w" sizes="(max-width: 2001px) 100vw, 2001px" /></a></p>
-<p>Building on top of the improvements in VS2022 17.2, time to colorization is even faster in Visual Studio 2022 17.3. Compared to VS2019 16.11, you will see your UE5 code colorize from a cold start in 7.6 seconds, a 4.3X improvement.</p>
-<h2 id="go-to-responsiveness">Go To Responsiveness</h2>
-<p>In Visual Studio 2022 17.3, your Go to All experience will feel faster! Previously, results appeared after you stopped typing. In the new experience, results will show as you type. You will now spend less time getting the result you desire.</p>
-<p style="text-align: center;"><strong><span style="font-size: 18pt;">Before</span></strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotobefore.gif"><img class="aligncenter size-full wp-image-30766" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotobefore.gif" alt="Image gotobefore" width="454" height="385" /></a></p>
-<p style="text-align: center;"><strong><span style="font-size: 18pt;">After</span></strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotoafter.gif"><img class="aligncenter size-full wp-image-30767" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/07/gotoafter.gif" alt="Image gotoafter" width="454" height="385" /></a></p>
-<p>In addition to the new Go to All experience, you can now search and interact with code more efficiently with Contextual Code Previews in our All-In-One Search experience. For more information, please see this <a href="https://devblogs.microsoft.com/visualstudio/sneak-peek-and-edit-your-code-while-you-search/">blog</a>.</p>
-<h2 id="git-branch-switching">Git Branch Switching</h2>
-<p>In addition to C++ and search improvements, we have also significantly improved the branch switching experience. Please refer to this <a href="https://aka.ms/VS2022-BranchSwitchingPerformance">blog</a> for more information.</p>
-<p>&nbsp;</p>
-<h1 id="feedback-wanted">Feedback Wanted!</h1>
-<p>Your feedback through <a href="https://developercommunity.visualstudio.com/">Developer Community</a>, surveys, and social media channels has made these improvements possible. We thank you for your valuable comments.
-These enhancements are a continuation of our focus on improving productivity for game developers. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like ones detailed in this blogpost. If you are a game developer, <a href="http://aka.ms/VSGameDevSurvey">let us know your thoughts in our 2022 Visual Studio Game Developer Survey</a>.</p>
-<p>In addition, please continue to help shape the development of Visual Studio by talking to us in the comments below, on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
-<h1 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h1>
-<p><a href="https://visualstudio.microsoft.com/downloads/">Download the latest version of Visual Studio 2022</a> to take advantage of these productivity benefits today!</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/">VS2022 Performance Enhancements: Faster C++ Development</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
