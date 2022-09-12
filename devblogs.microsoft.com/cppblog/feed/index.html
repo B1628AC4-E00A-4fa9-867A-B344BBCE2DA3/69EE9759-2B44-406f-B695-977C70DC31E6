@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 12 Sep 2022 13:06:02 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 12 Sep 2022 22:12:01 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,127 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Integrating C++ header units into Office using MSVC (1/n)</title>
+		<link>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Mon, 12 Sep 2022 21:12:05 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[modernization]]></category>
+		<category><![CDATA[modules]]></category>
+		<category><![CDATA[Office]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31007</guid>
+
+					<description><![CDATA[<p>.cameron {<br />
+    color: #4472c4;<br />
+  }</p>
+<p>C++20 has had a lot to offer and one feature in particular requires the most thought of all when integrating into our projects: C++ modules (or C++ header units in this particular case).  In this blog we will show a real world case of integrating a new C++20 feature into a large codebase that we might all be familiar with.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/">Integrating C++ header units into Office using MSVC (1/n)</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<style>
+  .cameron {
+    color: #4472c4;
+  }
+</style>
+<p>C++20 has had a lot to offer and one feature in particular requires the most thought of all when integrating into our projects: C++ modules (or <a href="https://docs.microsoft.com/en-us/cpp/build/walkthrough-header-units?view=msvc-170">C++ header units</a> in this particular case).  In this blog we will show a real world case of integrating a new C++20 feature into a large codebase that we might all be familiar with.  Just a few notes:</p>
+<ul>
+<li>This blog is authored in a style of two perspectives:</li>
+<ul>
+<li>Zachary Henkel&#8217;s perspective will be in black text.</li>
+<li>Cameron DaCamara&#8217;s perspective will be in <span class="cameron">accent text</span>.</li>
+</ul>
+<li>This blog is the first in a series detailing experiences in integrating header units into the Office codebase.</li>
+<li>The first blog here is very early results so do not expect to see very fine-grained numbers.</li>
+</ul>
+<p>Without further delay, let us jump right in!</p>
+<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#problem-description">Problem description: Why header units?</a></li>
+<li><a href="#baby-steps">Baby steps to start the work: Basic projects to target and early obstacles</a></li>
+<li><a href="#larger-steps">Larger steps: How does Office package up header units for build?</a></li>
+<li><a href="#together">Putting it all together: Smoke tests and early numbers</a></li>
+<li><a href="#next-steps">Looking ahead: Build more headers and measure</a></li>
+</ul>
+<p></p>
+<h2><span id="problem-description">How MSVC enables header units in a multi-platform codebase</span></h2>
+<p>C++20 header units are a way to receive many of the benefits of modules, while still working with a codebase that was designed for classic header inclusion.  The benefits of header units looked appealing to Office, but we weren&#8217;t willing to extensively add platform #ifdefs for the sake of consuming them.  Fortunately, the C++ standard anticipated this scenario!  The flag MSVC <a href="https://docs.microsoft.com/en-us/cpp/build/reference/translateinclude?view=msvc-170"><code>/translateInclude</code></a> will automatically translate a textual inclusion to a header unit import when it encounters a #include specified in a command line mapping to the compiler.  This allows Office to build and consume header units without any code changes at all!</p>
+<p><span class="cameron">It is worth noting that the <code>/translateInclude</code> feature is a standard-supported feature, <a href="https://eel.is/c%2B%2Bdraft/cpp.include#7"><code>[cpp.include]/7</code></a>. Include translation allows the implementation to replace <code>#include</code> with <code>import</code>.  It is essential for gradual codebase migration that there be a bridge such as include translation to enter the world of modules.  More importantly, a header unit can do something that a <a href="https://docs.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-170">PCH</a> cannot: it can be moved around from project to project and reused!  So not only does the integration of header units require no source-level changes, but the build throughput potential for multiple projects is far beyond what PCH can offer.  One more point to header units compared to PCH: they&#8217;re small, really small compared to PCH.  In our measurements, a header unit can often times be 10x smaller than an equivalent PCH in content.</span></p>
+<h3 id="selecting-header-unit-candidates">Selecting header unit candidates</h3>
+<p>Once Office knew we wanted to use header units, the challenge became finding a good set of candidate headers.  Our low-level shared code components, that we&#8217;ve termed liblets, have properties that make them attractive header unit blocks.  All a liblet&#8217;s headers exposed as dependencies need to be self-contained and this property is enforced by existing tools!  Secondly, liblets clearly express their dependencies.  This allows us to build an acyclic graph of dependencies and build up sets of header units.</p>
+<h2><span id="baby-steps">Baby Steps</span></h2>
+<p>The first step Office took was simply to determine if we could build a header unit!  This <a href="https://docs.microsoft.com/en-us/cpp/build/walkthrough-header-units?view=msvc-170">Microsoft docs</a> page has the full steps but summarized here are the key points:</p>
+<ul>
+<li>Turn on module support.  Ideally Office would be compiling all code as C++20 and header unit support would be available automatically.  Unfortunately, due to the size of the Office codebase, we&#8217;re not ready to make the switch.  Luckily Office already compiles with the compiler flag <a href="https://docs.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=msvc-170"><code>/permissive-</code></a>.  By running the compiler in standards conformance mode Office is able to fall back on the <a href="https://docs.microsoft.com/en-us/cpp/build/reference/experimental-module?view=msvc-170"><code>-experimental:module</code></a> flag for header unit support until the C++20 migration is complete.  It&#8217;s important to note that this <em>doesn&#8217;t do anything</em> other than enable the feature, it won&#8217;t force any code to compile as header units without additional flags.</li>
+<li>Determine where in the build tree we will create the IFC artifacts and pass that location to the compiler with <a href="https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-170"><code>/ifcOutput</code></a></li>
+<li>We enabled some additional compiler flags for the purposes of testing, more on this later.</li>
+</ul>
+<p>Right out of the gate Office hit a snag.  Our headers weren&#8217;t as self-contained as we had assumed.  Our tools that operate on headers in isolation rely on common textual includes being provided by the precompiled header!  Until the work to break our precompiled header dependency is complete, we&#8217;re force-including (<a href="https://docs.microsoft.com/en-us/cpp/build/reference/fi-name-forced-include-file?view=msvc-170"><code>/FI</code></a>) the precompiled header into each header being compiled as a header unit.</p>
+<p><span class="cameron">From this perspective, it is important that the compiler should make traditional PCH technology work along with the new modules technology (which is the same machinery the compiler uses to export and import header units).</span></p>
+<p><span class="cameron">The first compiler bug on deck was the fact that the front-end has a rather&#8230; interesting approach to PCH.  The problem observed was that <em>sometimes</em> the compiler would error with &#8220;<code>error C7612: could not find header unit for 'X'</code>&#8220;.  The most curious thing was that the command line had the reference to header unit &#8216;X&#8217; clear as day.  It was not until I debugged the front-end with PCH turned on where the PCH interacted with certain identifiers that I discovered the culprit.  When the compiler starts, it allocates a table where hashed identifiers go, and when the compiler sees <a href="https://docs.microsoft.com/en-us/cpp/build/reference/headerunit?view=msvc-170"><code>/headerUnit:quote X=X.ifc</code></a> it will create hashed identifiers for the components of the name for fast comparison purposes.  The problem is that this processing happened too early because in the presence of a PCH the compiler will memmap the PCH file and <a href="https://en.wikipedia.org/wiki/Bit_blit">blit</a> the memory directly into existing compiler heap locations&#8230; exactly where we just inserted our identifiers from processing the <code>/headerUnit</code> arguments, which means we also get bogus identifiers when trying to find the matching header unit name to IFC combo.  One hefty comment and code rearranging later, our first bug was fixed!</span></p>
+<p>The preprocessor presented another set of challenges. The set of preprocessor macros must be consistent between header unit creation and consumption. Inconsistent conditional compilation is forbidden in header units.  Eliminating cases, such as the following, will be an ongoing concern for Office as header unit usage increases.</p>
+<pre>#if defined(Assert)
+#define ASSUME( condition ) Assert( condition )
+#else
+#define ASSUME ( condition ) __noop()
+#endif</pre>
+<p>The experiment to create as many header units as possible helped uncover many outstanding bugs with code that was never instantiated by the compiler.  </p>
+<p>One such example, this does not return on all code paths:</p>
+<pre>inline HRESULT sink(std::unique_ptr&lt;Widget&gt; widget)
+{
+#if DEBUG
+  if (!widget) return E_POINTER;
+#endif
+  m_widget = std::move(widget);
+}</pre>
+<p><span class="cameron">Let&#8217;s talk about inline functions.  Consider:</span></p>
+<pre>void undef(); 
+inline void f() {
+  undef();
+}
+int main() { }</pre>
+<p><span class="cameron">You might be surprised to find that every major compiler vendor will accept the above C++ code and link the program successfully!  It turns out that the standard wording here <a href="https://eel.is/c%2B%2Bdraft/dcl.inline#5"><code>[dcl.inline]/5</code></a> is quite special, and it allows for a unique optimization which allows a compiler front-end to tell the back-end that the definition of a specific function is never needed because said function is never referenced, so this bespoke definition can be discarded altogether, which further implies <code>undef</code> is also never referenced leading to a well-formed program.</span></p>
+<p><span class="cameron">There has been a long-standing issue in the compiler where it was forced to emit every inline function definition into the associated .obj if the current translation unit was a module interface unit or a header unit.  While this will still lead to correct program semantics, it has two major drawbacks:</code></span></p>
+<ol class="cameron">
+<li>The compiler cannot enable the aforementioned optimization with inline functions, and</li>
+<li>This compiler behavior means that <a href="https://docs.microsoft.com/en-us/cpp/build/reference/ltcg-link-time-code-generation?view=msvc-170">LTCG</a> is required for inlining of functions declared <code>inline</code> and defined in the imported translation unit.</li>
+</ol>
+<p><span class="cameron">It turns out that Office relied on &#8216;1&#8217;, a lot.  So, we just fixed the bug.  During the Office header unit integration, the compiler provided a switch to enable the behavior of emitting every inline function definition into the IFC which would be loaded on-demand if it was used on the import side.</span></p>
+<p>Office has been on a long journey to ensure all our code is standards compliant via the MSVC <code>/Zc</code> flags and <code>/permissive-</code>.  The header unit pilot acted as a forcing function to accelerate our efforts to enable the standards conformant preprocessor (<a href="https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=msvc-170"><code>/Zc:preprocessor</code></a>) globally.</p>
+<p><span class="cameron">Anybody familiar with the quirks of the traditional preprocessor in MSVC will understand that its behavior is something of an eldritch horror.  Adding to that, the traditional preprocessor has virtually no data model besides walking blobs of text to create a new stream of text for the compiler&#8217;s tokenizer.  The standard states that preprocessing should begin with a series of <a href="https://eel.is/c%2B%2Bdraft/lex.phases#1.3">pp-tokens</a> and end up with a series of lexical tokens which are then parsed.   The new preprocessor (<code>/Zc:preprocessor</code>) allows the compiler to store these pp-tokens into the IFC in a principled way.  These pp-tokens are needed as they compose the definition of <a href="https://eel.is/c%2B%2Bdraft/cpp.replace#general-2">object-like and function-like</a> macros and is the reason why <code>/Zc:preprocessor</code> is <a href="https://docs.microsoft.com/en-us/cpp/build/reference/module-exportheader?view=msvc-170#remarks">required for header unit compilation</a>.</span></p>
+<h2><span id="larger-steps">Larger Steps?</span></h2>
+<p>Once Office could create header units it was time to consume them!  Again, the <a href="https://docs.microsoft.com/en-us/cpp/build/walkthrough-header-units?view=msvc-170">Microsoft docs</a> page contains the full details but the key steps for Office were:</p>
+<ul>
+<li>Use the <code>/translateInclude</code> flag to avoid rewriting <code>#include</code> to <code>import</code>.</li>
+<li>Pass the header unit mapping <code>/headerUnit liblet/header.h=&lt;ifc path&gt;</code>.</li>
+<li>Decide what to do with the .obj file created as part of a header unit.</li>
+</ul>
+<p>In Office we bundle all header unit mappings per-liblet into a single <a href="https://docs.microsoft.com/en-us/cpp/build/reference/at-specify-a-compiler-response-file?view=msvc-170">response file</a>.  We&#8217;ve found this to strike the right balance of dependency tracking despite potentially over specifying the number of header units being consumed.</p>
+<p>Header unit consumption started revealing heterogeneous build flags throughout the product.  Big pain points include static vs dynamic CRT (<a href="https://docs.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library?view=msvc-170"><code>/MT</code> vs <code>/MD</code></a>), unsigned char (<a href="https://docs.microsoft.com/en-us/cpp/build/reference/j-default-char-type-is-unsigned?view=msvc-170"><code>/J</code></a>) and <code>/DUNICODE</code>.  It is possible to create a distinct header unit flavor for each combination, but so far, we&#8217;ve stuck to a single flavor with the most common options.</p>
+<p>The obj file from a header unit is packaged into the pre-existing lib files to make consuming header units easy.</p>
+<h2><span id="together">Putting it together</span></h2>
+<p>The most recent milestone hit in the pilot is to successfully compile and link three of Office&#8217;s shared code dlls.  While building the dlls Office successfully compiled ninety distinct header units from pre-existing shared code headers.  To aid integration header units are enabled for all of a project&#8217;s publicly shared headers at once.  This means that even though each header unit that&#8217;s been created will be used <em>somewhere</em> in Office, there isn&#8217;t any guarantee it is consumed while building these specific dlls.  To build the dll we tested 2/5 of the generated header units were consumed, as validated by the report generated by the new <a href="https://docs.microsoft.com/en-us/cpp/build/reference/sourcedependencies?view=msvc-170"><code>/sourceDependencies</code></a> flag.  We anticipate these numbers to increase significantly with some upcoming work to replace the compiler&#8217;s brittle legacy ODR validation logic.</p>
+<p><span class="cameron">The module machinery in the compiler has historically tried to use source locations to perform ODR matching (<a href="https://eel.is/c%2B%2Bdraft/basic.def.odr">One Definition Rule</a>).  The problem, of course, is that the header units can be moved around and locations change from machine-to-machine (even project-to-project) so the strategy of trying to perform an ODR match based on source location can be quite fragile, as mentioned above.  After working with Office it was abundantly clear that the compiler needs to adjust its strategy and perform more of a structural comparison when matching for ODR&mdash;a change which is still ongoing and targeting a future release.  Please note that ODR checking for named modules do not have any of the problems above as they provide better ODR guarantees vs being reliant on source location.</span></p>
+<h2><span id="next-steps">Next steps</span></h2>
+<p>We are just as anxious to get build throughput metrics internally as we expect all of you to be. Once we have a broad set of header units being generated and consumed, we plan to do gather extensive build timing data.  We want to see the effect building and consuming header units has on the build speed of both clean builds and incremental builds and we want to measure the effects both with and without our existing precompiled headers.  Additionally, we need to determine if there is a high enough throughput gain to justify creating additional header unit flavors for currently incompatible compiler flags. Do we have enough projects that require the static CRT or build without Unicode support to spend the compilation time generating header units in those configurations?</p>
+<p>Finally, we want to add support for consuming header units outside of Office&#8217;s shared code.  We have a shared code architecture that makes it easy to create header units and track the downstream projects that depend on them.  We need to extend the build system support that has already been created to date so that Office&#8217;s client apps can also see the benefits of header units.  If you&#8217;d like to learn more about how Office architects its shared code, please catch the CppCon 2022 talk <a href="https://cppcon.digital-medium.co.uk/session/2022/how-microsoft-uses-c-to-deliver-office/">&#8220;How Microsoft Uses C++ to Deliver Office: Huge Size, Small Components&#8221;</a> once it&#8217;s available online.</p>
+<p><span class="cameron">Office is nearly 100 million lines of native code and the compiler is seeing a lot of new code, which is both a blessing and a curse as it can halt development until a compiler fix is created but ultimately makes a product which is not only more robust for Office but for every customer using MSVC!</span></p>
+<p><img src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/all-header-units.png" alt="BUILD!" /></p>
+<h4 id="closing">Closing</h4>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/">Integrating C++ header units into Office using MSVC (1/n)</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Microsoft C++ Team at CppCon 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/#comments</comments>
@@ -42,7 +163,7 @@
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/">Microsoft C++ Team at CppCon 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></description>
 										<content:encoded><![CDATA[<p><img class="size-full wp-image-24953 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png" alt="Microsoft @ CppCon" width="760" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png 760w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp-300x184.png 300w" sizes="(max-width: 760px) 100vw, 760px" /></p>
-<p>The Microsoft C++ team has an exciting lineup of sessions at <a href="https://cppcon.org/">CppCon 2022</a>. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks, products, or anything else! You can also join the <a href="https://aka.ms/cppcon/discord">#visual_studio channel on the CppCon Discord</a> to talk to us.</p>
+<p>The Microsoft C++ team has an exciting lineup of sessions at <a href="https://cppcon.org/">CppCon 2022</a>. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks, products, or anything else! You can also join the <a href="https://aka.ms/cppcon/discord">#visual_studio channel on the CppCon Discord</a> to talk to us (note: to join, head to <a href="https://discord.com/channels/864799911358627861/864825142386622474">#directory</a> channel first, and check the checkbox next to &#8220;Visual Studio&#8221; box).</p>
 <p>We’re also running a survey on the C++ ecosystem. If you have a moment, <a href="https://aka.ms/cppcon" target="_blank" rel="noopener noreferrer">please take our survey</a>, it&#8217;s quick.</p>
 <p>Here’s the lineup:</p>
 <h1 id="monday-september-12th">Monday, September 12th</h1>
@@ -909,180 +1030,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-july-2022-release-is-now-available-shared-libraries-on-linux-improved-vcpkg-new-optional-name-and-version-fields-and-more/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</title>
-		<link>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Thu, 14 Jul 2022 19:35:58 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30706</guid>
-
-					<description><![CDATA[<p>New std::optional Checks in Visual Studio 2022</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/">New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ static analysis team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/search?space=62">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of some new experimental code analysis checks that can detect unwrapping of empty <code>std::optional</code>s. The experimental checks can be enabled by using the <code>CppCoreCheckExperimentalRules</code> ruleset. Note that the experimental checks are not part of the <code>Microsoft All Rules</code> ruleset. While these checks are marked experimental, they look promising in our internal, preliminary testing. Unless we get reports about crashes or excessive number of false positives, we plan to move these checks to the <code>NativeRecommendedRules</code> ruleset (which is the default ruleset) in the next release.</p>
-<h2 id="overview">Overview</h2>
-<p><code>std::optional</code> <a href="https://en.cppreference.com/w/cpp/utility/optional">was introduced in C++17</a> to represent a value that may or may not be present. It is often used as the return type for a function that may fail.
-We introduced two new checks, <code>C26829</code> and <code>C26830</code>, to find unwrap operations of empty <code>std::optional</code>s. Unwrapping an empty optional is undefined behavior. It can result in a crash, or worse, reading uninitialized memory
-depending on the implementation. In some cases, the latter is a vulnerability that an adversarial actor could exploit. The <a href="https://developercommunity.visualstudio.com/t/Detect-unguarded-dereferences-of-std::op/1430703">C++ Developer Community ask</a> was one of the top voted feature requests for the static analysis team as dereferencing empty optionals has been a major source of real errors in many C++ projects.</p>
-<h2 id="modeling-optionals">Modeling optionals</h2>
-<p>In order to warn when (potentially) empty optionals are unwrapped, the analyzer needs to precisely model the semantics of <code>std::optional</code>.</p>
-<h3 id="basic-assumptions">Basic assumptions</h3>
-<p>Usually, the use of <code>std::optional</code>s is a stronger signal about the presence of values compared to pointer types. Let us look at the following code snippet:</p>
-<pre><code class="language-cpp">void f(int* p);
-void g(std::optional&lt;int&gt;&amp; p);</code></pre>
-<p>In many codebases, we cannot know whether <code>nullptr</code> is a valid argument to function <code>f</code>. The function might have a precondition that it does not accept null pointers and the codebase might never pass a null value to <code>f</code>. A warning for null pointer dereference in the body of function <code>f</code> would be considered false positives by some developers.
-Usually, marking such pointers with <code>gsl::not_null</code> (<code>void f(gsl::not_null&lt;int*&gt; p);</code>) or replacing them with references (<code>void f(int&amp; p);</code>) can make the code clearer.</p>
-<p>In case of function <code>g</code>, however, the use of <code>std::optional</code> makes it explicit that it handles the lack of values gracefully. Therefore, while we tend to not warn on pointer parameters that don&#8217;t have null checks, we will warn on unwrapping <code>std::optional</code>s that might be empty.
-Unfortunately, there are some rare cases where this assumption would not hold. Let us look at the code snippet below:</p>
-<pre><code class="language-cpp">std::optional&lt;int&gt; lookup(std::string_view key) {
-    const static std::map myMap{std::pair{"Foo"sv, 1}, std::pair{"Bar"sv, 2}};
-    auto it = myMap.find(key);
-    return it == myMap.end() ? std::nullopt : std::optional{it-&gt;second};
-}</code></pre>
-<p>While the function <code>lookup</code> might fail in the general case, a particular invocation of the function might have an argument that guarantees success (e.g., it might be <code>lookup("Foo")</code>). This guarantee is an invariant of the program that we currently cannot express using <a href="https://docs.microsoft.com/cpp/c-runtime-library/sal-annotations">SAL annotations</a> and cannot infer using function-local reasoning. The experimental versions of these checks might emit false positive warnings in those cases. We are actively looking into ways to mitigate this problem. Some of the options are improving existing annotations to be able to communicate this invariant, or believe certain assertions. Until we settle on a solution, it is always possible to either suppress these warnings or to check that the optional has a value before unwrapping it make the warning disappear.</p>
-<p>Our modeling also assumes that whenever an optional is passed to a function by non-const reference, the called function might reset the optional. This assumption helps us catch more problems at the cost of more false positives.
-As we gain more real-world experience with these checks we might revisit some of these assumptions/decisions in the future.</p>
-<h3 id="basic-operations">Basic operations</h3>
-<p>This section describes the details of the modeling using a notation borrowed from our automatic regression tests. This notation helps us document our expectations regarding the semantics of the analyzed program and check whether the analyzer&#8217;s understanding matches our intuition.
-Program points that should be deduced as reachable are annotated with <code>__espx_expect_reached()</code>. On the other hand, program points that should be deduced as unreachable are annotated with <code>__espx_expect_unreached()</code>.
-Looking at the reachability of certain program points can help us understand how the analysis engine reasoned about the values in the program. We can also query some values directly using annotations like <code>__espx_expect_always_true(cond)</code>. Our analysis tool will evaluate the expression <code>cond</code> and will report a failure when it cannot prove that the value always evaluates to true.</p>
-<p>Our analysis engine understands that the default constructor of <code>std::optional</code> will create an empty optional. Moreover, it understands the basic ways to check if an optional is empty:</p>
-<pre><code class="language-cpp">void default_ctor_creates_empty()
-{
-    std::optional&lt;int&gt; opt;
-    if (opt)
-        __espx_expect_unreached();
-    else
-        __espx_expect_reached();
-
-    if (opt.has_value())
-        __espx_expect_unreached();
-    else
-        __espx_expect_reached();
-
-    int x = opt.value_or(5);
-    __espx_expect_always_true(x == 5);
-}</code></pre>
-<p>The test case above shows that the engine can discover that <code>opt</code> evaluates to false, so the true branch of the first if statement is never reached, and the false branch is always reached. The engine also understands that the <code>value_or</code> will return its argument when it is invoked on an empty optional. Conversely, it also understands that <code>value_or</code> will return the internal value of an optional when it had a value:</p>
-<pre><code class="language-cpp">void value_ctor_creates_non_empty()
-{
-    std::optional&lt;int&gt; opt{2};
-    __espx_expect_always_true((bool)opt);
-
-    int x = opt.value_or(5);
-    __espx_expect_always_true(x == 2);
-}</code></pre>
-<p>Our analyzer also understand value types. It knows that the copy of an optional has a value if and only if the copied optional also had a value. Moreover, the contained value is the copy of the original:</p>
-<pre><code class="language-cpp">void copied_non_empty_optional_is_not_empty()
-{
-    std::optional&lt;int&gt; opt{2};
-    auto opt2 = opt;
-    __espx_expect_always_true((bool)opt);
-    __espx_expect_always_true((bool)opt2);
-
-    __espx_expect_always_true(opt.value() == opt2.value());
-}</code></pre>
-<p>The analyzer also understands that the value inside an optional is always at the same address and two different optional objects are living at different addresses:</p>
-<pre><code class="language-cpp">void accessor_produces_stable_addresses()
-{
-    std::optional&lt;int&gt; opt{2};
-    __espx_expect_always_true(&amp;opt.value() == &amp;opt.value());
-    int* ptr = &amp;opt.value();
-    opt = std::optional&lt;int&gt;{2};
-    __espx_expect_always_true(&amp;opt.value() == ptr);
-    std::optional&lt;int&gt; opt2{opt};
-    __espx_expect_always_true(&amp;opt.value() != &amp;opt2.value());
-}</code></pre>
-<p>Surprisingly, a moved-from optional that used to have a valid value is not empty. It holds the moved-from value:</p>
-<pre><code class="language-cpp">void moved_from_optional_is_not_empty()
-{
-    std::optional&lt;int&gt; opt{2};
-    auto opt2 = std::move(opt);
-    __espx_expect_always_true((bool)opt);
-    __espx_expect_always_true(*opt2 == 2);
-}</code></pre>
-<p>This might be a potential source of confusion. While we currently will not warn for using the moved-from object in the original optional, we are looking into how can we teach our existing <a href="https://devblogs.microsoft.com/cppblog/new-code-analysis-checks-in-visual-studio-2019-use-after-move-and-coroutine/">use-after-move check</a> to find such errors by piggy-backing on the engine&#8217;s understanding of <code>std::optional</code>.</p>
-<h3 id="symbolic-reasoning">Symbolic reasoning</h3>
-<p>Our analysis engine is using symbolic reasoning to model the emptiness of optionals. Whenever the engine learns new facts about these symbols, this knowledge automatically and retroactively applied to the state of the objects. Consider the following example:</p>
-<pre><code class="language-cpp">void constraints_correctly_applied(std::optional&lt;int&gt; optVal)
-{
-    bool b = (bool)optVal;                         // Program point: A.
-    if (b)                                         // Program point: B.
-    {
-       __espx_expect_always_true((bool)optVal);    // Program point: C.
-    }
-}</code></pre>
-<p>In the code snippet above, we have no information about the emptiness of <code>optVal</code> at program point <code>A</code>. However, the analyzer knows that the value of the variable <code>b</code> is inherently entangled to the emptiness of <code>optVal</code>. We branch on <code>b</code> at program point <code>B</code>. In the true branch, we know that the value of <code>b</code> is true. As a result, we also learned that <code>optVal</code> is not empty. As a result, <code>(bool)optVal</code> will evaluate to true at program point <code>C</code>. To summarize, we might learn new facts about the state of <code>optVal</code> from expressions that will not even refer to <code>optVal</code> syntactically. This is the power of symbolic reasoning.</p>
-<h3 id="modeling-exceptions">Modeling exceptions</h3>
-<p>The analyzer understands whether accessor methods like <code>std::optional::value</code> will or will not throw an exception based on the known state of the object. It can use this information to help the analysis skip certain execution paths that cannot happen at runtime. This helps reducing the number of false positives and improve the performance of the analysis. The code snippet below demonstrates the behavior of the analysis.</p>
-<pre><code class="language-cpp">void exception_modeling(std::optional&lt;int&gt; unknown)
-{
-    std::optional&lt;int&gt; nonEmpty{2};
-    std::optional&lt;int&gt; empty{};
-
-    try
-    {
-        unknown.value();
-        __espx_expect_reached();
-    }
-    catch(...)
-    {
-        __espx_expect_reached();
-    }
-
-    try
-    {
-        nonEmpty.value();
-        __espx_expect_reached();
-    }
-    catch(...)
-    {
-        __espx_expect_unreached();
-    }
-
-    try
-    {
-        empty.value();
-        __espx_expect_unreached();
-    }
-    catch(...)
-    {
-        __espx_expect_reached();
-    }
-}</code></pre>
-<h3 id="other-considerations">Other considerations</h3>
-<p>Our analysis engine also understands nested optionals. There are many more modeled methods that we did not mention explicitly, including <code>swap</code>. Unfortunately, the current version of our modeling will not precisely model the semantics of free functions operating on <code>std::optional</code>s, like <code>std::swap</code> or the comparison operators. We have partial modeling in place for <code>std::make_optional</code> and <code>std::in_place</code> constructors. We plan to make the modeling more comprehensive in the future, but we feel like the current modeling should be sufficient to find most errors.</p>
-<h2 id="emitting-warnings">Emitting warnings</h2>
-<p>The analyzer will emit <code>C26829</code> when an empty optional is unwrapped. On the other hand, it will emit <code>C26830</code> when a <strong>potentially</strong> empty optional is unwrapped. The emitted warnings will also include a path that describes the execution that could trigger the problem. In the future, we plan to include key events in the emitted diagnostics that will highlight parts of the code that are important to understand the warning. The highlighted snippets might include the program points where the emptiness of the optional was checked and calls where the emptiness of the optional might have been changed.</p>
-<pre><code class="language-cpp">void unwrap_empty()
-{
-  std::optional&lt;int&gt; o;
-  *o = 5; // C26829 emitted
-}
-
-void unwrap_maybe_empty(std::optional&lt;int&gt; o)
-{
-  *o = 5; // C26830 emitted
-}</code></pre>
-<p>In function <code>unwrap_empty</code> above, we will see a <code>C26829</code>. In this case the analyzer is confident that the optional was empty. This usually happens when we forget to initialize an optional or accidentally write a negated condition.
-In function <code>unwrap_maybe_empty</code>, however, we will see a <code>C26830</code>. In this case the engine is not sure whether the optional is empty, and the unwrap operation is not guarded.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>The upcoming Visual Studio 2022 17.3 Preview 3 will feature new checks to find hard-to-find misuses of <code>std::optional</code>s. These are experimental checks that need to be enabled explicitly by using the <code>CppCoreCheckExperimentalRules</code> ruleset or adding <code>C26829</code> and <code>C26830</code> to your custom ruleset. <code>C26829</code> is a high-confidence warning that should have very few false positives. <code>C26830</code> is a medium confidence check that should not be too noisy for most projects.
-Depending on the bugs reported and our experience with these checks in the coming weeks, either <code>C26829</code> only or both of these warnings might be turned on by default in 17.4.</p>
-<h2 id="try-it-out-and-let-us-know-what-you-think">Try it out and let us know what you think:</h2>
-<p>The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Checks. Stay tuned for more C++ static analysis blogs. In the meanwhile, we would love to learn more about your experience with our static analysis tools. Comment below, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/">New std::optional Checks in Visual Studio 2022 version 17.3 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-stdoptional-checks-in-visual-studio-2022-version-17-3-preview-3/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
