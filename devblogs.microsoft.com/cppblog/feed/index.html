@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 14 Sep 2022 18:10:57 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 16 Sep 2022 15:10:12 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,163 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>The Future of C++ Compiler Diagnostics in MSVC and Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Xiang Fan]]></dc:creator>
+		<pubDate>Fri, 16 Sep 2022 15:10:12 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31056</guid>
+
+					<description><![CDATA[<p>We are working hard on improving the diagnostics experience in MSVC and Visual Studio. We began this work in Visual Studio 2022 version 17.3 and while not everything is ready yet, we would like to share the early progress.</p>
+<p>Motivation &#38;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/">The Future of C++ Compiler Diagnostics in MSVC and Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are working hard on improving the diagnostics experience in MSVC and Visual Studio. We began this work in Visual Studio 2022 version 17.3 and while not everything is ready yet, we would like to share the early progress.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3.png"><img class="alignnone wp-image-31064 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1024x913.png" alt="In-box viewer" width="640" height="571" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1024x913.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-300x268.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-768x685.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1536x1370.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3.png 1876w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<h3 id="motivation-principles">Motivation &amp; Principles</h3>
+<p>New C++ features like concepts and ranges present the opportunity for more expressive code and better-defined APIs. However, to make the most of them, better diagnostics are required from tooling so that constraint failures can be pinpointed and resolved.</p>
+<p>We are aware that there is a lot of room for improvement, as noted by many of you on <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a>, and we are now actively investing in this area.</p>
+<p>Our developer advocate <a href="https://twitter.com/TartanLlama">Sy Brand</a> submitted a <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2429r0.pdf">paper</a> to WG21 which discusses the key principles of compiler diagnostics, and how the state of the art in C++ compilers can be improved. We are using this document as guidance in the design of our work.</p>
+<p>As a first step, we are working on the compiler to make sure it gathers all the available information and can output it in a tool-friendly way for human consumption later. We are also adding new diagnostic visualization capabilities to Visual Studio to make it easier to navigate and understand large errors.</p>
+<h3 id="compiler-changes">Compiler changes</h3>
+<ol>
+<li>The last message for template instantiation contexts now displays the text column which the error occurred at.</li>
+<li>The compiler now lists all candidates for a function call and explains why each candidate fails.</li>
+<li>The error message for unsatisfied associated constraints is expanded to detail which underlying constraints were not satisfied.</li>
+</ol>
+<h4 id="source-code">Source code</h4>
+<pre class="lang:c++ decode:true">#include &lt;concepts&gt;
+
+struct functor
+{
+    template &lt;std::integral T&gt;
+    void operator()(T);
+    void operator()(int*);
+    void operator()(long*);
+};
+
+template&lt;typename T&gt;
+void test(T t)
+{
+    functor f;
+    f(t);
+}
+
+int main()
+{
+    test(1.0);
+}</pre>
+<h4 id="compiler-output-in-17-2">Compiler output in 17.2</h4>
+<pre>example.cpp(15,2): error C2664: 'void functor::operator ()(long *)': cannot convert argument 1 from 'T' to 'long *'
+        with
+        [
+            T=double
+        ]
+        f(t);
+        ^
+example.cpp(8,7): note: see declaration of 'functor::operator ()'
+        void operator()(long *);
+             ^
+example.cpp(20): note: see reference to function template instantiation 'void test&lt;double&gt;(T)' being compiled
+        with
+        [
+            T=double
+        ]
+        test(1.0);</pre>
+<h4 id="compiler-output-in-17-4">Compiler output in 17.4</h4>
+<pre>example.cpp(15,2): error C2665: 'functor::operator ()': no overloaded function could convert all the argument types
+        f(t);
+        ^
+example.cpp(7,7): note: could be 'void functor::operator ()(int *)'
+        void operator()(int *);
+             ^
+example.cpp(15,2): note: 'void functor::operator ()(int *)': cannot convert argument 1 from 'T' to 'int *'
+        with
+        [
+            T=double
+        ]
+        f(t);
+        ^
+example.cpp(8,7): note: or       'void functor::operator ()(long *)'
+        void operator()(long *);
+             ^
+example.cpp(15,2): note: 'void functor::operator ()(long *)': cannot convert argument 1 from 'T' to 'long *'
+        with
+        [
+            T=double
+        ]
+        f(t);
+        ^
+example.cpp(6,7): note: or       'void functor::operator ()(T)'
+        void operator()(T);
+             ^
+example.cpp(15,2): note: the associated constraints are not satisfied
+        f(t);
+        ^
+example.cpp(5,12): note: the concept 'std::integral&lt;double&gt;' evaluated to false
+        template &lt;std::integral T&gt;
+                  ^
+concepts(81,20): note: the constraint was not satisfied
+concept integral = is_integral_v&lt;_Ty&gt;;
+                   ^
+example.cpp(15,2): note: while trying to match the argument list '(T)'
+        with
+        [
+            T=double
+        ]
+        f(t);
+        ^
+example.cpp(20,10): note: see reference to function template instantiation 'void test&lt;double&gt;(T)' being compiled
+        with
+        [
+            T=double
+        ]
+        test(1.0);
+                ^</pre>
+<h3 id="ide-changes">IDE changes</h3>
+<h4 id="ide-experience-in-17-4-in-box-viewer">IDE experience in 17.4 (in-box viewer)</h4>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3.png"><img class="alignnone wp-image-31064 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1024x913.png" alt="In-box viewer" width="640" height="571" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1024x913.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-300x268.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-768x685.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3-1536x1370.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture3.png 1876w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<h4 id="ide-experience-in-17-4-sarif-viewer-extension">IDE experience in 17.4 (SARIF viewer extension)</h4>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5.png"><img class="alignnone wp-image-31065 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5-1024x868.png" alt="SARIF viewer Extension" width="640" height="543" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5-1024x868.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5-300x254.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5-768x651.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5-1536x1302.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Picture5.png 1905w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<p>The compiler changes often generate more text, and it sometimes makes understanding them harder. We are experimenting with a new compiler option to output the diagnostics into the Static Analysis Results Interchange Format (SARIF). The output will be loaded by Visual Studio to visualize the hierarchy of the messages so that it is easier to navigate.</p>
+<p>Currently, clicking an error which is associated with SARIF output in the Visual Studio error list will bring up a pop up with collapsible diagnostic information. We are also working on a <a href="https://marketplace.visualstudio.com/items?itemName=WDGIS.MicrosoftSarifViewer">SARIF Viewer extension</a> to provide a richer experience.</p>
+<h3 id="technical-details">Technical details</h3>
+<p>Here are the three areas the compiler focuses on right now.</p>
+<h4 id="general-infrastructure-source-location">General infrastructure (source location)</h4>
+<p>The column information in error messages was added in Visual Studio 2017. However, it is sometimes missing or incorrect.</p>
+<ul>
+<li>Missing column information is often because the compiler does not always propagate the column information between functions.</li>
+<li>Incorrect column information is sometimes produced because the compiler does not maintain the necessary information in nested contexts (e.g., instantiating a template specialization) and its value is incorrectly modified.</li>
+</ul>
+<p>We are continuing to audit the APIs which manipulate the source location to make sure they propagate and maintain the column information.</p>
+<p>There are still cases where the column information is incorrect in the first place (which is common in the compiler generated functions), so if you hit any of these, please let us know!</p>
+<h4 id="overload-resolution">Overload resolution</h4>
+<p>The error messages for overload resolution vary depending on whether the function is a global function or a member function, whether it is an operator or not, and is sensitive to the number of available candidates. This causes inconsistencies like:</p>
+<ul>
+<li>The compiler often only lists the last candidate it tried.</li>
+<li>The compiler sometimes lists all candidates, but without explaining why each candidate fails.</li>
+<li>The compiler often ignores template candidates.</li>
+</ul>
+<p>We now align the behavior in these scenarios to be more consistent: we always list all candidates including the template and explain why each candidate fails.</p>
+<h4 id="concept-unsatisfied-associated-constraints">Concept (unsatisfied associated constraints)</h4>
+<p>Previously, the compiler only emitted one general purpose message for unsatisfied associated constraints.</p>
+<p>Now, the compiler will emit all the associated constraints which contribute to a given failure. Some of them will have an explanation while others will not.</p>
+<p>We are still working on the latter because most of our semantics analysis logic does not propagate the reasons back to the caller yet – the constraint validation logic only knows that something failed.</p>
+<h3 id="call-for-action">Call for action</h3>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc" target="_blank" rel="noopener">Twitter @visualc</a>.</p>
+<p class="">If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019" target="_blank" rel="noopener">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/" target="_blank" rel="noopener">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/">The Future of C++ Compiler Diagnostics in MSVC and Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Dev Containers for C++ in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/#respond</comments>
@@ -900,52 +1057,6 @@ p.invoke&lt;nullptr_t&gt;();  // nullptr_t is not a valid dispatch type</code></
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/official-support-for-arm64ec-is-here/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC Backend Updates in Visual Studio 2022 version 17.3</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-3/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-3/#respond</comments>
-		
-		<dc:creator><![CDATA[Chris Pulido]]></dc:creator>
-		<pubDate>Tue, 09 Aug 2022 15:00:49 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[OpenMP]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30829</guid>
-
-					<description><![CDATA[<p>In Visual Studio 2022 version 17.3 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a list of improvements for you to review.</p>
-<p>Native Arm64 Visual Studio is now available for 17.3!</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-3/">MSVC Backend Updates in Visual Studio 2022 version 17.3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>In <a href="https://visualstudio.microsoft.com/vs/">Visual Studio 2022</a> version 17.3 we have continued to improve the C++ backend with new features, new and improved optimizations, build throughput improvements, and better security. Here is a list of improvements for you to review.</p>
-<ul>
-<li>Native Arm64 Visual Studio is now available for 17.3! See the <a href="https://devblogs.microsoft.com/visualstudio/arm64-visual-studio/">Visual Studio blog post</a> for details on how to install Arm64 Visual Studio, and what workloads are available for 17.3.</li>
-<li>The C++ ARM64EC target is available for production development. To learn more about the ARM64EC ABI, see <a href="https://docs.microsoft.com/en-us/cpp/build/arm64ec-windows-abi-conventions?view=msvc-170">Overview of ARM64EC ABI conventions</a>, and <a href="https://docs.microsoft.com/en-us/windows/arm/arm64ec-abi">Understanding Arm64EC ABI and assembly code</a>. To learn more about using ARM64EC in Visual Studio, see <a href="https://docs.microsoft.com/en-us/windows/arm/arm64ec">Using Arm64EC to build apps for Windows 11 on Arm devices</a>.</li>
-<li>The ARM64EC toolchain now emits an error when vectorcall semantics, <code>__m256</code> types or <code>__m512</code> types are used when compiling for ARM64EC as these are unsupported scenarios. Full vectorcall support is planned for a future release.</li>
-<li>More progress has been made towards implementing OpenMP Standard 3.1 under the experimental <code>-openmp:llvm</code> switch, building on the <a href="https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/">previous release</a>:
-<ul>
-<li>Implemented atomics-related features from OpenMP 3.1.</li>
-<li>Enabled use of pointers as induction variables in OpenMP loops.</li>
-</ul>
-</li>
-<li>[Credit to our friends at AMD] Improved Superword-Level Parallelism (SLP) vectorizer, handling more types and vector widths. More details to come in a future blog post. Add the <code>/Qvec-report:1</code> switch and look for <code>info C5003: block vectorized</code> for more SLP vectorization.</li>
-<li>Support for recognizing and building ARM64 NEON vector fused multiply-add (FMA) instructions after loop vectorization. Floating-point vector FMA instructions are only built under <code>/fp:fast</code>, or <code>/fp:contract</code> if <code>/fp:precise</code> is also specified. More details about <code>/fp</code> can be found in <a href="https://devblogs.microsoft.com/cppblog/the-fpcontract-flag-and-changes-to-fp-modes-in-vs2022/">The /fp:contract flag and changes to FP modes in VS 2022</a>, and the <a href="https://docs.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior?view=msvc-170">MSVC compiler options reference for /fp</a>.</li>
-<li>More peephole optimizations. Here are some cases that were improved:
-<ul>
-<li><a href="https://developercommunity.visualstudio.com/t/Release-build-of-SSE-code-is-inserting-u/1536674">Release build of SSE code is inserting unnecessary shufps</a></li>
-<li><a href="https://developercommunity2.visualstudio.com/t/string-view:-suboptimal-forwarding-of-va/1306660">string-view: suboptimal forwarding of values through vector registers</a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/Suspicious-codegen-for-assignment-of-ret/1695810">Suspicious codegen for assignment of return value with __vectorcall and /arch:AVX</a></li>
-</ul>
-</li>
-</ul>
-<p>Do you want to experience the new improvements of the C++ backend? Please <a href="https://visualstudio.microsoft.com/vs/">download the latest Visual Studio 2022</a> and give it a try! Any feedback is welcome. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>)</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-3/">MSVC Backend Updates in Visual Studio 2022 version 17.3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-3/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
