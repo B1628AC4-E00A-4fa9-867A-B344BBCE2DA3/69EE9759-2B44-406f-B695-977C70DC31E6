@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 20 Sep 2022 12:21:56 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 21 Sep 2022 17:53:27 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,202 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>A Visual Studio Debugger Extension for the Raspberry Pi Camera</title>
+		<link>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/#respond</comments>
+		
+		<dc:creator><![CDATA[Paul Maybee]]></dc:creator>
+		<pubDate>Wed, 21 Sep 2022 15:04:55 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Linux]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30885</guid>
+
+					<description><![CDATA[<p>While developing a sample application for a Raspberry Pi with a camera using the RaspiCam library, it occurred to me that it would be convenient and fun to be able to see the current camera input while debugging the application.  The Visual Studio debugger supports type-specific custom visualizers and end-user extensions that implement UI for these visualizers.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/">A Visual Studio Debugger Extension for the Raspberry Pi Camera</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>While developing a sample application for a Raspberry Pi with a camera using the <a href="https://github.com/rmsalinas/raspicam">RaspiCam</a> library, it occurred to me that it would be convenient and fun to be able to see the current camera input while debugging the application.  The Visual Studio debugger supports type-specific custom visualizers and end-user extensions that implement UI for these visualizers. I decided to make one for the RaspiCam camera types that would display the current image from the camera. The image below is the end result, showing Visual Studio debugging a program running on the Raspberry Pi and displaying the content of a Raspberry Pi camera object in a pop-up debugger visualizer.</p>
+<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/08/Picture1.png" alt="Picture of rasperry pi displaying camera" /></p>
+<h5 id="build-a-raspicam-application">Build a RaspiCam Application</h5>
+<p><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart CommentHighlightPipeRest CommentHighlightRest SCXW83782341 BCX8">I needed a sample Raspberry Pi camera application.</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> I downloaded the <a href="https://gnutoolchains.com/raspberry/">Raspberry Pi SDK</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> and a CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> toolchain to my windows machine</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I downloaded </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">the <a href="https://github.com/rmsalinas/raspicam">Raspiam cd camera library</a> </span></span><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">and <a href="https://github.com/opencv/opencv">OpenCV</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I used the Raspberry Pi toolchain to build </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">both these repositories. I then created a new CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> project in Visual Studio, wrote a simple camera application and linked to these two libraries. My </span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">CMakeSettings.json</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> file contains this configuration</span><span class="NormalTextRun CommentHighlightPipeRest SCXW83782341 BCX8">:</span></span><span class="EOP SCXW83782341 BCX8" data-ccp-props="{}"> </span></p>
+<pre>    {
+      "name": "raspberrypi-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "C:/temp/raspberry/toolchain-rpi.cmake",
+      "environments": [
+        {
+          "RASPBIAN_ROOTFS": "c:/temp/raspberry/arm-linux-gnueabihf/sysroot",
+          "PATH": "c:/temp/raspberry/bin;${env.PATH}"
+        }
+      ],
+      "inheritEnvironments": [ "gcc-arm" ],
+      "variables": [
+        {
+          "name": "OpenCV_DIR",
+          "value": "D:\\opencv-4.5.5\\opencv-4.5.5\\out\\install\\RaspberryPi-Debug\\lib\\cmake\\opencv4"
+        },
+        {
+          "name": "raspicam_DIR",
+          "value": "D:\\raspicam\\out\\install\\raspberrypi-Debug\\lib\\cmake"
+        }
+      ],
+      "intelliSenseMode": "linux-gcc-arm"
+    }</pre>
+<p>My Raspberry Pi application uses the OpenCV library and the <code>RaspiCam_Still_Cv</code> camera type for capturing and manipulating the camera image.</p>
+<pre>    raspicam::RaspiCam_Still_Cv Camera;
+    cv::Mat image;
+
+    Camera.open();
+    Camera.grab();
+    Camera.retrieve(image);
+    cv::imwrite("raspicam_cv_image.jpg", image);</pre>
+<p>I wanted to debug this application on the Pi so I added the launch configuration below. This instructs the debugger to first deploy the application to my RaspberryPi device in directory ~/camera. I copied all the shared OpenCV and RaspiCam libraries I needed to this directory too.</p>
+<pre>    {
+      "type": "cppgdb",
+      "name": "DebugOnPi",
+      "project": "CMakeLists.txt",
+      "projectTarget": "simpletest_raspicam",
+      "debuggerConfiguration": "gdb",
+      "MIMode": "gdb",
+      "args": [],
+      "env": {},
+      "deployDirectory": "~/camera",
+      "remoteMachineName": "<em>&lt;your-connection-name-here&gt;</em>",
+      "preDebugCommand": "export LD_LIBRARY_PATH=~/camera"
+    }</pre>
+<p>I could now debug on the Raspberry Pi.</p>
+<h5 id="add-visualizers-to-the-linux-debugger">Add Visualizers to the Linux Debugger</h5>
+<p>Although the Visual Studio Windows debugger supports UI visualizers, it turned out that the Visual Studio Linux debugger did not have this feature implemented.  Since the Raspberry Pi runs Raspian, a Debian Linux variant, the first thing I had to do was fix that. The Linux debugger is an open source project called <a href="https://github.com/Microsoft/MIEngine">MIEngine</a>. The MIEngine runs as a Visual Studio debugger “engine” that controls a gdb process running remotely on a Linux host. The MIEngine already supported custom variable visualization using <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2022">natvis</a> files (example below). However, it did not support the <code>UIVizualizer</code> tag in natvis files which is necessary to open a new visualization window containing, for example, a camera image. The work described here is now part of the MIEngine and in Visual Studio. The completed PR with the changes is <a href="https://github.com/microsoft/MIEngine/pull/1281">here</a>. Remember it’s open source, so you too can contribute in this way!</p>
+<pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010"&gt;
+     &lt;UIVisualizer ServiceId="{0A73397B-D550-4BFE-94C9-C0E5122DC06F}" Id="1"
+             MenuName="Raspberry Still Camera (OpenCV) Visualizer"/&gt;
+
+      &lt;Type Name="raspicam::RaspiCam_Still_Cv"&gt;
+         &lt;UIVisualizer ServiceId="{0A73397B-D550-4BFE-94C9-C0E5122DC06F}" Id="1" /&gt;
+      &lt;/Type&gt;            
+&lt;/AutoVisualizer&gt;</pre>
+<p>There were two changes I needed to make to the MIEngine: First was to recognize and process the <code>UIVisualizer</code> element in natvis files and second was to automatically load natvis files for registered Visual Studio extensions.</p>
+<ul>
+<li>Recognizing the element was simple. The MIEngine already parsed natvis files, it was just ignoring the <code>UIVisualizer</code> element. I simply changed the natvis lookup code to return not just the visualized string value for an expression, but also a list of any <code>UIVisualizers</code> that were present for the expression type. The MIEngine returns an expression value to the Visual Studio debugger as an <code><a href="https://github.com/microsoft/MIEngine/blob/main/src/MIDebugEngine/AD7.Impl/AD7Property.cs">AD7Property</a></code>. I updated the <code>AD7Property</code> class to also return the list of <code>UIVisualizers</code> found.</li>
+<li>The MIEngine makes requests of Visual Studio via its <code><a href="https://github.com/microsoft/MIEngine/tree/main/src/DebugEngineHost">DebugEngineHost</a></code>. In order to support visualization, I needed to call into Visual Studio from the <code>DebugEngineHost</code> and ask it for an <code>IVsExtensionManagerPrivate</code> service reference. I then called into the resulting service asking for a list of all resources tagged as “<code>NativeCrossPlatformVisualizer</code>”. It returned a list of file names for resources that have this tag. These are given to the MIEngine natvis processor for parsing.</li>
+</ul>
+<p>Finally, there was an additional feature that was missing from the MIEngine. It didn’t have a convenient way for a caller holding an <code>AD7Property</code> object to determine the execution context (that is, stack frame) where the expression that generated that property was evaluated. So, I extended the <code>AD7Property</code> class to implement a new interface <code><a href="https://github.com/microsoft/MIEngine/blob/main/src/DebugEngineHost.Stub/Shared/Microsoft.VisualStudio.Debugger.Interop.MI.cs">IDebugMIEngineProperty</a></code> that contains a method for returning the properties <code>IDebugExpressionContext2</code>. Now all the parts are in place for developing a <code>UIVisualizer</code> for Linux applications.</p>
+<h5 id="create-a-visualizer-vsix-project">Create a Visualizer VSIX Project</h5>
+<p>The <code>UIVisualizer</code> for a data type is identified in natvis by a GUID <em>ServiceId</em> and an integer <em>Id</em>. These are the values the debugger will use to find and open the associated visualizer. The <em>ServiceId</em> identifies a type that implements <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.debugger.interop.ivscppdebuguivisualizer?view=visualstudiosdk-2022"><code>VsCppDebugUIVisualizer</code></a>. The Id identified which of its visualizers to open – in the case that more than one visualizer is supported by the service. I needed to author a service for my camera picture viewer as a visual studio extension.</p>
+<p>To start, I created a VSIX (Visual Studio extension project) called PictureViewer (you need to have the “Visual Studio extension development” workload installed). Then I defined an interface for my visualizer tagged with my viewer’s <em>ServiceId</em> and attributed the VSIX Package object with this interface. I now had to define the relationship between the <code>UIVisualizer</code> element in the natvis file with this VSIX package.</p>
+<pre>[Guid("0A73397B-D550-4BFE-94C9-C0E5122DC06F")]
+public interface IPictureViewerService
+{
+}
+…
+[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+[ProvideService(typeof(IPictureViewerService), ServiceName = "PictureViewerService", IsAsyncQueryable = true)]
+[Guid(PictureViewerPackage.PackageGuidString)]
+public sealed class PictureViewerPackage : AsyncPackage
+{
+…
+}</pre>
+<p>I then added a new <code>PictureViewerService</code> that implements both <code>IPictureViewerService</code> and <code>IVsCppDebugUIVisualizer</code>. The only method it implements is <code>IVsCppDebugUIVisualizer.DisplayValue</code>.</p>
+<pre>int DisplayValue(uint ownerHwnd, uint visualizerId, IDebugProperty3 debugProperty)
+
+</pre>
+<p>This is the API called by the debugger to display a value using a custom <code>UIVisualizer</code>. The already evaluated expression value is passed to the visualizer in the <code>debugProperty</code> object.</p>
+<p>I implemented my UI in class <code>PictureViewerViewModel</code>. The UI in this example is very simple, just an Image and a Button in a pop-up window. When the service activates the UI the view model object fires off a task to load the image from the application being debugged and then invokes <code><a href="https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.showdialog?view=netframework-4.7.2">ShowDialog</a></code>. The XAML snippet below defines the content of the dialog.</p>
+<pre>&lt;Grid Margin="4"&gt;
+    &lt;Grid.RowDefinitions&gt;
+        &lt;RowDefinition Height="*" /&gt;
+        &lt;RowDefinition Height="Auto" /&gt;
+    &lt;/Grid.RowDefinitions&gt;
+    &lt;Image Width="{Binding Image.Width}" Height="{Binding Image.Height}"
+        Source="{Binding Image}"/&gt;
+    &lt;Button Grid.Row="1" Margin="4,0" x:Uid="LoadNext_Button"
+            Content="Next"
+            Command="{Binding ClickCommand, Mode=OneTime}" /&gt;
+&lt;/Grid&gt;
+
+</pre>
+<p>The view model is where the work is done to populate the UI from the camera content. In this case I was interested in retrieving JPEG content from the camera and using it to create a <a href="https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.imaging.bitmapimage?view=netframework-4.7.2">BitmapImage</a>. To get an image from a camera object the debugger must perform the same operations that the application would have to do to do the same thing. Or more accurately, the debugger must instruct the debuggee to do these steps using expression evaluation. The code below uses Visual Studio debugger APIs to evaluate a string expression given an <code>IDebugMIEngineProperty</code> <em>context</em>. It returns both a string with the debugger’s result of the evaluation and a memory context object that can be used to read the raw bytes of that result.</p>
+<pre>private DEBUG_PROPERTY_INFO EvalExpression(string expr, out IDebugMemoryContext2 ppMemory)
+{
+
+   if (context.ParseText(expr, enum_PARSEFLAGS.PARSE_EXPRESSION, 10, out IDebugExpression2 ppExpr, out string error, out uint errorCode) != VSConstants.S_OK)
+   {
+      throw new ApplicationException($"Failed to parse expression '{expr}'.");
+   }
+
+   if (ppExpr.EvaluateSync(0, 0, null, out IDebugProperty2 prop) != VSConstants.S_OK)
+   {
+      throw new ApplicationException($"Failed to evaluate expression '{expr}'.");
+   }
+
+   DEBUG_PROPERTY_INFO[] value = new DEBUG_PROPERTY_INFO[1]; ;
+   if (prop.GetPropertyInfo(enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE, 10, 0, null, 0, value) != VSConstants.S_OK)
+   {
+      throw new ApplicationException($"Failed to get expression value for '{expr}'.");
+   }
+
+   if (prop.GetMemoryContext(out ppMemory) != VSConstants.S_OK)
+   {
+      ppMemory = null;
+   }
+
+   return value[0];
+}
+
+</pre>
+<p>Now I needed to implement the right sequence of expression evaluations. I based the sequence on the sample C++ code below that retrieves an in-memory jpg image from a camera object.</p>
+<pre>raspicam::RaspiCam_Still_Cv Camera;
+...
+cv::Mat image;
+Camera.grab();
+Camera.retrieve(image);
+
+vector&lt;uchar&gt; jpgImage;
+vector&lt;int&gt; jpgParams;
+cv::InputArray ia = cv::_InputArray(image);
+string jpg = ".jpg";
+
+cv::imencode(jpg, ia, jpgImage, jpgParams);
+
+</pre>
+<p>Since I have registered the visualizer for the camera type, the debugProperty object that is passed into the visualizer will contain the results of evaluating a <code>RaspiCam_Still_Cv</code> object. It can be cast to an <code>IDebugMIEngineProperty</code> and used to get a context for evaluating expressions. The final result is that the debuggee application creates an in-memory object containing a JPEG image. The debugger then reads the bytes from the debuggee memory and creates the BitmapImage.</p>
+<p>The first thing you might notice is that this sequence of evaluations involves creating several objects: <em>image</em>, <em>jpgImage</em>, <em>jpgParams</em>, <em>ia</em>, and <em>jpg</em>. These objects do not exist on the debuggee so they must be created. To create an object via expression evaluation, the debugger must first malloc the memory for the object and then invoke the object’s constructor. I do this in <code>MakeHeapObject</code> below:</p>
+<pre>private string MakeHeapObject(string type, string constructor, string cparams = "")
+{
+   var address = this.EvalExpression($"malloc(sizeof({type}))");
+   if (!address.bstrValue.StartsWith("0x"))
+   {
+      throw new ApplicationException(address.bstrValue);
+   }
+
+   var init = this.EvalExpression(
+                $"(({type} *){address.bstrValue})-&gt;{constructor}({cparams})");
+   return address.bstrValue;
+}</pre>
+<p>For example, to make an object of type “<code>vector&lt;int&gt;</code>,” the visualizer calls:</p>
+<pre>this.MakeHeapObject("std::vector&lt;int, std::allocator&lt;int&gt; &gt;", "vector")
+
+</pre>
+<p>A string containing the new object’s address in the debuggee is returned, for example “<code>0xf7003421</code>”.</p>
+<p>Now all the pieces are in place for evaluating the sequence of expressions necessary to get the jpg image into a debuggee in-memory byte array. Once this is done the <code>IDebugMemoryContext2</code> is used to read the bytes from debuggee memory into a buffer in Visual Studio. The Bitmap image is created from a <a href="https://docs.microsoft.com/en-us/dotnet/api/system.io.memorystream?view=netframework-4.7.2">MemoryStream</a> built on that buffer.</p>
+<p>The VSIX project also needs to contain the .natvis file containing the type-to-Visualizer mapping (see top of this section). The VSIX manifest points to the file and tags it as a “<code>NativeCrossPlatformVisualizer</code>” asset.</p>
+<pre>  &lt;Asset Type="NativeCrossPlatformVisualizer" Path="raspicam.natvis"/&gt;</pre>
+<p>All the details can be found in <a href="https://github.com/microsoft/VisualStudioMIEnginePictureViewer">this git repository</a>, including the sample CMake application (above) to test with.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/">A Visual Studio Debugger Extension for the Raspberry Pi Camera</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Microsoft C++ Code Analysis Warnings with Key Events</title>
 		<link>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/#comments</comments>
@@ -790,355 +986,6 @@ This change expands user rights to the Build Tools and does not limit the existi
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>proxy: Runtime Polymorphism Made Easier Than Ever</title>
-		<link>https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/#comments</comments>
-		
-		<dc:creator><![CDATA[Mingxin Wang]]></dc:creator>
-		<pubDate>Mon, 15 Aug 2022 15:00:41 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Experimental]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30853</guid>
-
-					<description><![CDATA[<p>proxy is a single-header cross-platform library that facilitates runtime polymorphism.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/">proxy: Runtime Polymorphism Made Easier Than Ever</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><code>proxy</code> is an open-source, cross-platform, single-header C++ library, making runtime polymorphism easier to implement and faster, empowered by our breakthrough innovation of Object-oriented Programming (OOP) theory in recent years. Consider three questions:</p>
-<ol>
-<li>Do you want to facilitate architecture design and matainance by writing non-intrusive polymorphic code in C++ as easily as in Rust or Golang?</li>
-<li>Do you want to facilitate lifetime management of polymorphic objects as easily as in languages with runtime Garbage Collection (GC, like Java or C#), <em>without</em> compromising performance?</li>
-<li>Have you tried other polymorphic programming libraries in C++ but found them deficient?</li>
-</ol>
-<p>If so, this library is for you. You can find the implementation at <a href="https://github.com/microsoft/proxy">our GitHub repo</a>, integrate with your project using <a href="https://github.com/microsoft/vcpkg">vcpkg</a> (search for <code>proxy</code>), or learn more about the theory and technical specifications from <a href="https://wg21.link/p0957">P0957</a>.</p>
-<h2 id="overview">Overview</h2>
-<p>In C++ today, there are certain architecture and performance limitations in existing mechanisms of polymorphism, specifically, virtual functions (based on inheritance) and various polymorphic wrappers (with value semantics) in the standard. As a result, <code>proxy</code> can largely replace the existing &#8220;virtual mechanism&#8221; to implement your vision in runtime polymorphism, while having no intrusion on existing code, with even better performance.</p>
-<p>All the facilities of the library are defined in namespace <code>pro</code>. The 3 major class templates are <code>dispatch</code>, <code>facade</code> and <code>proxy</code>. Here is a demo showing how to use this library to implement runtime polymorphism in a different way from the traditional inheritance-based approach:</p>
-<pre><code class="language-cpp">// Abstraction
-struct Draw : pro::dispatch&lt;void(std::ostream&amp;)&gt; {
-  template &lt;class T&gt;
-  void operator()(const T&amp; self, std::ostream&amp; out) { self.Draw(out); }
-};
-struct Area : pro::dispatch&lt;double()&gt; {
-  template &lt;class T&gt;
-  double operator()(const T&amp; self) { return self.Area(); }
-};
-struct DrawableFacade : pro::facade&lt;Draw, Area&gt; {};
-
-// Implementation (No base class)
-class Rectangle {
- public:
-  void Draw(std::ostream&amp; out) const
-      { out &lt;&lt; "{Rectangle: width = " &lt;&lt; width_ &lt;&lt; ", height = " &lt;&lt; height_ &lt;&lt; "}"; }
-  void SetWidth(double width) { width_ = width; }
-  void SetHeight(double height) { height_ = height; }
-  double Area() const { return width_ * height_; }
-
- private:
-  double width_;
-  double height_;
-};
-
-// Client - Consumer
-std::string PrintDrawableToString(pro::proxy&lt;DrawableFacade&gt; p) {
-  std::stringstream result;
-  result &lt;&lt; "shape = ";
-  p.invoke&lt;Draw&gt;(result);  // Polymorphic call
-  result &lt;&lt; ", area = " &lt;&lt; p.invoke&lt;Area&gt;();  // Polymorphic call
-  return std::move(result).str();
-}
-
-// Client - Producer
-pro::proxy&lt;DrawableFacade&gt; CreateRectangleAsDrawable(int width, int height) {
-  Rectangle rect;
-  rect.SetWidth(width);
-  rect.SetHeight(height);
-  return pro::make_proxy&lt;DrawableFacade&gt;(rect);  // No heap allocation is expected
-}</code></pre>
-<h2 id="configure-your-project">Configure your project</h2>
-<p>To get started, set the language level of your compiler to at least C++20 and get the header file (<a href="https://github.com/microsoft/proxy/blob/main/proxy.h">proxy.h</a>). You can also install the library via <a href="https://github.com/microsoft/vcpkg/">vcpkg</a>, which is a C++ library management software invented by Microsoft, by searching for &#8220;proxy&#8221;.</p>
-<p>To integrate with CMake, 3 steps are required:</p>
-<ol>
-<li>Set up the vcpkg manifest by adding &#8220;proxy&#8221; as a dependency in your <code>vcpkg.json</code> file:
-<pre><code class="language-json">{
-"name": "&lt;project_name&gt;",
-"version": "0.1.0",
-"dependencies": [
-{
-  "name": "proxy"
-}
-]
-}</code></pre>
-</li>
-<li>Use <code>find_package</code> and <code>target_link_libraries</code> commands to reference to the library <code>proxy</code> in your <code>CMakeLists.txt</code> file:
-<pre><code class="language-cmake">find_package(proxy CONFIG REQUIRED)
-target_link_libraries(&lt;target_name&gt; PRIVATE msft_proxy)</code></pre>
-</li>
-<li>Run CMake with vcpkg toolchain file:
-<pre><code class="language-cmake">cmake &lt;source_dir&gt; -B &lt;build_dir&gt; -DCMAKE_TOOLCHAIN_FILE=&lt;vcpkg_dir&gt;/scripts/buildsystems/vcpkg.cmake</code></pre>
-</li>
-</ol>
-<h2 id="what-makes-the-proxy-so-charming">What makes the &#8220;proxy&#8221; so charming</h2>
-<p>As a polymorphic programming library, <code>proxy</code> has various highlights, including:</p>
-<ol>
-<li>being <em>non-intrusive</em></li>
-<li>allowing lifetime management <em>per object</em>, complementary with smart pointers</li>
-<li>high-quality code generation</li>
-<li>supporting flexible composition of abstractions</li>
-<li>optimized syntax for Customization Point Objects (CPO) and modules</li>
-<li>supporting general-purpose static reflection</li>
-<li>supporting expert performance tuning</li>
-<li>high-quality diagnostics.</li>
-</ol>
-<p>In this section, we will briefly introduce each of the highlights listed above with concrete examples.</p>
-<h3 id="highlight-1-being-non-intrusive">Highlight 1: Being non-intrusive</h3>
-<p>Designing polymorphic types with inheritance usually requires careful architecting. If the design is not thought through enough early on, the components may become overly complex as more and more functionality is added, or extensibility may be insufficient if polymorphic types are coupled too closely. On the other hand, some libraries (including the standard library) may not have proper polymorphic semantics even if they, by definition, satisfy same specific constraints. In such scenarios, users have no alternative but to design and maintain extra middleware themselves to add polymorphism support to existing implementations.</p>
-<p>For example, some programming languages provide base types for containers, which makes it easy for library authors to design APIs without binding to a specific data structure at runtime. However, this is not feasible in C++ because most of the standard containers are not required to have a common base type. I do not think this is a design defect of C++, on the contrary, I think it is reasonable not to overdesign for runtime abstraction before knowing the concrete requirements both for the simplicity of the semantics and for runtime performance. With <code>proxy</code>, because it is non-intrusive, if we want to abstract a mapping data structure from indices to strings for localization, we may define the following facade:</p>
-<pre><code class="language-cpp">struct at : pro::dispatch&lt;std::string(int)&gt; {
-  template &lt;class T&gt;
-  auto operator()(T&amp; self, int key) { return self.at(key); }
-};
-struct ResourceDictionaryFacade : pro::facade&lt;at&gt; {};</code></pre>
-<p>It could proxy any potential mapping data structure, including but not limited to <code>std::map&lt;int, std::string&gt;</code>, <code>std::unordered_map&lt;int, std::string&gt;</code>, <code>std::vector&lt;std::string&gt;</code>, etc.</p>
-<pre><code class="language-cpp">// Library
-void DoSomethingWithResourceDictionary(pro::proxy&lt;ResourceDictionaryFacade&gt; p) {
-  try {
-    std::cout &lt;&lt; p.invoke(1) &lt;&lt; std::endl;
-  } catch (const std::out_of_range&amp; e) {
-    std::cout &lt;&lt; "No such element: " &lt;&lt; e.what() &lt;&lt; std::endl;
-  }
-}
-
-// Client
-std::map&lt;int, std::string&gt; var1{{1, "Hello"}};
-std::vector&lt;std::string&gt; var2{"I", "love", "Proxy", "!"};
-DoSomethingWithResourceDictionary(&amp;var1);  // Prints "Hello"
-DoSomethingWithResourceDictionary(&amp;var2);  // Prints "love"
-DoSomethingWithResourceDictionary(std::make_shared&lt;std::unordered_map&lt;int, std::string&gt;&gt;());  // Prints "No such element: {implementation-defined error message}"</code></pre>
-<p>Overall, inheritance-based polymorphism has certain limitations in usability. As <a href="https://www.youtube.com/watch?v=QGcVXgEVMJg">Sean Parent commented on NDC 2017</a>: <em>The requirements of a polymorphic type, by definition, comes from its use, and there are no polymorphic types, only polymorphic use of similar types. Inheritance is the base class of evil</em>.</p>
-<h3 id="highlight-2-evolutionary-lifetime-management">Highlight 2: Evolutionary lifetime management</h3>
-<p>It is such a pain to manage lifetime of objects in large systems written in C++. Because C++ does not have built-in GC support due to performance considerations, users need to beware of lifetime management of every single object. Although we have smart pointers since C++11 (i.e., <code>std::unique_ptr</code> and <code>std::shared_ptr</code>), and various 3rd-party fancy pointers like <code>boost::interprocess::offset_ptr</code>, they are not always sufficient for polymorphic use with inheritance. By using the <code>proxy</code> complementary with smart pointers, clients could care less about lifetime management as if there is runtime GC, but without compromising performance.</p>
-<p>Before using any polymorphic object, the first step is always to create it. In other programming languages like Java or C#, we can <code>new</code> an object at any time and runtime GC will take care of lifetime management when it becomes unreachable, at the cost of performance. But how should we implement it in C++? Consider the <code>drawable</code> example in the &#8220;Overview&#8221; section: given there are 3 <code>drawable</code> types in a system: <code>Rectangle</code>, <code>Circle</code>, and <code>Point</code>. Specifically,</p>
-<ul>
-<li><code>Rectangle</code>s have width, height, transparency, and area</li>
-<li><code>Circle</code>s have radius, transparency, and area</li>
-<li><code>Point</code>s do not have any property; its area is always zero</li>
-</ul>
-<p>A library function <code>MakeDrawableFromCommand</code> shall be defined as a factory function responsible for creating a <code>drawable</code> instance by parsing the command line.</p>
-<p>Here is how we usually define the types with inheritance:</p>
-<pre><code class="language-cpp">// Abstraction
-class IDrawable {
- public:
-  virtual void Draw(std::ostream&amp; out) const = 0;
-  virtual double Area() const = 0;
-  // Don't forget the virtual destructor, otherwise `delete`ing a pointer of `IDrawable` may result in memory leak!
-  virtual ~IDrawable() {}  
-};
-
-// Implementation
-class Rectangle : public IDrawable {
- public:
-  void Draw(std::ostream&amp; out) const override;
-  void SetWidth(double width);
-  void SetHeight(double height);
-  void SetTransparency(double);
-  double Area() const override;
-};
-class Circle : public IDrawable {
- public:
-  void Draw(std::ostream&amp; out) const override;
-  void SetRadius(double radius);
-  void SetTransparency(double transparency);
-  double Area() const override;
-};
-class Point : public IDrawable {
- public:
-  void Draw(std::ostream&amp; out) const override;
-  constexpr double Area() const override { return 0; }
-};</code></pre>
-<p>If we use <code>std::string</code> to represent the command line, the parameter type of <code>MakeDrawableFromCommand</code> could be <code>const std::string&amp;</code>, where there should not be much debate. But what should the return type be? <code>IDrawable*</code>? <code>std::unique_ptr&lt;IDrawable&gt;</code>? Or <code>std::shared_ptr&lt;IDrawable&gt;</code>? Specifically,</p>
-<ul>
-<li>If we use <code>IDrawable*</code>, the semantics of the return type is ambiguous because it is a raw pointer type and does not indicate the lifetime of the object. For instance, it could be allocated via <code>operator new</code>, from a memory pool or even a global object. Clients always need to learn the hidden contract from the author (or even need to learn the implementation details if the author and documentation are not available for consulting) and properly disposing of the object when the related business has finished via <code>operator delete</code> or some other way corresponding to how it was allocated.</li>
-<li>If we use <code>std::unique_ptr&lt;IDrawable&gt;</code>, it means every single object is allocated individually from the heap, even if the value is potentially immutable or reusable (&#8220;flyweight&#8221;), which is potentially bad for performance.</li>
-<li>If we use <code>std::shared_ptr&lt;IDrawable&gt;</code>, the performance could become better for flyweight objects due to the relatively low cost of copying, but the ownership of the object becomes ambiguous (a.k.a. &#8220;ownership hell&#8221;), and the thread-safety guarantee of copy-construction and destruction of <code>std::shared_ptr</code> may also add to runtime overhead. On the other hand, if we prefer <code>std::shared_ptr</code> across the whole system, every polymorphic type is encouraged to inherit <code>std::enable_shared_from_this</code>, which may significantly affect the design and maintenance of a large system.</li>
-</ul>
-<p>For <code>proxy</code>, with the definition from the &#8220;Overview&#8221; section, we can simply define the return type as <code>pro::proxy&lt;DrawableFacade&gt;</code> without further concern. In the implementation, <code>pro::proxy&lt;DrawableFacade&gt;</code> could be instantiated from all kinds of pointers with potentially different lifetime management strategy. For example, <code>Rectangle</code>s may be created every time when requested from a memory pool, while the value of <code>Point</code>s could be cached throughout the lifetime of the program:</p>
-<pre><code class="language-cpp">pro::proxy&lt;DrawableFacade&gt; MakeDrawableFromCommand(const std::string&amp; s) {
-  std::vector&lt;std::string&gt; parsed = ParseCommand(s);
-  if (!parsed.empty()) {
-    if (parsed[0u] == "Rectangle") {
-      if (parsed.size() == 3u) {
-        static std::pmr::unsynchronized_pool_resource rectangle_memory_pool;
-        std::pmr::polymorphic_allocator&lt;&gt; alloc{&amp;rectangle_memory_pool};
-        auto deleter = [alloc](Rectangle* ptr) mutable
-            { alloc.delete_object&lt;Rectangle&gt;(ptr); };
-        Rectangle* instance = alloc.new_object&lt;Rectangle&gt;();
-        std::unique_ptr&lt;Rectangle, decltype(deleter)&gt; p{instance, deleter};  // Allocated from a memory pool
-        p-&gt;SetWidth(std::stod(parsed[1u]));
-        p-&gt;SetHeight(std::stod(parsed[2u]));
-        return p;  // Implicit conversion happens
-      }
-    } else if (parsed[0u] == "Circle") {
-      if (parsed.size() == 2u) {
-        Circle circle;
-        circle.SetRadius(std::stod(parsed[1u]));
-        return pro::make_proxy&lt;DrawableFacade&gt;(circle);  // SBO may apply
-      }
-    } else if (parsed[0u] == "Point") {
-      if (parsed.size() == 1u) {
-        static Point instance;  // Global singleton
-        return &amp;instance;
-      }
-    }
-  }
-  throw std::runtime_error{"Invalid command"};
-}</code></pre>
-<p>The full implementation of the example above could be found in our <a href="https://github.com/microsoft/proxy/blob/1.0.1/tests/proxy_integration_tests.cpp#L87-L116">integration tests</a>. In this example, there are 3 <code>return</code> statements in different branches and the return types are also different. Lifetime management with inheritance-based polymorphism is error-prone and inflexible, while <code>proxy</code> allows easy customization of any lifetime management strategy, including but not limited to raw pointers and various smart pointers with potentially pooled memory management.</p>
-<p>Specifically, Small Buffer Optimization (SBO, a.k.a., SOO, Small Object Optimization) is a common technique to avoid unnecessary memory allocation (see the second <code>return</code> statement). However, for inheritance-based polymorphism, there are few facilities in the standard that support SBO; for other standard polymorphic wrappers, implementations may support SBO, but there is no standard way to configure it so far. For example, if the size of <code>std::any</code> is <code>n</code>, it is theoretically impossible to store the concrete value whose size is larger than <code>n</code> without external storage.</p>
-<p><strong>The top secret making <code>proxy</code> both easy-to-use and fast is that it allows lifetime management <em>per object</em></strong>, which had not been addressed in traditional OOP theory (inheritance-based polymorphism) ever before.</p>
-<p>If you have tried other polymorphic programming libraries in C++ before, you may or may not find this highlight of lifetime management unique to <code>proxy</code>. Some of these libraries claim to support various lifetime management model, but do not allow <em>per-object</em> customization like <code>proxy</code> does.</p>
-<p>Take <a href="https://github.com/ldionne/dyno"><code>dyno</code></a> as an example. <code>dyno</code> is another non-intrusive polymorphic programming library in C++. Given an &#8220;interface&#8221; type <code>I</code>, <code>dyno</code> does not allow <code>dyno::poly&lt;I&gt;</code> to have a different lifetime management model. By default, <code>dyno::poly&lt;I&gt;</code> always allocates from the heap by the time this blog was written (see <a href="https://github.com/ldionne/dyno/blob/b05a51eeaa4ddd7deb9e3100984bf20cfbf94eab/include/dyno/poly.hpp#L64">typename Storage = dyno::remote_storage</a>). For example, if we want to take advantage of SBO, it is needed to override the <code>Storage</code> type, i.e., <code>dyno::poly&lt;I, dyno::sbo_storage&lt;...&gt;&gt;</code>, which is a different type from <code>dyno::poly&lt;I&gt;</code>. Therefore, <code>dyno::poly&lt;I&gt;</code> could not be used to implement features like <code>MakeDrawableFromCommand</code> above, where the optimal lifetime management model of each branch may differ. Whereas <code>proxy</code> does not have a second template parameter. Given a facade type <code>F</code>, <code>pro::proxy&lt;F&gt;</code> is compatible with <em>any</em> lifetime management model within the constraints of the facade.</p>
-<h3 id="highlight-3-high-quality-code-generation">Highlight 3: High-quality code generation</h3>
-<p>Not only does <code>proxy</code> allow efficient lifetime management per object, but also it could generate high quality code for every indirect call. Specifically,</p>
-<ol>
-<li>Invocations from <code>proxy</code> could be properly inlined, except for the virtual dispatch on the client side, similar to the inheritance-based mechanism.</li>
-<li>Because <code>proxy</code> is based on pointer semantics, the &#8220;dereference&#8221; operation may happen inside the virtual dispatch, which always generates different instructions from the inheritance-based mechanism.</li>
-<li>As tested, with &#8220;clang 13.0.0 (x86-64)&#8221; and &#8221; clang 13.0.0 (RISC-V RV64)&#8221;, <code>proxy</code> generates one more instruction than the inheritance-based mechanism, while the situation is reversed with &#8220;gcc 11.2 (ARM64)&#8221;. This may infer that <code>proxy</code> could have similar runtime performance in invocation with the inheritance-based mechanism at least on the 3 processor architectures (x86-64, ARM64, RISC-V RV64).</li>
-</ol>
-<p>More details of code generation analysis could be found in <a href="https://wg21.link/p0957">P0957</a>.</p>
-<h3 id="highlight-4-composition-of-abstractions">Highlight 4: Composition of abstractions</h3>
-<p>To support reuse of declaration of expression sets, like inheritance of virtual base classes, the <code>facade</code> allows combination of different dispatches with <code>std::tuple</code>, while duplication is allowed. For example,</p>
-<pre><code class="language-cpp">struct D1;
-struct D2;
-struct D3;
-struct FA : pro::facade&lt;D1, D2, D3&gt; {};
-struct FB : pro::facade&lt;D1, std::tuple&lt;D3, D2&gt;&gt; {};
-struct FC : pro::facade&lt;std::tuple&lt;D1, D2, D3&gt;, D1, std::tuple&lt;D2, D3&gt;&gt; {};</code></pre>
-<p>In the sample code above, given <code>D1</code>, <code>D2</code> and <code>D3</code> are well-formed dispatch types, <code>FA</code>, <code>FB</code> and <code>FC</code> are equivalent. This allows &#8220;diamond inheritance&#8221; of abstraction without</p>
-<ul>
-<li>syntax ambiguity</li>
-<li>coding techniques like &#8220;virtual inheritance&#8221;</li>
-<li>extra binary size</li>
-<li>runtime overhead</li>
-</ul>
-<h3 id="highlight-5-syntax-for-cpos-and-modules">Highlight 5: Syntax for CPOs and modules</h3>
-<p>Along with the standardization of Customization Point Objects (CPO) and improved syntax for Non-Type Template Parameters (NTTP), there are two recommended ways to define a &#8220;dispatch&#8221; type:</p>
-<p>The first way is to manually overload <code>operator()</code> as demonstrated before. This is useful when a dispatch is intended to be defined in a header file shared with multiple translation units, e.g., in <a href="https://github.com/microsoft/proxy/blob/1.0.1/tests/proxy_invocation_tests.cpp#L25-L33">tests/proxy_invocation_tests.cpp</a>:</p>
-<pre><code class="language-cpp">template &lt;class T&gt;
-struct ForEach : pro::dispatch&lt;void(pro::proxy&lt;CallableFacade&lt;void(T&amp;)&gt;&gt;)&gt; {
- template &lt;class U&gt;
- void operator()(U&amp; self, pro::proxy&lt;CallableFacade&lt;void(T&amp;)&gt;&gt;&amp;&amp; func) {
-  for (auto&amp; value : self) {
-   func.invoke(value);
-  }
- }
-};</code></pre>
-<p>The second way is to specify a <code>constexpr</code> callable object as the second template parameter. It provides easier syntax if a corresponding CPO is defined before, or the &#8220;dispatch&#8221; is intended to be defined in a module with lambda expressions, e.g. in <a href="https://github.com/microsoft/proxy/blob/1.0.1/tests/proxy_invocation_tests.cpp#L23">tests/proxy_invocation_tests.cpp</a>:</p>
-<pre><code class="language-cpp">struct GetSize : pro::dispatch&lt;std::size_t(), std::ranges::size&gt; {};</code></pre>
-<h3 id="highlight-6-static-reflection">Highlight 6: Static reflection</h3>
-<p>Reflection is an essential requirement in type erasure, and <code>proxy</code> welcomes general-purpose static (compile-time) reflection other than <code>std::type_info</code>.</p>
-<p>In other languages like C# or Java, users are allowed to acquire detailed metadata of a type-erased type at runtime with simple APIs, but this is not true for <code>std::function</code>, <code>std::any</code> or inheritance-based polymorphism in C++. Although these reflection facilities add certain runtime overhead to these languages, they do help users write simple code in certain scenarios. In C++, as the reflection TS keeps evolving, there will be more static reflection facilities in the standard with more specific type information deduced at compile-time than <code>std::type_info</code>. It becomes possible for general-purpose reflection to become zero-overhead in C++ polymorphism.</p>
-<p>As a result, we decided to make <code>proxy</code> support general-purpose static reflection. It&#8217;s off by default, and theoretically won&#8217;t impact runtime performance other than the target binary size if turned on. Here is an example to reflect the given types to <code>MyReflectionInfo</code>:</p>
-<pre><code class="language-cpp">class MyReflectionInfo {
- public:
-  template &lt;class P&gt;
-  constexpr explicit MyReflectionInfo(std::in_place_type_t&lt;P&gt;) : type_(typeid(P)) {}
-  const char* GetName() const noexcept { return type_.name(); }
-
- private:
-  const std::type_info&amp; type_;
-};
-
-struct MyFacade : pro::facade&lt;/* Omitted */&gt; {
-  using reflection_type = MyReflectionInfo;
-};</code></pre>
-<p>Users may call <code>MyReflectionInfo::GetName()</code> to get the implementation-defined name of a type at runtime:</p>
-<pre><code class="language-cpp">pro::proxy&lt;MyFacade&gt; p;
-puts(p.reflect().GetName());  // Prints typeid(THE_UNDERLYING_POINTER_TYPE).name()</code></pre>
-<h3 id="highlight-7-performance-tuning">Highlight 7: Performance tuning</h3>
-<p>To allow implementation balance between extensibility and performance, a set of constraints to a pointer is introduced, including maximum size, maximum alignment, minimum copyability, minimum relocatability and minimum destructibility. The term &#8220;relocatability&#8221; was introduced in <a href="https://wg21.link/p1144">P1144</a>, &#8220;equivalent to a move and a destroy&#8221;. This blog uses the term &#8220;relocatability&#8221; but does not depend on the technical specifications of <a href="https://wg21.link/p1144">P1144</a>.</p>
-<p>While the size and alignment could be described with <code>std::size_t</code>, the constraint level of copyability, relocatability and destructibility are described with enum <code>pro::constraint_level</code>, which includes <code>none</code>, <code>nontrivial</code>, <code>nothrow</code> and <code>trivial</code>, matching the standard wording. The defaults are listed below:</p>
-<table>
-<thead>
-<tr>
-<th><strong>Constraints</strong></th>
-<th><strong>Defaults</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Maximum size</td>
-<td>The size of two pointers</td>
-</tr>
-<tr>
-<td>Maximum alignment</td>
-<td>The alignment of a pointer</td>
-</tr>
-<tr>
-<td>Minimum copyability</td>
-<td>None</td>
-</tr>
-<tr>
-<td>Minimum relocatability</td>
-<td>Nothrow</td>
-</tr>
-<tr>
-<td>Minimum destructibility</td>
-<td>Nothrow</td>
-</tr>
-</tbody>
-</table>
-<p>We can assume the default maximum size and maximum alignment greater than or equal to the implementation of raw pointers, <code>std::unique_ptr</code> with default deleters, <code>std::unique_ptr</code> with any one-pointer-size of deleters and <code>std::shared_ptr</code> of any type.</p>
-<p>Note that the default minimum copyability is &#8220;None&#8221;, which means <code>proxy</code> could be instantiated from a non-copyable type like <code>std::unique_ptr</code>. However, if we never want to instantiate a <code>proxy</code> with non-copyable types (including <code>std::unique_ptr</code>) and want the <code>proxy</code> to be copyable, it is allowed to customize it in a facade definition:</p>
-<pre><code class="language-cpp">// Abstraction
-struct MyFacade : pro::facade&lt;/* Omitted */&gt; {
-  static constexpr auto minimum_copyability = pro::constraint_level::nontrivial;
-};
-
-// Client
-pro::proxy&lt;MyFacade&gt; p0 = /* Omitted */;
-auto p1 = p0;  // Calls the constructor of the underlying pointer type</code></pre>
-<p>In some cases where we clearly know we always instantiate a <code>proxy</code> with a raw pointer, and want to optimize the performance to the limit, it is allowed to add even more constraints in a facade definition, at the cost of reducing the scope of feasible pointer types:</p>
-<pre><code class="language-cpp">// Abstraction
-struct MyFacade : pro::facade&lt;/* Omitted */&gt; {
-  static constexpr auto minimum_copyability = pro::constraint_level::trivial;
-  static constexpr auto minimum_relocatability = pro::constraint_level::trivial;
-  static constexpr auto minimum_destructibility = pro::constraint_level::trivial;
-  static constexpr auto maximum_size = sizeof(void*);
-  static constexpr auto maximum_alignment = alignof(void*);
-};
-
-// Client
-static_assert(std::is_trivially_copy_constructible_v&lt;pro::proxy&lt;MyFacade&gt;&gt;);
-static_assert(std::is_trivially_destructible_v&lt;pro::proxy&lt;MyFacade&gt;&gt;);</code></pre>
-<p><strong>IMPORTANT NOTICE</strong>: clang will fail to compile if the <strong>minimum_destructibility</strong> is set to <strong>constraint_level::trivial</strong> in a facade definition. The root cause of this failure is that the implementation requires the language feature defined in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0848r3.html">P0848R3: Conditionally Trivial Special Member Functions</a>, but it has not been implemented in clang, according to its <a href="https://clang.llvm.org/cxx_status.html">documentation</a>, at the time this blog was written.</p>
-<h3 id="highlight-8-diagnostics">Highlight 8: Diagnostics</h3>
-<p>The design of <code>proxy</code> is SFINAE-friendly, thanks to the Concepts feature since C++20. If it is used incorrectly, compile error messages could be generated accurately at the spot. For example, if we call the constructor of <code>proxy</code> with a pointer, whose type does not meet the facade definition:</p>
-<pre><code class="language-cpp">pro::proxy&lt;MyFacade&gt; p;
-p.invoke&lt;nullptr_t&gt;();  // nullptr_t is not a valid dispatch type</code></pre>
-<p>Here is the error message gcc 11.2 will report:</p>
-<pre><code class="language-text">&lt;source&gt;:550:22: error: no matching function for call to 'pro::proxy&lt;MyFacade&gt;::invoke&lt;nullptr_t&gt;()'
-  550 |   p.invoke&lt;nullptr_t&gt;();
-      |   ~~~~~~~~~~~~~~~~~~~^~
-&lt;source&gt;:445:18: note: candidate: 'template&lt;class D, class ... Args&gt; decltype(auto) pro::proxy&lt;F&gt;::invoke(Args&amp;&amp; ...) requires (pro::details::dependent_traits&lt;pro::details::facade_traits&lt;F&gt;, D&gt;::dependent_t&lt;pro::details::facade_traits&lt;F&gt;, D&gt;::applicable) &amp;&amp; (pro::details::BasicTraits::has_dispatch&lt;D&gt;) &amp;&amp; (is_convertible_v&lt;std::tuple&lt;_Args2 ...&gt;, typename D::argument_types&gt;) [with D = D; Args = {Args ...}; F = MyFacade]'
-  445 |   decltype(auto) invoke(Args&amp;&amp;... args)
-      |                  ^~~~~~
-&lt;source&gt;:445:18: note:   template argument deduction/substitution failed:
-&lt;source&gt;:445:18: note: constraints not satisfied</code></pre>
-<h2 id="conclusion">Conclusion</h2>
-<p>We hope this has helped clarify how to take advantage of the library &#8220;proxy&#8221; to write polymorphic code easier. If you have any questions, comments, or issues with the library, you can comment below, file issues in <a href="https://github.com/microsoft/proxy">our GitHub repo</a>, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/">proxy: Runtime Polymorphism Made Easier Than Ever</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
