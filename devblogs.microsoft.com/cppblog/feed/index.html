@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 21 Sep 2022 17:53:27 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 27 Sep 2022 16:37:55 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -44,36 +44,35 @@
 										<content:encoded><![CDATA[<p>While developing a sample application for a Raspberry Pi with a camera using the <a href="https://github.com/rmsalinas/raspicam">RaspiCam</a> library, it occurred to me that it would be convenient and fun to be able to see the current camera input while debugging the application.  The Visual Studio debugger supports type-specific custom visualizers and end-user extensions that implement UI for these visualizers. I decided to make one for the RaspiCam camera types that would display the current image from the camera. The image below is the end result, showing Visual Studio debugging a program running on the Raspberry Pi and displaying the content of a Raspberry Pi camera object in a pop-up debugger visualizer.</p>
 <p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/08/Picture1.png" alt="Picture of rasperry pi displaying camera" /></p>
 <h5 id="build-a-raspicam-application">Build a RaspiCam Application</h5>
-<p><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart CommentHighlightPipeRest CommentHighlightRest SCXW83782341 BCX8">I needed a sample Raspberry Pi camera application.</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> I downloaded the <a href="https://gnutoolchains.com/raspberry/">Raspberry Pi SDK</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> and a CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> toolchain to my windows machine</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I downloaded </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">the <a href="https://github.com/rmsalinas/raspicam">Raspiam cd camera library</a> </span></span><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">and <a href="https://github.com/opencv/opencv">OpenCV</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I used the Raspberry Pi toolchain to build </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">both these repositories. I then created a new CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> project in Visual Studio, wrote a simple camera application and linked to these two libraries. My </span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">CMakeSettings.json</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> file contains this configuration</span><span class="NormalTextRun CommentHighlightPipeRest SCXW83782341 BCX8">:</span></span><span class="EOP SCXW83782341 BCX8" data-ccp-props="{}"> </span></p>
-<pre>    {
-      "name": "raspberrypi-Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "buildRoot": "${projectDir}\\out\\build\\${name}",
-      "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "cmakeToolchain": "C:/temp/raspberry/toolchain-rpi.cmake",
-      "environments": [
-        {
-          "RASPBIAN_ROOTFS": "c:/temp/raspberry/arm-linux-gnueabihf/sysroot",
-          "PATH": "c:/temp/raspberry/bin;${env.PATH}"
-        }
-      ],
-      "inheritEnvironments": [ "gcc-arm" ],
-      "variables": [
-        {
-          "name": "OpenCV_DIR",
-          "value": "D:\\opencv-4.5.5\\opencv-4.5.5\\out\\install\\RaspberryPi-Debug\\lib\\cmake\\opencv4"
-        },
-        {
-          "name": "raspicam_DIR",
-          "value": "D:\\raspicam\\out\\install\\raspberrypi-Debug\\lib\\cmake"
-        }
-      ],
-      "intelliSenseMode": "linux-gcc-arm"
-    }</pre>
+<p><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart CommentHighlightPipeRest CommentHighlightRest SCXW83782341 BCX8">I needed a sample Raspberry Pi camera application.</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> I downloaded the <a href="https://gnutoolchains.com/raspberry/">Raspberry Pi SDK</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> and a CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> toolchain to my windows machine</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I downloaded </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">the <a href="https://github.com/rmsalinas/raspicam">Raspiam cd camera library</a> </span></span><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">and <a href="https://github.com/opencv/opencv">OpenCV</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I used the Raspberry Pi toolchain to build </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">both these repositories. I then created a new CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> project in Visual Studio, wrote a simple camera application and linked to these two libraries. My </span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">CMakePresets.json</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> file contains this configuration</span><span class="NormalTextRun CommentHighlightPipeRest SCXW83782341 BCX8">:</span></span><span class="EOP SCXW83782341 BCX8" data-ccp-props="{}"> </span></p>
+<pre class="prettyprint">  "configurePresets": [
+    {
+      "name": "raspberrypi-Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "C:/temp/raspberry/toolchain-rpi.cmake",
+        "OpenCV_DIR": "D:\\opencv-4.5.5\\opencv-4.5.5\\out\\install\\RaspberryPi-Debug\\lib\\cmake\\opencv4",
+        "raspicam_DIR": "D:\\raspicam\\out\\install\\raspberrypi-Debug\\lib\\cmake"
+      },
+      "environment": {
+        "RASPBIAN_ROOTFS": "c:/temp/raspberry/arm-linux-gnueabihf/sysroot",
+        "PATH": "c:/temp/raspberry/bin;$env{Path}"
+      }
+    }
+  ],
+  "buildPresets": [
+   {
+      "name": "cross-build",
+      "environment": {
+        "PATH": "c:/temp/raspberry/bin;$penv{PATH}"
+      },
+      "configurePreset": "raspberrypi-Debug"
+    }
+  ]
+</pre>
 <p>My Raspberry Pi application uses the OpenCV library and the <code>RaspiCam_Still_Cv</code> camera type for capturing and manipulating the camera image.</p>
 <pre>    raspicam::RaspiCam_Still_Cv Camera;
     cv::Mat image;
@@ -210,7 +209,7 @@ cv::imencode(jpg, ia, jpgImage, jpgParams);
 <pre>this.MakeHeapObject("std::vector&lt;int, std::allocator&lt;int&gt; &gt;", "vector")
 
 </pre>
-<p>A string containing the new object’s address in the debuggee is returned, for example “<code>0xf7003421</code>”.</p>
+<p>A string containing the new object’s address in the debuggee is returned, for example “<code>0xf7003421</code>”. <span class="NormalTextRun SCXW228642498 BCX9">The object is similarly </span><span class="NormalTextRun SCXW228642498 BCX9">deleted</span><span class="NormalTextRun SCXW228642498 BCX9"> in </span><code><span class="NormalTextRun SpellingErrorV2Themed SCXW228642498 BCX9">FreeHeapObject</span></code><span class="NormalTextRun SCXW228642498 BCX9"> when it is no longe</span><span class="NormalTextRun SCXW228642498 BCX9">r</span><span class="NormalTextRun SCXW228642498 BCX9"> needed. Notice that </span><span class="NormalTextRun SCXW228642498 BCX9">it is possible to introduce new interactions that would not have occurred whenever running code in the </span><span class="NormalTextRun SpellingErrorV2Themed SCXW228642498 BCX9">debuggee</span><span class="NormalTextRun SCXW228642498 BCX9">. It may not be</span><span class="NormalTextRun SCXW228642498 BCX9"> safe </span><span class="NormalTextRun SCXW228642498 BCX9">to create and destroy </span><span class="NormalTextRun SCXW228642498 BCX9">objects that</span> <span class="NormalTextRun SCXW228642498 BCX9">affect</span> <span class="NormalTextRun SCXW228642498 BCX9">shared resources.</span></p>
 <p>Now all the pieces are in place for evaluating the sequence of expressions necessary to get the jpg image into a debuggee in-memory byte array. Once this is done the <code>IDebugMemoryContext2</code> is used to read the bytes from debuggee memory into a buffer in Visual Studio. The Bitmap image is created from a <a href="https://docs.microsoft.com/en-us/dotnet/api/system.io.memorystream?view=netframework-4.7.2">MemoryStream</a> built on that buffer.</p>
 <p>The VSIX project also needs to contain the .natvis file containing the type-to-Visualizer mapping (see top of this section). The VSIX manifest points to the file and tags it as a “<code>NativeCrossPlatformVisualizer</code>” asset.</p>
 <pre>  &lt;Asset Type="NativeCrossPlatformVisualizer" Path="raspicam.natvis"/&gt;</pre>
@@ -219,7 +218,7 @@ cv::imencode(jpg, ia, jpgImage, jpgParams);
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
