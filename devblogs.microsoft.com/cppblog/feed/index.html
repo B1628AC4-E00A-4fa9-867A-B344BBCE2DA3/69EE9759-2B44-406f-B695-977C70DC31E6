@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 27 Sep 2022 16:37:55 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 28 Sep 2022 21:55:20 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,158 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Using system package manager dependencies with vcpkg</title>
+		<link>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#respond</comments>
+		
+		<dc:creator><![CDATA[Daniel Shaw]]></dc:creator>
+		<pubDate>Wed, 28 Sep 2022 21:55:20 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31151</guid>
+
+					<description><![CDATA[<p>According to C++ 2022 developer survey, the top 3 ways to manage C++ libraries were having the library source code as part of the build, compiling the library separately from instructions, and acquiring the library from a system package manager. Language package managers,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/">Using system package manager dependencies with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>According to C++ 2022 developer survey, the top 3 ways to manage C++ libraries were having the library source code as part of the build, compiling the library separately from instructions, and acquiring the library from a system package manager. Language package managers, such as vcpkg, simplify library management by offering the ease of use of a system package manager with the power, flexibility, and portability of building from source.</p>
+<p>vcpkg brings several advantages to C++ library management. First, vcpkg supports a wide range of customizations for each library. vcpkg installs libraries with a specific version. For additional configuration, each library supports various features and flags. Second, the vcpkg catalog supports over 1900 libraries. Third, vcpkg brings finer control: once a library and feature set are selected, that library&#8217;s configuration will be consistent on any platform.</p>
+<p>However, there are certain scenarios where using a system package manager is the better choice. You can deploy ABI compatible security and bug fixes without deploying the entire application. Multiple applications can use the same shared library, which reduces deployment size. And sometimes, company policy requires using a particular system package dependency. </p>
+<p>In the first example, we will show what it will look like if we strictly use dependencies from vcpkg. In the second example, we will replace some dependencies with system package manager ones.</p>
+<p>This blogpost is for advanced users of vcpkg. To get started with vcpkg instead, see <a href="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</a>.</p>
+<h3 id="building-an-application-with-dependencies-from-the-vcpkg-catalog">Building an application with dependencies from the vcpkg catalog</h3>
+<p>In this example, we are using Ubuntu 22.04 and the x64-linux triplet. First, create three files in an empty project directory: vcpkg.json, main.cpp, and CMakeLists.txt.</p>
+<pre class="prettyprint">
+//vcpkg.json
+{
+    "name": "test-project", 
+    "version": "1.0.0",
+    "dependencies": [
+        "azure-core-cpp"
+        "curl"
+    ]
+}</pre>
+<pre class="prettyprint">
+//main.cpp
+#include &#60;curl/curl.h&#62;
+#include &#60;azure/core/internal/strings.hpp&#62;
+#include &#60;iostream&#62;
+
+using namespace std;
+using Azure::Core::_internal::StringExtensions;
+
+int main() {
+    cout &#60;&#60; curl_version() &#60;&#60; endl;
+    cout &#60;&#60; StringExtensions::LocaleInvariantCaseInsensitiveEqual("aA", "aa") &#60;&#60; endl;
+}</pre>
+<pre class="prettyprint">
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.22)
+project(test-project)
+add_executable(main main.cpp)
+find_package(CURL REQUIRED)
+find_package(azure-core-cpp CONFIG REQUIRED)
+target_link_libraries(main PUBLIC Azure::azure-core CURL::libcurl)</pre>
+<p>Configuring the project:</p>
+<pre class="prettyprint">cmake &#60;path to project&#62; -DCMAKE_TOOLCHAIN_FILE=&#60;path to vcpkg&#62;/scripts/buildsystems/vcpkg.cmake
+
+... [build output]
+Detecting compiler hash for triplet x64-linux...
+The following packages will be built and installed:
+azure-core-cpp[core,curl,http]:x64-linux -&#62; 1.7.1
+curl[core,non-http,openssl,ssl]:x64-linux -&#62; 7.84.0#1
+* openssl[core]:x64-linux -&#62; 3.0.5#4
+* vcpkg-cmake[core]:x64-linux -&#62; 2022-07-18
+* vcpkg-cmake-config[core]:x64-linux -&#62; 2022-02-06#1
+* zlib[core]:x64-linux -&#62; 1.2.12#1
+Additional packages (*) will be modified to complete this operation.
+...</pre>
+<p>Building and running main:</p>
+<pre class="prettyprint">cmake --build . &#38;&#38; ./main
+
+[ 50%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[100%] Linking CXX executable main
+[100%] Built target main
+libcurl/7.82.0-DEV OpenSSL/3.0.2 zlib/1.2.12
+1</pre>
+<p>We can use ldd to list the shared libraries:</p>
+<pre class="prettyprint">ldd main
+
+linux-vdso.so.1 (0x00007ffc32bf1000)
+libstdc++.so.6 =&#62; /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f816357a000)
+libm.so.6 =&#62; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f8163493000)
+libgcc_s.so.1 =&#62; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f8163473000)
+libc.so.6 =&#62; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f816324b000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f8163cf0000)</pre>
+<h3 id="using-curl-and-openssl-from-the-system-package-manager">Using curl and OpenSSL from the system package manager</h3>
+<p>You can use <a href="https://github.com/microsoft/vcpkg/blob/master/docs/specifications/ports-overlay.md" rel="noopener" target="_blank">port overlays</a> to configure vcpkg to use the system package manager dependencies. We will build the previous example and use curl and OpenSSL from the system package manager.</p>
+<p>Install the developer dependencies for curl with an OpenSSL backend and OpenSSL:</p>
+<pre class="prettyprint">sudo apt-get install libcurl4-openssl-dev libssl-dev</pre>
+<p>Create the port overlay directory and file structure:</p>
+<pre class="prettyprint">mkdir -p &#60;path to project&#62;/overlays/curl &#60;path to project&#62;/overlays/openssl</pre>
+<pre class="prettyprint">//&#60;path to project&#62;/overlays/curl/vcpkg.json
+{
+    "name": "curl",
+    "version": "1.0.0",
+    "port-version": 0,
+    "features": {
+        "ssl": {
+            "description": ""
+        }
+    }
+}</pre>
+<pre class="prettyprint"># &#60;path to project&#62;/overlays/curl/portfile.cmake
+set(VCPKG_POLICY_EMPTY_PACKAGE enabled)</pre>
+<pre class="prettyprint">//&#60;path to project&#62;/overlays/openssl/vcpkg.json
+{
+    "name": "openssl",
+    "version": "3.0.5"
+}</pre>
+<pre class="prettyprint"># &#60;path to project&#62;/overlays/openssl/portfile.cmake
+set(VCPKG_POLICY_EMPTY_PACKAGE enabled)</pre>
+<p>Building with CMake (we’re using the same project in the previous example):</p>
+<pre class="prettyprint">cmake &#60;path to project&#62; -DVCPKG_OVERLAY_PORTS=&#60;path to project&#62;/overlays -DCMAKE_TOOLCHAIN_FILE=&#60;path to vcpkg&#62;/scripts/buildsystems/vcpkg.cmake
+
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-linux...
+The following packages will be built and installed:
+azure-core-cpp[core,curl,http]:x64-linux -&#62; 1.7.1
+curl[core,non-http,openssl,ssl]:x64-linux -&#62; 7.84.0#1 -- &#60;path to project&#62;/overlays/curl
+* openssl[core]:x64-linux -&#62; 3.0.5#4 -- &#60;path to project&#62;/overlays/openssl
+* vcpkg-cmake[core]:x64-linux -&#62; 2022-07-18
+* vcpkg-cmake-config[core]:x64-linux -&#62; 2022-02-06#1
+Additional packages (*) will be modified to complete this operation.
+...</pre>
+<p>Building and running main:</p>
+<pre class="prettyprint">cmake --build .
+.\main
+
+libcurl/7.81.0 OpenSSL/3.0.2 zlib/1.2.11 brotli/1.0.9 zstd/1.4.8 libidn2/2.3.2 libpsl/0.21.0 (+libidn2/2.3.2) libssh/0.9.6/openssl/zlib nghttp2/1.43.0 librtmp/2.3 OpenLDAP/2.5.11
+1</pre>
+<p>Checking whether we’ve linked the correct shared libraries (libssl and libcurl):</p>
+<pre class="prettyprint">ldd main
+
+libcurl.so.4 =&#62; /lib/x86_64-linux-gnu/libcurl.so.4 (0x00007f632c1c0000)
+libssl.so.3 =&#62; /lib/x86_64-linux-gnu/libssl.so.3 (0x00007f632c11c000)
+libcrypto.so.3 =&#62; /lib/x86_64-linux-gnu/libcrypto.so.3 (0x00007f632bcda000)
+libstdc++.so.6 =&#62; /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f632baae000)
+libm.so.6 =&#62; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f632b9c7000)
+... (25+ more dependencies)</pre>
+<p>You will notice curl and openssl from the system package manager have more dependencies than the curl and openssl from the vcpkg catalog. In the above example, we only added port overlays for the dependencies that we use. If you were to build a more complex application that would depend on other dependencies, you would need to add additional overlays.</p>
+<p>Both the vcpkg and the system packager catalogs can contain the same library, and we need to make sure the application only links one copy of each library. Linking two different versions of the same library could lead to ODR violations.
+In the example, curl from the system package manager pulls in OpenSSL as a dependency. We overlayed the OpenSSL dependency in vcpkg to prevent vcpkg from also acquiring OpenSSL from its catalog.</p>
+<h4 id="how-did-cmake-find-curl"> How did CMake find curl?</h4>
+<p>When find_package(CURL) is called, CMake searches for the CURL libraries in the vcpkg_installed directory. If the CURL libraries are not found on the CMake paths, it defaults to the FindCurl module which finds the system dependency.</p>
+<h3 id="learn-more"> Learn More </h3>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/" rel="noopener" target="_blank">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues" rel="noopener" target="_blank">issue tracker</a> or join a more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions" rel="noopener" target="_blank">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap" rel="noopener" target="_blank">roadmap</a> page.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/">Using system package manager dependencies with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>A Visual Studio Debugger Extension for the Raspberry Pi Camera</title>
 		<link>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/#comments</comments>
@@ -943,48 +1095,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-august-2022-release-is-now-available-cmake-version-update-updated-faq-cross-compilation-fix-for-apple-silicon/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Updates to Visual Studio Build Tools license for C and C++ Open-Source projects</title>
-		<link>https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/#comments</comments>
-		
-		<dc:creator><![CDATA[Marian Luparu]]></dc:creator>
-		<pubDate>Thu, 18 Aug 2022 18:40:37 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30919</guid>
-
-					<description><![CDATA[<p>Visual Studio Build Tools (VSBT) can now be used for compiling open-source C++ dependencies from source without requiring a Visual Studio license, even when you are working for an enterprise on a commercial or closed-source project.<br />
-This change expands user rights to the Build Tools and does not limit the existing Visual Studio Community license provisions around Open-Source development.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/">Updates to Visual Studio Build Tools license for C and C++ Open-Source projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">Visual Studio Build Tools</a> (VSBT) can now be used for compiling open-source C++ dependencies from source without requiring a Visual Studio license, even when you are working for an enterprise on a commercial or closed-source project.</p>
-<p>This change expands user rights to the Build Tools and does not limit the existing Visual Studio Community license provisions around Open-Source development. If you already are a developer contributing to OSS projects, you can continue to use Visual Studio and Visual Studio Build Tools together for free, just like before.</p>
-<h3 id="new-license-benefits">New License Benefits</h3>
-<p>If you are an enterprise developer or developing any closed-source projects, this change now allows you to use Visual Studio Build Tools to compile and build any C++ 3rd party open-source dependencies, without needing a paid Visual Studio license, when you’re not using Visual Studio for active C++ development.</p>
-<p>For example, if your Node.js application depends on npm native modules like sqllite3, bufferutil, etc., in order to successfully install these npm packages on Windows, <a href="https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules">you will need to use Visual Studio Build Tools</a>. Previously, if the application you were developing was not OSS, installing VSBT was permitted only if you had a valid Visual Studio license (e.g., Visual Studio Community or higher). With this new license option, if you do not need the full functionality of Visual Studio for your active development of your project, you have the flexibility to install Visual Studio Build Tools for free.</p>
-<p>As noted above, if you and your team need to compile and develop proprietary C++ code with Visual Studio, a Visual Studio license will still be required.</p>
-<p>You can review the latest Visual Studio Build Tools license here: <a href="https://visualstudio.microsoft.com/license-terms/vs2022-ga-diagnosticbuildtools/">License Terms | Microsoft Diagnostic Build Tools for Visual Studio 2022 &#8211; Visual Studio</a> (for full list of licenses check out the <a href="https://visualstudio.microsoft.com/license-terms/">Visual Studio Licenses &amp; EULA Directory</a>)</p>
-<h3 id="background">Background</h3>
-<p>The C++ OSS ecosystem is a vibrant one and you need to look no further than the growing popularity of <a href="https://vcpkg.io/">vcpkg, the multi-platform C++ dependency manager from Microsoft</a>, to see how it is becoming a fundamental building block for an increasing number of projects. We are thrilled to see the adoption of many of these C++ open-source libraries in the Python or node.JS communities as well. We hope these licensing changes will allow for further adoption of these C++ libraries in enterprise environments, where building from source:</p>
-<ul>
-<li>removes friction in securing the supply chain,</li>
-<li>creates a smooth migration path to the latest MSVC versions,</li>
-<li>presents opportunities for further runtime performance optimizations, and</li>
-<li>potentially allows for more active OSS contributions to these libraries</li>
-</ul>
-<h3 id="whats-next">What&#8217;s Next</h3>
-<p>We are actively working to further simplify the acquisition of the MSVC toolchain and all its dependencies, to make it as easy as possible to <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">bootstrap a C++ environment on Windows</a> for C++ developers as well as for other language communities that chose to depend on MSVC toolchain. Stay tuned for more news on our blog.</p>
-<p>For questions or feedback on these licensing changes, please reach out to us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or on Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/">Updates to Visual Studio Build Tools license for C and C++ Open-Source projects</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/updates-to-visual-studio-build-tools-license-for-c-and-cpp-open-source-projects/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
