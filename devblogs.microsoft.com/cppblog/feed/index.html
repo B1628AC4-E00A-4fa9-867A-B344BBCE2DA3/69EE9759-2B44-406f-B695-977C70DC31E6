@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 03 Oct 2022 22:02:44 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 06 Oct 2022 18:02:05 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,181 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg September 2022 Release is Now Available: Celebrating 6 Years with Over 2000 Libraries!</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Thu, 06 Oct 2022 18:02:05 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31188</guid>
+
+					<description><![CDATA[<p>The September 2022 release of the vcpkg package manager is available. This blog post summarizes changes from August 15th, 2022 to September 27th, 2022 for the Microsoft/vcpkg and Microsoft/vcpkg-tool GitHub repos.<br />
+&#160;<br />
+vcpkg now has over 2,000 unique libraries in its open-source registry<br />
+With this release,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/">vcpkg September 2022 Release is Now Available: Celebrating 6 Years with Over 2000 Libraries!</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.09.27">September 2022 release of the vcpkg package manager is available</a>. This blog post summarizes changes from August 15<sup>th</sup>, 2022 to September 27<sup>th</sup>, 2022 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>&nbsp;</p>
+<h3 id="vcpkg-now-has-over-2000-unique-libraries-in-its-open-source-registry">vcpkg now has over 2,000 unique libraries in its open-source registry</h3>
+<p>With this release, and the 6<sup>th</sup> anniversary of the launch of vcpkg, we are proud to hit a new milestone:<strong> over 2,000 unique open-source libraries</strong> are available in the vcpkg catalog! vcpkg continues to maintain the largest catalog of any C/C++ package manager with over 10,000 unique library versions with built-in support for many popular architectures, operating systems, and compilers, including x64, x86, arm, arm64, WebAssembly, Linux, macOS, Windows, iOS, Android, FreeBSD, UWP, MSVC, Clang, gcc, mingw, as well as static and shared (dynamic) libraries and more! And of course, since vcpkg is configured to build all these libraries from source, you can make further customizations as needed for your unique workflow.</p>
+<p>From the beginning, we have invested extensively in building a large ecosystem of libraries supporting as many development workflows as possible, and we will continue to honor that commitment. While the C++ ecosystem is incredibly diverse, we will rise to the challenge and try to make as many developers as possible more productive. Managing libraries is well understood as a top C++ pain point in annual ISO C++ surveys, but we hope that will change over the next several years.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>48 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>419 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>2,022 total libraries</strong> available in the vcpkg public registry. When including all available versions, there are over <strong>10,839 port versions</strong>.</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.09.27">September release of the main vcpkg repo</a> includes <strong>249 commits</strong>.</li>
+<li><strong>95 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has <strong>4.8k forks</strong> and <strong>16.8k stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<p>While last month was relatively quiet, this month’s update includes several vcpkg tool changes. See the full tool <a href="https://github.com/microsoft/vcpkg-tool/compare/2022-07-21...2022-09-20">commit changelog</a> for details. Notable changes are summarized below.</p>
+<p>&nbsp;</p>
+<h4 id="optional-name-and-version-fields-in-vcpkg-json">Optional name and version fields in vcpkg.json</h4>
+<p><code>vcpkg.json</code> is the manifest file for specifying library dependencies, versions, optional features and other metadata required for acquiring ports. Previously, two fields were always mandatory for this file:</p>
+<ul>
+<li><code>name</code>: specifies a name for the project this manifest resides in.</li>
+<li><code>version</code>: specifies a version for the project this manifest resides in.</li>
+</ul>
+<p>These fields are only really useful if your project is a library or other port that you want to package with vcpkg. However, we required the same schema for all projects consuming vcpkg ports (even if they themselves are not a port), which may be confusing for users. From now on, these fields are optional for projects that are only consuming ports, but not producing one. If you’re packaging a library for use in vcpkg however, you absolutely still need to specify these fields as they are critical for consumers to be able to consume your library via vcpkg.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/605">Microsoft/vcpkg-tool#605</a></p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-artifacts-improvements">vcpkg artifacts improvements</h4>
+<p>We are continuing to improve our preview experience for vcpkg artifacts, which enable acquisition of developer tools like compilers and debuggers from vcpkg. These are some changes in this release, especially for multiple registry scenarios:</p>
+<ul>
+<li>The <code>--registry</code>switch has been removed as registries are required to have a name.</li>
+<li>Commands which take as input registry names or IDs now combine the set of registry names from the global set and the local project.</li>
+<li>Console output now always displays registries using the following rules:
+<ul>
+<li>If the registry URI is in the project, the name of the project is used.</li>
+<li>If the registry URI is not in the project, and the name of the registry in the global configuration does not conflict with the project, the global configuration’s name is used.</li>
+<li>Otherwise, the URI enclosed in []s is used. This is a signal to vcpkg users that they will need to provide an appropriate registry name if they want something different.</li>
+</ul>
+</li>
+<li>The command x-regenerate I now requires a local file path.</li>
+<li>Several places that used to break when handling relative paths now tolerate the situation correctly, including x-regenerate.</li>
+<li>If an artifact declares a dependency from a particular registry, and that registry’s name is not declared in the artifact itself, resolution fails. Vcpkg will no longer try to find the name in the project/global configuration.</li>
+<li>Commands that need activation like add and remove no longer try to activate the project automatically.</li>
+<li>Artifacts are now installed and enumerated in topological sorted order.</li>
+<li>There is no longer a built-in registry named “default”.</li>
+<li>Except for index.yaml, all remaining YAML files have been replaced with JSON. This may invalidate existing installed artifacts. This change was necessary in order to make the artifacts experience more consistent with our existing experience for managing ports.</li>
+<li>Output messages have been cleaned up, including the removal of several newlines.</li>
+<li>Bug fix: the console output no longer gets confused around registry names and no longer displays names using a “[URL]” format when it is unnecessary to do so.</li>
+</ul>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/690">Microsoft/vcpkg-tool#690</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/693">Microsoft/vcpkg-tool#693</a></p>
+<p>&nbsp;</p>
+<h4 id="cleaned-up-console-output-when-not-connected-to-a-console">Cleaned up console output when not connected to a console</h4>
+<p>We fixed some console output bugs when vcpkg is not connected to a console/TTY. Specifically:</p>
+<ul>
+<li>VT codes when showing tables should now be displayed correctly.</li>
+<li>Progress bars are no longer displayed as the extra output may be undesirable in CI systems and also was not displaying correctly at times.</li>
+</ul>
+<p><strong>Before (non-TTY): </strong></p>
+<p><img width="1489" height="191" class="wp-image-31202" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-4.png" alt="Graphical user interface Description automatically generated with low confidence" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-4.png 1489w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-4-300x38.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-4-1024x131.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-4-768x99.png 768w" sizes="(max-width: 1489px) 100vw, 1489px" /></p>
+<p><strong>After (non-TTY): </strong></p>
+<p><img width="1393" height="661" class="wp-image-31203" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/text-description-automatically-generated-2.png" alt="Text Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/text-description-automatically-generated-2.png 1393w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/text-description-automatically-generated-2-300x142.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/text-description-automatically-generated-2-1024x486.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/text-description-automatically-generated-2-768x364.png 768w" sizes="(max-width: 1393px) 100vw, 1393px" /></p>
+<p><strong>In TTY: </strong></p>
+<p><img width="1630" height="412" class="wp-image-31204" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5.png" alt="Graphical user interface Description automatically generated with low confidence" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5.png 1630w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5-300x76.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5-1024x259.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5-768x194.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/graphical-user-interface-description-automaticall-5-1536x388.png 1536w" sizes="(max-width: 1630px) 100vw, 1630px" /></p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/702">Microsoft/vcpkg-tool#702</a></p>
+<p>&nbsp;</p>
+<h4 id="added-schemata-for-vcpkg-json-vcpkg-configuration-json-and-artifacts">Added schemata for vcpkg.json, vcpkg-configuration.json, and artifacts</h4>
+<p>We added official schemas for our manifest files to make it easier to validate that files are authored correctly. In the future, we will also be using this experience to validate manifest files opened in Visual Studio and Visual Studio Code and notify users if errors are present using the IntelliSense experience.</p>
+<p>You can try it yourself for the vcpkg.json and vcpkg-configuration.json manifests by</p>
+<p>adding the following to the appropriate .json file:</p>
+<p><code>"$schema": https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json</code></p>
+<p><img width="1018" height="677" class="wp-image-31205" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-4-2.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-4-2.png 1018w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-4-2-300x200.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-4-2-768x511.png 768w" sizes="(max-width: 1018px) 100vw, 1018px" /></p>
+<p>To try it out on JSON files describing artifacts,</p>
+<p>add the following to the file:</p>
+<p><code>"$schema": https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/artifact.schema.json</code></p>
+<p><img width="1050" height="562" class="wp-image-31206" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-5-2.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-5-2.png 1050w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-5-2-300x161.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-5-2-1024x548.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/10/word-image-31188-5-2-768x411.png 768w" sizes="(max-width: 1050px) 100vw, 1050px" /></p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/650">Microsoft/vcpkg-tool#650</a></p>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,823</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,879</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,784</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,795</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>956</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,444</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>910</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,738</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,810</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos in this release:</p>
+<ul>
+<li>Thomas1664 (21 commits)</li>
+<li>dg0yt (16 commits)</li>
+<li>Neumann-A (14 commits)</li>
+<li>wrobelda (5 commits)</li>
+<li>autoantwort (4 commits)</li>
+<li>m-kuhn (4 commits)</li>
+<li>coryan (4 commits)</li>
+<li>RT222 (2 commits)</li>
+<li>eao197 (2 commits)</li>
+<li>chausner (2 commits)</li>
+<li>Osyotr (2 commits)</li>
+<li>daschuer (1 commit)</li>
+<li>ekilmer (1 commit)</li>
+<li>yurybura (1 commit)</li>
+<li>myd7349 (1 commit)</li>
+<li>an-tao (1 commit)</li>
+<li>past-due (1 commit)</li>
+<li>DragonJoker (1 commit)</li>
+<li>xvitaly (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.09.27">full September release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue </a><span style="color: #00a9e0;">tracker </span>or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/">vcpkg September 2022 Release is Now Available: Celebrating 6 Years with Over 2000 Libraries!</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Announcing NuGet PackageReference support for C++/CLI MSBuild projects targeting .NET Core and .NET 5 or higher</title>
 		<link>https://devblogs.microsoft.com/cppblog/announcing-nuget-packagereference-support-for-c-cli-msbuild-projects-targeting-net-core/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/announcing-nuget-packagereference-support-for-c-cli-msbuild-projects-targeting-net-core/#comments</comments>
@@ -947,72 +1122,6 @@ int main() { }</pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Importing ST projects into Visual Studio Code</title>
-		<link>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/#comments</comments>
-		
-		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
-		<pubDate>Thu, 01 Sep 2022 18:50:15 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[embedded]]></category>
-		<category><![CDATA[IoT]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30966</guid>
-
-					<description><![CDATA[<p>In the world of Arm microcontrollers there are many silicon vendors, one of the largest is STMicroelectronics. ST has a large catalog of available devices with many capabilities as well as supporting development boards for evaluating them. They also produce STM32CubeIDE,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/">Importing ST projects into Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>In the world of Arm microcontrollers there are many silicon vendors, one of the largest is <a href="https://www.st.com/">STMicroelectronics</a>. ST has a large catalog of available devices with many capabilities as well as supporting development boards for evaluating them. They also produce <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a>, a custom IDE to use when targeting their devices, and <a href="https://www.st.com/content/st_com/en/products/development-tools/software-development-tools/stm32-software-development-tools/stm32-configurators-and-code-generators/stm32cubemx.html">STM32CubeMX</a>, a configuration tool used in configuring properties of their devices and generating projects.</p>
-<p>If you are a developer already using ST’s products I’m not telling you anything new. You may not be aware though of the work we have been doing to <a href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">enable embedded developers in Visual Studio Code</a>. This embedded experience relies on the new <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifacts capabilities</a> to help acquire toolchains and configure the dev environment. To make it easier for developers using ST devices to try Visual Studio Code we have been working with ST to enable importing STM32CubeIDE projects.</p>
-<p>We accomplish this by generating a CMake project from the ST project. ST provides many sample projects across their portfolio. We’ve validated builds across ST’s sample projects with this mechanism, over 3,000 of them. At present we have a 94% pass rate which we are continuing to improve. This gives us confidence that our approach will be successful for importing your own ST projects. Our embedded tools extension also enables device flashing and debugging through the importer, though we have only validated this on the hardware we have.</p>
-<p>This post is going to go over how this project importer functionality works in conjunction with vcpkg and ST’s tools.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png"><img class="alignnone size-full wp-image-30967" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png" alt="A STM32 project in VSCode" width="1430" height="951" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode.png 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-300x200.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-1024x681.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/STM32-project-in-VSCode-768x511.png 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></a></p>
-<h4 id="using-st-projects-in-visual-studio-code">Using ST projects in Visual Studio Code</h4>
-<p>This post assumes some familiarity with ST devices, development tools, and embedded development generally. If you need some background, we recommend the following articles on getting started with STM32 from <a href="https://shawnhymel.com/">Shawn Hymel</a>.</p>
-<ul>
-<li><a href="https://www.digikey.com/en/maker/projects/getting-started-with-stm32-introduction-to-stm32cubeide/6a6c60a670c447abb90fd0fd78008697">Introduction to STM32CubeIDE</a></li>
-<li><a href="https://www.digikey.com/en/maker/projects/getting-started-with-stm32-introduction-to-freertos/ad275395687e4d85935351e16ec575b1">Introduction to FreeRTOS </a></li>
-</ul>
-<p>We rely on vcpkg for managing dependencies like CMake and Ninja, which includes acquiring them and making them available for use in your development environment. You can learn more about how we vcpkg in our <a href="https://devblogs.microsoft.com/cppblog/vscode-embedded-development/">Visual Studio Code embedded development overview</a>. You can install it in a single shell command for your platform.</p>
-<p>Linux/macOS</p>
-<pre>. &lt;(curl https://aka.ms/vcpkg-init.sh -L)</pre>
-<p>PowerShell</p>
-<pre>iex (iwr -useb https://aka.ms/vcpkg-init.ps1)</pre>
-<p>You will need the Embedded Tools extension version 0.3.0 or greater installed in Visual Studio Code to use the ST project importer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png"><img class="alignnone size-full wp-image-30968" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png" alt="Embedded Tools extension page from VS Code" width="624" height="171" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/embtools0.3-300x82.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a></p>
-<p>Today our importer requires that you have the <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a> software installed in the default location for your platform. We have been testing this capability with STM32CubeIDE 1.9.0 and STM32CubeMX 6.5.0. If you have multiple instances installed side by side we do not have the ability to control which is selected.</p>
-<p>It is also necessary to acquire the board support package for your device in STM32CubeIDE. This is so that we can use the compilers and supporting applications provided by ST from within Visual Studio Code.</p>
-<p>There will be a lighter weight package available from ST in the future. We plan to enable acquisition of the dependencies here via vcpkg as well.</p>
-<p>With our prerequisites installed, from within Visual Studio Code in the command pallet (&lt;Ctrl&gt;+&lt;Shift&gt;+&lt;P&gt;) run “Create project from ST project”.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png"><img class="alignnone size-full wp-image-30969" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png" alt="Create ST project in VS Code command pallate" width="1456" height="189" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj.png 1456w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-300x39.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-1024x133.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/create-st-proj-768x100.png 768w" sizes="(max-width: 1456px) 100vw, 1456px" /></a></p>
-<p>Navigate to where your ST .cproject is and select it. You can then select either the debug or release configuration. Now you can select Build to compile your firmware with CMake. To debug select the Debug view, then select the launch button. This will run the STM32 programmer to flash the firmware onto the device and connect using GDB. From here all of our embedded development views (<a href="https://docs.microsoft.com/cpp/embedded/serial-monitor?view=msvc-170&amp;tabs=visual-studio">serial</a>, <a href="https://docs.microsoft.com/cpp/embedded/rtos-view?view=msvc-170&amp;tabs=visual-studio">RTOS</a>, and <a href="https://docs.microsoft.com/cpp/embedded/peripheral-view?view=msvc-170&amp;tabs=visual-studio">peripherals</a>) are available.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png"><img class="alignnone size-full wp-image-30970" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png" alt="STM32 FreeRTOS project debugging in VS Code" width="1430" height="815" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode.png 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-300x171.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-1024x584.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-freertos-debug-vscode-768x438.png 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></a></p>
-<p>If your project has an .ioc file you can open the context menu and open STM32CubeMX for your project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png"><img class="alignnone wp-image-30971" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png" alt="VS Code context menu for CubeMX .ioc file" width="655" height="366" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode.png 1106w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-1024x572.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32.ioc_.vscode-768x429.png 768w" sizes="(max-width: 655px) 100vw, 655px" /></a></p>
-<p>If you make changes to your project in STM32CubeMX they will be recognized and the CMake cache will regenerate.</p>
-<p>After you close Visual Studio Code for your next session with your project you will need to launch Visual Studio Code from a vcpkg activated prompt. To do so in your shell navigate to the project folder containing vcpkg-configuration.json, run vcpkg activate, then code .</p>
-<p>In a future release this will no longer be necessary, activation will happen automatically.</p>
-<h4 id="understanding-cmake-interaction">Understanding CMake interaction</h4>
-<p>You can see the simple CMakeLists.txt that is generated in the root of the project where the .cproject is located. This has a dependency on generated CMake files under the cmake directory. There are paths in these files that are set to the discovered location of the ST compilers on your machine. If you intend to move to CMake from the ST project format we advise that you adjust these files to your needs, particularly for use in a team where the paths may vary.</p>
-<p>The other thing to be aware of is that sometimes in the STM32CubeIDE samples, the project may be in a subdirectory of the source code. If you do not see your project files in the file view this may be why. Select the CMake targets view and you should see everything that CMake has used to generate the build.</p>
-<p>Following from the above point we recommend that when generating projects using STM32CubeMX you leave the default selected in the Project Manager for “Generate Under Root”. This will keep your .cproject in the root of the folder with the generated source files. This is how STM32CubeIDE generates projects by default as well.</p>
-<p>If you open the project again in STM32CubeIDE you will need to exclude the build directory used by CMake from your project. Right click the build directory and select Resource Configurations &gt; Exclude from Build.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png"><img class="alignnone size-full wp-image-30973" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png" alt="STM32IDE context menu for resource configuration" width="354" height="361" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png 354w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-294x300.png 294w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig-48x48.png 48w" sizes="(max-width: 354px) 100vw, 354px" /></a></p>
-<p>Then select both Debug and Release in the Exclude from build dialog.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png"><img class="alignnone wp-image-30974" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png" alt="STM32 IDE build exclusions dialog" width="498" height="325" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions.png 732w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-buildexclusions-300x196.png 300w" sizes="(max-width: 498px) 100vw, 498px" /></a></p>
-<h4 id="send-us-your-feedback">Send us your feedback</h4>
-<p>We hope that these new capabilities will enable you to choose Visual Studio Code for your embedded development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/">Importing ST projects into Visual Studio Code</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/feed/</wfw:commentRss>
-			<slash:comments>9</slash:comments>
 		
 		
 			</item>
