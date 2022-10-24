@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 06 Oct 2022 21:45:11 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 24 Oct 2022 16:03:13 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,155 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Improving Copy and Move Elision</title>
+		<link>https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/#respond</comments>
+		
+		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
+		<pubDate>Mon, 24 Oct 2022 16:00:31 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31231</guid>
+
+					<description><![CDATA[<p>With Visual Studio 2022 version 17.4 Preview 3, we&#8217;ve significantly increased the number of situations where we do copy or move elision and given users more control over whether these transformations are enabled.<br />
+What are copy and move elision?<br />
+When a return keyword in a C++ function is followed by an expression of non-primitive type,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/">Improving Copy and Move Elision</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>With Visual Studio 2022 version 17.4 Preview 3, we&#8217;ve significantly increased the number of situations where we do copy or move elision and given users more control over whether these transformations are enabled.</p>
+<h2 id="what-are-copy-and-move-elision">What are copy and move elision?</h2>
+<p>When a <code>return</code> keyword in a C++ function is followed by an expression of non-primitive type, the execution of that return statement copies the result of the expression into the return slot of the calling function. To do this, the copy or move constructor of the non-primitive type is called. Then, as part of exiting the function, destructors for function-local variables are called, likely including any variables named in the expression following the <code>return</code> keyword.</p>
+<p>The C++ specification allows the compiler to construct the returned object directly in the return slot of the calling function, eliding the copy or move constructor executed as part of the return. Unlike most other optimizations, this transformation is allowed to have an observable effect on the program&#8217;s output &#8211; namely, the copy or move constructor and associated destructor are called one less time.</p>
+<h2 id="mandatory-copy-move-elision-in-visual-studio">Mandatory copy/move elision in Visual Studio</h2>
+<p>The C++ standard <em>requires</em> copy or move elision when the returned value is initialized as part of the <code>return</code> statement (such as when a function with return type <code>Foo</code> returns <code>return Foo()</code>). The Microsoft Visual C++ compiler always performs copy and move elision for return statements where it is required to do so, regardless of the flags passed to the compiler. This behavior is unchanged.</p>
+<h2 id="changes-to-optional-copy-move-elision-in-visual-studio-17-4-preview-3">Changes to optional copy/move elision in Visual Studio 17.4 Preview 3</h2>
+<p>When the returned value is a named variable, the compiler <em>may</em> elide the copy or move but is not required to do so. The standard still requires a copy or move constructor to be defined for the named return variable, even if the compiler elides the constructor in all cases. Prior to Visual Studio 2022 version 17.4 Preview 3, when optimizations were disabled (such as with the <code>/Od</code> compiler flag or for functions marked with <code>#pragma optimize("", off)</code>) the compiler would only perform mandatory copy and move elision. With the <code>/O2</code> flag, the compiler would perform optional copy or move elision for optimized functions with simple control flow.</p>
+<p>Starting with Visual Studio 2022 version 17.4 Preview 3, we are giving developers the option for consistency with the new <code>/Zc:nrvo</code> compiler flag. The <code>/Zc:nrvo</code> flag will be passed by default when code is compiled with the <code>/O2</code> flag, the <code>/permissive-</code> flag, or when compiling for <code>/std:c++20</code> or later. When this flag is passed, copy and move elision will be performed wherever possible. We would like to turn <code>/Zc:nrvo</code> on by default in a future release.</p>
+<p>Starting with Visual Studio 2022 version 17.4 Preview 3, optional copy/move elision can also be explicitly disabled with the <code>/Zc:nrvo-</code> flag. It is impossible to disable mandatory copy/move elision.</p>
+<p>In Visual Studio 2022 version 17.4 Preview 3, we are also increasing the number of places where we do copy/move elision when optional copy/move elision is enabled with the <code>/Zc:nrvo</code>, <code>/O2</code>, <code>/permissive-</code>, or <code>/std:c++20</code> or later flags.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Earlier versions of Visual Studio</th>
+<th>Visual Studio 17.4 Preview 3 and later</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mandatory copy/move elision</td>
+<td>Always occurs.</td>
+<td>Always occurs.</td>
+</tr>
+<tr>
+<td>Optional copy/move elision for return of named variable in function without loops or exception handling</td>
+<td>Occurs under <code>/O2</code> unless the function has multiple returned symbols with overlapping lifetimes or the type&#8217;s copy or move constructor has default arguments.</td>
+<td>Does not occur under <code>/Zc:nrvo-</code>. Otherwise, occurs under <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> unless the function has multiple returned symbols with overlapping lifetimes.</td>
+</tr>
+<tr>
+<td>Optional copy/move elision for return of named variable in a loop</td>
+<td>Never occurs.</td>
+<td>Does not occur under <code>/Zc:nrvo-</code>. Otherwise, occurs under <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> unless the function has multiple returned symbols with overlapping lifetimes.</td>
+</tr>
+<tr>
+<td>Optional copy/move elision for return of named variable in functions with exception handling</td>
+<td>Never occurs.</td>
+<td>Does not occur under <code>/Zc:nrvo-</code>. Otherwise, occurs under <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> unless the function has multiple returned symbols with overlapping lifetimes.</td>
+</tr>
+<tr>
+<td>Optional copy/move elision for return of named variable when the copy or move constructor has additional default arguments</td>
+<td>Never occurs.</td>
+<td>Does not occur under <code>/Zc:nrvo-</code>. Otherwise, occurs under <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> unless the function has multiple returned symbols with overlapping lifetimes.</td>
+</tr>
+<tr>
+<td>Optional copy/move elision for throw of a named variable</td>
+<td>Never occurs.</td>
+<td>Never occurs.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples-of-optional-copy-move-elision">Examples of optional copy/move elision</h2>
+<p>The simplest example of optional copy or move elision is a function such as:</p>
+<pre><code class="language-C++">Foo SimpleReturn() {
+    Foo result;
+    return result;
+}</code></pre>
+<p>Earlier versions of the MSVC compiler already elided the copy or move of <code>result</code> into the return slot in this case if the <code>/O2</code> flag was passed. In Visual Studio 2022 version 17.4 Preview 3, the copy or move is also elided if the <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> flags are passed, and retained if the <code>/Zc:nrvo-</code> flag is passed.</p>
+<p>Starting with Visual Studio 2022 version 17.4 Preview 3, we now perform copy/move elision in the following additional cases if the <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> flags are passed to the compiler and the <code>/Zc:nrvo-</code> flag is not:</p>
+<h3 id="return-inside-a-loop">Return inside a loop</h3>
+<pre><code class="language-C++">Foo ReturnInALoop(int iterations) {
+    for (int i = 0; i &lt; iterations; ++i) {
+        Foo result;
+        if (i == (iterations / 2)) {
+            return result;
+        }
+    }
+}</code></pre>
+<p>The <code>result</code> object will be properly constructed at the start of each iteration of the loop and destructed at the end of each iteration. On the iteration where <code>result</code> is returned, its destructor will not be called on exit from the function. The function&#8217;s caller will destroy the returned object when it falls out of scope in that function.</p>
+<h3 id="return-with-exception-handling">Return with exception-handling</h3>
+<pre><code class="language-C++">Foo ReturnInTryCatch() {
+    try {
+        Foo result;
+        return result;
+    } catch (...) {}
+}</code></pre>
+<p>The copy or move of the <code>result</code> object will now be elided if the <code>/O2</code>, <code>/permissive-</code>, <code>/std:c++20</code> or later, or <code>/Zc:nrvo</code> flags are passed and the <code>/Zc:nrvo-</code> flag is not. We also now properly handle more complex cases such as:</p>
+<pre><code class="language-C++">int n;
+
+void throwFirstThreeIterations() {
+    ++n;
+    if (n &lt;= 3) throw n;
+}
+
+Foo ComplexTryCatch()
+{
+Label1:
+    Foo result;
+
+    try {
+        throwFirstThreeIterations();
+        return result;
+    }
+    catch(...) {
+        goto Label1;    
+    }
+}</code></pre>
+<p>The <code>result</code> object will be constructed in the return slot for the caller function and no copy/move constructor or destructor will be called for it on a successful return. When an exception is thrown, whether or not the <code>result</code> object is destructed is determined by which exception-handling flags are passed to the compiler. By default, no stack-unwinding will occur and therefore no destructors will be called. However, if stack-unwinding exception handling is enabled with the <code>/EHs</code>, <code>/EHa</code>, or <code>/EHr</code> flags, <code>goto Label1</code> will cause <code>result</code>&#8216;s destructor to be called because it jumps to before <code>result</code> is initialized. Either way, when the expression <code>Foo result</code> is reached again, the object will be constructed again in the return slot.</p>
+<h3 id="copy-constructors-with-default-arguments">Copy constructors with default arguments</h3>
+<p>We now properly detect that a copy or move constructor with default arguments is still a copy or move constructor, and therefore can be elided in the cases above. A copy constructor with default parameters will look something like the following:</p>
+<pre><code class="language-C++">struct StructWithCopyConstructorDefaultParam {
+   int X;
+
+   StructWithCopyConstructorDefaultParam(int x) : X(x) {}
+   StructWithCopyConstructorDefaultParam(StructWithCopyConstructorDefaultParam const&amp; original, int defaultParam = 0) :
+      X(original.X + defaultParam) {
+      printf("Copy constructor called.\n");
+   }
+};
+</code></pre>
+<h2 id="limitations-on-nrvo">Limitations on NRVO</h2>
+<p>Although the MSVC compiler now performs copy and move elision in many more situations, it is not always possible to perform copy/move elision. To see why this is true, consider the following function:</p>
+<pre><code class="language-C++">Foo WhichShouldIReturn(bool condition) {
+    Foo resultA;
+    if (condition) {
+        Foo resultB;
+        return resultB;
+    }
+    return resultA;
+}</code></pre>
+<p>Copy elision constructs the object to be returned in the return slot, but which object should be constructed in the return slot in this case? For the copy of <code>resultA</code> to be elided at <code>return resultA</code>, it must be constructed in the return slot. However, if <code>condition</code> is true, <code>resultB</code> will need to be constructed in the return slot before <code>resultA</code> is destroyed. There is no way to perform copy elision for both paths.</p>
+<p>We currently choose to avoid doing optional copy/move elision on all paths in a function if copy/move elision is impossible on any path. However, changes to inlining decisions, dead code elimination, and other optimizations can change whether copy or move elision is possible. For this reason, it is never safe to write code that depends on certain behavior for copy/move elision of named variables unless all optional copy/move elision is disabled with <code>/Zc:nrvo-</code>.</p>
+<p>As long as stack-unwinding exception handling is enabled or no exceptions are thrown, it is still safe to assume that every constructer call has a matching destructor call.</p>
+<h2 id="feedback">Feedback</h2>
+<p>We encourage you to try out this update in the latest Visual Studio 2022 version 17.4 Preview. Please let us know what you think or any issues you encounter. We can be reached via the comments below, via twitter (<a href="https://twitter.com/visualc">@visualC</a>) or via <a href="https://developercommunity.visualstudio.com/">Developer Community</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/">Improving Copy and Move Elision</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg September 2022 Release is Now Available: Celebrating 6 Years with Over 2000 Libraries!</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/#respond</comments>
@@ -1071,60 +1220,6 @@ int main() { }</pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Microsoft C++ Team at CppCon 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Mon, 12 Sep 2022 13:00:27 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31039</guid>
-
-					<description><![CDATA[<p>The Microsoft C++ team has an exciting lineup of sessions at CppCon 2022. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/">Microsoft C++ Team at CppCon 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><img class="size-full wp-image-24953 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png" alt="Microsoft @ CppCon" width="760" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp.png 760w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2019/09/atcpp-300x184.png 300w" sizes="(max-width: 760px) 100vw, 760px" /></p>
-<p>The Microsoft C++ team has an exciting lineup of sessions at <a href="https://cppcon.org/">CppCon 2022</a>. Many of us will also be present at our team’s booth in the main hall for the first two days of the conference. Come say hi and let us know if you have any questions about our talks, products, or anything else! You can also join the <a href="https://aka.ms/cppcon/discord">#visual_studio channel on the CppCon Discord</a> to talk to us (note: to join, head to <a href="https://discord.com/channels/864799911358627861/864825142386622474">#directory</a> channel first, and check the checkbox next to &#8220;Visual Studio&#8221; box).</p>
-<p>We’re also running a survey on the C++ ecosystem. If you have a moment, <a href="https://aka.ms/cppcon" target="_blank" rel="noopener noreferrer">please take our survey</a>, it&#8217;s quick.</p>
-<p>Here’s the lineup:</p>
-<h1 id="monday-september-12th">Monday, September 12th</h1>
-<p><strong>09:00 – 10:00 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/whats-new-in-c23/">What’s New in C++23</a> – Sy Brand (online)</p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/the-imperatives-must-go/">The Imperatives Must Go</a> – Victor Ciura (online)</p>
-<p><strong>14:00 – 15:00 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/c-dependencies-dont-have-to-be-painful/">C++ Dependencies Don’t Have To Be Painful: Why You Should Use a Package Manager</a> – Augustin Popa</p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/how-microsoft-uses-c-to-deliver-office/">How Microsoft Uses C++ to Deliver Office</a> – Zachary Henkel</p>
-<h1 id="tuesday-september-13th">Tuesday, September 13th</h1>
-<p><strong>09:00 – 10:00 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/high-performance-load-time-implementation-selection/">High-performance Load-time Implementation Selection</a> – Joe Bialek and Pranav Kant</p>
-<p><strong>10:30 – 11:30 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/c-mythbusters/">C++ MythBusters</a> – Victor Ciura (online)</p>
-<h1 id="wednesday-september-14th">Wednesday, September 14th</h1>
-<p><strong>16:45 – 17:45 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/memory-safe-c/">-memory-safe C++</a> – Jim Radigan</p>
-<h1 id="thursday-september-15th">Thursday, September 15th</h1>
-<p><strong>10:30 – 11:30 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/whats-new-for-you-in-visual-studio-code/">What’s New in Visual Studio Code</a> – Marian Luparu and Sinem Akinci (online)</p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/overcoming-embedded-development-tooling-challenges/">Overcoming Embedded Development Tooling Challenges</a> – Marc Goodner (online)</p>
-<p><strong>15:15 – 16:15 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/reproducible-developer-environments/">Reproducible Developer Environments</a> – Michael Price</p>
-<h1 id="friday-september-16th">Friday, September 16th</h1>
-<p><strong>07:45 – 08:45 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/github-features-every-c-developer-should-know/">GitHub Features Every C++ Developer Should Know</a> – Michael Price</p>
-<p><strong>09:00 – 10:00 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/whats-new-in-visual-studio-2022/">What&#8217;s New in Visual Studio 2022</a> – Sy Brand and Marian Luparu (online)</p>
-<p><strong>16:15 – 18:15 (MDT):</strong></p>
-<p><a href="https://cppcon.digital-medium.co.uk/session/2022/c-complexity/">C++ Simplicity, Safety, and Toolability</a> – Herb Sutter</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/">Microsoft C++ Team at CppCon 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2022/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
