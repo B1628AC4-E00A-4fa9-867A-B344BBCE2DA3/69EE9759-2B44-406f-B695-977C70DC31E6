@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 01 Nov 2022 18:18:54 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 02 Nov 2022 23:27:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,153 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Fix for High Risk OpenSSL Security Vulnerabilities Announced – Guidance for vcpkg Users</title>
+		<link>https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Wed, 02 Nov 2022 23:27:22 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31246</guid>
+
+					<description><![CDATA[<p>OpenSSL.org announced the release of OpenSSL 3.0.7 to address two security vulnerabilities rated as high risk. This patch is now available, including via vcpkg. The vulnerabilities impact users of OpenSSL 3.0.0 &#8211; 3.0.6. If you are relying on a version of OpenSSL in this range,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/">Fix for High Risk OpenSSL Security Vulnerabilities Announced – Guidance for vcpkg Users</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://www.openssl.org/blog/blog/2022/11/01/email-address-overflows/">OpenSSL.org announced the release of OpenSSL 3.0.7</a> to address two security vulnerabilities rated as high risk. This patch is now available, including via vcpkg. The vulnerabilities impact users of OpenSSL 3.0.0 &#8211; 3.0.6. If you are relying on a version of OpenSSL in this range, it is <strong>strongly recommended</strong> to upgrade to 3.0.7 as soon as possible.</p>
+<p>If you are a vcpkg user or port author depending on the OpenSSL vcpkg port, below are instructions on how to upgrade to the new version.</p>
+<p>&nbsp;</p>
+<h3 id="vcpkg-users-check-if-you-are-using-a-vulnerable-version-of-openssl">vcpkg users: check if you are using a vulnerable version of OpenSSL</h3>
+<p><strong>WARNING: </strong>It is possible that OpenSSL is a part of your dependency graph even if your project does not directly depend on it. This is because other vcpkg ports may transitively depend on OpenSSL and thus vcpkg will install it for you. For example, users of the <a href="https://azure.github.io/azure-sdk-for-cpp/index.html">Azure C++ SDK</a> port transitively depend on OpenSSL and should verify the version of OpenSSL installed on their system.</p>
+<p>There are several methods that can help you identify the version of OpenSSL installed by vcpkg (if it exists), depending on your scenario:</p>
+<ol>
+<li>If you install your libraries via the command line, use <code>vcpkg list openssl</code>​ to list all installed versions of OpenSSL.</li>
+<li>If you use a <em>vcpkg.json</em> manifest that installs dependencies during your build, use <code>vcpkg install --dry-run</code>​ to list the versions of every library that will be installed.</li>
+<li>Finally, you can also directly verify the installed version of OpenSSL from an installed tree by looking at the version macros in the header &#8220;<em>openssl/opensslv.h</em>&#8220;.
+<ul>
+<li>These are the macros, denoting the major, minor, and patch versions (3.0.5 in this case):</li>
+<li><code># define OPENSSL_VERSION_MAJOR 3</code></li>
+<li><code># define OPENSSL_VERSION_MINOR 0</code></li>
+<li><code># define OPENSSL_VERSION_PATCH 5</code></li>
+</ul>
+</li>
+</ol>
+<p>If you find that you are using a vulnerable version of OpenSSL, read on to find out how to upgrade.</p>
+<p>&nbsp;</p>
+<h3 id="classic-mode-command-line-users">Classic Mode (Command Line) Users</h3>
+<p>If you are consuming vcpkg dependencies and don’t use a <em>vcpkg.json</em> manifest, you are using classic mode, which involves running commands of the nature <code>vcpkg install &lt;library_name&gt;</code>. To get the latest version of OpenSSL, you have several options. Pick the one that works best for you:</p>
+<p>&nbsp;</p>
+<h4 id="classic-mode-option-1-upgrade-all-dependencies-at-once">Classic Mode Option 1: Upgrade all dependencies at once</h4>
+<p>If you are using classic mode and are okay with updating all your vcpkg dependencies at once, the fastest solution is to update your local copy of the vcpkg git repo to a newer version. Just open a terminal to your copy of vcpkg and run the following commands:</p>
+<pre class="prettyprint">git fetch https://github.com/microsoft/vcpkg 09adfdc8cdad76345b7cc7f3305899e1cbd66297
+git checkout 09adfdc8cdad76345b7cc7f3305899e1cbd66297
+vcpkg upgrade
+vcpkg upgrade --no-dry-run</pre>
+<p><strong>Notes: </strong></p>
+<ul>
+<li><code>09adfdc8cdad76345b7cc7f3305899e1cbd66297</code> is a vcpkg commit ID containing the patched version of OpenSSL. You can also use a newer commit ID than this.</li>
+<li>After running the git checkout line with that commit ID, you should see <code>HEAD</code> is now at <code>09adfdc8c [OpenSSL] Update to 3.0.7. (#27594)</code></li>
+<li>After running <code>vcpkg upgrade</code>, you should see that OpenSSL will be updated to 3.0.7, along with other affected dependencies.</li>
+<li>The last line with <code>--no-dry-run</code> will update your dependencies for real.</li>
+<li>If you are not bothered about which commit to update to, you can just run a general git pull to get the very latest version of vcpkg and skip having to provide a commit ID altogether. You will still need to run <code>vcpkg upgrade</code> after.</li>
+</ul>
+<p>&nbsp;</p>
+<h4 id="classic-mode-option-2-update-your-local-openssl-port-files-to-the-new-version">Classic Mode Option 2: Update your local OpenSSL port files to the new version</h4>
+<p>If you want to update just OpenSSL and nothing else, open a terminal to your copy of vcpkg and run the following commands:</p>
+<pre class="prettyprint">git fetch https://github.com/microsoft/vcpkg 09adfdc8cdad76345b7cc7f3305899e1cbd66297
+git checkout 09adfdc8cdad76345b7cc7f3305899e1cbd66297 -- ports/openssl
+vcpkg upgrade
+vcpkg upgrade --no-dry-run</pre>
+<p><strong>Notes: </strong></p>
+<ul>
+<li><code>09adfdc8cdad76345b7cc7f3305899e1cbd66297</code> is a vcpkg commit ID containing the patched version of OpenSSL. You can also use a newer commit ID than this.</li>
+<li>In contrast to the previous example, this approach lets you update just the OpenSSL portion of the vcpkg repo while leaving everything else alone.</li>
+<li>After running <code>vcpkg upgrade</code>, you should see that OpenSSL will be updated to 3.0.7, along with other affected dependencies.</li>
+<li>The last line with <code>--no-dry-run</code> will update your dependencies for real.</li>
+</ul>
+<p>This approach will only update the OpenSSL port, but keep in mind that future general git fetches on the repo will apply a new commit ID globally, so you’ll need to make sure you don’t accidentally pull a version of OpenSSL within the 3.0.0 &#8211; 3.0.6 range.</p>
+<p>&nbsp;</p>
+<h3 id="manifest-mode-users">Manifest Mode Users</h3>
+<p>If you are consuming vcpkg dependencies via a manifest file (recommended for any advanced users and professional projects), you just need to update your <em>vcpkg.json</em> file to set a different OpenSSL version.</p>
+<p>&nbsp;</p>
+<h4 id="manifest-mode-option-1-upgrade-all-dependencies-at-once">Manifest Mode Option 1: Upgrade all dependencies at once</h4>
+<p>In general, we recommend updating all open-source dependencies at once rather than one at a time since that allows you to benefit from vcpkg’s version conflict resolution to avoid things like diamond dependencies in your dependency graph.</p>
+<p>If this works for you, open a terminal to your vcpkg install location and run the following command:</p>
+<p><code>git pull origin 09adfdc8cdad76345b7cc7f3305899e1cbd66297</code></p>
+<p>Then (still in your terminal), navigate to your project containing the vcpkg.json, and run:</p>
+<p><code>vcpkg x-update-baseline</code></p>
+<p>You can git pull to a newer commit ID if you prefer (or just not specify a commit ID and get the latest), but the commit ID in the example above is the earlier one with the patch applied.</p>
+<p>The <a href="https://vcpkg.io/en/docs/commands/update-baseline.html">x-update-baseline</a> command moves your registry baseline forward to the baseline set for the vcpkg repo. This is why you must run git pull on the main repo to sync it to the baseline you need.</p>
+<p>You can alternatively go into your <em>vcpkg.json</em> and <em>vcpkg-configuration.json</em> files to set baselines manually if you’re having trouble running <code>x-update-baseline</code>:</p>
+<h5 id="example-with-baseline-field">Example with baseline field</h5>
+<pre class="prettyprint"><strong>vcpkg.json:
+</strong>{
+    "name": "example",
+    "version": "1.0.0",
+    "dependencies": [
+        "curl"
+    ]
+}
+
+<strong>vcpkg-configuration.json:
+</strong>{
+    "default-registry": {
+        "kind": "git",
+        "baseline": "09adfdc8cdad76345b7cc7f3305899e1cbd66297",
+        "repository": "https://github.com/microsoft/vcpkg"
+    }
+}</pre>
+<p>The baseline field is used when the registry location is defined in a separate <em>vcpkg-configuration.json</em> file. This is common for custom registries, though you can configure the public registry this way as well. If you just want to use the default registry and don’t have it separately configured in <em>vcpkg-configuration.json</em>, follow the next example instead using the builtin-baseline field.</p>
+<h5 id="example-with-builtin-baseline-field">Example with builtin-baseline field</h5>
+<pre class="prettyprint"><strong>vcpkg.json:
+</strong>{
+    "name": "example",
+    "version": "1.0.0",
+    "builtin-baseline": "09adfdc8cdad76345b7cc7f3305899e1cbd66297",
+    "dependencies": [
+        "curl"
+    ]
+}</pre>
+<p>See the <a href="https://vcpkg.io/en/docs/users/versioning.html&quot; \l &quot;baselines">vcpkg versioning documentation</a> for details on how baselines work.</p>
+<p>&nbsp;</p>
+<h4 id="manifest-mode-option-2-upgrade-openssl-using-an-override">Manifest Mode Option 2: Upgrade OpenSSL using an override</h4>
+<p>If you need fine-grained control over the versions of your libraries, you can</p>
+<p>set the version of OpenSSL to stay at exactly 3.0.7 using the overrides field. The limitations of this approach are that you won’t get the automatic version conflict resolution (as you would with baselines) and must manually track the package version. In addition, if your project that consumes OpenSSL will itself be packaged as a vcpkg port, your downstream consumers will <strong>not</strong> automatically get the version of OpenSSL you specify. Your downstream consumers must also update their version of OpenSSL.</p>
+<h5 id="registries-example-with-overrides">Registries example with overrides</h5>
+<pre class="prettyprint"><strong>vcpkg.json:
+</strong>{
+    "name": "example",
+    "version": "1.0.0",
+    "dependencies": [
+        "curl"
+    ],
+    "overrides": [
+    {
+        "name": "openssl",
+        "version": "3.0.7"
+    }]
+}
+<strong>vcpkg-configuration.json:
+</strong>{
+    "default-registry": {
+        "kind": "git",
+        "baseline": "fcfda3c78c474aec7187299b684258855259a7a6",
+        "repository": "https://github.com/microsoft/vcpkg"
+    }
+}</pre>
+<p>Please see our <a href="https://vcpkg.io/en/docs/users/versioning.html">versioning documentation</a> if you need a refresher on these vcpkg features.</p>
+<p>&nbsp;</p>
+<h3 id="questions">Questions?</h3>
+<p>We will monitor this blog post for comments in case there are any questions. Please also feel free to email us at <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a> if you need additional guidance.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/">Fix for High Risk OpenSSL Security Vulnerabilities Announced – Guidance for vcpkg Users</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Microsoft Office team uses Remote MacOS Debugging Capability in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/microsoft-office-team-uses-remote-macos-debugging-capability-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/microsoft-office-team-uses-remote-macos-debugging-capability-in-visual-studio/#comments</comments>
@@ -1090,53 +1237,6 @@ Containers are a great way to package up everything for running an application. 
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>vcpkg Environment Activation in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/#respond</comments>
-		
-		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
-		<pubDate>Wed, 14 Sep 2022 17:23:45 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[embedded]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30990</guid>
-
-					<description><![CDATA[<p>In Visual Studio 2022 17.4 vcpkg environments will now automatically activate. A vcpkg environment is described by a manifest that captures the artifacts necessary for building your application (learn more about vcpkg artifacts). Today the vcpkg artifact experience is focused on embedded developers,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg Environment Activation in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>In Visual Studio 2022 17.4 vcpkg environments will now automatically activate. A vcpkg environment is described by a manifest that captures the artifacts necessary for building your application (<a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">learn more about vcpkg artifacts</a>). Today the vcpkg artifact experience is focused on embedded developers, but we will be expanding this in time to all C++ development scenarios.</p>
-<h1 id="try-vcpkg-environment-activation">Try vcpkg environment activation</h1>
-<p>This is part of the Linux and embedded development with C++ workload., so make sure that is selected in your installation.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png"><img class="alignnone size-full wp-image-30992" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png" alt="The Linux and embedded development workload option in Visual Studio" width="520" height="134" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png 520w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001-300x77.png 300w" sizes="(max-width: 520px) 100vw, 520px" /></a></p>
-<p>Today you need to install vcpkg directly, it is not installed with Visual Studio yet. To do so run this command.</p>
-<pre>iex (iwr -useb "https://aka.ms/vcpkg-init.ps1")</pre>
-<p>For a project to try with this you can use any of the projects described in our <a href="https://devblogs.microsoft.com/cppblog/visual-studio-embedded-development/">Embedded Development announcement</a>. Originally this required you to activate the vcpkg environment from the command line, then launch VS from that prompt. Now all you need to do is open the project and VS will handle the activation.</p>
-<p>To try it clone this repository.</p>
-<pre>git clone --recursive https://github.com/azure-rtos/getting-started.git</pre>
-<p>Now open the subfolder getting-started\MXChip\AZ3166 in Visual Studio. You will see the following notification that vcpkg environment activation has started. This may take some time on first use when the artifacts are initially downloaded.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003.png"><img class="alignnone size-full wp-image-30993" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003.png" alt="Background task notification that vcpkg activation has started" width="363" height="170" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003.png 363w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003-300x140.png 300w" sizes="(max-width: 363px) 100vw, 363px" /></a></p>
-<p>When activation is finished there will be a notification.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005.png"><img class="alignnone size-full wp-image-30994" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005.png" alt="Background task notification that vcpkg activation has completed" width="383" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005.png 383w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005-300x158.png 300w" sizes="(max-width: 383px) 100vw, 383px" /></a></p>
-<p>If you missed it you can check the notification area by selecting it.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007.png"><img class="alignnone size-full wp-image-30995" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007.png" alt="Completed background task information that vcpkg activation has completed" width="600" height="118" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007.png 600w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007-300x59.png 300w" sizes="(max-width: 600px) 100vw, 600px" /></a></p>
-<p>You can also check the current or complete status of the activation in the vcpkg output window.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009.png"><img class="alignnone size-full wp-image-30996" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009.png" alt="Output windows showing vcpkg information" width="1122" height="289" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009.png 1122w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-300x77.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1024x264.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-768x198.png 768w" sizes="(max-width: 1122px) 100vw, 1122px" /></a></p>
-<p>This sample is a CMake project, so when vcpkg activation is complete CMake cache generation will start and then your project will be ready for use.</p>
-<h1 id="managing-the-vcpkg-environment">Managing the vcpkg environment</h1>
-<p>Visual Studio integrates the vcpkg environment as part of the Solution explorer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image011.png"><img class="alignnone size-full wp-image-30997" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image011.png" alt="Solution explorer menu entries for vcpkg, edit, reactivate, and deactivate" width="350" height="158" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image011.png 350w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image011-300x135.png 300w" sizes="(max-width: 350px) 100vw, 350px" /></a></p>
-<p>The opens the vcpkg-configuration.json file which captures the vcpkg environment. Reactivate will activate the vcpkg environment again picking up any changes made to the configuration. removes the vcpkg environment from the current configuration leaving you with a standard Visual Studio environment. If your project depends on compilers or other tools provided by the vcpkg configuration it likely will no longer build and IntelliSense may not work.</p>
-<h1 id="send-us-your-feedback">Send us your feedback</h1>
-<p>We hope that these new capabilities will enable you to choose Visual Studio for your C++ development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg Environment Activation in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
