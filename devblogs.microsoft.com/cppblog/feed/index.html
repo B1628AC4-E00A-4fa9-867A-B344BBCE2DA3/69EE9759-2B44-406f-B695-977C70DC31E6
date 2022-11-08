@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 03 Nov 2022 17:50:10 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 08 Nov 2022 18:44:01 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,165 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New for C++ Developers in Visual Studio 2022 17.4</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 08 Nov 2022 10:30:45 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31267</guid>
+
+					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.4 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/">What’s New for C++ Developers in Visual Studio 2022 17.4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.4 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022">Update Visual Studio Learn page</a>.</p>
+<h1 id="arm64">Arm64</h1>
+<p>In 17.3, Visual Studio became available as a native Arm64 application. We have continued work on supporting more development scenarios and are pleased to announce that the native Arm64 toolchain is now ready for production use!</p>
+<p>The “Desktop development with C++” and “Game development with C++” workloads are enabled for native Arm64 development. Please give them a try and let us know your feedback!</p>
+<h1 id="msvc">MSVC</h1>
+<p>One of our major investments for this release has been in improved compiler diagnostics. New C++ features like concepts and ranges present the opportunity for more expressive code and better-defined APIs. However, to make the most of them, better diagnostics are required from tooling so that constraint failures can be pinpointed and resolved. See Xiang Fan’s blog post on <a href="https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/">The Future of C++ Compiler Diagnostics in MSVC and Visual Studio</a> for all the details, but here’s a quick example of the improvement, showing more complete information on overload resolution failures, and information on why a given constraint failed:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">struct cat {};
+struct dog {};
+
+// can pet cats and dogs
+void pet(cat);
+void pet(dog);
+
+template &lt;class T&gt;
+concept has_member_pettable = requires (T t) { t.pet(); };
+
+// allow calling as a non-member
+template &lt;has_member_pettable T&gt;
+void pet(T);
+
+int main() {
+    pet(0); //oh no
+}</code></pre>
+<p><strong>Error in 17.3</strong></p>
+<pre class="prettyprint language-default"><code class="language-default">&lt;source&gt;(16,10): error C2665: 'pet': none of the 2 overloads could convert all the argument types
+    pet(0); //oh no
+         ^
+&lt;source&gt;(6,6): note: could be 'void pet(dog)'
+void pet(dog);
+     ^
+&lt;source&gt;(5,6): note: or 'void pet(cat)'
+void pet(cat);
+     ^
+&lt;source&gt;(16,5): note: 'void pet(cat)': cannot convert argument 1 from 'int' to 'cat'
+    pet(0); //oh no
+    ^
+&lt;source&gt;(16,10): note: No constructor could take the source type, or constructor overload resolution was ambiguous
+    pet(0); //oh no
+         ^
+&lt;source&gt;(5,6): note: see declaration of 'pet'
+void pet(cat);
+     ^
+&lt;source&gt;(16,10): note: while trying to match the argument list '(int)'
+    pet(0); //oh no</code></pre>
+<p><strong>Error in 17.4</strong></p>
+<pre>&lt;source&gt;(16,5): error C2665: 'pet': no overloaded function could convert all the argument types
+    pet(0); //oh no
+    ^
+&lt;source&gt;(6,6): note: could be 'void pet(dog)'
+void pet(dog);
+     ^
+&lt;source&gt;(16,5): note: 'void pet(dog)': cannot convert argument 1 from 'int' to 'dog'
+    pet(0); //oh no
+    ^
+&lt;source&gt;(16,9): note: No constructor could take the source type, or constructor overload resolution was ambiguous
+    pet(0); //oh no
+        ^
+&lt;source&gt;(5,6): note: or 'void pet(cat)'
+void pet(cat);
+     ^
+&lt;source&gt;(16,5): note: 'void pet(cat)': cannot convert argument 1 from 'int' to 'cat'
+    pet(0); //oh no
+    ^
+&lt;source&gt;(16,9): note: No constructor could take the source type, or constructor overload resolution was ambiguous
+    pet(0); //oh no
+        ^
+&lt;source&gt;(13,6): note: or 'void pet(T)'
+void pet(T);
+     ^
+&lt;source&gt;(16,5): note: the associated constraints are not satisfied
+    pet(0); //oh no
+    ^
+&lt;source&gt;(12,11): note: the concept 'has_member_pettable&lt;int&gt;' evaluated to false
+template &lt;has_member_pettable T&gt;
+          ^
+&lt;source&gt;(9,48): note: the expression is invalid
+concept has_member_pettable = requires (T t) { t.pet(); };
+                                               ^
+&lt;source&gt;(16,5): note: while trying to match the argument list '(int)'
+    pet(0); //oh no
+    ^</pre>
+<p>Here is a <a href="https://godbolt.org/z/a85z9d5qd">Compiler Explorer link</a> to see the difference.</p>
+<p>As part of this work, we’ve also added experimental support for outputting compiler diagnostics as <a href="https://sarifweb.azurewebsites.net/">SARIF</a>. This is accessible with the experimental flag /experimental:log&lt;directory&gt;.</p>
+<p>In addition to improved diagnostics, we’ve expanded the compiler’s Named Return Value Optimization (NRVO) capabilities. See Bran Hagger’s blog post <a href="https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/">Improving Copy and Move Elision</a> for details. The main improvements are in enabling NRVO for cases which involve exception handling or loops. For example, in 17.3, the copy/move of result when returning it would not be elided, but now will be.</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">Foo ReturnInALoop(int iterations) {
+    for (int i = 0; i &lt; iterations; ++i) {
+        Foo result;
+        if (i == (iterations / 2)) {
+            return result; //copy/move elided
+        }
+    }
+}</code></pre>
+<p>You can see the difference in generated assembly at <a href="https://godbolt.org/z/jrP4jcz3G">this Compiler Explorer link</a>.</p>
+<h1 id="cmake-cross-platform">CMake &amp; Cross Platform</h1>
+<p>Containers are a great way to package up everything for running an application. Through a Dockerfile, all prerequisites are captured so that there is a consistent runtime environment anywhere the container is deployed and run. Dev Containers expand this concept to capture everything necessary for developing and building an application in the container. You can now use Dev Containers for your C++ projects in Visual Studio. You can learn more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/" target="_blank" rel="noopener">Dev Containers for C++ blog post</a>.</p>
+<p><img class="alignnone wp-image-31268" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1.png" alt="Alert box saying &quot;Folder contains a dev container configuration file&quot; Options are &quot;Reopen folder in container&quot;, &quot;Settings&quot;, and &quot;Learn more&quot;" width="744" height="40" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1.png 744w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1-300x16.png 300w" sizes="(max-width: 744px) 100vw, 744px" /></p>
+<p>Connecting to remote systems with the <a href="https://learn.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-170" target="_blank" rel="noopener">Connection Manager</a> now supports SSH ProxyJump, which is used to access a SSH host via another SSH host (for example, to access a host behind a firewall).</p>
+<p>Test Explorer used to expose internal prefixes of CTest tests, making the list harder to read and navigate. We’ve improved this, grouping all of them under a single header. Here is the before and after:</p>
+<p><img class="alignnone wp-image-31269" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-2.png" alt="List from test explorer showing the weird prefixes " width="251" height="201" /> <img class="alignnone wp-image-31270" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-3.png" alt="Cleaner list under a ctest header" width="170" height="124" /></p>
+<h2 id="bundled-tools">Bundled tools</h2>
+<p>We made several updates to the additional tools which are shipped with Visual Studio in some workloads.</p>
+<p>If you’re using Visual Studio on Arm64 machines, you will now get Arm64 builds of CMake and Ninja through the CMake components in the Visual Studio installer.</p>
+<p>We’ve updated the version of CMake which we ship to version 3.24.1. This release comes with many new features, including a &#8211;fresh CLI flag for removing the CMake cache, path comparison in if expressions, and version 5 of CMakePresets.json. We’ll be adding support for CMakePresets.json version 5 in our 17.5 release of Visual Studio 2022, but 17.4 comes with added support for version 4. See the <a href="https://cmake.org/cmake/help/latest/release/3.24.html">CMake release notes</a> for all the new goodies.</p>
+<p>We also updated the version of LLVM which we ship to version 15.0.1. See the <a href="https://releases.llvm.org/15.0.0/docs/ReleaseNotes.html" target="_blank" rel="noopener">LLVM</a> and <a href="https://releases.llvm.org/15.0.0/tools/clang/docs/ReleaseNotes.html" target="_blank" rel="noopener">Clang</a> release notes for what is available.</p>
+<h1 id="productivity">Productivity</h1>
+<p>When using the “Create Declaration/Definition” feature, it used to be that the new code would open up in a small window to give you a “peek”. This is now configurable: you can select between peeking (the default), or opening the document,, or no navigation. The setting is under Options &gt; Text Editor &gt; C/C++ &gt; Advanced &gt; Refactoring.</p>
+<p><img class="alignnone wp-image-31271" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4.png" alt="Options pane showing &quot;None&quot;, &quot;Peek document&quot;, and &quot;Open document&quot; as the options for the setting &quot;Navigation after create declaration/definition&quot;" width="749" height="161" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4.png 749w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4-300x64.png 300w" sizes="(max-width: 749px) 100vw, 749px" /></p>
+<p>We fixed a consistency gap between IntelliSense and MSBuild for pre-compiled headers. It used to be that, when a PCH was used via /Yu and force-included via /FI, IntelliSense would always process it first, before any other headers included via /FI. This did not match the build behavior, so with this change /FI headers are processed in the order they are specified.</p>
+<h1 id="ide-performance">IDE Performance</h1>
+<p>We are also continuing to improve the performance of the IDE. In this release, we improved indexing performance when opening a new solution. Large projects could see a 20-35% improvement from 17.3.</p>
+<h1 id="code-safety">Code Safety</h1>
+<p>We enrich some of our code analysis warnings with “key events” information which describes how the result of the analysis was arrived at. We improved and expanded this feature by adding this information to more analyses and giving you new ways to visualize it in Visual Studio.</p>
+<p>For example, when the <a href="https://marketplace.visualstudio.com/items?itemName=WDGIS.MicrosoftSarifViewer">SARIF Viewer extension</a> is installed, the key event information will now be used to annotate the source directly.</p>
+<p><img class="alignnone wp-image-31272" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5.png" alt="Code annotated with reasoning behind an initialization code analysis warning" width="920" height="199" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5.png 920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5-300x65.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5-768x166.png 768w" sizes="(max-width: 920px) 100vw, 920px" /></p>
+<p>See the <a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">Microsoft C++ Code Analysis Warnings with Key Events </a>blog post for all the details.</p>
+<h1 id="conformance">Conformance</h1>
+<p>We’re continuing to track the latest developments in C++ standardization. You can see the latest and upcoming STL features in our <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog on GitHub</a>, but here are some of the ones I’m most excited about:</p>
+<ul>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html" target="_blank" rel="noopener">P0881R7</a>  &lt;stacktrace&gt;</li>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html" target="_blank" rel="noopener">P1328R1</a>  constexpr type_info::operator==()</li>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2440r1.html" target="_blank" rel="noopener">P2440R1</a>  ranges::iota, ranges::shift_left, ranges::shift_right</li>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2441r2.html" target="_blank" rel="noopener">P2441R2</a>  views::join_with</li>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2302r4.html">P2302R4</a>  ranges::contains, ranges::contains_subrange</li>
+<li style="list-style-type: none;"></li>
+</ul>
+<p>Conformance work also extends to IntelliSense, which now has support for C23 attributes, and we are continuing to improve the support for C++20 modules.</p>
+<h1 id="vcpkg">vcpkg</h1>
+<p>vcpkg is now 6 years old and has over 2000 open-source libraries available!</p>
+<p>We’re continuing to add new features both to vcpkg itself, and to Visual Studio to improve integration. For example, vcpkg artifacts is a feature which allows you to describe the tools and environment necessary to build your application. We have now added support to Visual Studio for vcpkg artifacts with CMake projects, such that if your project includes a vcpkg manifest, the environment will be activated automatically on project open. You can learn more about this in the <a href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg environment activation in Visual Studio blog post</a>.</p>
+<p><img class="alignnone wp-image-31273" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated.png" alt="Popup saying &quot;vcpkg environment activation. vcpkg activated successfully. C/C++ development actions will now run in the vcpkg environment.&quot;" width="383" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated.png 383w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated-300x158.png 300w" sizes="(max-width: 383px) 100vw, 383px" /></p>
+<p>Other notable improvements since the last release are making the “name” and “version” fields in vcpkg.json optional, adding schemata for all vcpkg json formats, and improving cross-compilation for macOS. You can read more details about these and more in our monthly blog posts from <a href="https://devblogs.microsoft.com/cppblog/vcpkg-august-2022-release-is-now-available-cmake-version-update-updated-faq-cross-compilation-fix-for-apple-silicon/">August</a> and <a href="https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/">September</a>.</p>
+<h1 id="game-development">Game Development</h1>
+<p>We’re working hard on the Unreal Engine integration into Visual Studio. As of 17.4, you can now see which Unreal Engine Blueprints reference, use, and inherit from C++ classes, directly in the IDE. To enable this feature, ensure that the “IDE support for Unreal Engine” component is enabled in the VS Installer, and download <a href="https://www.unrealengine.com/marketplace/en-US/product/362651520df94e4fa65492dbcba44ae2">the Visual Studio Integration Tool</a> from the Unreal Marketplace.</p>
+<p><img class="alignnone wp-image-31274" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7.png" alt="Popup showing the references to a given blueprint" width="837" height="271" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7.png 837w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7-300x97.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7-768x249.png 768w" sizes="(max-width: 837px) 100vw, 837px" /></p>
+<p>Keep an eye out for more new features in 17.5, and please let us know what you think of the Blueprints integration!</p>
+<h1 id="send-us-your-feedback">Send us your feedback</h1>
+<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/">What’s New for C++ Developers in Visual Studio 2022 17.4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Fix for High Risk OpenSSL Security Vulnerabilities Announced – Guidance for vcpkg Users</title>
 		<link>https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/fix-for-high-risk-openssl-security-vulnerabilities-announced-guidance-for-vcpkg-users/#respond</comments>
@@ -1190,53 +1349,6 @@ example.cpp(20,10): note: see reference to function template instantiation 'void
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Dev Containers for C++ in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
-		<pubDate>Wed, 14 Sep 2022 17:25:38 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30999</guid>
-
-					<description><![CDATA[<p>We are happy to share with you that we have added Dev Container support In Visual Studio 2022 17.4 for C++ projects using CMake Presets.<br />
-Containers are a great way to package up everything for running an application. Through a Dockerfile all prerequisites are captured so that there is a consistent runtime environment anywhere the container is deployed and run Dev Containers expand this concept to capture everything necessary for developing and building an application in the container.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/">Dev Containers for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to share with you that we have added Dev Container support In Visual Studio 2022 17.4 for C++ projects using CMake Presets.</p>
-<p>Containers are a great way to package up everything for running an application. Through a Dockerfile all prerequisites are captured so that there is a consistent runtime environment anywhere the container is deployed and run Dev Containers expand this concept to capture everything necessary for developing and building an application in the container. We have been observing for some time that containers are becoming more popular in the C++ community for providing reproducible build environments.</p>
-<p>Visual Studio Code has had support for Dev Containers for some time now. Beginning in Visual Studio 2022 17.4 you can now use Dev Containers for your C++ projects as well.</p>
-<h1 id="trying-dev-container-support">Trying Dev Container support</h1>
-<p>You will need to have Docker Desktop installed on Windows to use this capability. This is part of the Linux and embedded development with C++ workload., so make sure that is selected in your installation.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png"><img class="alignnone size-full wp-image-30992" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png" alt="The Linux and embedded development workload option in Visual Studio" width="520" height="134" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001.png 520w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image001-300x77.png 300w" sizes="(max-width: 520px) 100vw, 520px" /></a></p>
-<p>We have enabled this capability for projects that use CMake Presets. You can clone this sample to get started.</p>
-<pre>git clone git@github.com:robotdad/visualstudio-devcontainer-cpp.git</pre>
-<p>This project is the same as File New CMake Project in Visual Studio with one difference. There is an additional folder .devcontainer that contains the Dockerfile and devcontainer.json which together define the Dev Container to start.</p>
-<p>On opening this folder in Visual Studio you will be prompted to reopen the folder in a container.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003-1.png"><img class="alignnone size-full wp-image-31001" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003-1.png" alt="Visual Studio notification that the folder contains a Dev Container with options to reopen in a container, manage settings, or learn more" width="744" height="40" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003-1.png 744w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image003-1-300x16.png 300w" sizes="(max-width: 744px) 100vw, 744px" /></a></p>
-<p>On first use when the container is started the backing image is downloaded. You can see progress of the startup in the new Dev Containers output window.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005-1.png"><img class="alignnone size-full wp-image-31002" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005-1.png" alt="Visual Studio output window showing information for Dev Containers" width="765" height="368" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005-1.png 765w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image005-1-300x144.png 300w" sizes="(max-width: 765px) 100vw, 765px" /></a></p>
-<p>When startup is finished CMake cache generation starts, when it is done you can edit and debug as normal.</p>
-<p>You can switch between your Dev Container and other options using the Target System drop down in the tool bar.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007-1.png"><img class="alignnone size-full wp-image-31003" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007-1.png" alt="Visual Studio debug options showing Dev Container as an available machine target" width="707" height="102" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007-1.png 707w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image007-1-300x43.png 300w" sizes="(max-width: 707px) 100vw, 707px" /></a></p>
-<h1 id="options">Options</h1>
-<p>Dev Containers have a few options under Tools Options. Most importantly you can control whether or not you want to be prompted to reopen in a container. You can also set a remote host to be the location to run containers, the remote host must be running docker services.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1.png"><img class="alignnone size-full wp-image-31004" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1.png" alt="Visual Studio tools options menu showing Dev Containers selected under Cross Platform" width="845" height="572" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1.png 845w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1-300x203.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/image009-1-768x520.png 768w" sizes="(max-width: 845px) 100vw, 845px" /></a></p>
-<h1 id="notes">Notes</h1>
-<p>The feature uses Linux containers. We are not supporting Windows containers with this mechanism, as such this is not relevant for traditional Windows C++ development using MSVC. The is intended for cross platform development.</p>
-<p>A backend service for Visual Studio Code runs within a Dev Container, this is not the case for Visual Studio. Visual Studio manages the lifecycle of Dev Containers it uses as you work, but it treats them as remote targets in a similar way to other Linux or WSL targets. The devcontainer.json configuration file may contain some VS Code specific information, like needed extensions, which are not relevant to Visual Studio. Those are ignored by Visual Studio so it is expected that there will be common Dev Container definitions used with either environment.</p>
-<p>Do not open the same folder in Visual Studio and VS Code at the same time. This will result in them connecting to the same container which will result in conflicts between CMake running in two contexts against the same folder.</p>
-<h1 id="send-us-your-feedback">Send us your feedback</h1>
-<p>We hope that these new capabilities will enable you to choose Visual Studio for your C++ development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/">Dev Containers for C++ in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
