@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 15 Nov 2022 14:27:36 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 16 Nov 2022 01:29:51 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,184 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg 2022.11.14 and 2022.10.19 Releases: Localization for 14 Languages, Overlay Ports/Triplets in Manifests, acquire-project Command, and More…</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Wed, 16 Nov 2022 01:29:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31329</guid>
+
+					<description><![CDATA[<p>The 2022.11.14 release of the vcpkg package manager is available. This blog post summarizes changes from September 27th, 2022 to November 13th, 2022 for the Microsoft/vcpkg and Microsoft/vcpkg-tool GitHub repos.<br />
+Some stats for this period:</p>
+<p>47 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/">vcpkg 2022.11.14 and 2022.10.19 Releases: Localization for 14 Languages, Overlay Ports/Triplets in Manifests, acquire-project Command, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.11.14">2022.11.14 release of the vcpkg package manager is available</a>. This blog post summarizes changes from September 27<sup>th</sup>, 2022 to November 13<sup>th</sup>, 2022 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>47 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>519 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>2,069 total libraries</strong> available in the vcpkg public registry. There are a total of <strong>10,964</strong> ports if each library version is counted uniquely.</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.11.14">2022.11.14 release of the main vcpkg repo</a> includes <strong>65 commits</strong>.</li>
+<li><strong>68 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has over <strong>4,900 forks</strong> and <strong>17,100 stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<p>Notable changes for this release are summarized below:</p>
+<p>&nbsp;</p>
+<h4 id="localized-vcpkg-output-is-now-available">Localized vcpkg output is now available</h4>
+<p>One of the steps required for us to ship vcpkg in Visual Studio was to localize its output to a variety of languages. This experience is now enabled in the tool for 14 languages – the same languages available for Visual Studio. You can change the language of vcpkg’s output (even if you’re not using Visual Studio) by setting an environment variable called VSLANG to a 4-digit LCID (locale identifier) code. For example, setting this variable to 1033 sets the language to English. For more details, including a list of available LCIDs, <a href="https://github.com/microsoft/vcpkg-tool/blob/main/docs/localization.md">see our documentation</a> on this.</p>
+<p>&nbsp;</p>
+<h4 id="configuring-overlay-ports-and-triplets-in-a-manifest-file">Configuring overlay ports and triplets in a manifest file</h4>
+<p><strong>Overlay ports</strong> is a feature of vcpkg that allows the user to override the default port vcpkg would have installed with a custom one. This can be useful when the user needs to patch a library and deviate from the default experience. Note: this is very different from installing a different version of a library, which does not require creating a custom port.</p>
+<p><strong>Overlay triplets</strong> work similarly by overriding default vcpkg triplets with customized ones. A use case for this can be if you require additional compile flags for your build over what vcpkg would run by default.</p>
+<p>Historically, it was only possible to set overlay ports and triplets on the command line, via environment variables, or through the build system. Now, it is possible to configure these in a vcpkg-configuration.json file by enabling an optional object to the schema which receives a path or list of paths. This provides a better experience when a user wants to provide multiple additional paths for one install. Ports are resolved from top to bottom. Here is an example:</p>
+<pre class="prettyprint">{
+    "default-registry": {
+    "kind": "git",
+    "repository": "&lt;https://internal/mirror/of/github.com/Microsoft/vcpkg&gt;",
+    "baseline": "eefee7408133f3a0fef711ef9c6a3677b7e06fd7"
+    },
+    "registries": [{
+        "kind": "git",
+        "repository": "&lt;https://github.com/my-repository/vcpkg-registry&gt;",
+        "baseline": "xxxxxxx000000000000000000000000000000000",
+        "packages": [ "my", "packages" ]
+    }],
+    "overlay-ports": [
+    "./my-ports/fmt",
+    "custom-ports",
+    "../share/team-ports"
+    ],
+    "overlay-triplets" : [ "./my-triplets" ]
+}</pre>
+<p><strong>Note:</strong> if overlay ports are configured in multiple ways, we prioritize them in the following order:</p>
+<ol>
+<li>Command line</li>
+<li>Manifest (vcpkg-configuration.json)</li>
+<li>Environment variables</li>
+</ol>
+<p>In other words, a port configured in the command line will always override the same port being configured in a manifest or an environment variable, and ports configured in the manifest override the same ports being configured as environment variables.</p>
+<p>See our <a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">article on registries</a> for additional documentation on this feature.</p>
+<p>&nbsp;</p>
+<h4 id="new-artifact-command-acquire-project">New artifact command: acquire-project</h4>
+<p>A new command for managing vcpkg artifacts has been added: acquire-project. Like the activate command, it affects all artifact dependencies listed in the manifest, but it only downloads and extracts them without activating them in the environment. Functionally like running vcpkg acquire once for each dependency.</p>
+<p>&nbsp;</p>
+<h4 id="console-output-less-verbose-in-manifest-mode">Console output less verbose in manifest mode</h4>
+<p>The option &#8211;no-print-usage now supports manifest mode (by @demianmnave-pti in <a href="https://github.com/microsoft/vcpkg-tool/pull/721">Microsoft/vcpkg-tool#721</a>). This switch suppresses the printing of usage text at the end of a port installation.</p>
+<p>&nbsp;</p>
+<h4 id="get-current-port-version-in-portfile-cmake">Get current port version in portfile.cmake</h4>
+<p>It is now possible to reference a port’s current version when authoring ports in their portfile.cmake using a variable called VERSION. Implemented by @autoantwort.</p>
+<p>&nbsp;</p>
+<h4 id="ignore-the-vcpkg_root-environment-variable-when-we-already-detected-a-vcpkg-root">Ignore the VCPKG_ROOT environment variable when we already detected a vcpkg root</h4>
+<p>The VCPKG_ROOT environment variable can be used to point to the location of a vcpkg instance. This is useful for example in pre-configured CI systems so the user can run vcpkg commands without having to go looking for vcpkg first. However, this can be problematic if the user is consuming vcpkg as a git submodule and doesn’t want to use the default machine-wide instance. Now, if a vcpkg root directory is detected, we will no longer override it with the VCPKG_ROOT environment variable. vcpkg will output a warning when the environment variable is ignored.</p>
+<p>&nbsp;</p>
+<h4 id="documentation-changes">Documentation Changes</h4>
+<p>We are continuing to improve our vcpkg documentation:</p>
+<ol>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/list.md">Added reference documentation for vcpkg list command</a>.</li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/commands/version.md">Added reference documentation for vcpkg version command</a>.</li>
+<li>Added reference documentation for three topics:
+<ol>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/manifests.md">Embedding vcpkg-configuration.json contents in vcpkg.json</a></li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">Overlay ports in vcpkg-configuration.json</a></li>
+<li><a href="https://github.com/microsoft/vcpkg/blob/master/docs/users/registries.md">Overlay triplets in vcpkg-configuration.json</a></li>
+</ol>
+</li>
+</ol>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,860</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,924</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,826</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,839</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>971</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,497</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>924</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,791</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,867</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank You to Our Contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos in this release:</p>
+<ul>
+<li>autoantwort (54 commits)</li>
+<li>dg0yt (35 commits)</li>
+<li>Neumann-A (17 commits)</li>
+<li>AtariDreams (10 commits)</li>
+<li>Honeybunch (9 commits)</li>
+<li>Thomas1664 (9 commits)</li>
+<li>SchaichAlonso (8 commits)</li>
+<li>Tradias (7 commits)</li>
+<li>RT222 (6 commits)</li>
+<li>Osyotr (3 commits)</li>
+<li>m-kuhn (4 commits)</li>
+<li>chausner (4 commits)</li>
+<li>luncliff (4 commits)</li>
+<li>gjasny (3 commits)</li>
+<li>past-due (3 commit)</li>
+<li>AenBleidd (3 commits)</li>
+<li>coryan (2 commit)</li>
+<li>wrobelda (1 commit)</li>
+<li>daschuer (1 commit)</li>
+<li>longnguyen2004 (1 commit)</li>
+<li>an-tao (1 commit)</li>
+<li>klalumiere (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2022.11.14">full 2022.11.14 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>&nbsp;</p>
+<h3 id="interested-in-vcpkg-but-not-sure-where-to-start">Interested in vcpkg but not sure where to start?</h3>
+<p>Is your company experiencing challenges managing C/C++ libraries? Perhaps you’re curious if a package manager is the right choice to you? Please reach out to <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a> and we’d be happy to help!</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/">vcpkg 2022.11.14 and 2022.10.19 Releases: Localization for 14 Languages, Overlay Ports/Triplets in Manifests, acquire-project Command, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Visual Studio 2022 Performance: Faster C++ Source Code Indexing</title>
 		<link>https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/#respond</comments>
@@ -1132,120 +1310,6 @@ cv::imencode(jpg, ia, jpgImage, jpgParams);
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Microsoft C++ Code Analysis Warnings with Key Events</title>
-		<link>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/#comments</comments>
-		
-		<dc:creator><![CDATA[Hwi-sung Im]]></dc:creator>
-		<pubDate>Tue, 20 Sep 2022 15:00:33 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[code analysis]]></category>
-		<category><![CDATA[key events]]></category>
-		<category><![CDATA[static analysis]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31106</guid>
-
-					<description><![CDATA[<p>Introduction <br />
-To make your C++ coding experience as safe as possible, the Microsoft C++ Code Analysis has added new checks and improved existing ones to help you prevent bugs before they find their way into your products. Some of the checks work harder than others,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">Microsoft C++ Code Analysis Warnings with Key Events</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h1 aria-level="1" aria-level="1" id="introduction"><span data-contrast="none">Introduction</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">To make your C++ coding experience as safe as possible, the Microsoft C++ Code Analysis has added new checks and improved existing ones to help you prevent bugs before they find their way into your products. Some of the checks work harder than others, analyzing the code deeper by simulating runtime behavior. As such, they can find defects that are harder to find through syntactic checks alone or through data flow analysis.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">It is natural that developers find it harder to find the root causes for some of these more complex warnings. Imagine a warning where the effect of the bug is detected tens or hundreds of lines below the root cause of the bug, and the code against which the defect is reported looks completely legitimate. How would you be able to quickly find the root cause and fix it?</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">In this blog post, we would like to reintroduce an existing Visual Studio feature that has been there to help with this challenge, and to highlight the big improvements we have made to the feature which will make it easier and more compelling to use.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="challenges-with-code-analysis-warning"><span data-contrast="none">Challenges with Code Analysis Warning</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">Let’s review the usual challenges we have when a static code analysis check tells us there is a defect in our code. It can be best demonstrated with some example code with a known defect. The following example is intentionally made convoluted enough to demonstrate the challenge of finding the root cause for warnings from a path-sensitive check.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint"> 1   #include &lt;Windows.h&gt; 
- 2   
- 3   int test(); 
- 4   
- 5   void t1() 
- 6   { 
- 7       VARIANT v1; 
- 8       VARIANT v2; 
- 9       VARIANT v3{}; 
-10   
-11       VARIANT* pv = &amp;v3; 
-12       VARIANT* pvTmp = nullptr; 
-13   
-14      VariantInit(&amp;v1); 
-15   
-16       if (test() != 0) 
-17           pvTmp = &amp;v1; 
-18       else 
-19           pvTmp = &amp;v2; 
-20    
-21       switch (test()) 
-22       { 
-23       case 1: 
-24       case 2: 
-25           pv = pvTmp; 
-26           break; 
-27       default: 
-28           pv = &amp;v3; 
-29           break; 
-30       } 
-31   
-32       VariantClear(pv); // Warning C33001 here 
-33   }</pre>
-<p><span data-contrast="auto">Running code analysis on this code will give a few warnings. One of them will be this:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint">test.cpp(32) : warning C33001: VARIANT 'pv' was cleared when it was uninitialized (expression 'pv').: Lines: 5, 7, 8, 9, 11, 12, 14, 16, 19, 21, 25, 26, 32</pre>
-<p><span data-contrast="auto">In summary, clearing a <code>VARIANT</code> object that was not properly initialized can result in many random problems, including crashes, memory errors, etc. More information about this specific check can be found at </span><a href="https://docs.microsoft.com/bs-latn-ba/cpp/code-quality/c33001?view=msvc-160"><span data-contrast="none">c33001 | Microsoft Docs</span></a><span data-contrast="auto">. But for this discussion, let’s focus on the root cause of the defect – why does the check say we are clearing a <code>VARIANT</code> object that is not initialized?</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">The line of code to which the warning points us is completely legitimate: we must clear the <code>VARIANT</code> object before we are done with it. Then what is the problem? It must be that somewhere along the code flow that reaches line 32, the <code>VARIANT</code> object that <code>pv</code> points to has not been initialized.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Let’s try to find out where the root cause is. First, we will need to find out which <code>VARIANT</code> object <code>pv</code> points to. Then follow the code flow to see why that object has never been initialized. To figure those out, we will need to trace back the code flow from where the defect is reported. Because it is likely dependent on the path that the check analyzed, we will use the line numbers provided in the warning. That seems doable. However, that doesn’t seem to be the most efficient way. Imagine a similar bug is in an excessively big function. A similar warning may come with tens or hundreds of lines of code to trace back. Many of us would feel offended by such a warning, rather than helped.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">This blog post is not about finding root cause by tracking back source code manually like this. So, before going any further along this path, let’s see if there is any help available.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="code-analysis-warning-with-key-events"><span data-contrast="none">Code Analysis Warning with Key Events</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">It may not be well known, but selected warnings from some of MSVC&#8217;s C++ static analysis checks that have been there for long time always had additional information that helps with tracing back your code to identify the root causes. This additional information is called “Key Events.” A Key Event is associated with a step in the analysis code flow. It explains what has happened in that specific step. During analysis, these checks add Key Event candidates to the steps where important or interesting events occur, e.g., when a new buffer is created, etc. As a check finds a defect, it collects all relevant Key Events along the code flow that led to the defect and adds them to the warning. Some common events are also added as Key Events &#8211; e.g., when a relevant variable is initialized or updated, when code flow branches, etc.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Here is an example of a warning with Key Events from one of those older checks as they are presented in the Error List. You could get these by clicking on the expansion triangle icon in the left-most column of the warning:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents.png"><img class="wp-image-31110 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents.png" alt="Image of C6001 warning with Key Events" width="841" height="213" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents.png 1157w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents-300x76.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents-1024x259.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/C6001_KeyEvents-768x194.png 768w" sizes="(max-width: 841px) 100vw, 841px" /></a></p>
-<p><span data-contrast="auto">As you can see, these Key Events add rich information to the warning, making it very easy to follow the code and understand what is going on along the code flow of the analysis.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="1" aria-level="1" id="improvements-to-key-events"><span data-contrast="none">Improvements to Key Events</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">We believe in the value of Key Events for our customers. So, we decided to remove the hinderances in making it available for more checks. We also made it a lot easier to use.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">To solve the first problem, we added equivalent support to our newer engine, allowing many newer checks to add Key Events to their warnings with little effort. This was done earlier, and new checks have been adding Key Events to their warnings. As of the release of Visual Studio 2022 version 17.4 Preview 2 we have augmented many checks with Key Events, including warnings for:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Enum misuse as buffer index: C33010 and C33011</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">VARIANT object misuse: C33001 ~ C33005</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="3" data-aria-level="1"><span data-contrast="auto">Concurrency problems: C26100 ~ C26167</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<p><span data-contrast="auto">We will add Key Events to even more warnings in the upcoming Visual Studio releases.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559685&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h1 aria-level="2" aria-level="2" id="improved-key-event-presentation-in-visual-studio"><span data-contrast="none">Improved Key Event presentation in Visual Studio</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">Visual Studio 2022 version 17.4 Preview 2 comes with big improvements in presentation of the Key Events.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Key Events used to be presented inside the Error List window as shown earlier. Usually, real estate of Error List is very limited to present a warning with a large number of Key Events. Also, it was hard to interact with the Key Events in the list, due to missing features and bugs. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">First, we redesigned the way Visual Studio presents the Key Events for MSVC C++ static analysis warnings. Key Events will now be presented outside of Error List window, in their own window as follows:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p aria-level="2"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2.png"><img class="size-full wp-image-31116 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2.png" alt="Image Visual Studio built in Key Events window 2" width="1682" height="1227" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2.png 1682w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2-300x219.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2-1024x747.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2-768x560.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Visual-Studio-built-in-Key-Events-window-2-1536x1120.png 1536w" sizes="(max-width: 1682px) 100vw, 1682px" /></a></p>
-<p><span style="font-size: 1rem;" data-contrast="auto">You can open this window by selecting the warning with double clicking or pressing enter key, or clicking the small window icon on the left-most column of the warning entry in the Error List. This window is like any other tabbed window &#8211; it can be docked, floated, resized, or added to the tabbed windows. Selecting a Key Event in this window highlights the corresponding source line. Keyboard navigation among the Key Events is improved in this window, and source code highlighting follows the selected Key Event.</span><span style="font-size: 1rem;" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"> </span></p>
-<p><span data-contrast="auto">This will make it a lot easier to review the Key Events and navigate through them along with the corresponding source code, often greatly reducing the time to find the root cause of the defect. For the example code and the warning, now it is a lot easier to tell <code>pv</code> is pointing to <code>pvTmp</code>, and <code>pvTmp</code> is pointing to <code>v2</code>, which was never initialized in the code flow.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"> </span></p>
-<h1 aria-level="2" aria-level="2" id="presentation-of-key-events-through-sarif-viewer-extension"><span data-contrast="none">Presentation of Key Events through SARIF Viewer Extension</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">We have teamed up with the developers of the SARIF Viewer Extension for Visual Studio. Some of you may have tried its older versions before. If you haven’t tried it before, now is a good time to get the latest release and give it a try, as we believe it will greatly enhance your productivity with the improvements we made to the extension.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h2 aria-level="3" aria-level="3" id="visualization-of-key-events-in-sarif-explorer-window"><span data-contrast="none">Visualization of Key Events in SARIF Explorer window</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h2>
-<p><span data-contrast="auto">Through close collaboration among related teams, we greatly improved the functionality of the SARIF Viewer Extension for Visual Studio. When installed and enabled this extension can now display Key Events in its SARIF Explorer window without requiring you to find and open the SARIF file. You just need to select the warning that has the small window icon on the left-most column by <span style="font-size: 1rem;" data-contrast="auto">double clicking or pressing the enter key, or clicking the small window icon</span>. Visual Studio will let SARIF Viewer Extension display the Key Events, instead of its own pop-up window:</span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio.png"><img class="size-full wp-image-31117 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio.png" alt="Image Key Events presentation in SARIF Explorer window of SARIF Viewere Extension for Visual Studio" width="2447" height="1381" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio.png 2447w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio-1024x578.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio-768x433.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio-1536x867.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-SARIF-Explorer-window-of-SARIF-Viewere-Extension-for-Visual-Studio-2048x1156.png 2048w" sizes="(max-width: 2447px) 100vw, 2447px" /></a></span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}">If you select a Key Event in the SARIF Explorer window, the corresponding source code in the Text Editor window will be highlighted with slightly darker color. If you select source code that is highlighted in the Text Editor window, the corresponding Key Event will be highlighted in the SARIF Explorer window.</span></p>
-<h2 aria-level="3" aria-level="3" id="source-code-adornment-with-key-events"><span data-contrast="none">Source code adornment with Key Events </span></h2>
-<p><span data-contrast="auto">There is even greater news. The SARIF Viewer Extension for VS now displays Key Events right next to the source code they belong to. This will make it a lot easier to find the root cause by allowing review of the source code along with detailed explanation on what the check discovered or assumed at each of the steps of the analysis path that leads to the defect. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Here is an example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> <a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio.png"><img class="size-full wp-image-31118 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio.png" alt="Image Key Events presentation in Text Editor window by SARIF Viewere Extension for Visual Studio" width="2441" height="1380" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio.png 2441w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio-300x170.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio-1024x579.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio-768x434.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio-1536x868.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Key-Events-presentation-in-Text-Editor-window-by-SARIF-Viewere-Extension-for-Visual-Studio-2048x1158.png 2048w" sizes="(max-width: 2441px) 100vw, 2441px" /></a></span></p>
-<p>&nbsp;</p>
-<h1 aria-level="1" aria-level="1" id="setting-up-environment"><span data-contrast="none">Setting up environment</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">To get the essential help from Key Events, you don’t need to do anything. Visual Studio comes with full features to present and let you interact with Key Events. Just install or upgrade your Visual Studio to VS 2022 17.4 Preview 2 or later. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"> </span></p>
-<p><span data-contrast="auto">To enjoy the new Key Events feature to its full extent in your day-to-day work, also install or upgrade your SARIF Viewer Extension to the latest version. Go to “Extensions &gt; Manage Extensions,” and search for “Microsoft SARIF Viewer 2022”. As of this writing, version 3.0.98.16906 is available. Any version newer than that should work:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog.png"><img class="wp-image-31119 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog.png" alt="Image Microsoft SARIF Viewer Extension in Manage Extensions dialog" width="952" height="255" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog.png 1373w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog-300x80.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog-1024x274.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/Microsoft-SARIF-Viewer-Extension-in-Manage-Extensions-dialog-768x206.png 768w" sizes="(max-width: 952px) 100vw, 952px" /></a> </span></p>
-<p><span data-contrast="auto">To enable or disable “text adornment” with Key Events, please go to “Tools &gt; Options… &gt; SARIF Viewer” and select/unselect “Enable Key Event text adornments in the editor” option. It is enabled by default:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:257}"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog.png"><img class="wp-image-31120 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog.png" alt="Image SARIF Viewer Key Event Text Adornment option in Options Dialog" width="920" height="479" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog.png 1473w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog-1024x533.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/SARIF-Viewer-Key-Event-Text-Adornment-option-in-Options-Dialog-768x400.png 768w" sizes="(max-width: 920px) 100vw, 920px" /></a> </span></p>
-<h1 aria-level="1" aria-level="1" id="conclusion"><span data-contrast="none">Conclusion</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">This is not the final destination for the Key Events feature. Instead, it is only a new starting point for greater improvements. For example, we are working on making the Key Events more relevant to the defect, e.g., by eliminating older assignments that do not contribute to the defect. We are also looking into better navigation support among relevant Key Events. As some of you may already be hoping, we’d love to bring the SARIF Viewer Extension experience into Visual Studio, without requiring installation of the extension.</span></p>
-<h1 aria-level="1" aria-level="1" id="send-us-your-feedback"><span data-contrast="none">Send us your feedback</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h1>
-<p><span data-contrast="auto">We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the </span><a href="https://developercommunity.visualstudio.com/spaces/8/index.html"><span data-contrast="none">Developer Community</span></a><span data-contrast="auto">. You can also reach us on Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="auto">), or via email at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">Microsoft C++ Code Analysis Warnings with Key Events</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
