@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 16 Nov 2022 01:29:51 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 28 Nov 2022 15:58:27 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,284 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>A Tour of 4 MSVC Backend Improvements</title>
+		<link>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Mon, 28 Nov 2022 15:58:27 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[performance]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31340</guid>
+
+					<description><![CDATA[<p>This blog post presents some of the optimizations the backend team has implemented for Visual Studio 2022.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/">A Tour of 4 MSVC Backend Improvements</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We hear that many of you would like to see more details of the improvements which the MSVC backend team have been working on recently. This blog post presents some of the optimizations the team has implemented for Visual Studio 2022. It was co-written by one of our backend team leads, Eric Brumer, and our developer advocate, Sy Brand. Keep an eye out for more posts in the future which will dig into other optimizations!</p>
+<h2 id="byteswap-identification">Byteswap Identification</h2>
+<p>Changing the <a href="https://en.wikipedia.org/wiki/Endianness">endianness</a> of an integer can be an important operation in contexts where data is being transmitted between processors with different byte orders, or over the network. This is often referred to as a &#8220;byteswap&#8221;. C++23 will add a <a href="https://en.cppreference.com/w/cpp/numeric/byteswap"><code>std::byteswap</code></a> function to the standard library (already implemented in VS2022 17.1), but for codebases today it&#8217;s common to see custom implementations, which might look something like this:</p>
+<pre><code class="language-c++">int byteswap(int n) {
+    return  ((n &amp; 0xff) &lt;&lt; 24u) |
+            ((n &amp; 0xff00) &lt;&lt; 8u) |
+            ((n &amp; 0xff0000) &gt;&gt; 8u) |
+            ((n &amp; 0xff000000) &gt;&gt; 24u);
+}</code></pre>
+<p>In Visual Studio 2019 16.11, this generated the following code for x64, and a similarly long sequence of instructions for Arm64:</p>
+<pre><code class="language-asm">        mov     eax, ecx
+        mov     edx, ecx
+        and     eax, 65280
+        shl     edx, 16
+        or      eax, edx
+        mov     edx, ecx
+        shl     eax, 8
+        sar     edx, 8
+        and     edx, 65280
+        shr     ecx, 24
+        or      eax, edx
+        or      eax, ecx
+        ret     0</code></pre>
+<p>x64 and Arm64 both have instructions which carry out a byteswap, which should ideally be used instead. Visual Studio 2022 17.3 introduced automatic byteswap identification, and now outputs the following on x64 with <code>/O2</code>:</p>
+<pre><code class="language-asm">        bswap   ecx
+        mov     eax, ecx
+        ret     0</code></pre>
+<p>On Arm64, the results are much the same:</p>
+<pre><code class="language-asm">        rev         w0,w0
+        ret</code></pre>
+<p>This optimization isn&#8217;t just doing a simple pattern match on your code, it&#8217;s a generalized bit tracker. For example, this more obfuscated byteswap still gets optimized to a single <code>rev</code> on Arm64:</p>
+<pre><code class="language-c++">unsigned __int64 byteswap_wat_edition(unsigned __int64 x) {
+    x = _byteswap_uint64(x);
+    x = (x &amp; 0xaaaaaaaaaaaaaaaa) &gt;&gt; 1 | (x &amp; 0x5555555555555555) &lt;&lt; 1;
+    x = (x &amp; 0xcccccccccccccccc) &gt;&gt; 2 | (x &amp; 0x3333333333333333) &lt;&lt; 2;
+    x = (x &amp; 0xf0f0f0f0f0f0f0f0) &gt;&gt; 4 | (x &amp; 0x0f0f0f0f0f0f0f0f) &lt;&lt; 4;
+    return x;
+}</code></pre>
+<h2 id="loop-unswitching">Loop Unswitching</h2>
+<p>For sake of code simplicity, we may choose to write a branch inside a loop whose condition is invariable in each iteration. For example, if we want to pet all our cats, and if it&#8217;s feeding time, we also want to feed them, we could write this:</p>
+<pre><code class="language-cpp">void process_cats(std::span&lt;cat&gt; cats, bool is_feeding_time) {
+    for (auto&amp;&amp; c : cats) {
+        if (is_feeding_time) {
+            feed(c);
+        }
+        pet(c);
+    }
+}</code></pre>
+<p>Since <code>is_feeding_time</code> never changes inside the function and has no side-effects, it may be wasteful to carry out that check every iteration. Better hardware <a href="https://en.wikipedia.org/wiki/Branch_predictor">branch predictors</a> will minimize this impact, but in many cases we can see performance wins by carrying out <a href="https://en.wikipedia.org/wiki/Loop_unswitching">loop unswitching</a>. This hoists the branch outside of the loop, generating code similar to this C++:</p>
+<pre><code class="language-cpp">void process_cats(std::span&lt;cat&gt; cats, bool is_feeding_time) {
+    if (is_feeding_time) {
+        for (auto&amp;&amp; c : cats) {
+            feed(c);
+            pet(c);
+        }
+    }
+    else {
+        for (auto&amp;&amp; c : cats) {
+            pet(c);
+        }
+    }
+}</code></pre>
+<p>As of Visual Studio 2022 version 17.1, MSVC may carry out loop unswitching at <code>/O2</code>. This is a <a href="https://en.wikipedia.org/wiki/Heuristic_(computer_science)">heuristic</a>-driven optimization which may or may not be carried out depending on analysis results. This is because loop unswitching duplicates the loop body, which may affect instruction cache performance. You may pass the <code>/Qvec-report:1</code> flag to see a report on which loops were unswitched.</p>
+<p>Here is the x64 generated by Visual Studio 2019 version 16.11 with <code>/O2</code>:</p>
+<pre><code class="language-asm">$LN15:
+        mov     QWORD PTR [rsp+8], rbx
+        mov     QWORD PTR [rsp+16], rsi
+        push    rdi
+        sub     rsp, 32   
+        mov     rbx, QWORD PTR [rcx]
+        movzx   esi, dl
+        mov     rax, QWORD PTR [rcx+8]
+        lea     rdi, QWORD PTR [rbx+rax*4]
+        cmp     rbx, rdi
+        je      SHORT $LN3@process_ca
+$LL4@process_ca:
+        test    sil, sil
+        je      SHORT $LN5@process_ca
+        mov     ecx, DWORD PTR [rbx]
+        call    void feed(cat)              
+$LN5@process_ca:
+        mov     ecx, DWORD PTR [rbx]
+        call    void pet(cat)               
+        add     rbx, 4
+        cmp     rbx, rdi
+        jne     SHORT $LL4@process_ca
+$LN3@process_ca:
+        mov     rbx, QWORD PTR [rsp+48]
+        mov     rsi, QWORD PTR [rsp+56]
+        add     rsp, 32   
+        pop     rdi
+        ret     0</code></pre>
+<p>The key part to note here are the lines directly under the <code>$LL4@process_ca</code> label, which carry out the test on <code>is_feeding_time</code> and branch on the result, all inside the loop.</p>
+<p>Here is the code generated now with <code>/O2</code>:</p>
+<pre><code class="language-asm">$LN22:
+        mov     QWORD PTR [rsp+8], rbx
+        push    rdi
+        sub     rsp, 32  
+        mov     rbx, QWORD PTR [rcx]
+        mov     rax, QWORD PTR [rcx+8]
+        lea     rdi, QWORD PTR [rbx+rax*4]
+        cmp     rbx, rdi
+        je      SHORT $LN14@process_ca
+        test    dl, dl
+        je      SHORT $LL11@process_ca
+        npad    2
+$LL4@process_ca:
+        mov     ecx, DWORD PTR [rbx]
+        call    void feed(cat)
+        mov     ecx, DWORD PTR [rbx]
+        call    void pet(cat)     
+        add     rbx, 4
+        cmp     rbx, rdi
+        jne     SHORT $LL4@process_ca
+        mov     rbx, QWORD PTR [rsp+48]
+        add     rsp, 32      
+        pop     rdi
+        ret     0
+$LL11@process_ca:
+        mov     ecx, DWORD PTR [rbx]
+        call    void pet(cat)
+        add     rbx, 4
+        cmp     rbx, rdi
+        jne     SHORT $LL11@process_ca
+$LN14@process_ca:
+        mov     rbx, QWORD PTR [rsp+48]
+        add     rsp, 32    
+        pop     rdi
+        ret     0</code></pre>
+<p>The code is now longer because two versions of the loop body are now generated, under the <code>$LL4@process_ca</code> and <code>$LL11@process_ca</code> labels. But also note that the branch occurs in the entry block of the function and selects between the two loop body versions:</p>
+<pre><code class="language-asm">        cmp     rbx, rdi
+        je      SHORT $LN14@process_ca
+        test    dl, dl
+        je      SHORT $LL11@process_ca</code></pre>
+<h2 id="min-max-chains">Min/Max Chains</h2>
+<p>We have improved optimization of chains of <code>std::min</code> and <code>std::max</code> as of Visual Studio 2022 version 17.0.</p>
+<p>Say we have three blankets and we want to give one to our cat. The one we pick shouldn&#8217;t be too hard. It shouldn&#8217;t be too soft. It should be just right.</p>
+<p>We could write a function to give us the Just Right blanket from three, by picking the middle one. It could look something like this:</p>
+<pre><code class="language-c++">using softness = float;
+softness just_right_blanket(softness a, softness b, softness c) {
+    return std::max(std::min(a,b), std::min(std::max(a,b),c));
+}</code></pre>
+<p>In VS2019, this code was generated for x64 with <code>/O2 /fp:fast</code>:</p>
+<pre><code class="language-asm">        comiss  xmm1, xmm0
+        lea     rcx, QWORD PTR a$[rsp]
+        lea     rax, QWORD PTR b$[rsp]
+        lea     rdx, QWORD PTR a$[rsp]
+        movss   DWORD PTR [rsp+16], xmm1
+        movss   DWORD PTR [rsp+8], xmm0
+        cmovbe  rax, rcx
+        movss   DWORD PTR [rsp+24], xmm2
+        lea     rcx, QWORD PTR c$[rsp]
+        comiss  xmm2, DWORD PTR [rax]
+        cmovae  rcx, rax
+        lea     rax, QWORD PTR b$[rsp]
+        comiss  xmm0, xmm1
+        cmovbe  rax, rdx
+        movss   xmm1, DWORD PTR [rax]
+        comiss  xmm1, DWORD PTR [rcx]
+        cmovb   rax, rcx
+        movss   xmm0, DWORD PTR [rax]
+        ret     0</code></pre>
+<p>Arm64 codegen is similarly inefficient. Both x64 and Arm64 have single instructions for scalar floating point min and max, which we now use in VS2022 at <code>/O2</code> and above with <code>/fp:fast</code>. Here is the x64 code now:</p>
+<pre><code class="language-asm">        movaps  xmm3, xmm0
+        maxss   xmm0, xmm1
+        minss   xmm3, xmm1
+        minss   xmm0, xmm2
+        maxss   xmm0, xmm3
+        ret     0</code></pre>
+<p>And for Arm64:</p>
+<pre><code class="language-asm">        fmax        s16,s0,s1
+        fmin        s17,s0,s1
+        fmin        s18,s16,s2
+        fmax        s0,s18,s17
+        ret</code></pre>
+<h2 id="backwards-loop-vectorization">Backwards Loop Vectorization</h2>
+<p>Say I run a cat shelter with 32 cats and want to count how many crunchies they leave behind in their bowls after mealtime. So I write a function which takes a pointer to the first bowl, and sum it like so (yes, I know I could use <code>std::accumulate</code>):</p>
+<pre><code class="language-c++">int count_leftovers(int* bowl_ptr) {
+    int result = 0;
+
+    for (int i = 0; i &lt; 32; ++i, ++bowl_ptr) {
+        result += *bowl_ptr;
+    }
+    return result;
+}</code></pre>
+<p>This all works and generates good code! But then I realize that my desk is actually at the far end of the room, so I need to walk all the way to the start of the line to begin counting. I decide to instead take a pointer to the <em>last</em> bowl and work backwards:</p>
+<pre><code class="language-c++">int count_leftovers(int* bowl_ptr) {
+    int result = 0;
+
+    // change ++bowl_ptr to --bowl_ptr
+    for (int i = 0; i &lt; 32; ++i, --bowl_ptr) {
+        result += *bowl_ptr;
+    }
+    return result;
+}</code></pre>
+<p>Unfortunately, if I was using VS2019, this loop would not be <a href="https://en.wikipedia.org/wiki/Automatic_vectorization">vectorized</a>. Here is the code generated with <code>/O2</code>:</p>
+<pre><code class="language-asm">        xor     eax, eax
+        mov     edx, eax
+        mov     r8d, eax
+        mov     r9d, eax
+        add     rcx, -8
+        lea     r10d, QWORD PTR [rax+8]
+$LL4@count_left:
+        add     eax, DWORD PTR [rcx+8]
+        add     r9d, DWORD PTR [rcx+4]
+        add     r8d, DWORD PTR [rcx]
+        add     edx, DWORD PTR [rcx-4]
+        lea     rcx, QWORD PTR [rcx-16]
+        sub     r10, 1
+        jne     SHORT $LL4@count_left
+        lea     ecx, DWORD PTR [rdx+r8]
+        add     ecx, r9d
+        add     eax, ecx
+        ret     0</code></pre>
+<p>The loop is <a href="https://en.wikipedia.org/wiki/Loop_unrolling">unrolled</a> but it is not vectorized.</p>
+<p>We enabled vectorization for backwards-strided loops in VS2022 17.1. The code generated will depend a lot on the flags you use, particularly the <a href="https://learn.microsoft.com/cpp/build/reference/arch-x64?view=msvc-170"><code>/arch</code></a> flag for enabling use of <a href="https://en.wikipedia.org/wiki/Advanced_Vector_Extensions">AVX</a> instructions instead of the default <a href="https://en.wikipedia.org/wiki/SSE2">SSE2</a> ones.</p>
+<p>Here is the code generated for <code>/O2 /arch:AVX2</code>:</p>
+<pre><code class="language-asm">        vpxor   xmm2, xmm2, xmm2
+        vpxor   xmm3, xmm3, xmm3
+        mov     eax, 2
+        npad    3
+$LL4@count_left:
+        vmovd   xmm1, DWORD PTR [rcx]
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx-4], 1
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx-8], 2
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx-12], 3
+        vmovd   xmm0, DWORD PTR [rcx-16]
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx-20], 1
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx-24], 2
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx-28], 3
+        lea     rcx, QWORD PTR [rcx-64]
+        vinsertf128 ymm0, ymm1, xmm0, 1
+        vmovd   xmm1, DWORD PTR [rcx+32]
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx+28], 1
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx+24], 2
+        vpinsrd xmm1, xmm1, DWORD PTR [rcx+20], 3
+        vpaddd  ymm2, ymm0, ymm2
+        vmovd   xmm0, DWORD PTR [rcx+16]
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx+12], 1
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx+8], 2
+        vpinsrd xmm0, xmm0, DWORD PTR [rcx+4], 3
+        vinsertf128 ymm0, ymm1, xmm0, 1
+        vpaddd  ymm3, ymm0, ymm3
+        sub     rax, 1
+        jne     $LL4@count_left
+        vpaddd  ymm0, ymm3, ymm2
+        vphaddd ymm1, ymm0, ymm0
+        vphaddd ymm2, ymm1, ymm1
+        vextracti128 xmm0, ymm2, 1
+        vpaddd  xmm0, xmm2, xmm0
+        vmovd   eax, xmm0
+        vzeroupper
+        ret     0</code></pre>
+<p>This both unrolls and vectorizes the loop. Fully explaining AVX2 vector instructions is a job for a different blog post (maybe check out <a href="https://www.codeproject.com/Articles/874396/Crunching-Numbers-with-AVX-and-AVX">this one</a>), but the basic idea is that all those <a href="https://www.felixcloutier.com/x86/pinsrb:pinsrd:pinsrq"><code>vpinsrd</code></a> instructions are loading the data from memory into vector registers, then the <a href="https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq"><code>vpaddd</code></a>/<a href="https://www.felixcloutier.com/x86/phaddw:phaddd"><code>vphaddd</code></a> instructions carry out addition on big chunks of data all at the same time.</p>
+<h2 id="send-us-your-feedback">Send us your feedback</h2>
+<p>We hope you found these details interesting! If you have ideas for similar posts you&#8217;d like to see, please let us know. We are also interested in your feedback to continue to improve our tools. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/">A Tour of 4 MSVC Backend Improvements</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg 2022.11.14 and 2022.10.19 Releases: Localization for 14 Languages, Overlay Ports/Triplets in Manifests, acquire-project Command, and More…</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/#comments</comments>
@@ -1115,201 +1393,6 @@ In the example, curl from the system package manager pulls in OpenSSL as a depen
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/feed/</wfw:commentRss>
 			<slash:comments>6</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>A Visual Studio Debugger Extension for the Raspberry Pi Camera</title>
-		<link>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/#comments</comments>
-		
-		<dc:creator><![CDATA[Paul Maybee]]></dc:creator>
-		<pubDate>Wed, 21 Sep 2022 15:04:55 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Linux]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=30885</guid>
-
-					<description><![CDATA[<p>While developing a sample application for a Raspberry Pi with a camera using the RaspiCam library, it occurred to me that it would be convenient and fun to be able to see the current camera input while debugging the application.  The Visual Studio debugger supports type-specific custom visualizers and end-user extensions that implement UI for these visualizers.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/">A Visual Studio Debugger Extension for the Raspberry Pi Camera</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>While developing a sample application for a Raspberry Pi with a camera using the <a href="https://github.com/rmsalinas/raspicam">RaspiCam</a> library, it occurred to me that it would be convenient and fun to be able to see the current camera input while debugging the application.  The Visual Studio debugger supports type-specific custom visualizers and end-user extensions that implement UI for these visualizers. I decided to make one for the RaspiCam camera types that would display the current image from the camera. The image below is the end result, showing Visual Studio debugging a program running on the Raspberry Pi and displaying the content of a Raspberry Pi camera object in a pop-up debugger visualizer.</p>
-<p><img class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/08/Picture1.png" alt="Picture of rasperry pi displaying camera" /></p>
-<h5 id="build-a-raspicam-application">Build a RaspiCam Application</h5>
-<p><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart CommentHighlightPipeRest CommentHighlightRest SCXW83782341 BCX8">I needed a sample Raspberry Pi camera application.</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> I downloaded the <a href="https://gnutoolchains.com/raspberry/">Raspberry Pi SDK</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> and a CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> toolchain to my windows machine</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I downloaded </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">the <a href="https://github.com/rmsalinas/raspicam">Raspiam cd camera library</a> </span></span><span class="TextRun SCXW83782341 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">and <a href="https://github.com/opencv/opencv">OpenCV</a></span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">. I used the Raspberry Pi toolchain to build </span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8">both these repositories. I then created a new CM</span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">ake</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> project in Visual Studio, wrote a simple camera application and linked to these two libraries. My </span><span class="NormalTextRun SpellingErrorV2Themed CommentHighlightRest SCXW83782341 BCX8">CMakePresets.json</span><span class="NormalTextRun CommentHighlightRest SCXW83782341 BCX8"> file contains this configuration</span><span class="NormalTextRun CommentHighlightPipeRest SCXW83782341 BCX8">:</span></span><span class="EOP SCXW83782341 BCX8" data-ccp-props="{}"> </span></p>
-<pre class="prettyprint">  "configurePresets": [
-    {
-      "name": "raspberrypi-Debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_TOOLCHAIN_FILE": "C:/temp/raspberry/toolchain-rpi.cmake",
-        "OpenCV_DIR": "D:\\opencv-4.5.5\\opencv-4.5.5\\out\\install\\RaspberryPi-Debug\\lib\\cmake\\opencv4",
-        "raspicam_DIR": "D:\\raspicam\\out\\install\\raspberrypi-Debug\\lib\\cmake"
-      },
-      "environment": {
-        "RASPBIAN_ROOTFS": "c:/temp/raspberry/arm-linux-gnueabihf/sysroot",
-        "PATH": "c:/temp/raspberry/bin;$env{Path}"
-      }
-    }
-  ],
-  "buildPresets": [
-   {
-      "name": "cross-build",
-      "environment": {
-        "PATH": "c:/temp/raspberry/bin;$penv{PATH}"
-      },
-      "configurePreset": "raspberrypi-Debug"
-    }
-  ]
-</pre>
-<p>My Raspberry Pi application uses the OpenCV library and the <code>RaspiCam_Still_Cv</code> camera type for capturing and manipulating the camera image.</p>
-<pre>    raspicam::RaspiCam_Still_Cv Camera;
-    cv::Mat image;
-
-    Camera.open();
-    Camera.grab();
-    Camera.retrieve(image);
-    cv::imwrite("raspicam_cv_image.jpg", image);</pre>
-<p>I wanted to debug this application on the Pi so I added the launch configuration below. This instructs the debugger to first deploy the application to my RaspberryPi device in directory ~/camera. I copied all the shared OpenCV and RaspiCam libraries I needed to this directory too.</p>
-<pre>    {
-      "type": "cppgdb",
-      "name": "DebugOnPi",
-      "project": "CMakeLists.txt",
-      "projectTarget": "simpletest_raspicam",
-      "debuggerConfiguration": "gdb",
-      "MIMode": "gdb",
-      "args": [],
-      "env": {},
-      "deployDirectory": "~/camera",
-      "remoteMachineName": "<em>&lt;your-connection-name-here&gt;</em>",
-      "preDebugCommand": "export LD_LIBRARY_PATH=~/camera"
-    }</pre>
-<p>I could now debug on the Raspberry Pi.</p>
-<h5 id="add-visualizers-to-the-linux-debugger">Add Visualizers to the Linux Debugger</h5>
-<p>Although the Visual Studio Windows debugger supports UI visualizers, it turned out that the Visual Studio Linux debugger did not have this feature implemented.  Since the Raspberry Pi runs Raspian, a Debian Linux variant, the first thing I had to do was fix that. The Linux debugger is an open source project called <a href="https://github.com/Microsoft/MIEngine">MIEngine</a>. The MIEngine runs as a Visual Studio debugger “engine” that controls a gdb process running remotely on a Linux host. The MIEngine already supported custom variable visualization using <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2022">natvis</a> files (example below). However, it did not support the <code>UIVizualizer</code> tag in natvis files which is necessary to open a new visualization window containing, for example, a camera image. The work described here is now part of the MIEngine and in Visual Studio. The completed PR with the changes is <a href="https://github.com/microsoft/MIEngine/pull/1281">here</a>. Remember it’s open source, so you too can contribute in this way!</p>
-<pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010"&gt;
-     &lt;UIVisualizer ServiceId="{0A73397B-D550-4BFE-94C9-C0E5122DC06F}" Id="1"
-             MenuName="Raspberry Still Camera (OpenCV) Visualizer"/&gt;
-
-      &lt;Type Name="raspicam::RaspiCam_Still_Cv"&gt;
-         &lt;UIVisualizer ServiceId="{0A73397B-D550-4BFE-94C9-C0E5122DC06F}" Id="1" /&gt;
-      &lt;/Type&gt;            
-&lt;/AutoVisualizer&gt;</pre>
-<p>There were two changes I needed to make to the MIEngine: First was to recognize and process the <code>UIVisualizer</code> element in natvis files and second was to automatically load natvis files for registered Visual Studio extensions.</p>
-<ul>
-<li>Recognizing the element was simple. The MIEngine already parsed natvis files, it was just ignoring the <code>UIVisualizer</code> element. I simply changed the natvis lookup code to return not just the visualized string value for an expression, but also a list of any <code>UIVisualizers</code> that were present for the expression type. The MIEngine returns an expression value to the Visual Studio debugger as an <code><a href="https://github.com/microsoft/MIEngine/blob/main/src/MIDebugEngine/AD7.Impl/AD7Property.cs">AD7Property</a></code>. I updated the <code>AD7Property</code> class to also return the list of <code>UIVisualizers</code> found.</li>
-<li>The MIEngine makes requests of Visual Studio via its <code><a href="https://github.com/microsoft/MIEngine/tree/main/src/DebugEngineHost">DebugEngineHost</a></code>. In order to support visualization, I needed to call into Visual Studio from the <code>DebugEngineHost</code> and ask it for an <code>IVsExtensionManagerPrivate</code> service reference. I then called into the resulting service asking for a list of all resources tagged as “<code>NativeCrossPlatformVisualizer</code>”. It returned a list of file names for resources that have this tag. These are given to the MIEngine natvis processor for parsing.</li>
-</ul>
-<p>Finally, there was an additional feature that was missing from the MIEngine. It didn’t have a convenient way for a caller holding an <code>AD7Property</code> object to determine the execution context (that is, stack frame) where the expression that generated that property was evaluated. So, I extended the <code>AD7Property</code> class to implement a new interface <code><a href="https://github.com/microsoft/MIEngine/blob/main/src/DebugEngineHost.Stub/Shared/Microsoft.VisualStudio.Debugger.Interop.MI.cs">IDebugMIEngineProperty</a></code> that contains a method for returning the properties <code>IDebugExpressionContext2</code>. Now all the parts are in place for developing a <code>UIVisualizer</code> for Linux applications.</p>
-<h5 id="create-a-visualizer-vsix-project">Create a Visualizer VSIX Project</h5>
-<p>The <code>UIVisualizer</code> for a data type is identified in natvis by a GUID <em>ServiceId</em> and an integer <em>Id</em>. These are the values the debugger will use to find and open the associated visualizer. The <em>ServiceId</em> identifies a type that implements <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.debugger.interop.ivscppdebuguivisualizer?view=visualstudiosdk-2022"><code>VsCppDebugUIVisualizer</code></a>. The Id identified which of its visualizers to open – in the case that more than one visualizer is supported by the service. I needed to author a service for my camera picture viewer as a visual studio extension.</p>
-<p>To start, I created a VSIX (Visual Studio extension project) called PictureViewer (you need to have the “Visual Studio extension development” workload installed). Then I defined an interface for my visualizer tagged with my viewer’s <em>ServiceId</em> and attributed the VSIX Package object with this interface. I now had to define the relationship between the <code>UIVisualizer</code> element in the natvis file with this VSIX package.</p>
-<pre>[Guid("0A73397B-D550-4BFE-94C9-C0E5122DC06F")]
-public interface IPictureViewerService
-{
-}
-…
-[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-[ProvideService(typeof(IPictureViewerService), ServiceName = "PictureViewerService", IsAsyncQueryable = true)]
-[Guid(PictureViewerPackage.PackageGuidString)]
-public sealed class PictureViewerPackage : AsyncPackage
-{
-…
-}</pre>
-<p>I then added a new <code>PictureViewerService</code> that implements both <code>IPictureViewerService</code> and <code>IVsCppDebugUIVisualizer</code>. The only method it implements is <code>IVsCppDebugUIVisualizer.DisplayValue</code>.</p>
-<pre>int DisplayValue(uint ownerHwnd, uint visualizerId, IDebugProperty3 debugProperty)
-
-</pre>
-<p>This is the API called by the debugger to display a value using a custom <code>UIVisualizer</code>. The already evaluated expression value is passed to the visualizer in the <code>debugProperty</code> object.</p>
-<p>I implemented my UI in class <code>PictureViewerViewModel</code>. The UI in this example is very simple, just an Image and a Button in a pop-up window. When the service activates the UI the view model object fires off a task to load the image from the application being debugged and then invokes <code><a href="https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.showdialog?view=netframework-4.7.2">ShowDialog</a></code>. The XAML snippet below defines the content of the dialog.</p>
-<pre>&lt;Grid Margin="4"&gt;
-    &lt;Grid.RowDefinitions&gt;
-        &lt;RowDefinition Height="*" /&gt;
-        &lt;RowDefinition Height="Auto" /&gt;
-    &lt;/Grid.RowDefinitions&gt;
-    &lt;Image Width="{Binding Image.Width}" Height="{Binding Image.Height}"
-        Source="{Binding Image}"/&gt;
-    &lt;Button Grid.Row="1" Margin="4,0" x:Uid="LoadNext_Button"
-            Content="Next"
-            Command="{Binding ClickCommand, Mode=OneTime}" /&gt;
-&lt;/Grid&gt;
-
-</pre>
-<p>The view model is where the work is done to populate the UI from the camera content. In this case I was interested in retrieving JPEG content from the camera and using it to create a <a href="https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.imaging.bitmapimage?view=netframework-4.7.2">BitmapImage</a>. To get an image from a camera object the debugger must perform the same operations that the application would have to do to do the same thing. Or more accurately, the debugger must instruct the debuggee to do these steps using expression evaluation. The code below uses Visual Studio debugger APIs to evaluate a string expression given an <code>IDebugMIEngineProperty</code> <em>context</em>. It returns both a string with the debugger’s result of the evaluation and a memory context object that can be used to read the raw bytes of that result.</p>
-<pre>private DEBUG_PROPERTY_INFO EvalExpression(string expr, out IDebugMemoryContext2 ppMemory)
-{
-
-   if (context.ParseText(expr, enum_PARSEFLAGS.PARSE_EXPRESSION, 10, out IDebugExpression2 ppExpr, out string error, out uint errorCode) != VSConstants.S_OK)
-   {
-      throw new ApplicationException($"Failed to parse expression '{expr}'.");
-   }
-
-   if (ppExpr.EvaluateSync(0, 0, null, out IDebugProperty2 prop) != VSConstants.S_OK)
-   {
-      throw new ApplicationException($"Failed to evaluate expression '{expr}'.");
-   }
-
-   DEBUG_PROPERTY_INFO[] value = new DEBUG_PROPERTY_INFO[1]; ;
-   if (prop.GetPropertyInfo(enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE, 10, 0, null, 0, value) != VSConstants.S_OK)
-   {
-      throw new ApplicationException($"Failed to get expression value for '{expr}'.");
-   }
-
-   if (prop.GetMemoryContext(out ppMemory) != VSConstants.S_OK)
-   {
-      ppMemory = null;
-   }
-
-   return value[0];
-}
-
-</pre>
-<p>Now I needed to implement the right sequence of expression evaluations. I based the sequence on the sample C++ code below that retrieves an in-memory jpg image from a camera object.</p>
-<pre>raspicam::RaspiCam_Still_Cv Camera;
-...
-cv::Mat image;
-Camera.grab();
-Camera.retrieve(image);
-
-vector&lt;uchar&gt; jpgImage;
-vector&lt;int&gt; jpgParams;
-cv::InputArray ia = cv::_InputArray(image);
-string jpg = ".jpg";
-
-cv::imencode(jpg, ia, jpgImage, jpgParams);
-
-</pre>
-<p>Since I have registered the visualizer for the camera type, the debugProperty object that is passed into the visualizer will contain the results of evaluating a <code>RaspiCam_Still_Cv</code> object. It can be cast to an <code>IDebugMIEngineProperty</code> and used to get a context for evaluating expressions. The final result is that the debuggee application creates an in-memory object containing a JPEG image. The debugger then reads the bytes from the debuggee memory and creates the BitmapImage.</p>
-<p>The first thing you might notice is that this sequence of evaluations involves creating several objects: <em>image</em>, <em>jpgImage</em>, <em>jpgParams</em>, <em>ia</em>, and <em>jpg</em>. These objects do not exist on the debuggee so they must be created. To create an object via expression evaluation, the debugger must first malloc the memory for the object and then invoke the object’s constructor. I do this in <code>MakeHeapObject</code> below:</p>
-<pre>private string MakeHeapObject(string type, string constructor, string cparams = "")
-{
-   var address = this.EvalExpression($"malloc(sizeof({type}))");
-   if (!address.bstrValue.StartsWith("0x"))
-   {
-      throw new ApplicationException(address.bstrValue);
-   }
-
-   var init = this.EvalExpression(
-                $"(({type} *){address.bstrValue})-&gt;{constructor}({cparams})");
-   return address.bstrValue;
-}</pre>
-<p>For example, to make an object of type “<code>vector&lt;int&gt;</code>,” the visualizer calls:</p>
-<pre>this.MakeHeapObject("std::vector&lt;int, std::allocator&lt;int&gt; &gt;", "vector")
-
-</pre>
-<p>A string containing the new object’s address in the debuggee is returned, for example “<code>0xf7003421</code>”. <span class="NormalTextRun SCXW228642498 BCX9">The object is similarly </span><span class="NormalTextRun SCXW228642498 BCX9">deleted</span><span class="NormalTextRun SCXW228642498 BCX9"> in </span><code><span class="NormalTextRun SpellingErrorV2Themed SCXW228642498 BCX9">FreeHeapObject</span></code><span class="NormalTextRun SCXW228642498 BCX9"> when it is no longe</span><span class="NormalTextRun SCXW228642498 BCX9">r</span><span class="NormalTextRun SCXW228642498 BCX9"> needed. Notice that </span><span class="NormalTextRun SCXW228642498 BCX9">it is possible to introduce new interactions that would not have occurred whenever running code in the </span><span class="NormalTextRun SpellingErrorV2Themed SCXW228642498 BCX9">debuggee</span><span class="NormalTextRun SCXW228642498 BCX9">. It may not be</span><span class="NormalTextRun SCXW228642498 BCX9"> safe </span><span class="NormalTextRun SCXW228642498 BCX9">to create and destroy </span><span class="NormalTextRun SCXW228642498 BCX9">objects that</span> <span class="NormalTextRun SCXW228642498 BCX9">affect</span> <span class="NormalTextRun SCXW228642498 BCX9">shared resources.</span></p>
-<p>Now all the pieces are in place for evaluating the sequence of expressions necessary to get the jpg image into a debuggee in-memory byte array. Once this is done the <code>IDebugMemoryContext2</code> is used to read the bytes from debuggee memory into a buffer in Visual Studio. The Bitmap image is created from a <a href="https://docs.microsoft.com/en-us/dotnet/api/system.io.memorystream?view=netframework-4.7.2">MemoryStream</a> built on that buffer.</p>
-<p>The VSIX project also needs to contain the .natvis file containing the type-to-Visualizer mapping (see top of this section). The VSIX manifest points to the file and tags it as a “<code>NativeCrossPlatformVisualizer</code>” asset.</p>
-<pre>  &lt;Asset Type="NativeCrossPlatformVisualizer" Path="raspicam.natvis"/&gt;</pre>
-<p>All the details can be found in <a href="https://github.com/microsoft/VisualStudioMIEnginePictureViewer">this git repository</a>, including the sample CMake application (above) to test with.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/">A Visual Studio Debugger Extension for the Raspberry Pi Camera</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-visual-studio-debugger-extension-for-the-raspberry-pi-camera/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
