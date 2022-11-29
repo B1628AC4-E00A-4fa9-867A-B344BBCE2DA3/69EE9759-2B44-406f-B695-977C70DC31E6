@@ -28,6 +28,186 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC OpenMP Update</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-openmp-update/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-openmp-update/#respond</comments>
+		
+		<dc:creator><![CDATA[Tanveer Gani]]></dc:creator>
+		<pubDate>Tue, 29 Nov 2022 16:00:19 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[OpenMP]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31286</guid>
+
+					<description><![CDATA[<p>Summary of your post, shown on the home page next to the featured image</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-openmp-update/">MSVC OpenMP Update</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In our previous <a href="https://devblogs.microsoft.com/cppblog/openmp-task-support-for-c-in-visual-studio/">blog post</a>, we announced support for OpenMP tasks starting with Visual Studio 17.2. Now, we are pleased to announce we have added further OpenMP features to Visual Studio 17.4, which brings us closer to conformance with OpenMP 3.1.</p>
+<h2 id="pragma-atomic-with-openmp-3-1-semantics"><code>#pragma atomic</code> with OpenMP 3.1 semantics</h2>
+<p>We added support for <code>#pragma omp atomic</code> a while ago but we now also support the full OpenMP 3.1 syntax and semantics for atomic operations. Specifically, we now support a <code>read</code>, <code>write</code>, <code>update</code> or <code>capture</code> clause in the pragma while the pragma can now apply either to an expression-statement (as before) or a structured block, which has particular restrictions that the compiler will check.</p>
+<p>When the compiler encounters the new OpenMP atomic clauses, it will make sure that the LLVM OpenMP runtime (<code>libomp</code>) is being used:</p>
+<pre><code class="language-text">example.cpp(14): error C7660: '#pragma omp atomic update': requires '-openmp:llvm' command line option(s)</code></pre>
+<p>This is because we support the newer semantics only on the new LLVM-based OpenMP runtime.</p>
+<p><code>omp atomic</code> may seem like a duplication of <code>omp critical</code> but it is different in that <code>omp critical</code> is a generalized mutual exclusion mechanism and can wrap any kind of code, while <code>omp atomic</code> limits the kinds of operations that it supports. Based on these restrictions, the compiler can, in principle, generate more optimized code. For example, a critical section always requires acquiring a lock from the underlying operating system, but an atomic operation can use the underlying hardware guarantees to avoid such locking for, say, loads or stores of variables smaller than a register.</p>
+<p>Consider this example from the OpenMP 3.1 Specification:</p>
+<pre><code class="language-c++">int work1(int i);
+int work2(int i);
+
+void atomic_example(int* x, int* y, int* index, int n)
+{
+    int i;
+    #pragma omp parallel for shared(x, y, index, n)
+    for (i = 0; i &lt; n; i++) {
+        #pragma omp atomic update
+        x[index[i]] += work1(i);
+
+        y[i] += work2(i);
+    }
+}</code></pre>
+<p>Compiling the above for x86 with full optimizations, this is what gets generated:</p>
+<pre><code class="language-nasm">    push    esi
+    call    ?work1@@YAHH@Z              ; work1
+
+; 9    : #pragma omp atomic update
+; 10   : x[index[i]] += work1(i);
+
+    mov ecx, DWORD PTR _x$[esp+20]
+    push    eax
+    mov eax, DWORD PTR _index$[esp+24]
+    mov eax, DWORD PTR [eax+edi]
+    lea eax, DWORD PTR [ecx+eax*4]
+    push    eax
+    push    ebx
+    push    0
+    call    ___kmpc_atomic_fixed4_add
+
+; 11   :         y[i] += work2(i);
+
+    push    esi
+    call    ?work2@@YAHH@Z              ; work2
+    add DWORD PTR [edi], eax</code></pre>
+<p>Note that to update <code>x[index[i]]</code>, the code first calculates the address of that array location, and then calls the <code>libomp</code> API <code>__kpmc_atmoc_fixed4_add</code> to do the actual update atomically, while for the subsequent update of <code>y[i]</code>, the code is just an <code>add</code> instruction.</p>
+<p>Given that the OpenMP atomic operations are meant to be an especially efficient form of critical section, it&#8217;s possible to optimize the above code by generating the code for the <code>__kmp_atomic_fixed4_add</code> library call inline and avoid a function call. We don&#8217;t currently do this but this work is planned for future versions of MSVC.</p>
+<p>We now also support <code>capture</code> as a clause for <code>omp atomic</code>, with both the expression-statement and structured block syntax. Using the <code>capure</code> clause allows atomic update of an l-value while capturing its initial or final value at the same time. E.g., consider a team of threads which we have to allocate work to. Assume the work is allocated based on &#8220;slots&#8221; which are identified by a variable <code>slot</code>, with the idea being that each thread gets assigned a different value of this variable. This could be implemented using atomic capture in this way:</p>
+<pre><code class="language-c++">void assign_work()
+{
+    int slot = 0;
+    int my_slot;
+    const int max_slot = 1'000'000;
+
+    #pragma omp parallel private(my_slot)
+    while (slot &lt; max_slot)
+    {
+        // Get the current value of slot and update it.
+        // Note that all threads are going through the
+        // slots in parallel
+        #pragma omp atomic capture
+        { my_slot = slot; ++slot; }
+        do_work(my_slot);
+    }
+}</code></pre>
+<p>Each parallel thread running the loop body will atomically save the current value of <code>slot</code> into its private variable <code>my_slot</code> and then increment <code>slot</code>, the whole operation being executed atomically with repect to other threads. Consequently, no two threads will get the same value of <code>slot</code> passed to <code>do_work</code> and eventually all values up to <code>max_slot</code> will be allocated.</p>
+<p>We could also write the above atomic operation more compactly using the expression-statement version of <code>capture</code>:</p>
+<pre><code class="language-c++">#pragma omp atomic capture
+my_slot = slot++;</code></pre>
+<p>The compiler has added diagnostics for required expression forms for <code>omp atomic</code>. E.g.,:</p>
+<pre><code class="language-c++">#pragma omp atomic
+{ v = x; +x; }</code></pre>
+<p>produces:</p>
+<pre><code class="language-text">.\atomic-capture-block.c(14,24): error C3048: '#pragma omp atomic capture': expression or block-statement following pragma does not conform to the OpenMP specification
+            v = x; +x;
+                   ^</code></pre>
+<p>Attempting to use an overloaded operator in a capture block or expression gives:</p>
+<pre><code class="language-text">.\atomic_capture_neg.cpp(18,11): error C3943: '#pragma omp atomic': operator '+=' is overloaded; only built-in operators are allowed
+    x += s;
+      ^</code></pre>
+<p>We&#8217;ve added diagnostics to help with the validating the semantics and syntax of <code>#pragma omp atomic</code> but one thing should be borne in mind: because MSVC doesn&#8217;t print expressions in diagnostics, using <code>/diagnostics:caret</code> is helpful in getting the most from the new diagnostics. E.g.,</p>
+<pre><code class="language-c++">int test(int initial)
+{
+    int v, x;
+    #pragma omp atomic capture
+    {
+        v = x; v = v + 1;
+    }
+    return v;
+}</code></pre>
+<p>produces</p>
+<pre><code class="language-text">.\atomic-capture-block.cpp(6,20): error C5300: '#pragma omp atomic capture': expression mismatch for lvalue being updated
+            v = x; v = v + 1;
+                   ^
+.\atomic-capture-block.cpp(6,17): note: see the lvalue expression here
+            v = x; v = v + 1;
+                ^</code></pre>
+<p>Without <code>/diagnostics:caret</code> we would have just the line numbers which don&#8217;t help in understanding the diagnostic.</p>
+<h2 id="min-and-max-reduction-operators"><code>min</code> and <code>max</code> reduction operators</h2>
+<p>MSVC has supported reduction operators since implementing OpenMP 2.0, to which we have now added support for <code>min</code> and <code>max</code> operations as well. Consider the simple case of determining the maximum of an array of values. Serial code to do this is given below:</p>
+<pre><code class="language-c++">double serial_max(double* A, int size)
+{
+    int max = INT_MIN;
+    for (int i = 0; i &lt; size; ++i)
+        if (A[i] &gt; max)
+            max = A[i];
+    return max;
+}</code></pre>
+<p>Parallelizing this to run on multiple threads in a naive way requires a critical section to update <code>max</code>:</p>
+<pre><code class="language-c++">double parallel_max(double* A, int size)
+{
+    int maxval = INT_MIN;
+    #pragma omp parallel for shared(maxval)
+    for (int i = 0; i &lt; size; ++i)
+        #pragma omp critical
+        if (A[i] &gt; maxval)
+            maxval = A[i];
+    return maxval;
+}</code></pre>
+<p>It&#8217;s obvious that the above version has a performance problem: every comparison of <code>max</code> to an array variable is being done in a critical section! To improve this, we can have each parallel thread maintain its own maximum and merge them at the end into one maximum for all of them. This will require maintaining an auxiliary vector of maximum values, one per thread, updating the right ones per thread and finally merging the maximum values into a single one, quite a chore if written out by hand. Instead, we can take advantage of the new <code>max</code> reduction operator and write a simple loop:</p>
+<pre><code class="language-c++">double parallel_max(double* A, int size)
+{
+    int maxval = INT_MIN;
+    #pragma omp parallel for reduction(max : maxval)
+    for (i = 0; i &lt; size; ++i)
+        if (A[i] &gt; maxval) maxval = A[i];
+    return maxval;
+}</code></pre>
+<p>The above version creates a private <code>maxval</code> for each thread, which avoids the need for a critical section in the loop and at the end merges them all into a single maximum. Computing the minimum would use the <code>min</code> reduction operator in an analogous fashion.</p>
+<h2 id="pointers-as-loop-index-variables-for-pragma-omp-for">Pointers as loop-index variables for <code>#pragma omp for</code></h2>
+<p>MSVC has hitherto restricted loop variables to integral types while the OpenMP specification allowed pointer types as well. We have now implemented this feature and it is now possible to loop over arrays in parallel using either pointers or integer indices. E.g.,</p>
+<pre><code class="language-c++">void test()
+{
+    int a[100];
+    int *p, *begin = &amp;a[0], *end = &amp;a[100];
+    int k = 0;
+
+    #pragma omp parallel for
+    for (p = begin; p &lt; end; ++p) 
+        *p = k;
+}</code></pre>
+<p>As part of a general policy of supporting newer OpenMP features only on the LLVM <code>libomp</code> runtime, pointer loop variables require the compiler option <code>/openmp:llvm</code> to be used.</p>
+<p>Note: C++ iterator support is not yet implemented but is planned for the future.</p>
+<h2 id="miscellaneous-improvements-diagnostic-messages-and-bug-fixes">Miscellaneous improvements: diagnostic messages and bug fixes</h2>
+<p>We&#8217;ve improved the accuracy or user friendliness of OpenMP diagnostic messages in several places. E.g., for loops, we&#8217;ve added checks for loop comparison operators:</p>
+<pre><code class="language-c++">    #pragma omp parallel for
+    for (p = begin; p &gt; end; ++p) *p = k;  // C5301</code></pre>
+<p>produces:</p>
+<pre><code class="language-text">.\loop_warnings_ptr.cpp(10,23): warning C5301: '#pragma omp for': 'p' increases while loop condition uses '&gt;'; non-terminating loop?
+    for (p = begin; p &gt; end; ++p) *p = k;  // C5301
+                      ^</code></pre>
+<p>We&#8217;ve also fixed several bugs reported by users or discovered during our testing.</p>
+<h2 id="a-note-about-the-llvm-runtime">A note about the LLVM runtime</h2>
+<p>Currently, the LLVM runtime matching compiler is based on version 11. We plan to upgrade the runtime to a more recent version in a future release, but meanwhile we&#8217;ve ported a couple of critical bug fixes: <a href="https://reviews.llvm.org/rGb7b498657685d7a305987b9140253523e77fd4e1">rGb7b498657685 (llvm.org)</a> and <a href="https://reviews.llvm.org/rG1b968467c057df980df214a88cddac74dccff15e">rG1b968467c057 (llvm.org)</a>. Many thanks to <a href="https://reviews.llvm.org/p/jlpeyton/">Jonathan Peyton</a> who provided these fixes!</p>
+<p>With the help of our colleague <a href="https://reviews.llvm.org/p/vadikp-intel/">Vadim Paretsky</a> from Intel, we&#8217;ve upstreamed changes (<a href="https://github.com/llvm/llvm-project/commit/f58fe2e1865d631b228d0bc78ebd4d95f752c51b">1</a>, <a href="https://github.com/llvm/llvm-project/commit/43d5c4d5394e522be87a9a1dfda24f5ce0e3a855">2</a>) to <code>main</code> that we&#8217;ve made so far to the <code>libomp</code> runtime. The only missing change is for atomics for ARM64.</p>
+<p>We&#8217;re interested in hearing from you if you want to build your own <code>libomp</code> for Windows. Please reply in the blog comments in this case.</p>
+<p>A word of caution: we had to accept a breaking change where ordinals for the exported symbols were changed in 17.4. Due to this, older <code>libomp140</code> runtime binaries won&#8217;t work with code if it&#8217;s built with newer <code>libomp.lib</code>, or vice versa. The best thing to do is to re-build all code using <code>/openmp:llvm</code>.</p>
+<h2 id="summary">Summary</h2>
+<p>MSVC continues to improve its OpenMP support and a full, optimized implementation of 3.1 is planned for the future. Based on user feedback, we may consider support for further versions or selected features from newer versions of OpenMP. Please use <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a> to add your voice to feature requests or report bugs.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-openmp-update/">MSVC OpenMP Update</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-openmp-update/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>A Tour of 4 MSVC Backend Improvements</title>
 		<link>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/#comments</comments>
@@ -1241,158 +1421,6 @@ With this release,</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/announcing-nuget-packagereference-support-for-c-cli-msbuild-projects-targeting-net-core/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Using system package manager dependencies with vcpkg</title>
-		<link>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#comments</comments>
-		
-		<dc:creator><![CDATA[Daniel Shaw]]></dc:creator>
-		<pubDate>Wed, 28 Sep 2022 21:55:20 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31151</guid>
-
-					<description><![CDATA[<p>According to C++ 2022 developer survey, the top 3 ways to manage C++ libraries were having the library source code as part of the build, compiling the library separately from instructions, and acquiring the library from a system package manager. Language package managers,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/">Using system package manager dependencies with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>According to C++ 2022 developer survey, the top 3 ways to manage C++ libraries were having the library source code as part of the build, compiling the library separately from instructions, and acquiring the library from a system package manager. Language package managers, such as vcpkg, simplify library management by offering the ease of use of a system package manager with the power, flexibility, and portability of building from source.</p>
-<p>vcpkg brings several advantages to C++ library management. First, vcpkg supports a wide range of customizations for each library. vcpkg installs libraries with a specific version. For additional configuration, each library supports various features and flags. Second, the vcpkg catalog supports over 1900 libraries. Third, vcpkg brings finer control: once a library and feature set are selected, that library&#8217;s configuration will be consistent on any platform.</p>
-<p>However, there are certain scenarios where using a system package manager is the better choice. You can deploy ABI compatible security and bug fixes without deploying the entire application. Multiple applications can use the same shared library, which reduces deployment size. And sometimes, company policy requires using a particular system package dependency. </p>
-<p>In the first example, we will show what it will look like if we strictly use dependencies from vcpkg. In the second example, we will replace some dependencies with system package manager ones.</p>
-<p>This blogpost is for advanced users of vcpkg. To get started with vcpkg instead, see <a href="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</a>.</p>
-<h3 id="building-an-application-with-dependencies-from-the-vcpkg-catalog">Building an application with dependencies from the vcpkg catalog</h3>
-<p>In this example, we are using Ubuntu 22.04 and the x64-linux triplet. First, create three files in an empty project directory: vcpkg.json, main.cpp, and CMakeLists.txt.</p>
-<pre class="prettyprint">
-//vcpkg.json
-{
-    "name": "test-project", 
-    "version": "1.0.0",
-    "dependencies": [
-        "azure-core-cpp"
-        "curl"
-    ]
-}</pre>
-<pre class="prettyprint">
-//main.cpp
-#include &#60;curl/curl.h&#62;
-#include &#60;azure/core/internal/strings.hpp&#62;
-#include &#60;iostream&#62;
-
-using namespace std;
-using Azure::Core::_internal::StringExtensions;
-
-int main() {
-    cout &#60;&#60; curl_version() &#60;&#60; endl;
-    cout &#60;&#60; StringExtensions::LocaleInvariantCaseInsensitiveEqual("aA", "aa") &#60;&#60; endl;
-}</pre>
-<pre class="prettyprint">
-# CMakeLists.txt
-cmake_minimum_required(VERSION 3.22)
-project(test-project)
-add_executable(main main.cpp)
-find_package(CURL REQUIRED)
-find_package(azure-core-cpp CONFIG REQUIRED)
-target_link_libraries(main PUBLIC Azure::azure-core CURL::libcurl)</pre>
-<p>Configuring the project:</p>
-<pre class="prettyprint">cmake &#60;path to project&#62; -DCMAKE_TOOLCHAIN_FILE=&#60;path to vcpkg&#62;/scripts/buildsystems/vcpkg.cmake
-
-... [build output]
-Detecting compiler hash for triplet x64-linux...
-The following packages will be built and installed:
-azure-core-cpp[core,curl,http]:x64-linux -&#62; 1.7.1
-curl[core,non-http,openssl,ssl]:x64-linux -&#62; 7.84.0#1
-* openssl[core]:x64-linux -&#62; 3.0.5#4
-* vcpkg-cmake[core]:x64-linux -&#62; 2022-07-18
-* vcpkg-cmake-config[core]:x64-linux -&#62; 2022-02-06#1
-* zlib[core]:x64-linux -&#62; 1.2.12#1
-Additional packages (*) will be modified to complete this operation.
-...</pre>
-<p>Building and running main:</p>
-<pre class="prettyprint">cmake --build . &#38;&#38; ./main
-
-[ 50%] Building CXX object CMakeFiles/main.dir/main.cpp.o
-[100%] Linking CXX executable main
-[100%] Built target main
-libcurl/7.82.0-DEV OpenSSL/3.0.2 zlib/1.2.12
-1</pre>
-<p>We can use ldd to list the shared libraries:</p>
-<pre class="prettyprint">ldd main
-
-linux-vdso.so.1 (0x00007ffc32bf1000)
-libstdc++.so.6 =&#62; /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f816357a000)
-libm.so.6 =&#62; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f8163493000)
-libgcc_s.so.1 =&#62; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f8163473000)
-libc.so.6 =&#62; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f816324b000)
-/lib64/ld-linux-x86-64.so.2 (0x00007f8163cf0000)</pre>
-<h3 id="using-curl-and-openssl-from-the-system-package-manager">Using curl and OpenSSL from the system package manager</h3>
-<p>You can use <a href="https://github.com/microsoft/vcpkg/blob/master/docs/specifications/ports-overlay.md" rel="noopener" target="_blank">port overlays</a> to configure vcpkg to use the system package manager dependencies. We will build the previous example and use curl and OpenSSL from the system package manager.</p>
-<p>Install the developer dependencies for curl with an OpenSSL backend and OpenSSL:</p>
-<pre class="prettyprint">sudo apt-get install libcurl4-openssl-dev libssl-dev</pre>
-<p>Create the port overlay directory and file structure:</p>
-<pre class="prettyprint">mkdir -p &#60;path to project&#62;/overlays/curl &#60;path to project&#62;/overlays/openssl</pre>
-<pre class="prettyprint">//&#60;path to project&#62;/overlays/curl/vcpkg.json
-{
-    "name": "curl",
-    "version": "1.0.0",
-    "port-version": 0,
-    "features": {
-        "ssl": {
-            "description": ""
-        }
-    }
-}</pre>
-<pre class="prettyprint"># &#60;path to project&#62;/overlays/curl/portfile.cmake
-set(VCPKG_POLICY_EMPTY_PACKAGE enabled)</pre>
-<pre class="prettyprint">//&#60;path to project&#62;/overlays/openssl/vcpkg.json
-{
-    "name": "openssl",
-    "version": "3.0.5"
-}</pre>
-<pre class="prettyprint"># &#60;path to project&#62;/overlays/openssl/portfile.cmake
-set(VCPKG_POLICY_EMPTY_PACKAGE enabled)</pre>
-<p>Building with CMake (we’re using the same project in the previous example):</p>
-<pre class="prettyprint">cmake &#60;path to project&#62; -DVCPKG_OVERLAY_PORTS=&#60;path to project&#62;/overlays -DCMAKE_TOOLCHAIN_FILE=&#60;path to vcpkg&#62;/scripts/buildsystems/vcpkg.cmake
-
--- Running vcpkg install
-Detecting compiler hash for triplet x64-linux...
-The following packages will be built and installed:
-azure-core-cpp[core,curl,http]:x64-linux -&#62; 1.7.1
-curl[core,non-http,openssl,ssl]:x64-linux -&#62; 7.84.0#1 -- &#60;path to project&#62;/overlays/curl
-* openssl[core]:x64-linux -&#62; 3.0.5#4 -- &#60;path to project&#62;/overlays/openssl
-* vcpkg-cmake[core]:x64-linux -&#62; 2022-07-18
-* vcpkg-cmake-config[core]:x64-linux -&#62; 2022-02-06#1
-Additional packages (*) will be modified to complete this operation.
-...</pre>
-<p>Building and running main:</p>
-<pre class="prettyprint">cmake --build .
-.\main
-
-libcurl/7.81.0 OpenSSL/3.0.2 zlib/1.2.11 brotli/1.0.9 zstd/1.4.8 libidn2/2.3.2 libpsl/0.21.0 (+libidn2/2.3.2) libssh/0.9.6/openssl/zlib nghttp2/1.43.0 librtmp/2.3 OpenLDAP/2.5.11
-1</pre>
-<p>Checking whether we’ve linked the correct shared libraries (libssl and libcurl):</p>
-<pre class="prettyprint">ldd main
-
-libcurl.so.4 =&#62; /lib/x86_64-linux-gnu/libcurl.so.4 (0x00007f632c1c0000)
-libssl.so.3 =&#62; /lib/x86_64-linux-gnu/libssl.so.3 (0x00007f632c11c000)
-libcrypto.so.3 =&#62; /lib/x86_64-linux-gnu/libcrypto.so.3 (0x00007f632bcda000)
-libstdc++.so.6 =&#62; /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f632baae000)
-libm.so.6 =&#62; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f632b9c7000)
-... (25+ more dependencies)</pre>
-<p>You will notice curl and openssl from the system package manager have more dependencies than the curl and openssl from the vcpkg catalog. In the above example, we only added port overlays for the dependencies that we use. If you were to build a more complex application that would depend on other dependencies, you would need to add additional overlays.</p>
-<p>Both the vcpkg and the system packager catalogs can contain the same library, and we need to make sure the application only links one copy of each library. Linking two different versions of the same library could lead to ODR violations.
-In the example, curl from the system package manager pulls in OpenSSL as a dependency. We overlayed the OpenSSL dependency in vcpkg to prevent vcpkg from also acquiring OpenSSL from its catalog.</p>
-<h4 id="how-did-cmake-find-curl"> How did CMake find curl?</h4>
-<p>When find_package(CURL) is called, CMake searches for the CURL libraries in the vcpkg_installed directory. If the CURL libraries are not found on the CMake paths, it defaults to the FindCurl module which finds the system dependency.</p>
-<h3 id="learn-more"> Learn More </h3>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/" rel="noopener" target="_blank">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues" rel="noopener" target="_blank">issue tracker</a> or join a more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions" rel="noopener" target="_blank">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap" rel="noopener" target="_blank">roadmap</a> page.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/">Using system package manager dependencies with vcpkg</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/feed/</wfw:commentRss>
-			<slash:comments>6</slash:comments>
 		
 		
 			</item>
