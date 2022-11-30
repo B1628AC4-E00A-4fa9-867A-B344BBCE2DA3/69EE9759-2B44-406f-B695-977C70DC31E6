@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 30 Nov 2022 08:04:00 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 30 Nov 2022 16:17:01 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -251,8 +251,8 @@ my_slot = slot++;</code></pre>
 <p>On Arm64, the results are much the same:</p>
 <pre><code class="language-asm">        rev         w0,w0
         ret</code></pre>
-<p>This optimization isn&#8217;t just doing a simple pattern match on your code, it&#8217;s a generalized bit tracker. For example, this more obfuscated byteswap still gets optimized to a single <code>rev</code> on Arm64:</p>
-<pre><code class="language-c++">unsigned __int64 byteswap_wat_edition(unsigned __int64 x) {
+<p>This optimization isn&#8217;t just doing a simple pattern match on your code, it&#8217;s a generalized bit tracker. For example, this bit order reverser gets optimized to a single <span style="color: #222222; font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;"><span style="font-size: 14.4px; background-color: #f2f4f5;">rbit</span></span> on Arm64:</p>
+<pre><code class="language-c++">unsigned __int64 bitswap(unsigned __int64 x) {
     x = _byteswap_uint64(x);
     x = (x &amp; 0xaaaaaaaaaaaaaaaa) &gt;&gt; 1 | (x &amp; 0x5555555555555555) &lt;&lt; 1;
     x = (x &amp; 0xcccccccccccccccc) &gt;&gt; 2 | (x &amp; 0x3333333333333333) &lt;&lt; 2;
@@ -481,7 +481,7 @@ $LL4@count_left:
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-tour-of-4-msvc-backend-improvements/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
+			<slash:comments>4</slash:comments>
 		
 		
 			</item>
