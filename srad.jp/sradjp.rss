@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2022-12-02T08:18:28+00:00</dc:date>
+<dc:date>2022-12-02T10:17:26+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,8 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://linux.srad.jp/story/22/12/01/1333225/" />
+  <rdf:li rdf:resource="https://srad.jp/story/22/12/01/1216206/" />
   <rdf:li rdf:resource="https://security.srad.jp/story/22/12/01/129223/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/12/01/1259243/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/12/01/124220/" />
@@ -36,8 +38,6 @@
   <rdf:li rdf:resource="https://srad.jp/story/22/12/01/1153236/" />
   <rdf:li rdf:resource="https://hardware.srad.jp/story/22/12/01/1149226/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/12/01/1143244/" />
-  <rdf:li rdf:resource="https://srad.jp/story/22/11/30/1346232/" />
-  <rdf:li rdf:resource="https://it.srad.jp/story/22/11/30/1338240/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,121 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://linux.srad.jp/story/22/12/01/1333225/">
+<title>いかにしてNvidiaはPascalとMaxwell-v2を殺したか</title>
+<link>https://linux.srad.jp/story/22/12/01/1333225/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/graphics_64.png"&gt;あるAnonymous Coward 曰く、2014年のMaxwell-v2(第2世代Maxwell)以降、NvidiaはGPUの周波数変更などの電源管理機能にアクセスするため署名付きのFirmwareを必要とするようになった。しかし、Nvidiaのクローズドなドライバから暗号化鍵やFirmwareを抽出することは、技術的にも、それを配布することはライセンス的にも困難となり、オープンソースカーネルドライバでの周波数変更ができなくなり、起動時の低い周波数に固定されることで、性能を出すことが不可能になった（Phoronix、Phoronixその2、True DMABUF support、Clarification on GPU support for Maxwell/Pascal archs and binary/OS relationship）。 
+
+その他のAMD製GPUやIntelのGPUは、Firmwareを再配布可能なライセンスにし、また両者とも(AMDは2015年以降、Intelはもっと前から)カーネルドライバをオープン(GPL)にしているため、そのような問題はない。カーネルドライバがクローズドなことの問題点はセキュリティや、バグを直すことができないことの他にも、DmabufなどのカーネルのAPIはGPLでライセンスされているため、クローズドなカーネルドライバでは提供することができないという点もある。 
+
+Nvidiaは2022年、カーネルドライバのオープンソースバージョンを並行して提供するようになった。それは、GPUのメモリや電源管理機能の多くを、カーネルドライバから、GPUの内部Firmware(NvidiaはGSP(GPU System Processor)と呼ぶ内部CPU)に移したことで、可能になった(秘密にしておきたい内部を切り離した)。これにより、オープンソースカーネルドライバで周波数変更ができるようになり、また、DmabufなどのGPLライセンスされたAPIを実装しサポートすることを妨げるライセンス上の問題はなくなった。 
+
+しかし、GSPはTuring-architecture以降に導入されたものであり、NvidiaのオープンカーネルドライバではPascal以前はサポートできない。したがって、PascalとMaxwell-v2はオープンソースドライバでは周波数変更できず、クローズドソースドライバでは、Dmabufなどがサポートされていないという現状にある。さらに、それらの制約は技術的なハードの問題ではなく、ライセンスとNvidiaの反オープンソース的経営方針によるものだ。 
+
+この間、Intelはオープンソースカーネルドライバを提供し続け、またユーザースペースでも(Mesaでのi965, Iris, ANV)などオープンソースに貢献し続けた。また、AMDも2015年からカーネルドライバをオープンにし、ユーザースペースドライバを作るための情報を提供し、コミュニティベースのMesaでのRADVなどが販売中 - Steam Deなどにも使われている。このまま、PascalやMaxwell-v2は数年後Nvidiaのサポート対象から外れ、オープンソースカーネルドライバでの周波数変更もできないまま、死んだハードウェアになっていくのだろうか？&lt;p&gt; &lt;a href="https://linux.srad.jp/story/22/12/01/1333225/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://linux.srad.jp/"&gt;Linuxセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt; | &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt; | &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/graphics"&gt;グラフィック&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://linux.srad.jp/story/22/12/01/1333225/&amp;amp;text=%E3%81%84%E3%81%8B%E3%81%AB%E3%81%97%E3%81%A6Nvidia%E3%81%AFPascal%E3%81%A8Maxwell-v2%E3%82%92%E6%AE%BA%E3%81%97%E3%81%9F%E3%81%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://linux.srad.jp/story/22/12/01/1333225/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://linux.srad.jp/story/22/12/01/1333225/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://linux.srad.jp/story/22/12/01/1333225/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://opensource.srad.jp/story/22/05/12/175235"&gt;NVIDIA、ついにlinux kernel moduleをオープンソース化&lt;/a&gt; &lt;small&gt;2022年05月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/05/029211"&gt;NVIDIAのプロプライエタリ情報を盗み出したハッキンググループ、ドライバーのオープンソース化を要求&lt;/a&gt; &lt;small&gt;2022年03月05日&lt;/small&gt; &lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/06/25/1855205"&gt;Windows 10 Build 20150、WSL上でCUDAが利用可能に&lt;/a&gt; &lt;small&gt;2020年06月26日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/17/12/23/196239"&gt;NVIDIA、32ビットOSに対するドライバーサポート終了計画を発表&lt;/a&gt; &lt;small&gt;2017年12月24日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-12-02T09:42:00+00:00</dc:date>
+<dc:subject>graphics</dc:subject>
+<slash:department>いろいろ厳しい</slash:department>
+<slash:section>linux</slash:section>
+<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/graphics_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;2014年の&lt;a href="https://developer.nvidia.com/maxwell-compute-architecture"&gt;Maxwell-v2(第2世代Maxwell)&lt;/a&gt;以降、NvidiaはGPUの周波数変更などの電源管理機能にアクセスするため署名付きのFirmwareを必要とするようになった。しかし、Nvidiaのクローズドなドライバから暗号化鍵やFirmwareを抽出することは、技術的にも、それを配布することはライセンス的にも困難となり、オープンソースカーネルドライバでの周波数変更ができなくなり、起動時の低い周波数に固定されることで、性能を出すことが不可能になった（&lt;a href="https://www.phoronix.com/news/MTA1OTU"&gt;Phoronix&lt;/a&gt;、&lt;a href="https://www.phoronix.com/news/MTIwNDI"&gt;Phoronixその2&lt;/a&gt;、&lt;a href="https://github.com/NVIDIA/open-GPU-kernel-modules/discussions/243"&gt;True DMABUF support&lt;/a&gt;、&lt;a href="https://github.com/NVIDIA/open-GPU-kernel-modules/issues/19"&gt;Clarification on GPU support for Maxwell/Pascal archs and binary/OS relationship&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
+
+その他のAMD製GPUやIntelのGPUは、Firmwareを再配布可能なライセンスにし、また両者とも(AMDは2015年以降、Intelはもっと前から)カーネルドライバをオープン(GPL)にしているため、そのような問題はない。カーネルドライバがクローズドなことの問題点はセキュリティや、バグを直すことができないことの他にも、DmabufなどのカーネルのAPIはGPLでライセンスされているため、クローズドなカーネルドライバでは提供することができないという点もある。&lt;br&gt; &lt;br&gt;
+
+Nvidiaは2022年、カーネルドライバのオープンソースバージョンを並行して提供するようになった。それは、GPUのメモリや電源管理機能の多くを、カーネルドライバから、GPUの内部Firmware(NvidiaはGSP(GPU System Processor)と呼ぶ内部CPU)に移したことで、可能になった(秘密にしておきたい内部を切り離した)。これにより、オープンソースカーネルドライバで周波数変更ができるようになり、また、DmabufなどのGPLライセンスされたAPIを実装しサポートすることを妨げるライセンス上の問題はなくなった。&lt;br&gt; &lt;br&gt;
+
+しかし、GSPはTuring-architecture以降に導入されたものであり、Nvidiaのオープンカーネルドライバでは&lt;a href="https://www.nvidia.com/ja-jp/data-center/pascal-gpu-architecture/"&gt;Pascal&lt;/a&gt;以前はサポートできない。したがって、PascalとMaxwell-v2はオープンソースドライバでは周波数変更できず、クローズドソースドライバでは、Dmabufなどがサポートされていないという現状にある。さらに、それらの制約は技術的なハードの問題ではなく、ライセンスとNvidiaの反オープンソース的経営方針によるものだ。&lt;br&gt; &lt;br&gt;
+
+この間、Intelはオープンソースカーネルドライバを提供し続け、またユーザースペースでも(Mesaでのi965, Iris, ANV)などオープンソースに貢献し続けた。また、AMDも2015年からカーネルドライバをオープンにし、ユーザースペースドライバを作るための情報を提供し、コミュニティベースのMesaでのRADVなどが販売中 - Steam Deなどにも使われている。このまま、PascalやMaxwell-v2は数年後Nvidiaのサポート対象から外れ、オープンソースカーネルドライバでの周波数変更もできないまま、死んだハードウェアになっていくのだろうか？&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+	&lt;a href="https://linux.srad.jp/story/22/12/01/1333225/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://linux.srad.jp/"&gt;Linuxセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/opensource"&gt;オープンソース&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/hardware"&gt;ハードウェア&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/graphics"&gt;グラフィック&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://linux.srad.jp/story/22/12/01/1333225/&amp;amp;text=%E3%81%84%E3%81%8B%E3%81%AB%E3%81%97%E3%81%A6Nvidia%E3%81%AFPascal%E3%81%A8Maxwell-v2%E3%82%92%E6%AE%BA%E3%81%97%E3%81%9F%E3%81%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://linux.srad.jp/story/22/12/01/1333225/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://linux.srad.jp/story/22/12/01/1333225/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://linux.srad.jp/story/22/12/01/1333225/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/22/05/12/175235"&gt;NVIDIA、ついにlinux kernel moduleをオープンソース化&lt;/a&gt;
+			&lt;small&gt;2022年05月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/05/029211"&gt;NVIDIAのプロプライエタリ情報を盗み出したハッキンググループ、ドライバーのオープンソース化を要求&lt;/a&gt;
+			&lt;small&gt;2022年03月05日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/20/06/25/1855205"&gt;Windows 10　Build 20150、WSL上でCUDAが利用可能に&lt;/a&gt;
+			&lt;small&gt;2020年06月26日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/17/12/23/196239"&gt;NVIDIA、32ビットOSに対するドライバーサポート終了計画を発表&lt;/a&gt;
+			&lt;small&gt;2017年12月24日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
+<item rdf:about="https://srad.jp/story/22/12/01/1216206/">
+<title>マツダ曰く、EV移行は想定通りにはいかない</title>
+<link>https://srad.jp/story/22/12/01/1216206/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/transportation_64.png"&gt;Bloombergの記事によれば、マツダの古賀亮専務執行役員は電気自動車（EV）への移行はリスクもあり、一部で想定されるようなスピード感では進まないと考えているという。同氏はその理由を5点挙げている（Bloomberg）。
+IRAや欧州の電池規則に適合するには部品サプライチェーン（供給網）の確立の問題IRAの規則に適合した電池の取り合いによる価格高騰の恐れウクライナ情勢などの地政学上のリスクによるエネルギー調達など消費者や市場がEVを受け入れるか米国では製造業で十分な労働力の確保が困難となっている。古賀氏は「電動化の潮流は変わらないと思うが、時間軸は変わるだろう」とし、同様の考えを共有しているトヨタと歩調を合わせる方針を示しているとのこと。&lt;p&gt; &lt;a href="https://srad.jp/story/22/12/01/1216206/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/transport"&gt;交通&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/12/01/1216206/&amp;amp;text=%E3%83%9E%E3%83%84%E3%83%80%E6%9B%B0%E3%81%8F%E3%80%81EV%E7%A7%BB%E8%A1%8C%E3%81%AF%E6%83%B3%E5%AE%9A%E9%80%9A%E3%82%8A%E3%81%AB%E3%81%AF%E3%81%84%E3%81%8B%E3%81%AA%E3%81%84" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/12/01/1216206/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/12/01/1216206/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/12/01/1216206/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://srad.jp/story/22/11/17/1419243"&gt;信頼性ではＥＶよりハイブリッドでトヨタが首位。最新コンシューマー・レポート&lt;/a&gt; &lt;small&gt;2022年11月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/11/16/140247"&gt;日本の車にかかる税金は欧米諸国に比べ約2.2倍から31倍&lt;/a&gt; &lt;small&gt;2022年11月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/11/03/1510210"&gt;自動車に走行距離課税か？&lt;/a&gt; &lt;small&gt;2022年11月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://science.srad.jp/story/22/08/15/1424213"&gt;米国が中国製バッテリー採用車種への補助金をストップへ。日本車にも影響&lt;/a&gt; &lt;small&gt;2022年08月16日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/07/05/1527228"&gt;半導体需要に減退の兆し。米マイクロン収益見通しが予想下回る&lt;/a&gt; &lt;small&gt;2022年07月06日&lt;/small&gt; &lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/06/20/1540228"&gt;EVの航続距離は1日に100kmで十分、日本電産の会長&lt;/a&gt; &lt;small&gt;2022年06月21日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/22/06/08/1557232"&gt;令和3年エネルギー白書閣議決定。過度な再エネ依存のリスク指摘&lt;/a&gt; &lt;small&gt;2022年06月09日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/21/11/07/2123227"&gt;トヨタ、米バイデン政権のEV優遇法案に反発声明。ビッグ3だけに追加援助する内容&lt;/a&gt; &lt;small&gt;2021年11月09日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-12-02T09:05:00+00:00</dc:date>
+<dc:subject>transport</dc:subject>
+<slash:department>そもそも自動車に乗る人が激減しそう</slash:department>
+<slash:section>mainpage</slash:section>
+<slash:comments>14</slash:comments>
+<slash:hit_parade>14,14,3,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/transportation_64.png"&gt;&lt;p&gt;Bloombergの記事によれば、マツダの古賀亮専務執行役員は電気自動車（EV）への移行はリスクもあり、一部で想定されるようなスピード感では進まないと考えているという。同氏はその理由を5点挙げている（&lt;a href="https://www.bloomberg.co.jp/news/articles/2022-11-30/RM566JT0G1KW01?srnd=cojp-v2"&gt;Bloomberg&lt;/a&gt;）。&lt;/p&gt;&lt;ol&gt;
+&lt;li&gt;IRAや欧州の電池規則に適合するには部品サプライチェーン（供給網）の確立の問題&lt;/li&gt;&lt;li&gt;IRAの規則に適合した電池の取り合いによる価格高騰の恐れ&lt;/li&gt;&lt;li&gt;ウクライナ情勢などの地政学上のリスクによるエネルギー調達など&lt;/li&gt;&lt;li&gt;消費者や市場がEVを受け入れるか&lt;/li&gt;&lt;li&gt;米国では製造業で十分な労働力の確保が困難&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;となっている。古賀氏は「電動化の潮流は変わらないと思うが、時間軸は変わるだろう」とし、同様の考えを共有しているトヨタと歩調を合わせる方針を示しているとのこと。&lt;/p&gt;&lt;p&gt;
+	&lt;a href="https://srad.jp/story/22/12/01/1216206/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/transport"&gt;交通&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/12/01/1216206/&amp;amp;text=%E3%83%9E%E3%83%84%E3%83%80%E6%9B%B0%E3%81%8F%E3%80%81EV%E7%A7%BB%E8%A1%8C%E3%81%AF%E6%83%B3%E5%AE%9A%E9%80%9A%E3%82%8A%E3%81%AB%E3%81%AF%E3%81%84%E3%81%8B%E3%81%AA%E3%81%84" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/12/01/1216206/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/12/01/1216206/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/12/01/1216206/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/11/17/1419243"&gt;信頼性ではＥＶよりハイブリッドでトヨタが首位。最新コンシューマー・レポート&lt;/a&gt;
+			&lt;small&gt;2022年11月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/11/16/140247"&gt;日本の車にかかる税金は欧米諸国に比べ約2.2倍から31倍&lt;/a&gt;
+			&lt;small&gt;2022年11月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/11/03/1510210"&gt;自動車に走行距離課税か？&lt;/a&gt;
+			&lt;small&gt;2022年11月04日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://science.srad.jp/story/22/08/15/1424213"&gt;米国が中国製バッテリー採用車種への補助金をストップへ。日本車にも影響&lt;/a&gt;
+			&lt;small&gt;2022年08月16日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/07/05/1527228"&gt;半導体需要に減退の兆し。米マイクロン収益見通しが予想下回る&lt;/a&gt;
+			&lt;small&gt;2022年07月06日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://hardware.srad.jp/story/22/06/20/1540228"&gt;EVの航続距離は1日に100kmで十分、日本電産の会長&lt;/a&gt;
+			&lt;small&gt;2022年06月21日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/22/06/08/1557232"&gt;令和3年エネルギー白書閣議決定。過度な再エネ依存のリスク指摘&lt;/a&gt;
+			&lt;small&gt;2022年06月09日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/21/11/07/2123227"&gt;トヨタ、米バイデン政権のEV優遇法案に反発声明。ビッグ3だけに追加援助する内容&lt;/a&gt;
+			&lt;small&gt;2021年11月09日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://security.srad.jp/story/22/12/01/129223/">
 <title>学術関係者をターゲットとしたサイバー攻撃が増加。警察庁が注意喚起</title>
 <link>https://security.srad.jp/story/22/12/01/129223/</link>
@@ -115,8 +230,8 @@
 <dc:subject>money</dc:subject>
 <slash:department>公開</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>3</slash:comments>
-<slash:hit_parade>3,3,0,0,0,0,0</slash:hit_parade>
+<slash:comments>12</slash:comments>
+<slash:hit_parade>12,12,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/money_64.png"&gt;米VISAなどクレジットカードの国際ブランド3社は30日、これまではこれまでは非開示とされてきた手数料の標準料率を公表した。今回公開されたのは主要なクレジットカード会社であるVISA、Mastercard、Union Pay （銀聯）の3社（&lt;a href="https://www.meti.go.jp/press/2022/11/20221130005/20221130005.html"&gt;経済産業省&lt;/a&gt;、&lt;a href="https://www.visa.co.jp/about-visa/interchange.html"&gt;VISA発表&lt;/a&gt;、&lt;a href="https://www.mastercard.co.jp/ja-jp/business/interchange.html"&gt;Mastercard発表&lt;/a&gt;、&lt;a href="https://www.unionpayintl.com/en/IRF/"&gt;Union Pay (銀聯)発表&lt;/a&gt;、&lt;a href="https://www.nikkei.com/article/DGXZQOUB250B20V21C22A1000000/"&gt;日経新聞&lt;/a&gt;、&lt;a href="https://www.daily.co.jp/society/economics/2022/11/30/0015853073.shtml"&gt;デイリースポーツ&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 &lt;a href="https://srad.jp/story/22/09/19/1422217/"&gt;以前にも取り上げている&lt;/a&gt;が、これまで加盟店手数料に占めるフィーの割合が公開されていなかったことが、加盟店手数料の交渉を阻害する一因となっていた。このため公正取引委員会が4月にインターチェンジフィーの標準料率を公開するようカード会社に求めていた。取引額のうち7割を占めている主要国際ブランド3社がインターチェンジフィーを公開したことにより、中小の加盟店から手数料の引き下げ圧力が強まる可能性が出ている。&lt;p&gt;
@@ -150,8 +265,8 @@ GAME Watchの記事によると、最初の特別委員会では賛成反対が7
 <dc:subject>anime</dc:subject>
 <slash:department>ぎり決着</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>7</slash:comments>
-<slash:hit_parade>7,7,0,0,0,0,0</slash:hit_parade>
+<slash:comments>9</slash:comments>
+<slash:hit_parade>9,9,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/anime_64.png"&gt;先日話題にした「邪神ちゃんドロップキックX」の内容から富良野市による制作委託料を含む&lt;a href="https://srad.jp/story/22/11/17/1340208/"&gt;一般会計決算が市議会で不認定になった問題&lt;/a&gt;で、富良野市は11月30日に行なわれた本会議で2021年度一般会計決算を認定したそうだ（&lt;a href="https://www.famitsu.com/news/202211/30284648.html"&gt;ファミ通.com&lt;/a&gt;、&lt;a href="https://game.watch.impress.co.jp/docs/news/1460201.html"&gt;GAME Watch&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 30日、特別委員会はYouTube Liveで公開される形で議論がおこなわれた。論点となったのは作中での「表現の内容」と投資の「費用対効果」であったという。このうちの費用対効果に関しては、富良野市を対象としたふるさと納税額は前年に当たる2020年と比較すると2.35億円増加、増減率は245.79%と大幅に増えていたという。邪神ちゃんドロップキックXの放送との因果関係は明確ではないものの、例年とは大きく異なる傾向になったのは事実のようだ。&lt;br&gt; &lt;br&gt;
@@ -186,8 +301,8 @@ pongchang 曰く、青森県食の安全・安心推進課　安心推進グル�
 <dc:subject>worms</dc:subject>
 <slash:department>ひぃぃ</slash:department>
 <slash:section>security</slash:section>
-<slash:comments>9</slash:comments>
-<slash:hit_parade>9,8,1,0,0,0,0</slash:hit_parade>
+<slash:comments>12</slash:comments>
+<slash:hit_parade>12,11,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/worms_64.png"&gt;青森県の一部地域で、9月下旬~11月下旬にかけて皮膚の腫れなどを訴えて受診する患者が大幅に増加している。寄生した魚を生で食べると顎口虫が体内に侵入し、皮下を動き回って皮膚が腫れたり、場合によっては目に移動して失明することもあるという。青森県保健衛生課は身体にかゆみや痛みを伴うみみず腫れのような症状がある場合、速やかに医療機関を受診するよう警告している（&lt;a href="https://www.yomiuri.co.jp/national/20221130-OYT1T50264/"&gt;読売新聞&lt;/a&gt;、&lt;a href="https://www.toonippo.co.jp/articles/-/1434989"&gt;Web東奥&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 
@@ -299,8 +414,8 @@ Microsoft はパフォーマンス低下の原因を&lt;a href="https://it.srad.
 <dc:subject>ntt</dc:subject>
 <slash:department>なんか高い</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>14</slash:comments>
-<slash:hit_parade>14,14,2,1,0,0,0</slash:hit_parade>
+<slash:comments>17</slash:comments>
+<slash:hit_parade>17,17,2,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/ntt_64.png"&gt;NTT東日本とNTT西日本は30日、従量課金型の光回線によるインターネット接続サービス「フレッツ 光ライト」を2025年3月31日にサービス終了すると発表した。NTT東日本では「フレッツ 光ライト」および「フレッツ 光ライトプラス」、NTT西日本では「フレッツ 光ライト」が対象で、いずれも新規受付は2023年3月31日に停止される。サービス終了の理由としては、利用者数の減少と対象サービス専用の関連物品の保守期間の限界が来ているためだという。ひかり電話サービスのみ利用しているユーザーに関しては、2023年3月31日より「光回線を利用した電話サービス（仮称）」を提供予定としている。これは月額2750円ほどになるという（&lt;a href="https://www.ntt-east.co.jp/release/detail/20221130_01.html"&gt;NTT東日本&lt;/a&gt;、&lt;a href="https://www.ntt-west.co.jp/news/2211/221130a.html"&gt;NTT西日本&lt;/a&gt;、&lt;a href="https://internet.watch.impress.co.jp/docs/news/1460040.html"&gt;INTERNET Watch&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/22/12/01/1153236/"&gt;すべて読む&lt;/a&gt;
 	
@@ -342,8 +457,8 @@ Microsoft はパフォーマンス低下の原因を&lt;a href="https://it.srad.
 <dc:subject>news</dc:subject>
 <slash:department>容疑</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>18</slash:comments>
-<slash:hit_parade>18,18,2,1,1,0,0</slash:hit_parade>
+<slash:comments>20</slash:comments>
+<slash:hit_parade>20,20,2,1,1,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/news_64.png"&gt;公正取引委員会は12月1日、中部電力、中国電力、九州電力の3社に独占禁止法違反（不当な取引制限）に当たる行為があったとして、計1000億円超の課徴金納付を含む処分案を通知した。課徴金総額は過去最高となる見通し。3社は事業者向けの電力供給をめぐり、互いの顧客獲得を制限するカルテルを結んでいた疑いが持たれている。課徴金の内訳は、中国電700億円超、中部電と販売子会社「中部電力ミライズ」に約275億円、九電約20億円超。公取委は今年度内にも行政処分を出す方針としている（&lt;a href="https://www.asahi.com/articles/ASQD156BCQD1UTIL00N.html"&gt;朝日新聞&lt;/a&gt;、&lt;a href="https://mainichi.jp/articles/20221201/k00/00m/040/146000c"&gt;毎日新聞&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://hardware.srad.jp/story/22/12/01/1149226/"&gt;すべて読む&lt;/a&gt;
 	
@@ -391,8 +506,8 @@ Microsoft はパフォーマンス低下の原因を&lt;a href="https://it.srad.
 <dc:subject>transport</dc:subject>
 <slash:department>実現の余地はどれくらいあるのだろう</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>87</slash:comments>
-<slash:hit_parade>87,87,11,4,0,0,0</slash:hit_parade>
+<slash:comments>99</slash:comments>
+<slash:hit_parade>99,99,11,4,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/transportation_64.png"&gt;日本自動車工業会二輪車委員会（JAMA）と全国オートバイ協同組合連合会（AJ）は、バイク車両区分を現行の「排気量と定格出力」から「最高出力」に改めるよう自民党オートバイ議員連盟に要望した。仮にこの要望が成立すれば、原付免許で125ccクラスにも乗れる可能性も出てくるという（&lt;a href="https://trafficnews.jp/post/122795"&gt;乗りものニュース&lt;/a&gt;、&lt;a href="https://news.webike.net/bikenews/259546/"&gt;Webike Plus&lt;/a&gt;、&lt;a href="https://young-machine.com/2022/11/26/403432/"&gt;ヤングマシン&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;現行の原付（原付一種）は排気量が50ccに制限されているが、このカテゴリーは日本にしか存在しないため開発コストの負担が増しており、また50ccクラスの小さなエンジンでは2025年の新排ガス規制を満たすことが困難なため、このままでは原付の新車が消滅する可能性があるという。一方で125ccであればグローバル規格であり、また規制も対応可能なことから、125ccバイクの最高出力を制限した機種を原付として販売できるように規制緩和を求めていくとのこと。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
@@ -421,93 +536,6 @@ Microsoft はパフォーマンス低下の原因を&lt;a href="https://it.srad.
 		
 			&lt;br&gt;&lt;a href="https://srad.jp/story/12/05/21/0834223"&gt;ホンダの原付きバイク「スーパーカブ50」、1958年の誕生以来初の全面改良&lt;/a&gt;
 			&lt;small&gt;2012年05月21日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://srad.jp/story/22/11/30/1346232/">
-<title>PlayStationとXboxの次世代機は2028年以降。英規制当局資料から</title>
-<link>https://srad.jp/story/22/11/30/1346232/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;ソニーとMicrosoftの次の世代のゲームハードに関して、英競争市場庁（CMA）に出された多量から発売時期を「2028年以降」であることが報じられている。MicrosoftがActivision Blizzard買収計画の認可のために出した資料などから判明したという（TechnoEdge、ソニーがCMAに提出した資料）。 
-
-Microsoftは、Activision Blizzardの買収が設立した場合、同社のゲームを2027年まではPlayStationに提供すると説明していたという。この説明にソニーは不満を出している。曰く、PlayStation 6に相当するとみられる次世代ゲーム機がActivision Blizzardの「Call of Duty」タイトルなしに発売されることになると主張、逆算的にPlayStation 6は2028年以降であることが分かる。Microsoftも次世代ゲーム機の発売は、2028年秋以降になると予想とCMAに提出した文書などから明らかになっているという。&lt;p&gt; &lt;a href="https://srad.jp/story/22/11/30/1346232/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/11/30/1346232/&amp;amp;text=PlayStation%E3%81%A8Xbox%E3%81%AE%E6%AC%A1%E4%B8%96%E4%BB%A3%E6%A9%9F%E3%81%AF2028%E5%B9%B4%E4%BB%A5%E9%99%8D%E3%80%82%E8%8B%B1%E8%A6%8F%E5%88%B6%E5%BD%93%E5%B1%80%E8%B3%87%E6%96%99%E3%81%8B%E3%82%89" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/11/30/1346232/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/11/30/1346232/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/11/30/1346232/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://srad.jp/story/22/05/26/1458259"&gt;ブロードコム、VMウェアを買収。アクティビジョン・ブリザード買収に匹敵する規模&lt;/a&gt; &lt;small&gt;2022年05月27日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/22/01/18/1619227"&gt;Microsoft、Activision Blizzard を総額 687 億ドルで買収へ&lt;/a&gt; &lt;small&gt;2022年01月19日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-12-01T23:02:00+00:00</dc:date>
-<dc:subject>games</dc:subject>
-<slash:department>作る気はあると</slash:department>
-<slash:section>mainpage</slash:section>
-<slash:comments>38</slash:comments>
-<slash:hit_parade>38,38,2,0,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;ソニーとMicrosoftの次の世代のゲームハードに関して、英競争市場庁（CMA）に出された多量から発売時期を「2028年以降」であることが報じられている。Microsoftが&lt;a href="https://it.srad.jp/story/22/01/18/1619227/"&gt;Activision Blizzard買収計画&lt;/a&gt;の認可のために出した資料などから判明したという（&lt;a href="https://www.techno-edge.net/article/2022/11/28/554.html"&gt;TechnoEdge&lt;/a&gt;、&lt;a href="https://docs.google.com/viewer?url=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fmedia%2F637cecede90e076b8043d8cd%2FSony_Interactive_Entertainment.pdf"&gt;ソニーがCMAに提出した資料&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-Microsoftは、Activision Blizzardの買収が設立した場合、同社のゲームを2027年まではPlayStationに提供すると説明していたという。この説明にソニーは不満を出している。曰く、PlayStation 6に相当するとみられる次世代ゲーム機がActivision Blizzardの「Call of Duty」タイトルなしに発売されることになると主張、逆算的にPlayStation 6は2028年以降であることが分かる。Microsoftも次世代ゲーム機の発売は、2028年秋以降になると予想とCMAに提出した文書などから明らかになっているという。&lt;p&gt;
-	&lt;a href="https://srad.jp/story/22/11/30/1346232/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/games"&gt;ゲーム&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/11/30/1346232/&amp;amp;text=PlayStation%E3%81%A8Xbox%E3%81%AE%E6%AC%A1%E4%B8%96%E4%BB%A3%E6%A9%9F%E3%81%AF2028%E5%B9%B4%E4%BB%A5%E9%99%8D%E3%80%82%E8%8B%B1%E8%A6%8F%E5%88%B6%E5%BD%93%E5%B1%80%E8%B3%87%E6%96%99%E3%81%8B%E3%82%89" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/11/30/1346232/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/11/30/1346232/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/11/30/1346232/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/22/05/26/1458259"&gt;ブロードコム、VMウェアを買収。アクティビジョン・ブリザード買収に匹敵する規模&lt;/a&gt;
-			&lt;small&gt;2022年05月27日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/22/01/18/1619227"&gt;Microsoft、Activision Blizzard を総額 687 億ドルで買収へ&lt;/a&gt;
-			&lt;small&gt;2022年01月19日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://it.srad.jp/story/22/11/30/1338240/">
-<title>AWS もウォーターポジティブ化計画を発表</title>
-<link>https://it.srad.jp/story/22/11/30/1338240/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/earth_64.png"&gt;headless 曰く、Amazon Web Services (AWS) は11月28日、2030年までに使用する水よりも多くの水を供給するウォーターポジティブ化を実現する計画を発表した
-(プレスリリース、
-The Register の記事)。
-
-AWS のウォーターポジティブ化は水の使用効率向上と、再生水や雨水といった持続可能な供給源から採取した水の活用、再生水のコミュニティへの供給、水の供給増という 4 本の柱により計画を進める。対象はインド・英国・米国 (カリフォルニア) となっており、それぞれ現地の環境保護団体などと協力して計画を進めるとのこと。
-
-ウォーターポジティブ化は Microsoft をはじめ、Intel (PDF) や Google、Meta なども取り組みを進めており、Intel は今年 7 月に米国・コスタリカ・インドでウォーターポジティブ化を達成したことも発表している。&lt;p&gt; &lt;a href="https://it.srad.jp/story/22/11/30/1338240/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/earth"&gt;地球&lt;/a&gt; | &lt;a href="https://srad.jp/stories/cloud"&gt;クラウド&lt;/a&gt; | &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/internet"&gt;インターネット&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/11/30/1338240/&amp;amp;text=AWS%20%E3%82%82%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%BF%E3%83%BC%E3%83%9D%E3%82%B8%E3%83%86%E3%82%A3%E3%83%96%E5%8C%96%E8%A8%88%E7%94%BB%E3%82%92%E7%99%BA%E8%A1%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/11/30/1338240/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/11/30/1338240/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/11/30/1338240/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://science.srad.jp/story/20/09/27/0438244"&gt;Microsoft、2030年までに同社が使用する水よりも多くの水を供給する「ウォーターポジティブ」を目指す&lt;/a&gt; &lt;small&gt;2020年09月27日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-12-01T22:07:00+00:00</dc:date>
-<dc:subject>earth</dc:subject>
-<slash:department>日本だとピンとこない</slash:department>
-<slash:section>it</slash:section>
-<slash:comments>12</slash:comments>
-<slash:hit_parade>12,12,4,1,1,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/earth_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;Amazon Web Services (AWS) は11月28日、2030年までに使用する水よりも多くの水を供給するウォーターポジティブ化を実現する計画を発表した
-(&lt;a href="https://press.aboutamazon.com/2022/11/aws-makes-water-positive-commitment-to-return-more-water-to-communities-than-it-uses-by-2030"&gt;プレスリリース&lt;/a&gt;、
-&lt;a href="https://www.theregister.com/2022/11/28/aws_water_positive_2030/"&gt;The Register の記事&lt;/a&gt;)。&lt;br&gt;
-&lt;br&gt;
-AWS のウォーターポジティブ化は水の使用効率向上と、再生水や雨水といった持続可能な供給源から採取した水の活用、再生水のコミュニティへの供給、水の供給増という 4 本の柱により計画を進める。対象はインド・英国・米国 (カリフォルニア) となっており、それぞれ現地の環境保護団体などと協力して計画を進めるとのこと。&lt;br&gt;
-&lt;br&gt;
-ウォーターポジティブ化は &lt;a href="https://science.srad.jp/story/20/09/27/0438244/"&gt;Microsoft&lt;/a&gt; をはじめ、Intel (&lt;a href="https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2022-08/policy-water-sept2020.pdf"&gt;PDF&lt;/a&gt;) や &lt;a href="https://sustainability.google/intl/ja/commitments/water/#water-at-google"&gt;Google&lt;/a&gt;、&lt;a href="https://about.fb.com/news/2021/08/restoring-water/"&gt;Meta&lt;/a&gt; なども取り組みを進めており、Intel は今年 7 月に&lt;a href="https://www.intel.com/content/www/us/en/newsroom/news/intel-achieves-net-positive-water-3-countries.html"&gt;米国・コスタリカ・インドでウォーターポジティブ化を達成&lt;/a&gt;したことも発表している。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
-	&lt;a href="https://it.srad.jp/story/22/11/30/1338240/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/earth"&gt;地球&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/cloud"&gt;クラウド&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/internet"&gt;インターネット&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/11/30/1338240/&amp;amp;text=AWS%20%E3%82%82%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%BF%E3%83%BC%E3%83%9D%E3%82%B8%E3%83%86%E3%82%A3%E3%83%96%E5%8C%96%E8%A8%88%E7%94%BB%E3%82%92%E7%99%BA%E8%A1%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/11/30/1338240/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/11/30/1338240/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/11/30/1338240/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/20/09/27/0438244"&gt;Microsoft、2030年までに同社が使用する水よりも多くの水を供給する「ウォーターポジティブ」を目指す&lt;/a&gt;
-			&lt;small&gt;2020年09月27日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
