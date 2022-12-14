@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2022-12-14T06:20:42+00:00</dc:date>
+<dc:date>2022-12-14T08:20:49+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,8 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://security.srad.jp/story/22/12/13/187234/" />
+  <rdf:li rdf:resource="https://it.srad.jp/story/22/12/13/1239206/" />
   <rdf:li rdf:resource="https://hardware.srad.jp/story/22/12/13/1233205/" />
   <rdf:li rdf:resource="https://science.srad.jp/story/22/12/13/1220236/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/12/13/1215233/" />
@@ -36,8 +38,6 @@
   <rdf:li rdf:resource="https://it.srad.jp/story/22/12/13/122230/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/22/12/12/1558255/" />
   <rdf:li rdf:resource="https://srad.jp/story/22/12/12/1244235/" />
-  <rdf:li rdf:resource="https://linux.srad.jp/story/22/12/12/1318228/" />
-  <rdf:li rdf:resource="https://srad.jp/story/22/12/12/1233222/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,133 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://security.srad.jp/story/22/12/13/187234/">
+<title>セキュリティソフトウェアに任意ファイルを削除させることが可能な脆弱性</title>
+<link>https://security.srad.jp/story/22/12/13/187234/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/bug_64.png"&gt;headless 曰く、マルウェア検出・削除の仕組みを悪用して非特権ユーザーが任意ファイルを削除可能な脆弱性が複数のセキュリティソフトウェアで見つかり、報告を受けた各社が修正を行ったそうだ
+(SafeBreachのブログ記事、
+Neowin の記事、
+Dark Reading の記事、
+Black Hat Europe 2022 の告知記事)。
+
+この脆弱性は検出したマルウェアがロックされていて削除されない場合、Windows の再起動後に削除を実行する処理に存在する。攻撃者は一時ディレクトリ内に削除するターゲットファイルと同じ名前のマルウェアファイルを作成し、そのままハンドルを閉じずに待機する。セキュリティソフトウェアがマルウェアを検出し、再起動後の削除を予約したら一時ディレクトリを削除し、同じパスでターゲットファイルが格納されているディレクトリを示すようにディレクトリジャンクションを作成する。あとは Windows が再起動されるとターゲットファイルが削除されるという仕組みだ。
+
+発見した SafeBreach は 11 本のセキュリティソフトウェアをテストし、Microsoft Defender・Microsoft Defender for Endpoint・SentinelOne EDR・TrendMicro Apex One・Avast Antivirus・AVG Antivirus の 6 本が影響を受けることを確認。Palo Alto XDR・Cylance・CrowdStrike・McAfee・BitDifender の 5 本は影響を受けなかったという。なお、Microsoft 製品の場合、ターゲットファイルだけでなくファイルが格納されているディレクトリごと削除されるとのこと。
+
+この脆弱性を利用して SafeBreach が作成したワイパーツールは日本の合気道にちなんで「Aikido Wiper Tool」と呼ばれている。ファイル削除はセキュリティソフトウェアが実行するため検知されることはなく、非特権ユーザーとして実行してシステムを起動不可能にしたり、特権ユーザーにアクセスが制限されている重要なデータを消去したりといったことが可能だ。セキュリティソフトウェアが検疫したファイルを格納するフォルダーを削除することも可能だという。
+
+報告を受けた Microsoft は CVE-2022-37971、TrendMicro は CVE-2022-45797、Avast と AVG は CVE-2022-4173 を割り当て、それぞれ脆弱性を修正している。SentinelOne からは連絡が来ていないとのことだ。&lt;p&gt; &lt;a href="https://security.srad.jp/story/22/12/13/187234/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt; | &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/windows"&gt;Windows&lt;/a&gt; | &lt;a href="https://srad.jp/stories/storage"&gt;ストレージ&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/12/13/187234/&amp;amp;text=%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E3%82%BD%E3%83%95%E3%83%88%E3%82%A6%E3%82%A7%E3%82%A2%E3%81%AB%E4%BB%BB%E6%84%8F%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E5%89%8A%E9%99%A4%E3%81%95%E3%81%9B%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E5%8F%AF%E8%83%BD%E3%81%AA%E8%84%86%E5%BC%B1%E6%80%A7" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/12/13/187234/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/12/13/187234/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/12/13/187234/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/11/08/1355256"&gt;ノートンやAvast、Avira、AVGなどを扱う企業が統合。社名は「Gen Digital」に&lt;/a&gt; &lt;small&gt;2022年11月10日&lt;/small&gt; &lt;br&gt;&lt;a href="https://developers.srad.jp/story/22/09/18/0557234"&gt;人気拡張機能、Avast に買収されて嫌われる&lt;/a&gt; &lt;small&gt;2022年09月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/06/27/1521214"&gt;Adobe、Acrobat ReaderでセキュリティソフトによるDLLインジェクション無効化疑惑&lt;/a&gt; &lt;small&gt;2022年06月28日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/05/17/1535241"&gt;国内でVLC media playerの脆弱性を利用したサイバー攻撃。PC Matic発表&lt;/a&gt; &lt;small&gt;2022年05月18日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/16/1618200"&gt;ドイツ連邦情報セキュリティ局、カスペルスキー製品使用のリスクを注意喚起&lt;/a&gt; &lt;small&gt;2022年03月17日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/02/07/1816259"&gt;アドビのIllustratorで起動ができなくなる不具合。セキュリティソフトの影響&lt;/a&gt; &lt;small&gt;2022年02月08日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-12-14T08:04:00+00:00</dc:date>
+<dc:subject>bug</dc:subject>
+<slash:department>こわっ</slash:department>
+<slash:section>security</slash:section>
+<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/bug_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;マルウェア検出・削除の仕組みを悪用して非特権ユーザーが任意ファイルを削除可能な脆弱性が複数のセキュリティソフトウェアで見つかり、報告を受けた各社が修正を行ったそうだ
+(&lt;a href="https://www.safebreach.com/resources/blog/safebreach-labs-researcher-discovers-multiple-zero-day-vulnerabilities/"&gt;SafeBreachのブログ記事&lt;/a&gt;、
+&lt;a href="https://www.neowin.net/news/microsoft-defender-avast-avg-turned-against-windows-to-permanently-delete-files/"&gt;Neowin の記事&lt;/a&gt;、
+&lt;a href="https://www.darkreading.com/vulnerabilities-threats/cyberattackers-popular-edr-tools-destructive-data-wipers"&gt;Dark Reading の記事&lt;/a&gt;、
+&lt;a href="https://www.blackhat.com/eu-22/briefings/schedule/#aikido-turning-edrs-to-malicious-wipers-using--day-exploits-29336"&gt;Black Hat Europe 2022 の告知記事&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+この脆弱性は検出したマルウェアがロックされていて削除されない場合、Windows の再起動後に削除を実行する処理に存在する。攻撃者は一時ディレクトリ内に削除するターゲットファイルと同じ名前のマルウェアファイルを作成し、そのままハンドルを閉じずに待機する。セキュリティソフトウェアがマルウェアを検出し、再起動後の削除を予約したら一時ディレクトリを削除し、同じパスでターゲットファイルが格納されているディレクトリを示すようにディレクトリジャンクションを作成する。あとは Windows が再起動されるとターゲットファイルが削除されるという仕組みだ。&lt;br&gt;
+&lt;br&gt;
+発見した SafeBreach は 11 本のセキュリティソフトウェアをテストし、Microsoft Defender・Microsoft Defender for Endpoint・SentinelOne EDR・TrendMicro Apex One・Avast Antivirus・AVG Antivirus の 6 本が影響を受けることを確認。Palo Alto XDR・Cylance・CrowdStrike・McAfee・BitDifender の 5 本は影響を受けなかったという。なお、Microsoft 製品の場合、ターゲットファイルだけでなくファイルが格納されているディレクトリごと削除されるとのこと。&lt;br&gt;
+&lt;br&gt;
+この脆弱性を利用して SafeBreach が作成したワイパーツールは日本の合気道にちなんで「Aikido Wiper Tool」と呼ばれている。ファイル削除はセキュリティソフトウェアが実行するため検知されることはなく、非特権ユーザーとして実行してシステムを起動不可能にしたり、特権ユーザーにアクセスが制限されている重要なデータを消去したりといったことが可能だ。セキュリティソフトウェアが検疫したファイルを格納するフォルダーを削除することも可能だという。&lt;br&gt;
+&lt;br&gt;
+報告を受けた Microsoft は &lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-37971"&gt;CVE-2022-37971&lt;/a&gt;、TrendMicro は &lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-45797"&gt;CVE-2022-45797&lt;/a&gt;、Avast と AVG は &lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4173"&gt;CVE-2022-4173&lt;/a&gt; を割り当て、それぞれ脆弱性を修正している。SentinelOne からは連絡が来ていないとのことだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
+	&lt;a href="https://security.srad.jp/story/22/12/13/187234/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/software"&gt;ソフトウェア&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/windows"&gt;Windows&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/storage"&gt;ストレージ&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/22/12/13/187234/&amp;amp;text=%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E3%82%BD%E3%83%95%E3%83%88%E3%82%A6%E3%82%A7%E3%82%A2%E3%81%AB%E4%BB%BB%E6%84%8F%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E5%89%8A%E9%99%A4%E3%81%95%E3%81%9B%E3%82%8B%E3%81%93%E3%81%A8%E3%81%8C%E5%8F%AF%E8%83%BD%E3%81%AA%E8%84%86%E5%BC%B1%E6%80%A7" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/22/12/13/187234/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/22/12/13/187234/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/22/12/13/187234/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/11/08/1355256"&gt;ノートンやAvast、Avira、AVGなどを扱う企業が統合。社名は「Gen Digital」に&lt;/a&gt;
+			&lt;small&gt;2022年11月10日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://developers.srad.jp/story/22/09/18/0557234"&gt;人気拡張機能、Avast に買収されて嫌われる&lt;/a&gt;
+			&lt;small&gt;2022年09月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/06/27/1521214"&gt;Adobe、Acrobat ReaderでセキュリティソフトによるDLLインジェクション無効化疑惑&lt;/a&gt;
+			&lt;small&gt;2022年06月28日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/05/17/1535241"&gt;国内でVLC media playerの脆弱性を利用したサイバー攻撃。PC Matic発表&lt;/a&gt;
+			&lt;small&gt;2022年05月18日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/16/1618200"&gt;ドイツ連邦情報セキュリティ局、カスペルスキー製品使用のリスクを注意喚起&lt;/a&gt;
+			&lt;small&gt;2022年03月17日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/02/07/1816259"&gt;アドビのIllustratorで起動ができなくなる不具合。セキュリティソフトの影響&lt;/a&gt;
+			&lt;small&gt;2022年02月08日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
+<item rdf:about="https://it.srad.jp/story/22/12/13/1239206/">
+<title>Twitterで白人至上主義者のページなどに広告が表示されるトラブル。広告主から苦情</title>
+<link>https://it.srad.jp/story/22/12/13/1239206/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/social_64.png"&gt;従来のTwitterでは、いわゆる差別的な表現などが使われているアカウントページには、広告が表示されないようにモデレーションされていたという。しかし、最近になってAmazon、Snap、Uberなど主要な広告主の広告が2人の白人至上主義者のページで表示され、これらの広告主が苦情を申し立てているという。2022年12月に入ってから40以上の出稿者の広告が白人至上主義者のアカウントに出ていたそうだ（The Washington Post、GIGAZINE）。 
+
+Twitterの元社員によれば、システム上は特定のアカウントの近くに広告が表示されないようにフラグを立てる必要があるとのこと。しかし、今回はうまく作用しなかったか、仕様が変更されていた可能性があると話しているとのこと。&lt;p&gt; &lt;a href="https://it.srad.jp/story/22/12/13/1239206/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt; | &lt;a href="https://srad.jp/stories/twitter"&gt;Twitter&lt;/a&gt; | &lt;a href="https://srad.jp/stories/advertising"&gt;広告&lt;/a&gt; | &lt;a href="https://srad.jp/stories/sns"&gt;SNS&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/12/13/1239206/&amp;amp;text=Twitter%E3%81%A7%E7%99%BD%E4%BA%BA%E8%87%B3%E4%B8%8A%E4%B8%BB%E7%BE%A9%E8%80%85%E3%81%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AA%E3%81%A9%E3%81%AB%E5%BA%83%E5%91%8A%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B%E3%83%88%E3%83%A9%E3%83%96%E3%83%AB%E3%80%82%E5%BA%83%E5%91%8A%E4%B8%BB%E3%81%8B%E3%82%89%E8%8B%A6%E6%83%85" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/12/13/1239206/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/12/13/1239206/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/12/13/1239206/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://apple.srad.jp/story/22/11/29/1441215"&gt;マスク氏曰く、「アップルがツイッターをアプリストアから排除すると脅してきた」&lt;/a&gt; &lt;small&gt;2022年11月30日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/22/11/08/1317205"&gt;Metaが大規模な人員削減検討。ほかの大手ITも採用停止やリストラへ&lt;/a&gt; &lt;small&gt;2022年11月09日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/22/11/07/1322231"&gt;買収されたTwitter、従業員の半数が解雇される。国内ではトレンド内容に変化&lt;/a&gt; &lt;small&gt;2022年11月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/22/11/01/1346218"&gt;Twitter、認証バッジ有料化へ&lt;/a&gt; &lt;small&gt;2022年11月02日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>nagazou</dc:creator>
+<dc:date>2022-12-14T07:03:00+00:00</dc:date>
+<dc:subject>sns</dc:subject>
+<slash:department>仕様です</slash:department>
+<slash:section>it</slash:section>
+<slash:comments>10</slash:comments>
+<slash:hit_parade>10,10,0,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/social_64.png"&gt;従来のTwitterでは、いわゆる差別的な表現などが使われているアカウントページには、広告が表示されないようにモデレーションされていたという。&lt;a href="https://it.srad.jp/story/22/11/07/1322231/"&gt;しかし、最近になって&lt;/a&gt;Amazon、Snap、Uberなど主要な広告主の広告が2人の白人至上主義者のページで表示され、これらの広告主が苦情を申し立てているという。2022年12月に入ってから40以上の出稿者の広告が白人至上主義者のアカウントに出ていたそうだ（&lt;a href="https://www.washingtonpost.com/technology/2022/12/06/twitter-ads-elon-musk/"&gt;The Washington Post&lt;/a&gt;、&lt;a href="https://gigazine.net/news/20221208-twitter-ads-appear-on-white-nationalists/"&gt;GIGAZINE&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
+
+Twitterの元社員によれば、システム上は特定のアカウントの近くに広告が表示されないようにフラグを立てる必要があるとのこと。しかし、今回はうまく作用しなかったか、仕様が変更されていた可能性があると話しているとのこと。&lt;p&gt;
+	&lt;a href="https://it.srad.jp/story/22/12/13/1239206/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://it.srad.jp/"&gt;ITセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/business"&gt;ビジネス&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/twitter"&gt;Twitter&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/advertising"&gt;広告&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/sns"&gt;SNS&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://it.srad.jp/story/22/12/13/1239206/&amp;amp;text=Twitter%E3%81%A7%E7%99%BD%E4%BA%BA%E8%87%B3%E4%B8%8A%E4%B8%BB%E7%BE%A9%E8%80%85%E3%81%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AA%E3%81%A9%E3%81%AB%E5%BA%83%E5%91%8A%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B%E3%83%88%E3%83%A9%E3%83%96%E3%83%AB%E3%80%82%E5%BA%83%E5%91%8A%E4%B8%BB%E3%81%8B%E3%82%89%E8%8B%A6%E6%83%85" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://it.srad.jp/story/22/12/13/1239206/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://it.srad.jp/story/22/12/13/1239206/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://it.srad.jp/story/22/12/13/1239206/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://apple.srad.jp/story/22/11/29/1441215"&gt;マスク氏曰く、「アップルがツイッターをアプリストアから排除すると脅してきた」&lt;/a&gt;
+			&lt;small&gt;2022年11月30日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/22/11/08/1317205"&gt;Metaが大規模な人員削減検討。ほかの大手ITも採用停止やリストラへ&lt;/a&gt;
+			&lt;small&gt;2022年11月09日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/22/11/07/1322231"&gt;買収されたTwitter、従業員の半数が解雇される。国内ではトレンド内容に変化&lt;/a&gt;
+			&lt;small&gt;2022年11月08日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/22/11/01/1346218"&gt;Twitter、認証バッジ有料化へ&lt;/a&gt;
+			&lt;small&gt;2022年11月02日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://hardware.srad.jp/story/22/12/13/1233205/">
 <title>ウクライナの電力システムは、核戦争を想定して作られている</title>
 <link>https://hardware.srad.jp/story/22/12/13/1233205/</link>
@@ -60,8 +187,8 @@
 <dc:subject>nuclear</dc:subject>
 <slash:department>そういう仕組みなのか</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>3</slash:comments>
-<slash:hit_parade>3,3,0,0,0,0,0</slash:hit_parade>
+<slash:comments>13</slash:comments>
+<slash:hit_parade>13,13,1,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/atomic_64.png"&gt;あるAnonymous Coward 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;サッカーW杯で日本対クロアチア戦が行われていた時、ウクライナは70発ものミサイル攻撃を受けた。70発のミサイルのうち61発は打ち落とされたが、9発はモルドバなどに着弾した（&lt;a href="https://www.bbc.com/japanese/63850003"&gt;BBC&lt;/a&gt;、&lt;a href="https://jp.reuters.com/article/ukraine-crisis-power-system-idJPKBN2ST1WP"&gt;ロイター&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;ウクライナの電力システムは核戦争が起きた時を想定して作られた、ある種の循環システムになっており、ある地域の発電所がダメになっても、他の地域の発電所から電力が供給される。そのため、攻撃を受けていない地域も、攻撃を受けた地域が出ると、その分の電力が失われる。ミサイル攻撃の影響でキーウも一日のうち、3時間ぐらいしか電力が供給されなかったという。ウクライナといえば、寒い印象があるが、キーウの気候は北海道出身の日本人によると、北海道に似ているらしい（&lt;a href="https://www.dailyshincho.jp/article/2022/12111131/?all=1"&gt;デイリー新潮&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;ウクライナの集合住宅はセントラルヒーティングで、建物内を循環するパイプに火力発電所や原発でできたお湯を通して、建物全体を温めるのが一般的。しかし、ウクライナでも新しい住宅は30階以上のタワマンが多く、しかもオール電化が多い。&lt;br&gt;三時間しか電力が供給されないと凍えそうだし、エレベータは使えなさそうだ。日本のYahooのコメント欄ではタワマン批判が多い印象だが、ウクライナでも盛り上がっているのか、気になる。&lt;br&gt; &lt;br&gt;上記の話は、デイリー新潮が首都キーウ在住でボランティア活動をするパルホメンコ・ボグダンさんに取材したときに語られた話で、ボグダンさんは日本語でキエフからレポートを続けている（&lt;a href="https://www.youtube.com/channel/UC6bk01PE2teoKjpdAi-VO6Q"&gt;BOGDAN in Ukraine）&lt;/a&gt;。日本の視聴者からもカップ麵や使い捨てカイロが送られており、役に立っているとのこと。今までウクライナでは使い捨てカイロは一般的ではなかったようだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
 産経新聞の10日の記事によれば、ウクライナ国営電力会社「ウクルエネルゴ」のボロディミル・クドリツキー会長は、電力インフラの約5割が損傷していると回答したという。特に火力、水力発電所が被害を受け、送配電システムも深刻な損害を受けたとされている。復旧作業は24時間態勢で実施しているとのこと（&lt;a href="https://www.sankei.com/article/20221210-EWSTY7EMZZPQPF5VFO5DKF6RFM/"&gt;産経新聞&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
@@ -112,7 +239,8 @@
 <dc:subject>business</dc:subject>
 <slash:department>こっちはうまくいって欲しい</slash:department>
 <slash:section>science</slash:section>
-<slash:hit_parade>0,0,0,0,0,0,0</slash:hit_parade>
+<slash:comments>2</slash:comments>
+<slash:hit_parade>2,2,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/business_64.png"&gt;Space Xは11日、ケープカナベラル宇宙軍基地からロケットの打ち上げを実施した。このロケットの中には日本の民間主導で月面着陸を目指すispaceによる月面探査プログラム「HAKUTO-R」のランダーと小型探査機が搭載されていた（&lt;a href="https://science.srad.jp/story/18/10/01/053228/"&gt;関連過去記事&lt;/a&gt;）。所定の軌道に投入され、現時点ではロケットからの分離にも成功しており、東京日本橋にあるミッションコントロールセンターとの安定した通信を確立しているという。またランダーの基幹システムに不備がないことも確認されている模様（&lt;a href="https://ispace-inc.com/hakuto-r/"&gt;ispace&lt;/a&gt;、&lt;a href="https://sorae.info/ssn/20221211-hakuto-r-m1.html"&gt;sorae&lt;/a&gt;、&lt;a href="https://news.mynavi.jp/techplus/article/20221211-2535249/"&gt;TECH+&lt;/a&gt;、&lt;a href="https://www.asahi.com/articles/ASQCZ7HPLQCXULBH00B.html"&gt;朝日新聞&lt;/a&gt;、&lt;a href="https://response.jp/article/2022/12/13/365175.html"&gt;レスポンス&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 同プログラムでは今後、1か月にわたる宇宙航行の運用や月周回軌道への投入を経て、約5か月後の2023年4月末までの月面着陸を目指す。着陸地は「Mare Frigoris(氷の海)」の南東外淵にあるAtlas Craterを予定しているという。ランダーには日本の月面探査ロボット「SORA-Q（LEV-2）」やアラブ首長国連邦（UAE）の月面探査車「Rashid」など、7つのペイロードが搭載されている。これらのペイロードに不備が無いか最終確認を行ったうえで、ミッション1マイルストーンの第三段階である安定した航行状態を確立する「Sucess3」を完了させる予定だとしている。&lt;p&gt;
@@ -164,8 +292,8 @@
 <dc:subject>transport</dc:subject>
 <slash:department>延期</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>20</slash:comments>
-<slash:hit_parade>20,20,0,0,0,0,0</slash:hit_parade>
+<slash:comments>30</slash:comments>
+<slash:hit_parade>30,30,1,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/transportation_64.png"&gt;国土交通省は7日、2030年度末の開業を目指している北海道新幹線の報告書を公開した。報告書によると、事業費が当初想定の4割増となる約2.3兆円に膨らむ試算となり、追加で約6450億円が必要になるという。開業は当初の2030年度から「確定的な形で工期を見通すのは難しい」という状況となっているそうだ（&lt;a href="https://www3.nhk.or.jp/sapporo-news/20221208/7000053201.html"&gt;NHK&lt;/a&gt;、&lt;a href="https://www.htb.co.jp/news/archives_18323.html"&gt;HTB北海道ニュース&lt;/a&gt;、&lt;a href="https://www.nikkei.com/article/DGXZQOUA073SQ0X01C22A2000000/"&gt;日経新聞&lt;/a&gt;、&lt;a href="https://trafficnews.jp/post/123246"&gt;乗りものニュース&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 事業費増加の内訳としては、物価上昇と消費税増税の影響が約2050億円、土壌処理や地質不良箇所の補強で約2700億円などが挙げられている。このほかにも倶知安付近の「羊蹄トンネル」でシールドマシンが巨大岩塊にぶち当たり停止したり、発生土の受け入れ地確保が難航し、工事着手自体も遅延するなどの問題も生じているとのこと。&lt;p&gt;
@@ -204,8 +332,8 @@
 <dc:subject>input</dc:subject>
 <slash:department>ちょっと高いなあ</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>12</slash:comments>
-<slash:hit_parade>12,12,0,0,0,0,0</slash:hit_parade>
+<slash:comments>18</slash:comments>
+<slash:hit_parade>18,18,5,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/inputdev_64.png"&gt;サンワサプライからスキャン領域が本体のギリギリまであるブックスキャナ「&lt;a href="https://direct.sanwa.co.jp/ItemPage/400-SCN063"&gt;400-SCN063&lt;/a&gt;」が発表された。この製品ではガラス面までのエッジ幅が約2ミリとなっており、冊子を開いた時に内側にあたる「ノド」の部分まで綴じしろの影が映らずにページの端までスキャンできるのが特徴。これにより、A4サイズまでの本を裁断せず、非破壊でスキャンできるとしている。厚さ4cmまでの本に対応する取り外し可能な原稿カバーを搭載する。価格は7万4800円となっている（&lt;a href="https://prtimes.jp/main/html/rd/p/000003863.000011495.html"&gt;サンワサプライリリース&lt;/a&gt;、&lt;a href="https://pc.watch.impress.co.jp/docs/news/1462151.html"&gt;PC Watch&lt;/a&gt;）。&lt;p&gt;
 	&lt;a href="https://hardware.srad.jp/story/22/12/13/1211249/"&gt;すべて読む&lt;/a&gt;
 	
@@ -249,7 +377,7 @@
 <slash:department>指導</slash:department>
 <slash:section>mobile</slash:section>
 <slash:comments>11</slash:comments>
-<slash:hit_parade>11,11,0,0,0,0,0</slash:hit_parade>
+<slash:hit_parade>11,11,2,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/wireless_64.png"&gt;総務省は9日、9月4日に発生した楽天モバイルの大規模な通信障害に対して行政指導を実施した。この障害は2時間6分間にわたり発生、音声通話で約11万人、データ通信で約130万人に影響が出たとされている。障害の原因は、データセンターに設置されているスイッチのソフトウェア不具合により、切断された端末からの再接続要求の集中が発生、加入者データベースに輻輳が発生したためとされている（&lt;a href="https://k-tai.watch.impress.co.jp/docs/news/1462353.html"&gt;ケータイ Watch&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 総務省は立ち入り検査を実施、その結果として楽天モバイルが「ベンダーでは解消されていたスイッチソフトウェアの不具合を把握できていなかった」「コアネットワークの障害の影響が波及した」「輻輳を予防する装置が適切に動作しなかった」といった点などを指摘、再発防止をおこなうよう求めたとしている。&lt;p&gt;
@@ -297,8 +425,8 @@
 <dc:subject>sns</dc:subject>
 <slash:department>高度な情報戦</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>22</slash:comments>
-<slash:hit_parade>22,22,1,0,0,0,0</slash:hit_parade>
+<slash:comments>28</slash:comments>
+<slash:hit_parade>28,28,1,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/social_64.png"&gt;maia 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;今年の当初に出てた話だが（&lt;a href="https://srad.jp/story/22/02/16/1533207/"&gt;2月17日ストーリー&lt;/a&gt;）、防衛省は「ハイブリッド戦」というか「情報戦」への対処を進めている（&lt;a href="https://www.yomiuri.co.jp/politics/20220328-OYT1T50187/"&gt;3月28日読売新聞&lt;/a&gt;）。曰く、「報道やツイッターなどのSNSを使った発信の真偽、意図を分析し、フェイクニュースによる世論誘導を防ぐ」役割。これは内局の防衛政策局調査課内の話。年内に改定される「国家安全保障戦略」など防衛３文書にもフェイクニュース対策が盛り込まれているらしい（&lt;a href="https://www.fnn.jp/articles/-/455276"&gt;12月7日FNN&lt;/a&gt;）。&lt;br&gt; &lt;br&gt; &lt;a href="https://newsdig.tbs.co.jp/articles/-/227448?display=1"&gt;12月11日TBS&lt;/a&gt;によれば、フェイクニュースに対処できる体制と対外発信の強化、情報本部でAIを活用した公開情報の自動収集・分析機能を整備などとなっている。この記事によれば、防衛省は、「AI技術を使って国内世論を誘導する工作の研究に着手した」などとする一部報道（&lt;a href="https://nordot.app/973917552334143488"&gt;12月9日共同&lt;/a&gt;）について「全くの事実誤認であり、防衛省として、国内世論を特定の方向に誘導することを目的とした取り組みを行うことはありえない」と明確に否定した。共同の報道は「防衛省、世論工作の研究に着手　AI活用、SNSで誘導」というもので、図解入りで&lt;/p&gt;&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;インターネットで影響力がある「インフルエンサー」が、無意識のうちに同省に有利な情報を発信するように仕向け、防衛政策への支持を広げたり、有事で特定国への敵対心を醸成、国民の反戦・厭戦の機運を払拭したりするネット空間でのトレンドづくりを目標としている。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;とある。これはフェイクニュースらしい。早速だが、厄介なことである。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
 	&lt;a href="https://it.srad.jp/story/22/12/13/122230/"&gt;すべて読む&lt;/a&gt;
 	
@@ -414,8 +542,8 @@ DoD は JEDI 取り消しにあたり、単一企業ではなく複数の企業�
 <dc:subject>games</dc:subject>
 <slash:department>長期シリーズゲームだと残ってる場合もあるけど</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>50</slash:comments>
-<slash:hit_parade>50,50,2,1,0,0,0</slash:hit_parade>
+<slash:comments>54</slash:comments>
+<slash:hit_parade>54,54,4,2,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/games_64.png"&gt;1980年代のファミコン時代などにはよく見られた「隠しコマンド」だが、最近ではとんと聞かなくなっている。マグミクスの記事によれば、これらは元々はセーブやパスワード機能などの実装が難しい時代に、デバック時のプレイ用として実装されていた。そうしたコマンドを消し忘れて出荷したことが「隠しコマンド」の始まりと言われているという（&lt;a href="https://magmix.jp/post/125198"&gt;マグミクス&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
 
 逆に最近は「隠しコマンド」をあまり聞かなくなった理由として、ゲームの開発規模が大きくなりセーブが当たり前に。デバック向けに無敵に改造したセーブデータを用意しておけばよい、ゲーム機の性能も向上していることからパソコンの常駐プログラムのようにデバッグ用のツールを陰で動かすこともできる、プレイスタイルの変化などから「隠しコマンド」はその役割を終えたのだろうとしている。&lt;p&gt;
@@ -442,97 +570,6 @@ DoD は JEDI 取り消しにあたり、単一企業ではなく複数の企業�
 		
 			&lt;br&gt;&lt;a href="https://srad.jp/story/06/09/27/0018255"&gt;75%キャッシュバックしてくれるATMクラック事件発生&lt;/a&gt;
 			&lt;small&gt;2006年09月27日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://linux.srad.jp/story/22/12/12/1318228/">
-<title>欧州原子核研究機構(CERN)がAlmaLinuxを標準Linuxディストリビューションに推奨</title>
-<link>https://linux.srad.jp/story/22/12/12/1318228/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/os_64.png"&gt;欧州原子核研究機構(CERN)とフェルミ国立加速器研究所(Fermilab)は7日、AlmaLinuxを研究用の標準Linuxディストリビューションとして推奨するとの共同声明を発表した（Fermilab、The Register）。 
-
-選定の理由としてAlmaLinuxでは、各メジャーバージョンのライフサイクルが長いこと、拡張アーキテクチャのサポートなどを挙げている。また他のリビルドやRed Hat Enterprise Linuxと完全に互換性があることがテストで実証されたとしている。両組織ともに一部に関してはRHELを引き続き使用する予定。CERNは、2024年6月までCERN CentOS 7のサポートを、Fermilabも同じく2024年6月までScientific Linux 7のサポートを継続する方針だとしている。&lt;p&gt; &lt;a href="https://linux.srad.jp/story/22/12/12/1318228/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://linux.srad.jp/"&gt;Linuxセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt; | &lt;a href="https://srad.jp/stories/os"&gt;OS&lt;/a&gt; | &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://linux.srad.jp/story/22/12/12/1318228/&amp;amp;text=%E6%AC%A7%E5%B7%9E%E5%8E%9F%E5%AD%90%E6%A0%B8%E7%A0%94%E7%A9%B6%E6%A9%9F%E6%A7%8B(CERN)%E3%81%8CAlmaLinux%E3%82%92%E6%A8%99%E6%BA%96Linux%E3%83%87%E3%82%A3%E3%82%B9%E3%83%88%E3%83%AA%E3%83%93%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AB%E6%8E%A8%E5%A5%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://linux.srad.jp/story/22/12/12/1318228/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://linux.srad.jp/story/22/12/12/1318228/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://linux.srad.jp/story/22/12/12/1318228/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://linux.srad.jp/story/22/11/03/1515215"&gt;国産「MIRACLE LINUX 9」無償公開&lt;/a&gt; &lt;small&gt;2022年11月04日&lt;/small&gt; &lt;br&gt;&lt;a href="https://linux.srad.jp/story/22/04/07/1755255"&gt;「AlmaLinux OS」がWSLで使用可能に。Microsoft Storeからインストールも可&lt;/a&gt; &lt;small&gt;2022年04月09日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-12-13T21:04:00+00:00</dc:date>
-<dc:subject>os</dc:subject>
-<slash:department>推奨</slash:department>
-<slash:section>linux</slash:section>
-<slash:comments>16</slash:comments>
-<slash:hit_parade>16,16,3,0,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/os_64.png"&gt;&lt;a href="https://ja.wikipedia.org/wiki/%E6%AC%A7%E5%B7%9E%E5%8E%9F%E5%AD%90%E6%A0%B8%E7%A0%94%E7%A9%B6%E6%A9%9F%E6%A7%8B"&gt;欧州原子核研究機構(CERN)&lt;/a&gt;と&lt;a href="https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A7%E3%83%AB%E3%83%9F%E5%9B%BD%E7%AB%8B%E5%8A%A0%E9%80%9F%E5%99%A8%E7%A0%94%E7%A9%B6%E6%89%80"&gt;フェルミ国立加速器研究所(Fermilab)&lt;/a&gt;は7日、AlmaLinuxを研究用の標準Linuxディストリビューションとして推奨するとの共同声明を発表した（&lt;a href="https://news.fnal.gov/2022/12/fermilab-cern-recommendation-for-linux-distribution/"&gt;Fermilab&lt;/a&gt;、&lt;a href="https://www.theregister.com/2022/12/08/cern_fermilab_almalinux/"&gt;The Register&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-選定の理由としてAlmaLinuxでは、各メジャーバージョンのライフサイクルが長いこと、拡張アーキテクチャのサポートなどを挙げている。また他のリビルドやRed Hat Enterprise Linuxと完全に互換性があることがテストで実証されたとしている。両組織ともに一部に関してはRHELを引き続き使用する予定。CERNは、2024年6月までCERN CentOS 7のサポートを、Fermilabも同じく2024年6月までScientific Linux 7のサポートを継続する方針だとしている。&lt;p&gt;
-	&lt;a href="https://linux.srad.jp/story/22/12/12/1318228/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://linux.srad.jp/"&gt;Linuxセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/linux"&gt;Linux&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/os"&gt;OS&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/science"&gt;サイエンス&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://linux.srad.jp/story/22/12/12/1318228/&amp;amp;text=%E6%AC%A7%E5%B7%9E%E5%8E%9F%E5%AD%90%E6%A0%B8%E7%A0%94%E7%A9%B6%E6%A9%9F%E6%A7%8B(CERN)%E3%81%8CAlmaLinux%E3%82%92%E6%A8%99%E6%BA%96Linux%E3%83%87%E3%82%A3%E3%82%B9%E3%83%88%E3%83%AA%E3%83%93%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AB%E6%8E%A8%E5%A5%A8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://linux.srad.jp/story/22/12/12/1318228/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://linux.srad.jp/story/22/12/12/1318228/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://linux.srad.jp/story/22/12/12/1318228/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/22/11/03/1515215"&gt;国産「MIRACLE LINUX 9」無償公開&lt;/a&gt;
-			&lt;small&gt;2022年11月04日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://linux.srad.jp/story/22/04/07/1755255"&gt;「AlmaLinux OS」がWSLで使用可能に。Microsoft Storeからインストールも可&lt;/a&gt;
-			&lt;small&gt;2022年04月09日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://srad.jp/story/22/12/12/1233222/">
-<title>性別適合手術要件、憲法判断へ</title>
-<link>https://srad.jp/story/22/12/12/1233222/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/court_64.png"&gt;性同一性障害特例法の規定では、戸籍上の性別変更をする場合、性別適合手術を要件としているという。しかし、この規定は個人の尊厳などを保障した憲法に違反するとして裁判がおこなわれていたそうだ。男性から女性への変更を申し立てていた家事審判の特別抗告審で、最高裁第1小法廷（深山卓也裁判長）は7日、審理を大法廷（裁判長・戸倉三郎長官）に回付することを決めた（時事ドットコム、毎日新聞）。 
-
-第2小法廷は2019年1月にこの規定を「合憲」とする決定を出している。しかし、その後の社会情勢の変化を踏まえ、最高裁の裁判官全15人が参加する大法廷での審理が必要と判断したという。現在、性同一性障害特例法で定められている要件としては、「生殖機能を欠く状態にある」、「未成年の子どもがいない」、「複数の医師に性同一性障害であると診断されている」、「18歳以上」、「結婚していない」などが規定されているという。全ての要件を満たさなければ性別変更を認めないこととなっている。 
-
-このうちの手術要件は後遺症のリスクや費用問題、子なし要件は子どもを持つ人の性別変更を不可能にしている点などから、両規定の見直しを求める声が当事者団体から上がっているとしている。&lt;p&gt; &lt;a href="https://srad.jp/story/22/12/12/1233222/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://srad.jp/stories/doj"&gt;法廷&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/12/12/1233222/&amp;amp;text=%E6%80%A7%E5%88%A5%E9%81%A9%E5%90%88%E6%89%8B%E8%A1%93%E8%A6%81%E4%BB%B6%E3%80%81%E6%86%B2%E6%B3%95%E5%88%A4%E6%96%AD%E3%81%B8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/12/12/1233222/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/12/12/1233222/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/12/12/1233222/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://srad.jp/story/19/05/28/0646234"&gt;WHO、「ゲーム障害」を治療が必要な障害に分類、「性同一性障害」を精神障害から除外&lt;/a&gt; &lt;small&gt;2019年05月29日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/18/06/20/0431254"&gt;WHOが新国際疾病分類「ICD11」を正式公開 「ゲーミング障害」を追加し疾患と認定&lt;/a&gt; &lt;small&gt;2018年06月20日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/14/10/03/0422220"&gt;Facebook、実名ポリシーへの対応についてLGBTコミュニティに謝罪&lt;/a&gt; &lt;small&gt;2014年10月03日&lt;/small&gt; &lt;br&gt;&lt;a href="https://yro.srad.jp/story/13/05/08/0858224"&gt;「性同一性障害者」が一目で分かる年金共通番号&lt;/a&gt; &lt;small&gt;2013年05月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/11/01/20/0128223"&gt;国内初、性同一障害の12歳男児に対するホルモン剤投与治療&lt;/a&gt; &lt;small&gt;2011年01月20日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2022-12-13T09:09:00+00:00</dc:date>
-<dc:subject>doj</dc:subject>
-<slash:department>どうなりますか</slash:department>
-<slash:section>mainpage</slash:section>
-<slash:comments>93</slash:comments>
-<slash:hit_parade>93,91,21,7,3,1,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/court_64.png"&gt;性同一性障害特例法の規定では、戸籍上の性別変更をする場合、性別適合手術を要件としているという。しかし、この規定は個人の尊厳などを保障した憲法に違反するとして裁判がおこなわれていたそうだ。男性から女性への変更を申し立てていた家事審判の特別抗告審で、最高裁第1小法廷（深山卓也裁判長）は7日、審理を大法廷（裁判長・戸倉三郎長官）に回付することを決めた（&lt;a href="https://www.jiji.com/jc/article?k=2022120700901&amp;amp;g=soc"&gt;時事ドットコム&lt;/a&gt;、&lt;a href="https://mainichi.jp/articles/20221207/k00/00m/040/170000c"&gt;毎日新聞&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;
-
-第2小法廷は2019年1月にこの規定を「合憲」とする決定を出している。しかし、その後の社会情勢の変化を踏まえ、最高裁の裁判官全15人が参加する大法廷での審理が必要と判断したという。現在、性同一性障害特例法で定められている要件としては、「生殖機能を欠く状態にある」、「未成年の子どもがいない」、「複数の医師に性同一性障害であると診断されている」、「18歳以上」、「結婚していない」などが規定されているという。全ての要件を満たさなければ性別変更を認めないこととなっている。&lt;br&gt; &lt;br&gt;
-
-このうちの手術要件は後遺症のリスクや費用問題、子なし要件は子どもを持つ人の性別変更を不可能にしている点などから、両規定の見直しを求める声が当事者団体から上がっているとしている。&lt;p&gt;
-	&lt;a href="https://srad.jp/story/22/12/12/1233222/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/doj"&gt;法廷&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://srad.jp/story/22/12/12/1233222/&amp;amp;text=%E6%80%A7%E5%88%A5%E9%81%A9%E5%90%88%E6%89%8B%E8%A1%93%E8%A6%81%E4%BB%B6%E3%80%81%E6%86%B2%E6%B3%95%E5%88%A4%E6%96%AD%E3%81%B8" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://srad.jp/story/22/12/12/1233222/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://srad.jp/story/22/12/12/1233222/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://srad.jp/story/22/12/12/1233222/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/19/05/28/0646234"&gt;WHO、「ゲーム障害」を治療が必要な障害に分類、「性同一性障害」を精神障害から除外&lt;/a&gt;
-			&lt;small&gt;2019年05月29日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/18/06/20/0431254"&gt;WHOが新国際疾病分類「ICD11」を正式公開　「ゲーミング障害」を追加し疾患と認定&lt;/a&gt;
-			&lt;small&gt;2018年06月20日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://it.srad.jp/story/14/10/03/0422220"&gt;Facebook、実名ポリシーへの対応についてLGBTコミュニティに謝罪&lt;/a&gt;
-			&lt;small&gt;2014年10月03日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://yro.srad.jp/story/13/05/08/0858224"&gt;「性同一性障害者」が一目で分かる年金共通番号&lt;/a&gt;
-			&lt;small&gt;2013年05月08日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://srad.jp/story/11/01/20/0128223"&gt;国内初、性同一障害の12歳男児に対するホルモン剤投与治療&lt;/a&gt;
-			&lt;small&gt;2011年01月20日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
