@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Thu, 15 Dec 2022 10:49:51 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 18 Jan 2023 02:34:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,189 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg 2023.01.09 Release: Registry Pattern Matching, Documentation Changes, and More…</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Wed, 18 Jan 2023 02:34:22 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31492</guid>
+
+					<description><![CDATA[<p>The 2023.01.09 release of the vcpkg package manager is available. This blog post summarizes changes from November 15th, 2022 to January 9th, 2023 for the Microsoft/vcpkg and Microsoft/vcpkg-tool GitHub repos.<br />
+Some stats for this period:</p>
+<p>41 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/">vcpkg 2023.01.09 Release: Registry Pattern Matching, Documentation Changes, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.01.09">2023.01.09 release of the vcpkg package manager is available</a>. This blog post summarizes changes from November 15<sup>th</sup>, 2022 to January 9<sup>th</sup>, 2023 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a> and <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>41 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>511 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>2,110 total libraries</strong> available in the vcpkg public registry. There are a total of <strong>11,692</strong> ports if each library version is counted uniquely.</li>
+<li>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.01.09">2023.01.09 release of the main vcpkg repo</a> includes <strong>65 commits</strong>.</li>
+<li><strong>131 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has over <strong>5,000 forks</strong> and <strong>17,500 stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<p>Notable changes for this release are summarized below.</p>
+<p>&nbsp;</p>
+<h4 id="registries-now-support-pattern-matching-when-declaring-packages">Registries now support pattern matching when declaring packages</h4>
+<p>Based on user feedback, we have added a feature that enables limited pattern matching for packages declared in registries. We now allow prefixes followed by a * character. The * character is a wildcard that matches any zero or more characters. We do not support suffixes or other types of wildcards.</p>
+<p>&nbsp;</p>
+<h5 id="example-expose-beicode-and-beison-via-patterns">Example: expose &#8220;beicode&#8221; and &#8220;beison&#8221; via patterns.</h5>
+<p><strong>vcpkg-configuration.json:</strong></p>
+<pre class="prettyprint language-default"><code class="language-default">{
+    "registries": [
+    {
+        "kind": "git",
+        "repository": "https://github.com/northwindtraders/vcpkg-registry",
+        "baseline": "dacf4de488094a384ca2c202b923ccc097956e0c",
+        "packages": [ "bei*" ]
+    }]
+}</code></pre>
+<p>One benefit of this change is that it makes it possible to easily declare all packages from your company using something like CompanyName*.</p>
+<p>&nbsp;</p>
+<h5 id="resolution-priority">Resolution priority</h5>
+<p>In the event that we find more than one package (whether resolved by the wildcard or not) in multiple registries, we resolve them in this priority order:</p>
+<ol>
+<li>Exact match (no wildcard character was used)</li>
+<li>Pattern match (wildcard character was used)
+<ol>
+<li>Longer prefixes have higher priority (e.g. boost* wins over b* which wins over *).</li>
+<li>If there is a tie, we use the package from the registry that appears earliest in the packages array in the <em>vcpkg-configuration.json</em> file. A warning is also emitted to notify users that this is occurring.</li>
+</ol>
+</li>
+<li>Default registry (If no custom defined registries contain a package, we use the one in the default registry).</li>
+</ol>
+<p><a href="https://github.com/microsoft/vcpkg-tool/pull/778">PR: Microsoft/vcpkg-tool#778: Allow pattern matching in packages declarations</a></p>
+<p>&nbsp;</p>
+<h4 id="localization-added-for-help-text">Localization added for help text</h4>
+<p>The help text for the following commands and associated options is now localized: add-version, ci, civerifyversions, contact, depend-info, edit, env, fetch, find, generate-message-map, info, list, new, regenerate, search, set-installed, update-baseline, upgrade, x-download, install, export, remove.</p>
+<p><a href="https://github.com/microsoft/vcpkg-tool/pull/824">PR: Microsoft/vcpkg-tool#824: Help Text for Command Switches</a></p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-artifacts-now-respects-asset-caching-feature-if-a-sha512-is-provided">vcpkg artifacts now respects asset caching feature if a SHA512 is provided</h4>
+<p>For the artifacts feature, we no longer attempt to download components from within Node and instead call the vcpkg x-download command. This allows us to respect asset caching settings if a SHA512 is provided and brings our artifacts feature more in line with the experience we have for ports. Downloader messages have also been localized, a console parser was added for curl’s output to extract percentages, and more.</p>
+<p><a href="https://github.com/microsoft/vcpkg-tool/pull/826">PR: Microsoft/vcpkg-tool#826: Replace node downloader with vcpkg x-download</a>.</p>
+<p>&nbsp;</p>
+<h4 id="bug-fixes">Bug fixes</h4>
+<ul>
+<li>Fixed a rare vcpkg crash during CMake configuration (contributed by @Thomas1664 with help from @omartijn, thank you!).</li>
+<li>Fixed some build breaks discovered on Node 18.X.</li>
+<li>Fixed some localization bugs (text that wasn’t displaying in the correct language).</li>
+<li>Added overlays to vcpkg-configuration schema (contributed by @gjasny, thank you!).</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="documentation-changes">Documentation Changes</h3>
+<p>As a reminder, we <a href="https://devblogs.microsoft.com/cppblog/vcpkg-documentation-moves-to-microsoft-docs-platform/">announced last month</a> that our documentation is moving to <a href="https://learn.microsoft.com/vcpkg">https://learn.microsoft.com/vcpkg</a>. Please give us feedback on our documentation there as we continue to make improvements, in particular using the Feedback button near the top of a page or the Feedback box at the bottom.</p>
+<p>Below is a summary of recent documentation changes:</p>
+<ol>
+<li>The <a href="https://learn.microsoft.com/en-us/vcpkg/users/binarycaching">documentation article on binary caching</a> has been re-written and improved based on user feedback, including more details on ways to use it with different hosting providers. Thank you to @samwarring who contributed some of these changes.</li>
+<li>Re-wrote articles with substantial content changes for manifests and registries and added individual articles for vcpkg.json and vcpkg-configuration.json files:
+<ol>
+<li><a href="https://learn.microsoft.com/en-us/vcpkg/users/manifests">Manifest mode</a></li>
+<li><a href="https://learn.microsoft.com/en-us/vcpkg/users/registries">Using Registries</a></li>
+<li><a href="https://learn.microsoft.com/en-us/vcpkg/reference/vcpkg-json">vcpkg.json Reference</a></li>
+<li><a href="https://learn.microsoft.com/en-us/vcpkg/reference/vcpkg-configuration-json">vcpkg-configuration.json Reference</a></li>
+</ol>
+</li>
+</ol>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,905</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>1,962</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,867</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,877</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1,003</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,538</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>952</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,838</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,914</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank You to Our Contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg and vcpkg-tool repos in this release:</p>
+<ul>
+<li>autoantwort (50 commits)</li>
+<li>dg0yt (42 commits)</li>
+<li>Neumann-A (18 commits)</li>
+<li>Thomas1664 (10 commits)</li>
+<li>quyykk (8 commits)</li>
+<li>Sibras (8 commits)</li>
+<li>RT222 (7 commits)</li>
+<li>Pospelove (3 commits)</li>
+<li>myd7349 (2 commits)</li>
+<li>coryan (2 commits)</li>
+<li>ahmedyarub (2 commits)</li>
+<li>kobykahane (2 commits)</li>
+<li>AenBleidd (2 commits)</li>
+<li>longhuan2018 (1 commit)</li>
+<li>evpobr (1 commit)</li>
+<li>Hoikas (1 commit)</li>
+<li>m-kuhn (1 commit)</li>
+<li>jwillemsen (1 commit)</li>
+<li>gjasny (1 commit)</li>
+<li>Osyotr (1 commit)</li>
+<li>DragonJoker (1 commit)</li>
+<li>Tradias (1 commit)</li>
+<li>chausner (1 commit)</li>
+<li>SchaichAlonso (1 commit)</li>
+<li>wrobelda (1 commit)</li>
+<li>AtariDreams (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.01.09">full 2023.01.09 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>&nbsp;</p>
+<h3 id="interested-in-vcpkg-but-not-sure-where-to-start">Interested in vcpkg but not sure where to start?</h3>
+<p>Is your company experiencing challenges managing C/C++ libraries? Perhaps you’re curious if a package manager is the right choice for you? Please reach out to <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a> and we’d be happy to help!</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/">vcpkg 2023.01.09 Release: Registry Pattern Matching, Documentation Changes, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg Documentation Moves to Microsoft Docs Platform</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-documentation-moves-to-microsoft-docs-platform/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-documentation-moves-to-microsoft-docs-platform/#comments</comments>
@@ -1773,162 +1956,6 @@ Whether you are a game developer, work with large codebases, or have solutions w
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">Visual Studio 2022 Performance: Faster C++ Source Code Indexing</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>What’s New for C++ Developers in Visual Studio 2022 17.4</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/</link>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 08 Nov 2022 10:30:45 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31267</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.4 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/">What’s New for C++ Developers in Visual Studio 2022 17.4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.4 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022">Update Visual Studio Learn page</a>.</p>
-<h1 id="arm64">Arm64</h1>
-<p>In 17.3, Visual Studio became available as a native Arm64 application. We have continued work on supporting more development scenarios and are pleased to announce that the native Arm64 toolchain is now ready for production use!</p>
-<p>The “Desktop development with C++” and “Game development with C++” workloads are enabled for native Arm64 development. Please give them a try and let us know your feedback!</p>
-<h1 id="msvc">MSVC</h1>
-<p>One of our major investments for this release has been in improved compiler diagnostics. New C++ features like concepts and ranges present the opportunity for more expressive code and better-defined APIs. However, to make the most of them, better diagnostics are required from tooling so that constraint failures can be pinpointed and resolved. See Xiang Fan’s blog post on <a href="https://devblogs.microsoft.com/cppblog/the-future-of-c-compiler-diagnostics-in-msvc-and-visual-studio/">The Future of C++ Compiler Diagnostics in MSVC and Visual Studio</a> for all the details, but here’s a quick example of the improvement, showing more complete information on overload resolution failures, and information on why a given constraint failed:</p>
-<pre class="prettyprint language-cpp"><code class="language-cpp">struct cat {};
-struct dog {};
-
-// can pet cats and dogs
-void pet(cat);
-void pet(dog);
-
-template &lt;class T&gt;
-concept has_member_pettable = requires (T t) { t.pet(); };
-
-// allow calling as a non-member
-template &lt;has_member_pettable T&gt;
-void pet(T);
-
-int main() {
-    pet(0); //oh no
-}</code></pre>
-<p><strong>Error in 17.3</strong></p>
-<pre class="prettyprint language-default"><code class="language-default">&lt;source&gt;(16,10): error C2665: 'pet': none of the 2 overloads could convert all the argument types
-    pet(0); //oh no
-         ^
-&lt;source&gt;(6,6): note: could be 'void pet(dog)'
-void pet(dog);
-     ^
-&lt;source&gt;(5,6): note: or 'void pet(cat)'
-void pet(cat);
-     ^
-&lt;source&gt;(16,5): note: 'void pet(cat)': cannot convert argument 1 from 'int' to 'cat'
-    pet(0); //oh no
-    ^
-&lt;source&gt;(16,10): note: No constructor could take the source type, or constructor overload resolution was ambiguous
-    pet(0); //oh no
-         ^
-&lt;source&gt;(5,6): note: see declaration of 'pet'
-void pet(cat);
-     ^
-&lt;source&gt;(16,10): note: while trying to match the argument list '(int)'
-    pet(0); //oh no</code></pre>
-<p><strong>Error in 17.4</strong></p>
-<pre>&lt;source&gt;(16,5): error C2665: 'pet': no overloaded function could convert all the argument types
-    pet(0); //oh no
-    ^
-&lt;source&gt;(6,6): note: could be 'void pet(dog)'
-void pet(dog);
-     ^
-&lt;source&gt;(16,5): note: 'void pet(dog)': cannot convert argument 1 from 'int' to 'dog'
-    pet(0); //oh no
-    ^
-&lt;source&gt;(16,9): note: No constructor could take the source type, or constructor overload resolution was ambiguous
-    pet(0); //oh no
-        ^
-&lt;source&gt;(5,6): note: or 'void pet(cat)'
-void pet(cat);
-     ^
-&lt;source&gt;(16,5): note: 'void pet(cat)': cannot convert argument 1 from 'int' to 'cat'
-    pet(0); //oh no
-    ^
-&lt;source&gt;(16,9): note: No constructor could take the source type, or constructor overload resolution was ambiguous
-    pet(0); //oh no
-        ^
-&lt;source&gt;(13,6): note: or 'void pet(T)'
-void pet(T);
-     ^
-&lt;source&gt;(16,5): note: the associated constraints are not satisfied
-    pet(0); //oh no
-    ^
-&lt;source&gt;(12,11): note: the concept 'has_member_pettable&lt;int&gt;' evaluated to false
-template &lt;has_member_pettable T&gt;
-          ^
-&lt;source&gt;(9,48): note: the expression is invalid
-concept has_member_pettable = requires (T t) { t.pet(); };
-                                               ^
-&lt;source&gt;(16,5): note: while trying to match the argument list '(int)'
-    pet(0); //oh no
-    ^</pre>
-<p>Here is a <a href="https://godbolt.org/z/a85z9d5qd">Compiler Explorer link</a> to see the difference.</p>
-<p>As part of this work, we’ve also added experimental support for outputting compiler diagnostics as <a href="https://sarifweb.azurewebsites.net/">SARIF</a>. This is accessible with the experimental flag /experimental:log&lt;directory&gt;.</p>
-<p>In addition to improved diagnostics, we’ve expanded the compiler’s Named Return Value Optimization (NRVO) capabilities. See Bran Hagger’s blog post <a href="https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/">Improving Copy and Move Elision</a> for details. The main improvements are in enabling NRVO for cases which involve exception handling or loops. For example, in 17.3, the copy/move of result when returning it would not be elided, but now will be.</p>
-<pre class="prettyprint language-cpp"><code class="language-cpp">Foo ReturnInALoop(int iterations) {
-    for (int i = 0; i &lt; iterations; ++i) {
-        Foo result;
-        if (i == (iterations / 2)) {
-            return result; //copy/move elided
-        }
-    }
-}</code></pre>
-<p>You can see the difference in generated assembly at <a href="https://godbolt.org/z/jrP4jcz3G">this Compiler Explorer link</a>.</p>
-<h1 id="cmake-cross-platform">CMake &amp; Cross Platform</h1>
-<p>Containers are a great way to package up everything for running an application. Through a Dockerfile, all prerequisites are captured so that there is a consistent runtime environment anywhere the container is deployed and run. Dev Containers expand this concept to capture everything necessary for developing and building an application in the container. You can now use Dev Containers for your C++ projects in Visual Studio. You can learn more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/dev-containers-for-c-in-visual-studio/" target="_blank" rel="noopener">Dev Containers for C++ blog post</a>.</p>
-<p><img decoding="async" class="alignnone wp-image-31268" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1.png" alt="Alert box saying &quot;Folder contains a dev container configuration file&quot; Options are &quot;Reopen folder in container&quot;, &quot;Settings&quot;, and &quot;Learn more&quot;" width="744" height="40" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1.png 744w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-1-300x16.png 300w" sizes="(max-width: 744px) 100vw, 744px" /></p>
-<p>Connecting to remote systems with the <a href="https://learn.microsoft.com/en-us/cpp/linux/connect-to-your-remote-linux-computer?view=msvc-170" target="_blank" rel="noopener">Connection Manager</a> now supports SSH ProxyJump, which is used to access a SSH host via another SSH host (for example, to access a host behind a firewall).</p>
-<p>Test Explorer used to expose internal prefixes of CTest tests, making the list harder to read and navigate. We’ve improved this, grouping all of them under a single header. Here is the before and after:</p>
-<p><img decoding="async" class="alignnone wp-image-31269" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-2.png" alt="List from test explorer showing the weird prefixes " width="251" height="201" /> <img decoding="async" class="alignnone wp-image-31270" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-3.png" alt="Cleaner list under a ctest header" width="170" height="124" /></p>
-<h2 id="bundled-tools">Bundled tools</h2>
-<p>We made several updates to the additional tools which are shipped with Visual Studio in some workloads.</p>
-<p>If you’re using Visual Studio on Arm64 machines, you will now get Arm64 builds of CMake and Ninja through the CMake components in the Visual Studio installer.</p>
-<p>We’ve updated the version of CMake which we ship to version 3.24.1. This release comes with many new features, including a &#8211;fresh CLI flag for removing the CMake cache, path comparison in if expressions, and version 5 of CMakePresets.json. We’ll be adding support for CMakePresets.json version 5 in our 17.5 release of Visual Studio 2022, but 17.4 comes with added support for version 4. See the <a href="https://cmake.org/cmake/help/latest/release/3.24.html">CMake release notes</a> for all the new goodies.</p>
-<p>We also updated the version of LLVM which we ship to version 15.0.1. See the <a href="https://releases.llvm.org/15.0.0/docs/ReleaseNotes.html" target="_blank" rel="noopener">LLVM</a> and <a href="https://releases.llvm.org/15.0.0/tools/clang/docs/ReleaseNotes.html" target="_blank" rel="noopener">Clang</a> release notes for what is available.</p>
-<h1 id="productivity">Productivity</h1>
-<p>When using the “Create Declaration/Definition” feature, it used to be that the new code would open up in a small window to give you a “peek”. This is now configurable: you can select between peeking (the default), or opening the document,, or no navigation. The setting is under Options &gt; Text Editor &gt; C/C++ &gt; Advanced &gt; Refactoring.</p>
-<p><img decoding="async" class="alignnone wp-image-31271" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4.png" alt="Options pane showing &quot;None&quot;, &quot;Peek document&quot;, and &quot;Open document&quot; as the options for the setting &quot;Navigation after create declaration/definition&quot;" width="749" height="161" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4.png 749w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-4-300x64.png 300w" sizes="(max-width: 749px) 100vw, 749px" /></p>
-<p>We fixed a consistency gap between IntelliSense and MSBuild for pre-compiled headers. It used to be that, when a PCH was used via /Yu and force-included via /FI, IntelliSense would always process it first, before any other headers included via /FI. This did not match the build behavior, so with this change /FI headers are processed in the order they are specified.</p>
-<h1 id="ide-performance">IDE Performance</h1>
-<p>We are also continuing to improve the performance of the IDE. In this release, we improved indexing performance when opening a new solution. Large projects could see a 20-35% improvement from 17.3. Read more in Victor Ciura&#8217;s blog post, <a href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">Visual Studio 2022 Performance: Faster C++ Source Code Indexing</a>.</p>
-<h1 id="code-safety">Code Safety</h1>
-<p>We enrich some of our code analysis warnings with “key events” information which describes how the result of the analysis was arrived at. We improved and expanded this feature by adding this information to more analyses and giving you new ways to visualize it in Visual Studio.</p>
-<p>For example, when the <a href="https://marketplace.visualstudio.com/items?itemName=WDGIS.MicrosoftSarifViewer">SARIF Viewer extension</a> is installed, the key event information will now be used to annotate the source directly.</p>
-<p><img decoding="async" class="alignnone wp-image-31272" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5.png" alt="Code annotated with reasoning behind an initialization code analysis warning" width="920" height="199" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5.png 920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5-300x65.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-5-768x166.png 768w" sizes="(max-width: 920px) 100vw, 920px" /></p>
-<p>See the <a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">Microsoft C++ Code Analysis Warnings with Key Events </a>blog post for all the details.</p>
-<h1 id="conformance">Conformance</h1>
-<p>We’re continuing to track the latest developments in C++ standardization. You can see the latest and upcoming STL features in our <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog on GitHub</a>, but here are some of the ones I’m most excited about:</p>
-<ul>
-<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html" target="_blank" rel="noopener">P0881R7</a>  &lt;stacktrace&gt;</li>
-<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html" target="_blank" rel="noopener">P1328R1</a>  constexpr type_info::operator==()</li>
-<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2440r1.html" target="_blank" rel="noopener">P2440R1</a>  ranges::iota, ranges::shift_left, ranges::shift_right</li>
-<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2441r2.html" target="_blank" rel="noopener">P2441R2</a>  views::join_with</li>
-<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2302r4.html">P2302R4</a>  ranges::contains, ranges::contains_subrange</li>
-<li style="list-style-type: none;"></li>
-</ul>
-<p>Conformance work also extends to IntelliSense, which now has support for C23 attributes, and we are continuing to improve the support for C++20 modules.</p>
-<h1 id="vcpkg">vcpkg</h1>
-<p>vcpkg is now 6 years old and has over 2000 open-source libraries available!</p>
-<p>We’re continuing to add new features both to vcpkg itself, and to Visual Studio to improve integration. For example, vcpkg artifacts is a feature which allows you to describe the tools and environment necessary to build your application. We have now added support to Visual Studio for vcpkg artifacts with CMake projects, such that if your project includes a vcpkg manifest, the environment will be activated automatically on project open. You can learn more about this in the <a href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg environment activation in Visual Studio blog post</a>.</p>
-<p><img decoding="async" class="alignnone wp-image-31273" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated.png" alt="Popup saying &quot;vcpkg environment activation. vcpkg activated successfully. C/C++ development actions will now run in the vcpkg environment.&quot;" width="383" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated.png 383w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/text-description-automatically-generated-300x158.png 300w" sizes="(max-width: 383px) 100vw, 383px" /></p>
-<p>Other notable improvements since the last release are making the “name” and “version” fields in vcpkg.json optional, adding schemata for all vcpkg json formats, and improving cross-compilation for macOS. You can read more details about these and more in our monthly blog posts from <a href="https://devblogs.microsoft.com/cppblog/vcpkg-august-2022-release-is-now-available-cmake-version-update-updated-faq-cross-compilation-fix-for-apple-silicon/">August</a> and <a href="https://devblogs.microsoft.com/cppblog/vcpkg-september-2022-release-is-now-available-celebrating-6-years-with-over-2000-libraries/">September</a>.</p>
-<h1 id="game-development">Game Development</h1>
-<p>We’re working hard on the Unreal Engine integration into Visual Studio. As of 17.4, you can now see which Unreal Engine Blueprints reference, use, and inherit from C++ classes, directly in the IDE. To enable this feature, ensure that the “IDE support for Unreal Engine” component is enabled in the VS Installer, and download <a href="https://www.unrealengine.com/marketplace/en-US/product/362651520df94e4fa65492dbcba44ae2">the Visual Studio Integration Tool</a> from the Unreal Marketplace.</p>
-<p><img decoding="async" class="alignnone wp-image-31274" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7.png" alt="Popup showing the references to a given blueprint" width="837" height="271" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7.png 837w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7-300x97.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31267-7-768x249.png 768w" sizes="(max-width: 837px) 100vw, 837px" /></p>
-<p>Keep an eye out for more new features in 17.5, and please let us know what you think of the Blueprints integration!</p>
-<h1 id="send-us-your-feedback">Send us your feedback</h1>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-4/">What’s New for C++ Developers in Visual Studio 2022 17.4</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
 		
