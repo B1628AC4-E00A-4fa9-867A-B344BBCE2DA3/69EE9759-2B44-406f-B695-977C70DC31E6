@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 18 Jan 2023 02:44:55 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 23 Jan 2023 19:13:44 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,78 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Deploy and debug apps on remote targets</title>
+		<link>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/#respond</comments>
+		
+		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
+		<pubDate>Mon, 23 Jan 2023 19:13:44 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Containers]]></category>
+		<category><![CDATA[embedded]]></category>
+		<guid isPermaLink="false">https://localhost/cppblog/?p=31503</guid>
+
+					<description><![CDATA[<p>There are a number of ways that Visual Studio and Visual Studio Code enable you to interact with remote machines. Both can enable you to connect to a remote machine and use it as a build machine and debug your applications there.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/">Deploy and debug apps on remote targets</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>There are a number of ways that Visual Studio and Visual Studio Code enable you to interact with remote machines. Both can enable you to connect to a remote machine and use it as a build machine and debug your applications there. Sometimes though your target is not the same as your build machine. For example, for embedded Linux devices you will likely want to cross compiler the application on a more powerful build machine then deploy to the device for debugging. This post is going to demonstrate how to build an application locally in a Dev Container for either a Raspberry Pi 3 or 4, then deploy and debug the application on a Raspberry Pi. The techniques shown here will also work if the build machine is natively Linux or WSL, but to make setup easier we will use a Dev Container.</p>
+<h1 id="raspberry-pi-project">Raspberry Pi project</h1>
+<p>For this article we have prepared a simple C++ project that can run locally on Linux, on a Raspberry Pi 3 or 4.</p>
+<pre>git clone https://github.com/robotdad/raspi-cpp-devcontainer.git</pre>
+<p>The main.cpp simply prints the name of the host system to the output and waits a few seconds before continuing. Using CMakePresets.json we have provided a linux-debug configuration for building the app to run on the Linux host machine. There are also pi3-debug and pi4-debug configurations that use the cross compilers for those devices. The output from those configurations will only run on the Raspberry Pi they are configured for.</p>
+<p>To ensure the correct compilers are available the Dockerfile used with the Dev Container has all of the dependencies specified. It also uses Ubuntu 20.04 as the Raspberry Pi OS we are using is based off of Debian Buster. This ensures that we have a glibc version for our build machine that matches the target machine which is necessary to debug the application.</p>
+<h1 id="using-visual-studio-to-target-a-raspberry-pi">Using Visual Studio to target a Raspberry Pi</h1>
+<p>From Visual Studio   2022 17.5 open the folder where you cloned the project locally. Visual Studio will prompt you to reopen in a Dev Container, do so unless you are configuring your WSL or Linux environment with the prerequisites found in the .devcontainer\Dockerfile.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainergoldbar.png"><img decoding="async" class="alignnone size-full wp-image-31507" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainergoldbar.png" alt="Image devcontainergoldbar" width="1560" height="84" /></a></p>
+<p>Once the Dev Container is up select the Linux Debug preset configuration and the Debug target “Hello build machine” in the toolbar. The debug configuration is provided by the .vs/launch.vs.json that is part of the project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellobuildmachine-vs.png"><img decoding="async" class="alignnone size-full wp-image-31508" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellobuildmachine-vs.png" alt="Image hellobuildmachine vs" width="644" height="50" /></a></p>
+<p>This will build the application to target the local build environment, then launch the application under debug. You can set a breakpoint on the sleep statement. The Linux Console will open for output, and for a Dev Container the output will be similar to the below.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugbuildmachine-vs.png"><img decoding="async" class="alignnone size-full wp-image-31505" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugbuildmachine-vs.png" alt="Image debugbuildmachine vs" width="780" height="284" /></a></p>
+<p>Now change your preset configuration to be either Linux Pi 3 Debug or Linux Pi 4 Debug depending on which device you have. Select the “Hello Pi” debug configuration that is provided by the .vs/launch.vs.json that is part of the project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellopi-vs.png"><img decoding="async" class="alignnone size-full wp-image-31509" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellopi-vs.png" alt="Image hellopi vs" width="671" height="53" /></a></p>
+<p>Before debugging add your Raspberry Pi to the Connection Manager. From the toolbar select the Target System dropdown and select Manage Connections.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/targets-vs.png"><img decoding="async" class="alignnone size-full wp-image-31510" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/targets-vs.png" alt="Remote targets drop down in Visual Studio" width="189" height="215" /></a></p>
+<p>Here you can add your Raspberry Pi or remote Linux connection (note that IP address is more stable for the Raspberry Pi 3). Once this information is saved you need to set the remoteMachineName option to the connection you just added in the launch.vs.json. You can get to this file from Debug menu or right clicking the CMakeLists.txt in the Solution Explorer and selecting Debug and Launch Settings.</p>
+<p>Once your remote target is configured start the Hello Pi (Remote Debug) target. The build will run in the Dev Container, the output will be deployed to the target, and a gdb connection will be established. The Linux Console will open to display output and will appear similar to the below.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vs.png"><img decoding="async" class="alignnone size-full wp-image-31506" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vs.png" alt="Image debugpi vs" width="780" height="264" /></a></p>
+<h1 id="using-visual-studio-code-to-target-a-raspberry-pi">Using Visual Studio Code to target a Raspberry Pi</h1>
+<p>In VS Code you will want the CppTools and Remote Containers extensions installed, they will likely be suggested if not installed already. From open the folder where you cloned the project locally. VS Code will prompt you to reopen in a Dev Container, do so unless you are configuring your WSL or Linux environment with the prerequisites found in the .devcontainer\Dockerfile.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerpopup.png"><img decoding="async" class="alignnone size-full wp-image-31523" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerpopup.png" alt="Image devcontainerpopup" width="577" height="175" /></a></p>
+<p>Once the Dev Container is up select the Linux Debug configuration, then you select the Debug target. You can do this from the status bar or the Debug pane.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerstatusbar-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31521" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerstatusbar-vscode.png" alt="Image devcontainerstatusbar vscode" width="779" height="34" /></a></p>
+<p>Selecting debug will build the application to target the local build environment, then launch the application under debug. You can set a breakpoint on the sleep statement. Output from the application will be in the terminal. For a Dev Container the output will be similar to the below.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugincontainer-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31520" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugincontainer-vscode.png" alt="Image debugincontainer vscode" width="780" height="208" /></a></p>
+<p>Now change your configuration to be either Linux Pi 3 Debug or Linux Pi 4 Debug depending on which device you have.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/presetconfigs-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31519" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/presetconfigs-vscode.png" alt="Image presetconfigs vscode" width="437" height="163" /></a></p>
+<p>From the Debug Pane change the configuration from &#8220;Debug&#8221; to &#8220;Debug Pi&#8221;. These options are preconfigured in .vscode/launch.json of the project.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31518" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vscode.png" alt="Image debugpi vscode" width="448" height="274" /></a></p>
+<p>When you start the debug session you will be prompted to select a SSH Target.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/addsshtarget-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31517" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/addsshtarget-vscode.png" alt="Image addsshtarget vscode" width="757" height="119" /></a></p>
+<p>Since this is our first SSH target we need to select the option to add a new one. The first step is to give it a name.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargetname-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31516" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargetname-vscode.png" alt="Image sshtargetname vscode" width="755" height="109" /></a></p>
+<p>Next provide the SSH command to connect to your Raspberry Pi, for example ssh user@host.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshcommand-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31515" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshcommand-vscode.png" alt="Image sshcommand vscode" width="744" height="109" /></a></p>
+<p>You’ll then be prompted for where to store the SSH connection, either in the user or a global location. In a Dev Container root is the user.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshconfig-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31514" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshconfig-vscode.png" alt="Image sshconfig vscode" width="751" height="139" /></a></p>
+<p>The first time you connect to the device you will be prompted to accept the fingerprint.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshfingerprint-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31513" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshfingerprint-vscode.png" alt="Image sshfingerprint vscode" width="748" height="139" /></a></p>
+<p>Finally, you will need to authenticate the user you selected for the connection.</p>
+<p>When the debug session starts the output for the remote SSH connection is in the output pane for Cpptools:SSH.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshoutput-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31512" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshoutput-vscode.png" alt="Image sshoutput vscode" width="780" height="186" /></a></p>
+<p>The SSH connection can be found in the Debug panel CPPTOOLS: SSH TARGETS. If you have more than one they will be enumerated here and you can change which one is active. You can also start a terminal session to the SSH connection.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargets-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31511" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargets-vscode.png" alt="Image sshtargets vscode" width="424" height="113" /></a></p>
+<h1 id="send-us-your-feedback">Send us your feedback</h1>
+<p>We hope that these new capabilities will enable you to choose Visual Studio and Visual Studio Code for your C++ development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/">Deploy and debug apps on remote targets</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>vcpkg 2023.01.09 Release: Registry Pattern Matching, Documentation Changes, and More…</title>
 		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2023-01-09-release-registry-pattern-matching-documentation-changes-and-more/#respond</comments>
@@ -1907,57 +1979,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2022-11-14-and-2022-10-19-releases-localization-for-14-languages-overlay-ports-triplets-in-manifests-acquire-project-command-and-more/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio 2022 Performance: Faster C++ Source Code Indexing</title>
-		<link>https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/</link>
-		
-		<dc:creator><![CDATA[Victor Ciura]]></dc:creator>
-		<pubDate>Tue, 15 Nov 2022 16:00:21 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[performance]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31318</guid>
-
-					<description><![CDATA[<p>Building on top of our performance wins in Visual Studio 2022 version 17.3, we are excited to announce additional improvements in version 17.4.<br />
-Whether you are a game developer, work with large codebases, or have solutions with many C++ projects, your development experience in Visual Studio 2022 17.4 will feel even faster.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">Visual Studio 2022 Performance: Faster C++ Source Code Indexing</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Building on top of <a id="post-31318-_Int_H4uFQVnC"></a>our <a href="https://devblogs.microsoft.com/cppblog/vs2022-performance-enhancements-faster-c-development/">performance wins</a> in Visual Studio 2022 version 17.3, we are excited to announce additional improvements in version 17.4.</p>
-<p>Whether you are a game developer, work with large codebases, or have solutions with many C++ projects, your development experience in Visual Studio 2022 17.4 will feel <em>even faster</em>.</p>
-<p>In 17.4 we significantly reduced the time it takes to open a C++ project for the first time (cold load).</p>
-<p>While working on these improvements, we constantly check our performance against real-life large projects, including some of our own, as well as several C++ codebases for popular games from our partner game studios.</p>
-<p>Large C++ projects could see a 20-36% speed improvement over 17.3 when populating the source code database used for browsing and navigation.</p>
-<p>When compared to VS 2019, the cumulative performance gains for this scenario should be between 2X-6X depending on the project structure and size.</p>
-<p>In this post, we want to highlight the C++ project indexing scenario for the <a href="https://en.wikipedia.org/wiki/Gears_of_War">Gears of War</a> source code and a generic Unreal Engine 5 starter project.</p>
-<h2 id="testing-methodology">Testing Methodology</h2>
-<p>Hardware: AMD Ryzen PRO 3945WX 12/24, 128GB RAM, 2.5TB SSD, RTX 3080</p>
-<p>Projects/source code: Gears of War, Unreal Engine 5 starter project, Chromium</p>
-<p>Visual Studio: VS2019 v16.11 and VS2022 v17.4</p>
-<p>For all scenarios, we used VS system events/logs to track the duration of the operations.</p>
-<h3 id="results">Results</h3>
-<p>Let’s see the cumulative effect of all the improvements we made in this area for C++ projects, for the past year.</p>
-<p><img decoding="async" width="1431" height="1080" class="wp-image-31319" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/chart-bar-chart-description-automatically-genera-1.png" alt="Chart, bar chart Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/chart-bar-chart-description-automatically-genera-1.png 1431w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/chart-bar-chart-description-automatically-genera-1-300x226.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/chart-bar-chart-description-automatically-genera-1-1024x773.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/chart-bar-chart-description-automatically-genera-1-768x580.png 768w" sizes="(max-width: 1431px) 100vw, 1431px" /></p>
-<p>In Visual Studio 2019 16.11, it takes roughly <a id="post-31318-OLE_LINK1"></a>6½ minutes for Gears of War to fully index. In Visual Studio 2022 17.4, waiting for indexing to finish will only take a bit over <a id="post-31318-OLE_LINK2"></a>2½ minutes, resulting in a <strong>2.5X</strong> speed up.</p>
-<p><img decoding="async" width="1431" height="1080" class="wp-image-31320" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-2.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-2.png 1431w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-2-300x226.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-2-1024x773.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-2-768x580.png 768w" sizes="(max-width: 1431px) 100vw, 1431px" /></p>
-<p>When getting to code in a new Unreal Engine 5 solution, you will see a huge improvement in the latest version of VS2022 versus VS2019. In VS2019 16.11, fully indexing a brand-new C++ UE5 solution took a bit over 2½ minutes. When using VS2022 17.4, fully indexing the same UE5 solution is now <strong>2.7X</strong> faster at just 1 minute. Whether you are creating a new UE5 project or cloning from an existing repo, your code will index much faster in 17.4.</p>
-<h3 id="pushing-the-limits">Pushing the limits</h3>
-<p>Few open-source projects reach the scale of <a href="https://chromium.googlesource.com/chromium/src.git">Chromium</a> with over 12,000 projects in one single Visual Studio solution, so naturally it’s an irresistible target for stress testing the components we’re improving. Let’s see how we did.</p>
-<p><img decoding="async" width="1431" height="1080" class="wp-image-31321" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-3.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-3.png 1431w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-3-300x226.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-3-1024x773.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/11/word-image-31318-3-768x580.png 768w" sizes="(max-width: 1431px) 100vw, 1431px" /></p>
-<p>In Visual Studio 2019 16.11, it takes roughly 31 minutes for the Chromium repo to fully index. In Visual Studio 2022 17.4, waiting for indexing to finish will only take just 5 minutes, a <strong>6X</strong> speed up. When indexing a large solution like the Chromium repo for the first time, you will save up to 26 minutes with the latest version of Visual Studio.</p>
-<h3 id="try-it-out">Try it out</h3>
-<p>Although everyone should see considerable improvements for these scenarios, the magnitude of the gains is dependent on your source code, project layout, include graph, etc. So, try it out on your codebase and let us know about your project load/parsing gains for IntelliSense start-up.</p>
-<h2 id="feedback-wanted">Feedback Wanted!</h2>
-<p>Your feedback through <a href="https://developercommunity.visualstudio.com/" target="_blank" rel="noopener">Developer Community</a>, surveys, and social media channels has made these improvements possible. We thank you for your valuable comments. These enhancements are a continuation of our focus on improving productivity for game developers. Throughout the Visual Studio 2022 development cycle, we will continue to make improvements like ones detailed in this blogpost. If you are a game developer, <a href="http://aka.ms/VSGameDevSurvey" target="_blank" rel="noopener">let us know your thoughts in our 2022 Visual Studio Game Developer Survey</a>.</p>
-<p>In addition, please continue to help shape the development of Visual Studio by talking to us in the comments below, on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a></p>
-<h2 id="upgrade-to-visual-studio-2022">Upgrade to Visual Studio 2022</h2>
-<p><a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Download the latest version of Visual Studio 2022</a> to take advantage of these productivity benefits today!</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">Visual Studio 2022 Performance: Faster C++ Source Code Indexing</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
