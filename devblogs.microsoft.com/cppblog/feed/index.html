@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 31 Jan 2023 00:31:43 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 31 Jan 2023 13:44:53 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,68 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Remote Native Unit Test Support in Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/#respond</comments>
+		
+		<dc:creator><![CDATA[Moyo Okeremi]]></dc:creator>
+		<pubDate>Wed, 01 Feb 2023 16:00:45 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31643</guid>
+
+					<description><![CDATA[<p>Remote C++ unit testing enables developers to connect Visual Studio 2022 to remote windows environments for running and debugging C++ desktop application tests. This functionality is useful for developers who deploy code to different Windows target environments such as different Windows architectures.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/">Remote Native Unit Test Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Remote C++ unit testing enables developers to connect Visual Studio 2022 to remote windows environments for running and debugging C++ desktop application tests. This functionality is useful for developers who deploy code to different Windows target environments such as different Windows architectures. With this feature, you can run tests on your target machine right from Visual Studio by connecting the Test Explorer to a remote environment.</p>
+<h2 id="how-to-setup-for-native-remote-unit-testing">How to Setup for Native Remote Unit Testing</h2>
+<h3 id="prepare-the-remote-windows-machine">Prepare the Remote Windows Machine</h3>
+<p>1. Ensure <a href="https://learn.microsoft.com/en-us/windows/win32/projfs/enabling-windows-projected-file-system">Windows Projected File System</a> is enabled. You can run the following from an admin PowerShell window to enable it:</p>
+<p><code class="language-default">Enable-WindowsOptionalFeature -Online -FeatureName Client-ProjFS -NoRestart</code></p>
+<p>Please restart the environment if required.</p>
+<p>2. Ensure SSH is setup. You can review the steps at <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#install-openssh-using-powershell">Install OpenSSH</a>. Start up the SSH server by running the following command from an admin PowerShell window:</p>
+<p><code class="language-default">Start-Service sshd</code></p>
+<p>3. Ensure that .NET 5 or higher is installed on the remote machine. Downloads can be found <a href="https://dotnet.microsoft.com/download">here</a>.</p>
+<p>4. Ensure to install the appropriate <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170">Visual C++ Redistrubutable</a>.</p>
+<p>5. For debugging of tests:</p>
+<ul>
+<li>Please install the <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/remote-debugging?view=vs-2022&amp;preserve-view=true">Remote tools SKU</a> on the remote environment.</li>
+<li>Start up the remote debugger as an admin and ensure that the VS user has permissions to connect.</li>
+</ul>
+<h3 id="prepare-the-c-unit-test-project-in-visual-studio">Prepare the C++ Unit Test Project in Visual Studio</h3>
+<p>1. Create a new Native Unit Test project:</p>
+<p><img decoding="async" class="wp-image-31650" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2.png" alt="Graphical user interface, application Description automatically generated" width="576" height="300" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2.png 3779w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-1024x534.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-768x401.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-1536x801.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-2048x1068.png 2048w" sizes="(max-width: 576px) 100vw, 576px" /></p>
+<p>2. You can add or remove SSH connections in <strong><em>Tools &gt; Options &gt; Cross Platform &gt; Connection Manager</em></strong>. Selecting &#8220;Add&#8221; will allow you to enter the host name, port, and any credentials you need.</p>
+<p>3. The remote windows environment can be specified adding a <strong>testenvironments.json</strong> file to the root of your solution, using the following schema and replacing the <code>ssh://user@hostname:22</code> with your SSH remoteUri.</p>
+<pre class="prettyprint language-json"><code class="language-json">{
+  "version": "1",
+  "environments": 
+  [
+    {
+      "name": "ssh-remote-arm64", //friendly name to help identify environment.
+      "type": "ssh",
+      "remoteUri": "ssh://user@hostname:22"
+    }
+  ]
+}
+</code></pre>
+<p>Once your connection is in the connection manager, as you type the info into the testEnvironments.json file, Intellisense will assist you by showing you your different available connections and you can select the appropriate one.</p>
+<h2 id="use-the-test-explorer-to-run-and-debug-remote-unit-tests">Use the Test Explorer to Run and Debug Remote Unit Tests</h2>
+<p>1. The active environment is selected via a drop-down in the Test Explorer tool bar. Currently, only one test environment can be active at a time.</p>
+<p><img decoding="async" class="wp-image-31651" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4.png" alt="A screenshot of a computer Description automatically generated with medium confidence" width="656" height="198" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4.png 1632w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-300x90.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-1024x309.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-768x232.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-1536x463.png 1536w" sizes="(max-width: 656px) 100vw, 656px" /></p>
+<p>2. Once an environment is selected, tests are discovered and run in the new environment.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png"><img decoding="async" class="wp-image-31656 alignnone" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png" alt="Image Picture1" width="661" height="344" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png 1061w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-1024x533.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-768x400.png 768w" sizes="(max-width: 661px) 100vw, 661px" /></a></p>
+<p>&nbsp;</p>
+<h2 id="give-us-your-feedback">Give us your Feedback</h2>
+<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/">Visual Studio 2022 Preview</a> today and give it a try. For more information about remote unit testing for Windows, check out <a href="https://learn.microsoft.com/en-us/visualstudio/test/remote-testing?view=vs-2022">Remote Testing in Visual Studio &#8211; Visual Studio (Windows) | Microsoft Learn</a>. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/">Remote Native Unit Test Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>VS Code C++ Extension January Update: Create Definitions and Declarations</title>
 		<link>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-january-update-create-definitions-and-declarations/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-january-update-create-definitions-and-declarations/#respond</comments>
@@ -791,699 +853,6 @@ ABI as the STL&#8217;s C++ atomics. You can share headers that use atomics betwe
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c11-atomics-in-visual-studio-2022-version-17-5-preview-2/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Improving the State of Debug Performance in C++</title>
-		<link>https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/#respond</comments>
-		
-		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
-		<pubDate>Tue, 13 Dec 2022 17:00:11 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[C++ language]]></category>
-		<category><![CDATA[compiler]]></category>
-		<category><![CDATA[debugging]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31372</guid>
-
-					<description><![CDATA[<p>In this blog we will explore one change the MSVC compiler has implemented in an effort to improve the codegen quality of applications in debug mode. We will highlight what the change does, and how it could be extended for the future.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/">Improving the State of Debug Performance in C++</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>In this blog we will explore one change the MSVC compiler has implemented in an effort to improve the codegen quality of applications in debug mode. We will highlight what the change does, and how it could be extended for the future. If debug performance is something you care about for your C++ projects, then Visual Studio 2022 version 17.5 is making that experience even better!</p>
-<p><em>Please note that this blog will contain some assembly but being an expert in assembly is not required.</em></p>
-<h2 id="overview">Overview</h2>
-<ul>
-<li><a href="#motivation">Motivation: why we care about debugging performance.</a></li>
-<li><a href="#show-me-code">Show me some code!: A few simple examples of before and after.</a></li>
-<li><a href="#how-we-did-it">How we did it: About our new intrinsic and how you could use it.</a></li>
-<li><a href="#looking-ahead">Looking ahead: What else we&#8217;re doing to make the experience better.</a></li>
-</ul>
-<h2><span id="motivation">Motivation</span></h2>
-<p>You might notice that the title of this blog is a play on words based on a recent popular blog post of a similar name,
-<a href="https://vittorioromeo.info/index/blog/debug_performance_cpp.html">&#8220;the sad state of debug performance in
-c++&#8221;</a>. In the blog Vittorio Romeo highlights some general C++ shortcomings when it comes to debugging performance.
-Vittorio also also filed this Developer Community ticket &#8220;<a href="https://developercommunity.visualstudio.com/t/std::move-and-similar-functions-resu/1681875">`std::move` (and
-similar functions) result in poor debug performance and worse debugging experience</a>&#8220;; thanks to him and everyone who
-voted! Much of the reason for the observed slowdown is the cost of abstraction, with the notable example of
-<code>std::move</code> where the following code:</p>
-<pre>int i = 0;
-std::move(i);</pre>
-<p>Would generate a function call when the code is conceptually:</p>
-<pre>int i = 0;
-static_cast&lt;int&amp;&amp;&gt;(i);</pre>
-<p>The function <code>std::move</code> is conceptually a named cast, much like static_cast but with a contextual meaning for code
-around it. The penalty for using this named cast is that you get a function call generated in the debug assembly.
-Here&#8217;s the assembly of the two examples above:</p>
-<style>
-.my_collapse {
-  display: table-row;
-  cursor: pointer;
-}
-.asm_entry {
-  vertical-align: top;
-}
-</style>
-<table border="1">
-<tbody>
-<tr class="my_collapse">
-<td><code>std::move</code> (click to expand)</td>
-<td><code>static_cast</code> (click to expand)</td>
-</tr>
-<tr>
-<td class="asm_entry">
-<pre>main	PROC
-sub	rsp, 56	; 00000038H
-mov	DWORD PTR i$[rsp], 0
-lea	rcx, QWORD PTR i$[rsp]
-call	??$move@AEAH@std@@YA$$QEAHAEAH@Z
-xor	eax, eax
-add	rsp, 56	; 00000038H
-ret	0
-main	ENDP</pre>
-</td>
-<td class="asm_entry">
-<pre>main	PROC
-sub	rsp, 24
-mov	DWORD PTR i$[rsp], 0
-xor	eax, eax
-add	rsp, 24
-ret	0
-main	ENDP</pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p><em>Note to readers: All code samples compiled in this blog were compiled with &#8220;<code>/Od /std:c++latest</code>&#8220;</em></p>
-<p>On the surface, the compiler only generated 2 extra instructions in the <code>std::move</code> case, but the &#8216;call&#8217; instruction, in
-particular, is both expensive and executes this code in addition to the code above:</p>
-<pre class="asm_entry">??$move@AEAH@std@@YA$$QEAHAEAH@Z PROC			; std::move&lt;int &amp;&gt;, COMDAT
-mov	QWORD PTR [rsp+8], rcx
-mov	rax, QWORD PTR _Arg$[rsp]
-ret	0
-??$move@AEAH@std@@YA$$QEAHAEAH@Z ENDP			; std::move&lt;int &amp;&gt;</pre>
-<p><em>Note: to generate the assembly above, the compiler can be provided with the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/fa-fa-listing-file?view=msvc-170"><code>/Fa</code></a> option. Furthermore, the weird names
-like &#8220;<code>??$move@AEAH@std@@YA$$QEAHAEAH@Z</code>&#8221; are a mangled name of the function template specialization of <code>std::move</code>.</em></p>
-<p>So really your binary is now at a 5 instruction deficit to the <code>static_cast</code> code, and this cost is multiplied by the
-number of times that <code>std::move</code> is used.</p>
-<p>Some compilers have already implemented some mechanism to acknowledge meta functions like <code>std::move</code> and <code>std::forward</code> as
-compiler intrinsics (as noted in Vittorio&#8217;s blog) and this support is done completely in the <a href="https://en.wikipedia.org/wiki/Compiler#Front_end">compiler front-end</a>. As of
-17.5, MSVC is offering better debugging performance by acknowledging these meta functions as well! More on how we do it
-later in this blog, but first&#8230;</p>
-<h2><span id="show-me-code">Show me some code!</span></h2>
-<p><em>Note to readers: to take advantage of the new codegen quality, you will need to provide the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/permissive-standards-conformance?view=msvc-170"><code>/permissive-</code></a> compiler
-option. Also worthy to note that <code>/permissive-</code> is implied when <code>/std:c++20</code> or <code>/std:c++latest</code> is used.</em></p>
-<p>Let&#8217;s take the simple example above again and make it a full program:</p>
-<pre>#include &lt;utility&gt;
-
-int main() {
-    int i = 0;
-    std::move(i);
-    std::forward&lt;int&amp;&gt;(i);
-}</pre>
-<p>Here&#8217;s the generated assembly difference between 17.4 and 17.5:</p>
-<table border="1">
-<tbody>
-<tr class="my_collapse">
-<td>17.4 (click to expand)</td>
-<td>17.5 (click to expand)</td>
-</tr>
-<tr>
-<td class="asm_entry">
-<pre>_Arg$ = 8
-??$forward@AEAH@std@@YAAEAHAEAH@Z PROC
-mov	QWORD PTR [rsp+8], rcx
-mov	rax, QWORD PTR _Arg$[rsp]
-ret	0
-??$forward@AEAH@std@@YAAEAHAEAH@Z ENDP
-_TEXT	ENDS
-_TEXT	SEGMENT
-_Arg$ = 8
-??$move@AEAH@std@@YA$$QEAHAEAH@Z PROC
-mov	QWORD PTR [rsp+8], rcx
-mov	rax, QWORD PTR _Arg$[rsp]
-ret	0
-??$move@AEAH@std@@YA$$QEAHAEAH@Z ENDP
-_TEXT	ENDS
-_TEXT	SEGMENT
-i$ = 32
-main	PROC
-sub	rsp, 56		; 00000038H
-mov	DWORD PTR i$[rsp], 0
-lea	rcx, QWORD PTR i$[rsp]
-call	??$move@AEAH@std@@YA$$QEAHAEAH@Z
-lea	rcx, QWORD PTR i$[rsp]
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z
-xor	eax, eax
-add	rsp, 56		; 00000038H
-ret	0
-main	ENDP</pre>
-</td>
-<td class="asm_entry">
-<pre>i$ = 0
-main	PROC
-$LN3:
-sub	rsp, 24
-mov	DWORD PTR i$[rsp], 0
-xor	eax, eax
-add	rsp, 24
-ret	0
-main	ENDP</pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Assembly reading tip: The <code>main PROC</code> above is our <code>main</code> function in the C++ code. The
-instructions that follow <code>main PROC</code> are what your CPU will execute when your program is first invoked. In
-the case above, it is clear that the code produced by 17.5 is much smaller, which can sometimes be an indication of a
-performance win. For the purposes of this blog, the performance win is both in the size of the code produced and the
-reduction in indirections due to inlining the &#8216;call&#8217; instruction to <code>std::move</code> and <code>std::forward</code>. For the
-purposes of this blog we will rely on the newly generated assembly reduced complexity as an indicator of possible
-performance wins.</p>
-<p>Yes, you read that right, the generated code in 17.5 doesn&#8217;t even create assembly entries for <code>std::move</code> or
-<code>std::forward</code>—which makes sense, they&#8217;re never called.</p>
-<p>Let&#8217;s look at a slightly more complicated code example:</p>
-<pre>#include &lt;utility&gt;
-
-template &lt;typename T&gt;
-void add_1_impl(T&amp;&amp; x) {
-    std::forward&lt;T&gt;(x) += std::move(1);
-}
-
-template &lt;typename T, int N&gt;
-void add_1(T (&amp;arr)[N]) {
-    for (auto&amp;&amp; e : arr) {
-        add_1_impl(e);
-    }
-}
-
-int main() {
-    int arr[10]{};
-    add_1(arr);
-}</pre>
-<p>In this code all we want to do is add 1 to all elements of the array. Here&#8217;s the table (only showing the <code>add_1_impl</code>
-function with <code>std::forward</code> and <code>std::move</code>):</p>
-<table border="1">
-<tbody>
-<tr class="my_collapse">
-<td>17.4 (click to expand)</td>
-<td>17.5 (click to expand)</td>
-</tr>
-<tr>
-<td class="asm_entry">
-<pre>??$add_1_impl@AEAH@@YAXAEAH@Z PROC
-$LN3:
-mov	QWORD PTR [rsp+8], rcx
-sub	rsp, 72	; 00000048H
-mov	DWORD PTR $T1[rsp], 1
-lea	rcx, QWORD PTR $T1[rsp]
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z
-mov	eax, DWORD PTR [rax]
-mov	DWORD PTR tv72[rsp], eax
-mov	rcx, QWORD PTR x$[rsp]
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z
-mov	QWORD PTR tv68[rsp], rax
-mov	rax, QWORD PTR tv68[rsp]
-mov	eax, DWORD PTR [rax]
-mov	DWORD PTR tv70[rsp], eax
-mov	eax, DWORD PTR tv72[rsp]
-mov	ecx, DWORD PTR tv70[rsp]
-add	ecx, eax
-mov	eax, ecx
-mov	rcx, QWORD PTR tv68[rsp]
-mov	DWORD PTR [rcx], eax
-add	rsp, 72	; 00000048H
-ret	0
-??$add_1_impl@AEAH@@YAXAEAH@Z ENDP</pre>
-</td>
-<td class="asm_entry">
-<pre>??$add_1_impl@AEAH@@YAXAEAH@Z PROC
-$LN3:
-mov	QWORD PTR [rsp+8], rcx
-sub	rsp, 24
-mov	DWORD PTR $T1[rsp], 1
-mov	rax, QWORD PTR x$[rsp]
-mov	eax, DWORD PTR [rax]
-add	eax, DWORD PTR $T1[rsp]
-mov	rcx, QWORD PTR x$[rsp]
-mov	DWORD PTR [rcx], eax
-add	rsp, 24
-ret	0
-??$add_1_impl@AEAH@@YAXAEAH@Z ENDP</pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p>17.4 has 21 instructions while 17.5 has only 10, but this comparison is made that much more extreme by the fact that we
-are calling <code>add_impl_1</code> in a loop so the complexity of executed instructions in 17.4 can ostensibly be significantly
-more costly than in 17.5—worse than that, actually, because we&#8217;re not accounting for the instructions executed in the
-functions <code>std::forward</code> and <code>std::move</code>.</p>
-<p>Let&#8217;s make the code sample even more interesting and extreme to illustrate the visible differences. It might be
-observed that if we manually unroll the loop above we can get a performance win, so let&#8217;s do that using templates:</p>
-<pre>#include &lt;utility&gt;
-
-template &lt;typename T, int N, std::size_t... Is&gt;
-void add_1_impl(std::index_sequence&lt;Is...&gt;, T (&amp;arr)[N]) {
-    ((std::forward&lt;T&amp;&gt;(arr[Is]) += std::move(1)), ...);
-}
-
-template &lt;typename T, int N&gt;
-void add_1(T (&amp;arr)[N]) {
-    add_1_impl(std::make_index_sequence&lt;N&gt;{}, arr);
-}
-
-int main() {
-    int arr[10]{};
-    add_1(arr);
-}</pre>
-<p>The code above replaces the loop in the previous example with a single <a href="https://en.cppreference.com/w/cpp/language/fold">fold expression</a>. Let&#8217;s peek at the codegen
-(again only snipping <code>add_1_impl</code> with <code>std::forward</code> and <code>std::move</code>, we also replace the mangled function name with
-<code>add_1_impl&lt;...&gt;</code>):</p>
-<table border="1">
-<tbody>
-<tr class="my_collapse">
-<td>17.4 (click to expand)</td>
-<td>17.5 (click to expand)</td>
-</tr>
-<tr>
-<td class="asm_entry">
-<pre>add_1_impl&lt;...&gt; PROC 
-$LN3: 
-mov	QWORD PTR [rsp+16], rdx 
-mov	BYTE PTR [rsp+8], cl 
-sub	rsp, 248	; 000000f8H 
-mov	DWORD PTR $T1[rsp], 1 
-lea	rcx, QWORD PTR $T1[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv74[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 0 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv70[rsp], rax 
-mov	rax, QWORD PTR tv70[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv72[rsp], eax 
-mov	eax, DWORD PTR tv74[rsp] 
-mov	ecx, DWORD PTR tv72[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv70[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T2[rsp], 1 
-lea	rcx, QWORD PTR $T2[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv86[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 1 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv82[rsp], rax 
-mov	rax, QWORD PTR tv82[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv84[rsp], eax 
-mov	eax, DWORD PTR tv86[rsp] 
-mov	ecx, DWORD PTR tv84[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv82[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T3[rsp], 1 
-lea	rcx, QWORD PTR $T3[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv130[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 2 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv94[rsp], rax 
-mov	rax, QWORD PTR tv94[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv128[rsp], eax 
-mov	eax, DWORD PTR tv130[rsp] 
-mov	ecx, DWORD PTR tv128[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv94[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T4[rsp], 1 
-lea	rcx, QWORD PTR $T4[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv142[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 3 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv138[rsp], rax 
-mov	rax, QWORD PTR tv138[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv140[rsp], eax 
-mov	eax, DWORD PTR tv142[rsp] 
-mov	ecx, DWORD PTR tv140[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv138[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T5[rsp], 1 
-lea	rcx, QWORD PTR $T5[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv154[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 4 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv150[rsp], rax 
-mov	rax, QWORD PTR tv150[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv152[rsp], eax 
-mov	eax, DWORD PTR tv154[rsp] 
-mov	ecx, DWORD PTR tv152[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv150[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T6[rsp], 1 
-lea	rcx, QWORD PTR $T6[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv166[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 5 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv162[rsp], rax 
-mov	rax, QWORD PTR tv162[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv164[rsp], eax 
-mov	eax, DWORD PTR tv166[rsp] 
-mov	ecx, DWORD PTR tv164[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv162[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T7[rsp], 1 
-lea	rcx, QWORD PTR $T7[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv178[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 6 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv174[rsp], rax 
-mov	rax, QWORD PTR tv174[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv176[rsp], eax 
-mov	eax, DWORD PTR tv178[rsp] 
-mov	ecx, DWORD PTR tv176[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv174[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T8[rsp], 1 
-lea	rcx, QWORD PTR $T8[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv190[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 7 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv186[rsp], rax 
-mov	rax, QWORD PTR tv186[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv188[rsp], eax 
-mov	eax, DWORD PTR tv190[rsp] 
-mov	ecx, DWORD PTR tv188[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv186[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T9[rsp], 1 
-lea	rcx, QWORD PTR $T9[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv202[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 8 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv198[rsp], rax 
-mov	rax, QWORD PTR tv198[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv200[rsp], eax 
-mov	eax, DWORD PTR tv202[rsp] 
-mov	ecx, DWORD PTR tv200[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv198[rsp] 
-mov	DWORD PTR [rcx], eax 
-mov	DWORD PTR $T10[rsp], 1 
-lea	rcx, QWORD PTR $T10[rsp] 
-call	??$move@H@std@@YA$$QEAH$$QEAH@Z 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv214[rsp], eax 
-mov	eax, 4 
-imul	rax, rax, 9 
-mov	rcx, QWORD PTR arr$[rsp] 
-add	rcx, rax 
-mov	rax, rcx 
-mov	rcx, rax 
-call	??$forward@AEAH@std@@YAAEAHAEAH@Z 
-mov	QWORD PTR tv210[rsp], rax 
-mov	rax, QWORD PTR tv210[rsp] 
-mov	eax, DWORD PTR [rax] 
-mov	DWORD PTR tv212[rsp], eax 
-mov	eax, DWORD PTR tv214[rsp] 
-mov	ecx, DWORD PTR tv212[rsp] 
-add	ecx, eax 
-mov	eax, ecx 
-mov	rcx, QWORD PTR tv210[rsp] 
-mov	DWORD PTR [rcx], eax 
-add	rsp, 248	; 000000f8H 
-ret	0 
-add_1_impl&lt;...&gt; ENDP</pre>
-</td>
-<td class="asm_entry">
-<pre>add_1_impl&lt;...&gt; PROC 
-$LN3: 
-mov	QWORD PTR [rsp+16], rdx 
-mov	BYTE PTR [rsp+8], cl 
-sub	rsp, 56	; 00000038H 
-mov	DWORD PTR $T1[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 0 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T1[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 0 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T2[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 1 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T2[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 1 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T3[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 2 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T3[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 2 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T4[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 3 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T4[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 3 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T5[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 4 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T5[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 4 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T6[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 5 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T6[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 5 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T7[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 6 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T7[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 6 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T8[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 7 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T8[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 7 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T9[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 8 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T9[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 8 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-mov	DWORD PTR $T10[rsp], 1 
-mov	eax, 4 
-imul	rax, rax, 9 
-mov	rcx, QWORD PTR arr$[rsp] 
-mov	eax, DWORD PTR [rcx+rax] 
-add	eax, DWORD PTR $T10[rsp] 
-mov	ecx, 4 
-imul	rcx, rcx, 9 
-mov	rdx, QWORD PTR arr$[rsp] 
-mov	DWORD PTR [rdx+rcx], eax 
-add	rsp, 56	; 00000038H 
-ret	0 
-add_1_impl&lt;...&gt; ENDP</pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Our 17.4 example clocks in at a whopping 226 instructions while our 17.5 example is only 106 and the complexity of the
-instructions in 17.4 appears to be far more costly due to the number of call frame setups and &#8216;call&#8217; instructions which
-are not present on the 17.5 side.</p>
-<p>OK, perhaps the examples above are contrived and it might be far-fetched to think that code like the above would truly
-impact performance, but let&#8217;s take some code that is all but guaranteed to have some kind of real world application:</p>
-<pre>#include &lt;vector&gt;
-
-int main() {
-    std::vector&lt;int&gt; v;
-    v.push_back(1); 
-}</pre>
-<p>I will save you the massive assembly output on this one and simply callout the assembly size difference:</p>
-<ul>
-<li>17.4: 3136</li>
-<li>17.5: 3063</li>
-</ul>
-<p>Your assembly is 74 instructions shorter just by the compiler eliding these meta functions, and you can all but
-guarantee that in the places where <code>std::move</code> and <code>std::forward</code> are used, they may be used in a loop (i.e. resizing the
-vector and moving the elements to a new memory block). Furthermore, since these meta functions are never instantiated
-the corresponding .obj, .lib, and .pdb will be slightly smaller after upgrading to 17.5.</p>
-<h2><span id="how-we-did-it">How we did it</span></h2>
-<p>Rather than try to make the compiler aware of meta functions that act as named, no-op casts (i.e. the cast does not
-require a pointer adjustment), the compiler took an alternative approach and implemented this new inlining ability using
-a C++ attribute: <code>[[msvc::intrinsic]]</code>.</p>
-<p>The new attribute will semantically replace a function call with a cast to that function&#8217;s return type if the function
-definition is decorated with <code>[[msvc::intrinsic]]</code>. You can see how we applied this new attribute in the STL: <a href="https://github.com/microsoft/STL/pull/3182">GH3182</a>. The
-reason the compiler decided to go down the attribute route is that we want to eventually extend the scenarios it can
-cover and offer a data-driven approach to selectively decorate code with the new functionality. The latter is important
-for users of MSVC as well.</p>
-<p>You can read more about the attribute and its constraints and semantics in the <a href="https://learn.microsoft.com/en-us/cpp/cpp/attributes?view=msvc-170#microsoft-specific-attributes">Microsoft-specific attributes</a> section of
-our documentation.</p>
-<h2><span id="looking-ahead">Looking ahead&#8230;</span></h2>
-<p>The compiler front-end is not alone in this story of improving the performance of generated code for debugging purposes,
-the compiler back-end is also working very hard on some debug codegen scenarios that they will share in the coming
-months.</p>
-<p><b>Call to action:</b> what types of debugging optimizations matter to you? What optimizations for debug code would you like
-to see MSVC implement?</p>
-<p>Especially if you work for a game studio, please help us find out what your debugging workflow looks like by taking this
-survey: <a href="https://aka.ms/MSVCDebugSurvey">https://aka.ms/MSVCDebugSurvey</a>. Data like this helps the team
-focus on what workflows are important to you.</p>
-<p>Onward and upward!</p>
-<p><!-- It is important that this script is executed after all the tables are created -->
-<script>
-var coll = document.getElementsByClassName("my_collapse");
-var i = 0;
-for (; i < coll.length; i++) {
-  var elm = coll[i];
-  var content_row = elm.nextElementSibling;
-  // Hide them all by default.
-  content_row.style.display = "none";
-  elm.addEventListener("click", function() {
-    var content = this.nextElementSibling;
-    if (content.style.display !== "none") {
-      content.style.display = "none";
-    }
-    else {
-      content.style.display = "table-row";
-    }
-  });
-}
-</script></p>
-<h4 id="closing">Closing</h4>
-<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
-<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report
-a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us
-know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/">Improving the State of Debug Performance in C++</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
