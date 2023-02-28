@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Mon, 27 Feb 2023 19:31:06 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 28 Feb 2023 10:35:55 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,59 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>An alternative to __if_exists in ATL</title>
+		<link>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/#respond</comments>
+		
+		<dc:creator><![CDATA[Anju Del Moral Gonzalez]]></dc:creator>
+		<pubDate>Tue, 28 Feb 2023 16:00:15 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31879</guid>
+
+					<description><![CDATA[<p>What are _if_exists and __if_not_exists<br />
+The __if_exists and __if_not_exists keywords in the Active Template Library (ATL) allow a user to test at compile time whether an identifier exists.  If the identifier exists, the associated statement block is executed.  __if_exists and __if_not_exists can be applied to the names of variables,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/">An alternative to __if_exists in ATL</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h3 id="what-are-_if_exists-and-__if_not_exists">What are <code>_if_exists</code> and <code>__if_not_exists</code></h3>
+<p>The<code> __if_exists</code> and <code>__if_not_exists</code> keywords in the Active Template Library (ATL) allow a user to test at compile time whether an identifier exists.  If the identifier exists, the associated statement block is executed. <code> __if_exists</code> and <code>__if_not_exists</code> can be applied to the names of variables, functions, typedefs, as well as other identifiers.  You can read more about the specifics of their use and potential pitfalls on <a href="https://docs.microsoft.com/en-us/cpp/cpp/if-exists-statement?view=msvc-170">MSDN</a>, and in Raymond Chen’s <a href="https://devblogs.microsoft.com/oldnewthing/20190828-00/?p=102812">blogpost</a> about the keywords.</p>
+<h3 id="why-you-shouldnt-use-_if_exists-or-__if_not_exists">Why you shouldn’t use <code>_if_exists</code> or <code>__if_not_exists</code></h3>
+<p>Although these keywords seem like they’d be useful, they’ve been problematic for years.  Also, <code>_if_exists</code> and <code>__if_not_exists</code> are also incompatible with the recommended compiler <code>/permissive-</code> switch, which specifies standards-conforming compiler behavior, thus they also can’t be used with the new C++20 modules feature.</p>
+<h3 id="alternatives-to-__if_exists-and-__if_not_exists">Alternatives to <code>__if_exists</code> and <code>__if_not_exists</code></h3>
+<p>Starting with Visual Studio 2022 17.2 Preview 3, because MSVC with <code>/permissive-</code> (required by modules!) doesn&#8217;t support <code>__if_exists</code>, ATL has a new macro— <code>_ATL_MODULES</code>—which will replace code that looks like:</p>
+<pre class="prettyprint language-default"><code class="language-default">__if_exists(m_nAccessors)</code></pre>
+<p>with code that looks like:</p>
+<pre class="prettyprint language-default"><code class="language-default">if constexpr(_Has_m_nAccessors&lt;_Self&gt;::value)</code></pre>
+<p>By default, you can still use <code>__if_exists</code> and <code>__if_not_exists</code>, and you can use the old ATL code, but if you wish to use the modern <code>/permissive-</code> compiler mode, you&#8217;ll need to switch. Notice that is only supported from c++ 17 and forward.</p>
+<h3 id="changes-in-atl-macros">Changes in ATL Macros</h3>
+<p>Some ATL Macros were affected by the removal of <code>__if_exists</code>. You need to be aware of the following changes:</p>
+<ul>
+<li>There are now two versions of <code>BEGIN_PROPERTY_MAP</code> and <code>BEGIN_PROP_MAP</code>: <code>*_WITHOUT_ATL_PROP_NOTIFY_EVENT_CLASS_TYPEDEF</code> should be used in classes where there is <em>no</em> <code>_ATL_PROP_NOTIFY_EVENT_CLASS</code> typedef; <code>*_WITH_ATL_PROP_NOTIFY_EVENT_CLASS</code> versions should be used in classes where there <em>is </em>an <code>_ATL_PROP_NOTIFY_EVENT_CLASS</code> typedef.</li>
+<li><code>DECLARE_REGISTRY_RESOURCE</code>, <code>DECLARE_REGISTRY_RESOURCE_ID</code> – These macros have new versions.
+<ul>
+<li><code>WITH_MODULE</code> should be used where there is a global variable named <code>_Module</code> that is of a subtype of <code>CComModule</code></li>
+<li><code>WITHOUT_MODULE</code> version should be used when there is no such global variable available.</li>
+<li>V2 versions: In order for the new macros to emulate the original <code>__if_exists</code> behavior we need to know the name of the containing class. The previous versions of the macros do so using a non-Standard MSVC-specific extension.  The new versions require the user to pass the name of the containing class to the macro.  Whenever possible users should use the V2 versions.</li>
+</ul>
+</li>
+<li><code>BEGIN_CONNECTION_POINT_MAP</code>, <code>BEGIN_ATTRCONNECTION_POINT_MAP</code> – These macros define the typedef <code>_atl_conn_classtype</code> if it wasn’t already defined. Because we cannot detect if it already exists, there are now two versions of these macros:
+<ul>
+<li><code>*_WITHOUT_ATL_CONN_CLASSTYPE_TYPEDEF</code> should be used if there is <em>no</em> <code>_atl_conn_classtype</code> typedef</li>
+<li><code>*_WITH_ATL_CONN_CLASSTYPE_TYPEDEF</code> should be used ­in classes where there <em>is </em>an <code>_atl_conn_classtype</code> typedef already existing</li>
+</ul>
+</li>
+</ul>
+<h3 id="why-you-should-consume-the-atl-with-the-_atl_modules-flag">Why you should consume the ATL with the <code>_ATL_MODULES</code> flag</h3>
+<p>One of the most important consequences of these changes is that ATL can now be used with header units!  Read more about the benefits of Modules, including improved throughput, here (<a href="https://learn.microsoft.com/cpp/build/walkthrough-header-units">https://learn.microsoft.com/cpp/build/walkthrough-header-units</a>)</p>
+<p>Special thanks to Miya Natsuhara, who made all of these changes on the ATL codebase.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/">An alternative to __if_exists in ATL</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>View files on your Remote Machines using the new Remote File Explorer in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/#respond</comments>
@@ -495,78 +548,6 @@ log("cat {} is {} years old", cat.name(), cat.age());</code></pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/brace-pair-colorization-and-more-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Deploy and debug apps on remote targets</title>
-		<link>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/#comments</comments>
-		
-		<dc:creator><![CDATA[Marc Goodner]]></dc:creator>
-		<pubDate>Mon, 23 Jan 2023 19:13:44 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Containers]]></category>
-		<category><![CDATA[embedded]]></category>
-		<guid isPermaLink="false">https://localhost/cppblog/?p=31503</guid>
-
-					<description><![CDATA[<p>There are a number of ways that Visual Studio and Visual Studio Code enable you to interact with remote machines. Both can enable you to connect to a remote machine and use it as a build machine and debug your applications there.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/">Deploy and debug apps on remote targets</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>There are a number of ways that Visual Studio and Visual Studio Code enable you to interact with remote machines. Both can enable you to connect to a remote machine and use it as a build machine and debug your applications there. Sometimes though your target is not the same as your build machine. For example, for embedded Linux devices you will likely want to cross compiler the application on a more powerful build machine then deploy to the device for debugging. This post is going to demonstrate how to build an application locally in a Dev Container for either a Raspberry Pi 3 or 4, then deploy and debug the application on a Raspberry Pi. The techniques shown here will also work if the build machine is natively Linux or WSL, but to make setup easier we will use a Dev Container.</p>
-<h1 id="raspberry-pi-project">Raspberry Pi project</h1>
-<p>For this article we have prepared a simple C++ project that can run locally on Linux, on a Raspberry Pi 3 or 4.</p>
-<pre>git clone https://github.com/robotdad/raspi-cpp-devcontainer.git</pre>
-<p>The main.cpp simply prints the name of the host system to the output and waits a few seconds before continuing. Using CMakePresets.json we have provided a linux-debug configuration for building the app to run on the Linux host machine. There are also pi3-debug and pi4-debug configurations that use the cross compilers for those devices. The output from those configurations will only run on the Raspberry Pi they are configured for.</p>
-<p>To ensure the correct compilers are available the Dockerfile used with the Dev Container has all of the dependencies specified. It also uses Ubuntu 20.04 as the Raspberry Pi OS we are using is based off of Debian Buster. This ensures that we have a glibc version for our build machine that matches the target machine which is necessary to debug the application.</p>
-<h1 id="using-visual-studio-to-target-a-raspberry-pi">Using Visual Studio to target a Raspberry Pi</h1>
-<p>From Visual Studio   2022 17.5 open the folder where you cloned the project locally. Visual Studio will prompt you to reopen in a Dev Container, do so unless you are configuring your WSL or Linux environment with the prerequisites found in the .devcontainer\Dockerfile.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainergoldbar.png"><img decoding="async" class="alignnone size-full wp-image-31507" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainergoldbar.png" alt="Image devcontainergoldbar" width="1560" height="84" /></a></p>
-<p>Once the Dev Container is up select the Linux Debug preset configuration and the Debug target “Hello build machine” in the toolbar. The debug configuration is provided by the .vs/launch.vs.json that is part of the project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellobuildmachine-vs.png"><img decoding="async" class="alignnone size-full wp-image-31508" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellobuildmachine-vs.png" alt="Image hellobuildmachine vs" width="644" height="50" /></a></p>
-<p>This will build the application to target the local build environment, then launch the application under debug. You can set a breakpoint on the sleep statement. The Linux Console will open for output, and for a Dev Container the output will be similar to the below.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugbuildmachine-vs.png"><img decoding="async" class="alignnone size-full wp-image-31505" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugbuildmachine-vs.png" alt="Image debugbuildmachine vs" width="780" height="284" /></a></p>
-<p>Now change your preset configuration to be either Linux Pi 3 Debug or Linux Pi 4 Debug depending on which device you have. Select the “Hello Pi” debug configuration that is provided by the .vs/launch.vs.json that is part of the project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellopi-vs.png"><img decoding="async" class="alignnone size-full wp-image-31509" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/hellopi-vs.png" alt="Image hellopi vs" width="671" height="53" /></a></p>
-<p>Before debugging add your Raspberry Pi to the Connection Manager. From the toolbar select the Target System dropdown and select Manage Connections.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/targets-vs.png"><img decoding="async" class="alignnone size-full wp-image-31510" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/targets-vs.png" alt="Remote targets drop down in Visual Studio" width="189" height="215" /></a></p>
-<p>Here you can add your Raspberry Pi or remote Linux connection (note that IP address is more stable for the Raspberry Pi 3). Once this information is saved you need to set the remoteMachineName option to the connection you just added in the launch.vs.json. You can get to this file from Debug menu or right clicking the CMakeLists.txt in the Solution Explorer and selecting Debug and Launch Settings.</p>
-<p>Once your remote target is configured start the Hello Pi (Remote Debug) target. The build will run in the Dev Container, the output will be deployed to the target, and a gdb connection will be established. The Linux Console will open to display output and will appear similar to the below.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vs.png"><img decoding="async" class="alignnone size-full wp-image-31506" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vs.png" alt="Image debugpi vs" width="780" height="264" /></a></p>
-<h1 id="using-visual-studio-code-to-target-a-raspberry-pi">Using Visual Studio Code to target a Raspberry Pi</h1>
-<p>In VS Code you will want the CppTools and Remote Containers extensions installed, they will likely be suggested if not installed already. From open the folder where you cloned the project locally. VS Code will prompt you to reopen in a Dev Container, do so unless you are configuring your WSL or Linux environment with the prerequisites found in the .devcontainer\Dockerfile.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerpopup.png"><img decoding="async" class="alignnone size-full wp-image-31523" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerpopup.png" alt="Image devcontainerpopup" width="577" height="175" /></a></p>
-<p>Once the Dev Container is up select the Linux Debug configuration, then you select the Debug target. You can do this from the status bar or the Debug pane.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerstatusbar-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31521" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/devcontainerstatusbar-vscode.png" alt="Image devcontainerstatusbar vscode" width="779" height="34" /></a></p>
-<p>Selecting debug will build the application to target the local build environment, then launch the application under debug. You can set a breakpoint on the sleep statement. Output from the application will be in the terminal. For a Dev Container the output will be similar to the below.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugincontainer-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31520" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugincontainer-vscode.png" alt="Image debugincontainer vscode" width="780" height="208" /></a></p>
-<p>Now change your configuration to be either Linux Pi 3 Debug or Linux Pi 4 Debug depending on which device you have.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/presetconfigs-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31519" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/presetconfigs-vscode.png" alt="Image presetconfigs vscode" width="437" height="163" /></a></p>
-<p>From the Debug Pane change the configuration from &#8220;Debug&#8221; to &#8220;Debug Pi&#8221;. These options are preconfigured in .vscode/launch.json of the project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31518" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/debugpi-vscode.png" alt="Image debugpi vscode" width="448" height="274" /></a></p>
-<p>When you start the debug session you will be prompted to select a SSH Target.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/addsshtarget-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31517" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/addsshtarget-vscode.png" alt="Image addsshtarget vscode" width="757" height="119" /></a></p>
-<p>Since this is our first SSH target we need to select the option to add a new one. The first step is to give it a name.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargetname-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31516" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargetname-vscode.png" alt="Image sshtargetname vscode" width="755" height="109" /></a></p>
-<p>Next provide the SSH command to connect to your Raspberry Pi, for example ssh user@host.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshcommand-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31515" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshcommand-vscode.png" alt="Image sshcommand vscode" width="744" height="109" /></a></p>
-<p>You’ll then be prompted for where to store the SSH connection, either in the user or a global location. In a Dev Container root is the user.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshconfig-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31514" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshconfig-vscode.png" alt="Image sshconfig vscode" width="751" height="139" /></a></p>
-<p>The first time you connect to the device you will be prompted to accept the fingerprint.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshfingerprint-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31513" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshfingerprint-vscode.png" alt="Image sshfingerprint vscode" width="748" height="139" /></a></p>
-<p>Finally, you will need to authenticate the user you selected for the connection.</p>
-<p>When the debug session starts the output for the remote SSH connection is in the output pane for Cpptools:SSH.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshoutput-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31512" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshoutput-vscode.png" alt="Image sshoutput vscode" width="780" height="186" /></a></p>
-<p>The SSH connection can be found in the Debug panel CPPTOOLS: SSH TARGETS. If you have more than one they will be enumerated here and you can change which one is active. You can also start a terminal session to the SSH connection.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargets-vscode.png"><img decoding="async" class="alignnone size-full wp-image-31511" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/sshtargets-vscode.png" alt="Image sshtargets vscode" width="424" height="113" /></a></p>
-<h1 id="send-us-your-feedback">Send us your feedback</h1>
-<p>We hope that these new capabilities will enable you to choose Visual Studio and Visual Studio Code for your C++ development needs and make you more productive. We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/">Deploy and debug apps on remote targets</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/deploy-and-debug-apps-on-remote-targets/feed/</wfw:commentRss>
 			<slash:comments>3</slash:comments>
 		
 		
