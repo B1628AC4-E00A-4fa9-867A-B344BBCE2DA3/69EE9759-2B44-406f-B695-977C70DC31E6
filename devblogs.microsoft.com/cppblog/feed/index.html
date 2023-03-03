@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 28 Feb 2023 19:48:32 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 03 Mar 2023 09:05:26 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,102 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Code Analysis Improvements in Visual Studio 17.6</title>
+		<link>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/#respond</comments>
+		
+		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
+		<pubDate>Fri, 03 Mar 2023 16:00:07 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31902</guid>
+
+					<description><![CDATA[<p>Code Analysis Improvements in VS 17.6</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/">Code Analysis Improvements in Visual Studio 17.6</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/cpp">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of the improvements we made to our code analysis tools.</p>
+<h2 id="improvements-to-existing-checks">Improvements to existing checks</h2>
+<p>We improved many checks to find more errors and emit fewer false positives. This section contains some highlights of the work we did over the past months.</p>
+<h3 id="unwrapping-empty-stdoptionals">Unwrapping empty std::optionals</h3>
+<p>The initial version of <a href="https://aka.ms/cpp/warnings/C26830">C26830</a>, which checks for the safe unwrapping of <code>std::optional</code>, did not support the <code>operator==</code> free function and reported a false C26830 for the code below:</p>
+<pre><code class="language-cpp">int f(std::optional&lt;int&gt; o) {
+  if (o == std::nullopt)
+      return 42;
+  // Previously, C26830 was emitted below.
+  return *o;
+}</code></pre>
+<p>After our improvements the analyzer no longer warns on the code above. This addition can also help finding more problems when a condition is accidentally inverted:</p>
+<pre><code class="language-cpp">int f(std::optional&lt;int&gt; o) {
+  if (o != std::nullopt)
+    return 42;
+  return *o; // C26829 emitted.
+}</code></pre>
+<p>We relaxed <a href="https://aka.ms/cpp/warnings/C26829">C26829</a> and <a href="https://aka.ms/cpp/warnings/C26830">C26830</a> to not warn when the <code>value</code> method is invoked on a potentially empty <code>std::optional</code>. Calling <code>value</code> on an empty optional will raise an exception, which some users prefer to catch instead of checking for emptiness upfront. When this exception is unacceptable, we introduced <a href="https://aka.ms/cpp/warnings/C26859">C26859</a> and <a href="https://aka.ms/cpp/warnings/C26860">C26860</a>, which forces an explicit null-check, guaranteeing that no exception is thrown. This was a request from this <a href="https://developercommunity.visualstudio.com/t/MSVC-emits-incorrect-C26829-warning-in-v/10205240">DevCom ticket</a>.</p>
+<h3 id="support-conditional-moves">Support conditional moves</h3>
+<p>Some APIs in the STL will consume an argument in some cases but leave it unchanged in others. Previously, the use <a href="https://aka.ms/cpp/warnings/C26800">use after move check</a> assumed that these select APIs will <em>always</em> consume the argument. We improved the check to better understand some commonly used APIs in the STL and avoid emitting false positives. For example, the following code snippet will no longer trigger any warnings:</p>
+<pre><code class="language-cpp">int f() {
+  std::map&lt;int, MyType&gt; myMap;
+  MyType val;
+  auto emplaceResult = myMap.try_emplace(1, std::move(val));
+  if (!emplaceResult.second) { // val was not inserted into the map
+    val.method(); // Previously, C26800 was emitted.
+  }
+}</code></pre>
+<p>In this code snippet, when the second element of the returned pair is false, <code>val</code> was not consumed by <code>try_emplace</code>. In that scenario, it is safe to use <code>val</code>. This problem was reported in a <a href="https://developercommunity.visualstudio.com/t/False-positive-on-code-analysis:-Warning/10117317">DevCom ticket</a>.</p>
+<h3 id="other-improvements">Other improvements</h3>
+<p>We also made many smaller improvements to other existing checks including:</p>
+<ul>
+<li>Improvements to the lifetime analysis</li>
+<li>Fixed false positives in <a href="https://aka.ms/cpp/warnings/C26440">C26440</a></li>
+<li>Fixed some missed warnings in <a href="https://aka.ms/cpp/warnings/C26481">C26481</a></li>
+<li>Fixed some false positives in <a href="https://aka.ms/cpp/warnings/C26813">C26813</a> <a href="https://developercommunity.visualstudio.com/t/analyze-false-positive-C26813-warning-f/10150977">reported on DevCom</a></li>
+</ul>
+<h2 id="improvements-to-the-code-analysis-engine">Improvements to the code analysis engine</h2>
+<h3 id="better-modeling-for-stdpair-and-stdswap">Better modeling for std::pair and std::swap</h3>
+<p>Our engine analyzes every function in isolation. Consequently, the analyzer does not always have the necessary information about other functions in order to deduce certain facts. Doing function-local analysis was a deliberate design decision to ensure good performance and scalability in our checks. To mitigate the loss of precision, we often add explicit modeling to widely used constructs like <code>pair</code>, rely on type information like <code>gsl::not_null</code>, or annotations like SAL. Consider the following code:</p>
+<pre><code class="language-cpp">void f(std::optional&lt;int&gt; opt) {
+  auto p = std::make_pair(opt, opt.has_value());
+  if (!p.second)
+    *p.first = 42; // dereferencing an empty optional! C26829 emitted.
+}</code></pre>
+<p>Since the analyzer does not look into the definition of <code>std::make_pair</code>, it previously did not understand that this function will store its second argument into the <code>second</code> field of the returned object. As a result, a high-confidence warning was never emitted when <code>p</code> is dereferenced. As of 17.6, we have added explicit modeling of <code>std::pair</code> and its related methods, so that the analyzer will be able catch more bugs such as in the example above, and emit fewer false positives, all while maintaining local static analysis.</p>
+<p>The <code>std::swap</code> function received similar treatment. We will correctly diagnose the problem in the code snippet below:</p>
+<pre><code class="language-cpp">void f() {
+  std::optional&lt;int&gt; opt{2};
+  std::optional&lt;int&gt; opt2{};
+  std::swap(opt, opt2);
+  *opt = 42;  // C26829 emitted.
+}</code></pre>
+<h3 id="better-support-for-suppression-attributes">Better support for suppression attributes</h3>
+<p>Previously <code>[[gsl::suppress]]</code> did not work on declarations. This is now fixed so the following code works as expected:</p>
+<pre><code class="language-cpp">void f(std::optional&lt;int&gt; o) {
+  if (o)
+    return;
+  [[gsl::suppress(26829)]]
+  int v = *o; // No longer raise C26829 for unwrapping the empty optional
+}</code></pre>
+<h3 id="other-fixes">Other fixes</h3>
+<p>We worked on many other fixes, including:</p>
+<ul>
+<li>Better support for <code>if constexpr</code></li>
+<li>Fixed a problem with modeling while loops reported in <a href="https://developercommunity.visualstudio.com/t/False-positive-on-code-analysis:-Warning/10116339">this DevCom ticket</a></li>
+<li>More precise modeling for temporary objects</li>
+<li>The engine now understand that the standard throwing operator new will not return null pointers</li>
+<li>Better modeling for initializer expressions</li>
+<li>Made the source locations of some warnings more precise</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>Visual Studio 2022 17.6 features many improvements to our code analysis tools. Give it a try and let us know what you think.
+The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/">Code Analysis Improvements in Visual Studio 17.6</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Importing ST projects into Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/#respond</comments>
@@ -512,35 +608,6 @@ log("cat {} is {} years old", cat.name(), cat.age());</code></pre>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-january-update-create-definitions-and-declarations/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Debug Linux Console apps in Visual Studio’s Integrated Terminal</title>
-		<link>https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Wed, 25 Jan 2023 20:44:43 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Linux]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31512</guid>
-
-					<description><![CDATA[<p>We have now added the capability for users to debug their C++ Linux Console applications from the Integrated Terminal in Visual Studio 2022 17.5 Preview 3! To learn more about what the Integrated Terminal does and how to work with it in Visual Studio,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/">Debug Linux Console apps in Visual Studio’s Integrated Terminal</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">We have now added the capability for users to debug their C++ Linux Console applications from the Integrated Terminal in </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">Visual Studio 2022 17.5 Preview 3</span></a><span data-contrast="auto">! To learn more about what the Integrated Terminal does and how to work with it in Visual Studio, please see </span><a href="https://devblogs.microsoft.com/cppblog/integrated-terminal-in-visual-studio-new-ssh-integration-for-linux-targeting/"><span data-contrast="none">this C++ feature announcement blog post</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Now, using the Linux Console embedded in the Integrated Terminal, Visual Studio supports a fully functional terminal-like experience when debugging Linux applications. This new Linux Console emulates an </span><a href="https://xtermjs.org/"><span data-contrast="none">xterm</span></a><span data-contrast="auto"> and can support application screen manipulation; for example, writing screen formatting control characters to stdout or using </span><a href="https://invisible-island.net/ncurses/announce.html"><span data-contrast="none">the ncurses library</span></a><span data-contrast="auto">. Additionally, there is support for </span><a href="https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences"><span data-contrast="none">vt sequences</span></a><span data-contrast="auto"> and keyboard shortcuts such as <code>Ctrl+C</code> application interruption.</span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> <a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/LinuxConsole.gif"><img decoding="async" class="alignnone wp-image-31555" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/LinuxConsole.gif" alt="Linux Console allows input, output, and supports color" width="1257" height="796" /></a></span></p>
-<p><span class="TextRun SCXW100928295 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW100928295 BCX8">The Linux Console </span><span class="NormalTextRun SCXW100928295 BCX8">will automatically pop up when you start a debugging session </span><span class="NormalTextRun SCXW100928295 BCX8">on </span><span class="NormalTextRun SCXW100928295 BCX8">your Linux Console application</span><span class="NormalTextRun SCXW100928295 BCX8"> (press F5)</span><span class="NormalTextRun SCXW100928295 BCX8">.</span></span><span class="EOP SCXW100928295 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> <span class="TextRun SCXW100928295 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW100928295 BCX8">You can also open it manually by selecting it from the “Debug” dropdown </span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW100928295 BCX8">menu.</span></span></span><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Screenshot-2023-01-23-162318.png"><img decoding="async" class=" wp-image-31514 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Screenshot-2023-01-23-162318.png" alt="Debug Dropdown to open Linux Console " width="267" height="334" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Screenshot-2023-01-23-162318.png 394w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Screenshot-2023-01-23-162318-240x300.png 240w" sizes="(max-width: 267px) 100vw, 267px" /></a></p>
-<h4 id="send-us-your-feedback"><span class="TextRun SCXW169351363 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun CommentStart CommentHighlightPipeRest CommentHighlightRest SCXW169351363 BCX8">Send </span><span class="NormalTextRun CommentHighlightPipeRest SCXW169351363 BCX8">us your feedback!</span></span><span class="EOP SCXW169351363 BCX8" data-ccp-props="{&quot;134233118&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></h4>
-<p><span data-contrast="none">We hope this helps you debug your C++ Linux Console applications. Download the latest preview version of Visual Studio and give the latest Linux Console in Integrated Terminal a try. Let us know your thoughts and whether there is anything you’d like to see.  We are very interested in your feedback to continue to improve this experience. The comments below are open, or you can find us on Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">) or via email at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none">. To open a bug, please see </span><a href="https://developercommunity.visualstudio.com/report?space=8&amp;entry=problem%22%20\t%20%22_blank"><span data-contrast="none">Visual Studio Feedback.</span></a></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/">Debug Linux Console apps in Visual Studio’s Integrated Terminal</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
