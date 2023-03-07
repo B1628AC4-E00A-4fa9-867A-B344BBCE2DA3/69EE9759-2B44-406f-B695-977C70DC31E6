@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 03 Mar 2023 09:06:15 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 06 Mar 2023 22:35:10 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,187 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg 2023.02.24 Release: Default Triplet Changes, RISC-V support, Bug Fixes, and More…</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2023-02-24-release-default-triplet-changes-risc-v-support-bug-fixes-and-more/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2023-02-24-release-default-triplet-changes-risc-v-support-bug-fixes-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Mon, 06 Mar 2023 22:35:10 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31930</guid>
+
+					<description><![CDATA[<p>The 2023.02.24 release of the vcpkg package manager is available. This blog post summarizes changes from January 10th, 2023 to February 24th, 2023 for the Microsoft/vcpkg, Microsoft/vcpkg-tool, and Microsoft/vcpkg-docs GitHub repos.<br />
+Some stats for this period:</p>
+<p>47 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-02-24-release-default-triplet-changes-risc-v-support-bug-fixes-and-more/">vcpkg 2023.02.24 Release: Default Triplet Changes, RISC-V support, Bug Fixes, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.02.24">2023.02.24 release of the vcpkg package manager is available</a>. This blog post summarizes changes from January 10<sup>th</sup>, 2023 to February 24<sup>th</sup>, 2023 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a>, and <a href="https://github.com/microsoft/vcpkg-docs">Microsoft/vcpkg-docs</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>47 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>607 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>2,153 total libraries</strong> available in the vcpkg public registry.</li>
+<li><strong>141 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has over <strong>5,200 forks</strong> and <strong>18,000 stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<p>Notable changes for this release are summarized below:</p>
+<p>&nbsp;</p>
+<h4 id="upcoming-default-triplet-changes">Upcoming Default Triplet Changes</h4>
+<p>Starting with the <strong>September 2023 vcpkg tool release</strong>, the default triplet for vcpkg libraries for Windows users will change from <em>x86-windows</em> to a detected host triplet. The detected host triplet will be inferred from your CPU architecture and operating system name. For example, if your machine uses an x64 architecture, this will be x64-windows. Arm architecture devices will also use an arm or arm64 default host triplet. This mirrors the behavior we already have for macOS and Linux users.</p>
+<h5 id="why-is-this-change-being-made">Why is this change being made?</h5>
+<p>Over 75% of our users are not building their libraries for x86-windows and we have received user feedback that the current default is unreasonable. Switching to host triplets is a more reasonable default since users are likely to want their libraries to build and run on their machine. It also makes the behavior consistent across all host operating systems.</p>
+<h5 id="who-is-impacted">Who is impacted?</h5>
+<p>The following vcpkg commands require some triplet information and assume the default triplet if none is provided. Windows users who run these commands and do not specify triplet information are impacted (using the zlib port as an example):</p>
+<ul>
+<li><code>vcpkg install zlib</code> (classic mode)</li>
+<li><code>vcpkg install</code> (manifest mode)</li>
+<li><code>vcpkg remove zlib</code></li>
+<li><code>vcpkg build zlib</code></li>
+<li><code>vcpkg export zlib --zip</code></li>
+<li><code>vcpkg depend-info zlib</code></li>
+<li><code>vcpkg upgrade zlib</code></li>
+<li><code>vcpkg build-external zlib .\ports\zlib</code> (builds a library from specified path)</li>
+<li><code>vcpkg x-check-support</code> (checks supports field for specified triplet)</li>
+<li><code>vcpkg x-set-installed zlib</code></li>
+<li><code>vcpkg ci</code></li>
+</ul>
+<p>For now, vcpkg will emit the following warning when one of the above commands is run without a specified triplet:</p>
+<p><code>warning: Starting with the September 2023 release, the default triplet for vcpkg libraries will change from x86-windows to the detected host triplet [TRIPLET]. To resolve this message, add --triplet x86-windows to keep the same behavior.</code></p>
+<p>Users of vcpkg manifests and MSBuild or CMake won’t be affected by this change if they use the built-in integration vcpkg has with these build systems. This is because vcpkg already infers what triplet to use based on the active build configuration, and thus wouldn’t use a generalized default.</p>
+<h5 id="what-does-this-mean-for-me">What does this mean for me?</h5>
+<p>If you are a Windows user currently running vcpkg builds (whether manually or via a build script) without specifying a triplet, vcpkg will not assume x86-windows anymore unless that is your host architecture. You should update your build scripts to specify the x86-windows triplet if you wish to maintain the current experience. Please review our <a href="https://learn.microsoft.com/vcpkg/users/triplets">Triplet files documentation</a> for more details on how to use triplets to control how your dependencies are built.</p>
+<p><a href="https://github.com/microsoft/vcpkg-tool/pull/881">PR: Microsoft/vcpkg-tool#881: Add warning message for change in default triplet to host triplet</a></p>
+<p>&nbsp;</p>
+<h4 id="initial-support-for-risc-v">Initial support for RISC-V</h4>
+<p>A community PR enables vcpkg to build on machines with RISC-V instruction set architecture.</p>
+<p><a href="https://github.com/microsoft/vcpkg-tool/pull/894">PR: Microsoft/vcpkg-tool#894: Add initial risc-v support</a> (thanks @dtcxzyw!)</p>
+<p>&nbsp;</p>
+<h4 id="bug-fixes-performance-improvements">Bug Fixes / Performance Improvements</h4>
+<ul>
+<li>Removed markdown parser used for vcpkg artifacts commands to significantly improve performance when these commands are run; test with “vcpkg find artifact gcc” ran 1.8x faster after the change. (<a href="https://github.com/microsoft/vcpkg-tool/pull/870">Microsoft/vcpkg-tool#870</a>)</li>
+<li>Removed use of DUMPBIN from post-build checks. Post-build checks that relied on it should run faster, and users no longer need to provide a DUMPBIN if they are using, for example, MinGW as their compiler. (<a href="https://github.com/microsoft/vcpkg-tool/pull/834">Microsoft/vcpkg-tool#834</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/905">Microsoft/vcpkg-tool#905</a>)</li>
+<li>Warning messages when installing ports for unsupported triplets will no longer print multiple times in a row. (<a href="https://github.com/microsoft/vcpkg-tool/pull/899">Microsoft/vcpkg-tool#899</a>, thanks @autoantwort!)</li>
+<li>Changed a post-build check for ports so vcpkg no longer requires pkg-config (.pc) files that don’t have a “Lib:” line to be placed in <em>share/pkgconfig</em>. The locations <em>lib/pkgconfig/</em> and <em>debug/lib/pkgconfig </em>are now accepted as well. (<a href="https://github.com/microsoft/vcpkg-tool/pull/906">Microsoft/vcpkg-tool#906</a>, thanks @autoantwort!)</li>
+<li>Error message when a user tries to add a port with an invalid version field in vcpkg.json now provides modern examples of acceptable version fields (<a href="https://github.com/microsoft/vcpkg-tool/pull/880">Microsoft/vcpkg-tool#880</a>, thanks @Pospelove!).</li>
+<li>Several improvements made to the vcpkg CI system to improve integrity of the curated registry:
+<ul>
+<li><a href="https://github.com/microsoft/vcpkg-tool/pull/898">Microsoft/vcpkg-tool#898</a>, thanks @autoantwort!</li>
+<li><a href="https://github.com/microsoft/vcpkg-tool/pull/877">Microsoft/vcpkg-tool#877</a>, thanks @cnSchwarzer!</li>
+<li><a href="https://github.com/microsoft/vcpkg-tool/pull/865">Microsoft/vcpkg-tool#865</a>, thanks @autoantwort!</li>
+<li><a href="https://github.com/microsoft/vcpkg-tool/pull/856">Microsoft/vcpkg-tool#856</a>, thanks @autoantwort!</li>
+</ul>
+</li>
+<li>Improved several diagnostic messages:
+<ul>
+<li>Clarify what it means to be &#8220;unsupported&#8221; by a supports expression. <a href="https://github.com/microsoft/vcpkg-tool/pull/879">Microsoft/vcpkg-tool#879</a></li>
+<li>Improve &#8216;expected a versioning field&#8217; error message. <a href="https://github.com/microsoft/vcpkg-tool/pull/880">Microsoft/vcpkg-tool#880</a>, thanks @Pospelove!</li>
+<li>Print unsupported warnings only once. <a href="https://github.com/microsoft/vcpkg-tool/pull/899">Microsoft/vcpkg-tool#899</a>, thanks autoantwort!</li>
+<li>Unsupported platform added for env. <a href="https://github.com/microsoft/vcpkg-tool/pull/891">Microsoft/vcpkg-tool#891</a>, thanks soroshsabz!</li>
+</ul>
+</li>
+<li>Fixed vcpkg upgrade command failing if a feature was removed for a port that is being upgraded. <a href="https://github.com/microsoft/vcpkg-tool/pull/873">Microsoft/vcpkg-tool#873</a>, thanks autoantwort!</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>2,002</td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>1,943</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>1,905</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>1,916</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,579</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>1,949</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>1,877</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1,020</td>
+</tr>
+<tr>
+<td>arm-uwp</td>
+<td>1,042</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank You to Our Contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg, vcpkg-tool, or vcpkg-docs repos in this release:</p>
+<ul>
+<li>dg0yt (31 commits)</li>
+<li>chausner (30 commits)</li>
+<li>autoantwort (29 commits)</li>
+<li>Neumann-A (21 commits)</li>
+<li>xiaozhuai (16 commits)</li>
+<li>Pospelove (12 commits)</li>
+<li>Sibras (6 commits)</li>
+<li>RT222 (4 commits)</li>
+<li>AenBleidd (4 commits)</li>
+<li>talregev (3 commits)</li>
+<li>quyykk (3 commits)</li>
+<li>ahmedyarub (3 commits)</li>
+<li>myd7349 (3 commits)</li>
+<li>m-kuhn (2 commits)</li>
+<li>coryan (2 commits)</li>
+<li>horenmar (1 commit)</li>
+<li>longhuan2018 (1 commit)</li>
+<li>DragonJoker (1 commit)</li>
+<li>daschuer (1 commit)</li>
+<li>ZeeWanderer (1 commit)</li>
+<li>mathisloge (1 commit)</li>
+<li>Tradias (1 commit)</li>
+<li>luncliff (1 commit)</li>
+<li>SchaichAlonso (1 commit)</li>
+<li>past-due (1 commit)</li>
+<li>gjasny (1 commit)</li>
+<li>Osyotr (1 commit)</li>
+<li>kobykahane (1 commit)</li>
+<li>JackBoosY (1 commit)</li>
+<li>Thomas1664 (1 commit)</li>
+<li>soroshsabz (1 commit)</li>
+<li>cnSchwarzer (1 commit)</li>
+<li>WimLefrere (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.02.24">full 2023.02.24 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg/releases">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>. For an overview of our top priorities and backlog, take a look at our <a href="https://github.com/microsoft/vcpkg/wiki/Roadmap">roadmap page</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-02-24-release-default-triplet-changes-risc-v-support-bug-fixes-and-more/">vcpkg 2023.02.24 Release: Default Triplet Changes, RISC-V support, Bug Fixes, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2023-02-24-release-default-triplet-changes-risc-v-support-bug-fixes-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>std::string now supports Address Sanitizer</title>
 		<link>https://devblogs.microsoft.com/cppblog/stdstring-now-supports-address-sanitizer/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/stdstring-now-supports-address-sanitizer/#comments</comments>
@@ -594,68 +775,6 @@ log("cat {} is {} years old", cat.name(), cat.age());</code></pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/minecrafts-wsl-build-time-cut-in-half-after-working-with-visual-studio-c-team/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Remote Native Unit Test Support in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Moyo Okeremi]]></dc:creator>
-		<pubDate>Wed, 01 Feb 2023 16:00:45 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31643</guid>
-
-					<description><![CDATA[<p>Remote C++ unit testing enables developers to connect Visual Studio 2022 to remote windows environments for running and debugging C++ desktop application tests. This functionality is useful for developers who deploy code to different Windows target environments such as different Windows architectures.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/">Remote Native Unit Test Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Remote C++ unit testing enables developers to connect Visual Studio 2022 to remote windows environments for running and debugging C++ desktop application tests. This functionality is useful for developers who deploy code to different Windows target environments such as different Windows architectures. With this feature, you can run tests on your target machine right from Visual Studio by connecting the Test Explorer to a remote environment.</p>
-<h2 id="how-to-setup-for-native-remote-unit-testing">How to Setup for Native Remote Unit Testing</h2>
-<h3 id="prepare-the-remote-windows-machine">Prepare the Remote Windows Machine</h3>
-<p>1. Ensure <a href="https://learn.microsoft.com/en-us/windows/win32/projfs/enabling-windows-projected-file-system">Windows Projected File System</a> is enabled. You can run the following from an admin PowerShell window to enable it:</p>
-<p><code class="language-default">Enable-WindowsOptionalFeature -Online -FeatureName Client-ProjFS -NoRestart</code></p>
-<p>Please restart the environment if required.</p>
-<p>2. Ensure SSH is setup. You can review the steps at <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#install-openssh-using-powershell">Install OpenSSH</a>. Start up the SSH server by running the following command from an admin PowerShell window:</p>
-<p><code class="language-default">Start-Service sshd</code></p>
-<p>3. Ensure that .NET 5 or higher is installed on the remote machine. Downloads can be found <a href="https://dotnet.microsoft.com/download">here</a>.</p>
-<p>4. Ensure to install the appropriate <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170">Visual C++ Redistrubutable</a>.</p>
-<p>5. For debugging of tests:</p>
-<ul>
-<li>Please install the <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/remote-debugging?view=vs-2022&amp;preserve-view=true">Remote tools SKU</a> on the remote environment.</li>
-<li>Start up the remote debugger as an admin and ensure that the VS user has permissions to connect.</li>
-</ul>
-<h3 id="prepare-the-c-unit-test-project-in-visual-studio">Prepare the C++ Unit Test Project in Visual Studio</h3>
-<p>1. Create a new Native Unit Test project:</p>
-<p><img decoding="async" class="wp-image-31650" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2.png" alt="Graphical user interface, application Description automatically generated" width="576" height="300" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2.png 3779w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-1024x534.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-768x401.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-1536x801.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/graphical-user-interface-application-description-2-2048x1068.png 2048w" sizes="(max-width: 576px) 100vw, 576px" /></p>
-<p>2. You can add or remove SSH connections in <strong><em>Tools &gt; Options &gt; Cross Platform &gt; Connection Manager</em></strong>. Selecting &#8220;Add&#8221; will allow you to enter the host name, port, and any credentials you need.</p>
-<p>3. The remote windows environment can be specified adding a <strong>testenvironments.json</strong> file to the root of your solution, using the following schema and replacing the <code>ssh://user@hostname:22</code> with your SSH remoteUri.</p>
-<pre class="prettyprint language-json"><code class="language-json">{
-  "version": "1",
-  "environments": 
-  [
-    {
-      "name": "ssh-remote-arm64", //friendly name to help identify environment.
-      "type": "ssh",
-      "remoteUri": "ssh://user@hostname:22"
-    }
-  ]
-}
-</code></pre>
-<p>Once your connection is in the connection manager, as you type the info into the testEnvironments.json file, Intellisense will assist you by showing you your different available connections and you can select the appropriate one.</p>
-<h2 id="use-the-test-explorer-to-run-and-debug-remote-unit-tests">Use the Test Explorer to Run and Debug Remote Unit Tests</h2>
-<p>1. The active environment is selected via a drop-down in the Test Explorer tool bar. Currently, only one test environment can be active at a time.</p>
-<p><img decoding="async" class="wp-image-31651" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4.png" alt="A screenshot of a computer Description automatically generated with medium confidence" width="656" height="198" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4.png 1632w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-300x90.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-1024x309.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-768x232.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/a-screenshot-of-a-computer-description-automatica-4-1536x463.png 1536w" sizes="(max-width: 656px) 100vw, 656px" /></p>
-<p>2. Once an environment is selected, tests are discovered and run in the new environment.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png"><img decoding="async" class="wp-image-31656 alignnone" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png" alt="Image Picture1" width="661" height="344" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1.png 1061w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-1024x533.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/Picture1-1-768x400.png 768w" sizes="(max-width: 661px) 100vw, 661px" /></a></p>
-<p>&nbsp;</p>
-<h2 id="give-us-your-feedback">Give us your Feedback</h2>
-<p>Download the latest <a href="https://visualstudio.microsoft.com/vs/preview/vs2022/">Visual Studio 2022 Preview</a> today and give it a try. For more information about remote unit testing for Windows, check out <a href="https://learn.microsoft.com/en-us/visualstudio/test/remote-testing?view=vs-2022">Remote Testing in Visual Studio &#8211; Visual Studio (Windows) | Microsoft Learn</a>. We’d love to hear from you to help us prioritize and build the right features for you. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/spaces/8/index.html">Developer Community</a>, and Twitter (<a href="https://twitter.com/visualc">@VisualC</a>). The best way to file a bug or suggest a feature is via Developer Community.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/">Remote Native Unit Test Support in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/remote-native-unit-test-support-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
