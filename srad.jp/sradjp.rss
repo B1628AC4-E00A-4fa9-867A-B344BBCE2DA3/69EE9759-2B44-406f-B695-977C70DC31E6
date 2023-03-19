@@ -18,7 +18,7 @@
 <description>アレゲなニュースと雑談サイト</description>
 <dc:language>ja-jp</dc:language>
 <dc:rights>Copyright (C) スラド, OSDN Corporation</dc:rights>
-<dc:date>2023-03-19T04:18:17+00:00</dc:date>
+<dc:date>2023-03-19T06:19:15+00:00</dc:date>
 <dc:publisher>スラド</dc:publisher>
 <dc:creator>slashmaster@srad.jp</dc:creator>
 <dc:subject>Technology</dc:subject>
@@ -28,6 +28,7 @@
 <atom:link href="https://srad.jp/sradjp.rss" rel="self" type="application/rss+xml"/>
 <items>
  <rdf:Seq>
+  <rdf:li rdf:resource="https://security.srad.jp/story/23/03/19/044237/" />
   <rdf:li rdf:resource="https://yro.srad.jp/story/23/03/19/0259200/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/23/03/19/0041229/" />
   <rdf:li rdf:resource="https://it.srad.jp/story/23/03/18/0828232/" />
@@ -37,7 +38,6 @@
   <rdf:li rdf:resource="https://science.srad.jp/story/23/03/18/0231238/" />
   <rdf:li rdf:resource="https://srad.jp/story/23/03/16/1433259/" />
   <rdf:li rdf:resource="https://opensource.srad.jp/story/23/03/16/1446212/" />
-  <rdf:li rdf:resource="https://security.srad.jp/story/23/03/16/1441211/" />
  </rdf:Seq>
 </items>
 <image rdf:resource="https://srad.jp/static/srad_logo01.png" />
@@ -48,6 +48,90 @@
 <url>https://srad.jp/static/srad_logo01.png</url>
 <link>https://srad.jp/</link>
 </image>
+<item rdf:about="https://security.srad.jp/story/23/03/19/044237/">
+<title>Google Pixelのマークアップツールで編集前の画像が復元できる脆弱性、エクスプロイトが公開</title>
+<link>https://security.srad.jp/story/23/03/19/044237/</link>
+<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/google_64.png"&gt;Google は Pixel の「マークアップ」ツールで発見された脆弱性 (CVE-2023-21036) を 3 月のアップデートで修正したが、これを利用するエクスプロイト「aCropalypse」が公開されている
+(エクスプロイト作者のブログ記事、
+9to5Google の記事、
+Android Police の記事、
+Simon Aarons 氏のツイート)。
+
+マークアップはスクリーンショット撮影時に表示され、画像のクロップや書き込み・塗りつぶし等を可能にする。CVE-2023-21036 では編集の結果を保存する際にファイルサイズを切り詰めずに新しい画像データを上書きするため、元のデータが一部残されてしまう。具体的な処理を知ることは難しいが、エクスプロイト作者の David Buchanan 氏は Android 10 以降で 2021 年に修正された ParcelFileDescriptor.parseMode のバグとみているようだ。
+
+脆弱性が修正されても既に保存したファイルが更新されるわけではない。このような画像をソーシャルメディアアプリやメッセージングアプリなどで送信する場合、読み取れない元の画像データはメタデータとともに削除されるが、Discord では 1 月までこのような処理が行われていなかったという。そのため、それ以前にアップロードしたスクリーンショットでは、隠したつもりの部分が復元されてしまう可能性がある。
+
+エクスプロイトの作者が過去に使用していた Pixel 3XL のスクリーンショットを Discord からダウンロードして復元処理を行ってみたところ、eBay の確認メールのスクリーンショットから自宅住所全体が復元されたそうだ。なお、復元処理はすべてローカルで行われるとのことだ。&lt;p&gt; &lt;a href="https://security.srad.jp/story/23/03/19/044237/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/graphics"&gt;グラフィック&lt;/a&gt; | &lt;a href="https://srad.jp/stories/google"&gt;Google&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/cellphone"&gt;携帯電話&lt;/a&gt; | &lt;a href="https://srad.jp/stories/android"&gt;Android&lt;/a&gt; | &lt;a href="https://srad.jp/stories/privacy"&gt;プライバシ&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/23/03/19/044237/&amp;amp;text=Google%20Pixel%E3%81%AE%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%84%E3%83%BC%E3%83%AB%E3%81%A7%E7%B7%A8%E9%9B%86%E5%89%8D%E3%81%AE%E7%94%BB%E5%83%8F%E3%81%8C%E5%BE%A9%E5%85%83%E3%81%A7%E3%81%8D%E3%82%8B%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%81%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%97%E3%83%AD%E3%82%A4%E3%83%88%E3%81%8C%E5%85%AC%E9%96%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/23/03/19/044237/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/23/03/19/044237/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/23/03/19/044237/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/08/14/0532250"&gt;明るい肌色優先で話題になった Twitter のアルゴリズム、若さやスリムさも優先されることが明らかに&lt;/a&gt; &lt;small&gt;2021年08月14日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/21/03/13/000217"&gt;Twitter、画像をクロップせずにタイムライン表示する機能をAndroidとiOSでテスト中&lt;/a&gt; &lt;small&gt;2021年03月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/10/05/1858202"&gt;Twitter、明るい肌色優先が話題になった画像自動クロップで投稿者の選択肢を増やすなどの改善を計画&lt;/a&gt; &lt;small&gt;2020年10月06日&lt;/small&gt; &lt;br&gt;&lt;a href="https://it.srad.jp/story/20/09/23/0329238"&gt;Twitterの画像自動クロップ表示機能、明るい肌色が優先されると話題に&lt;/a&gt; &lt;small&gt;2020年09月23日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/18/05/29/0658229"&gt;財務省が公開した「森友学園」交渉記録文書、黒塗りが簡単に外せる状態だった&lt;/a&gt; &lt;small&gt;2018年05月29日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/11/04/22/0516242"&gt;オンライン公開された政府文章、Ctrl+Aで「非公開の情報」が読めてしまった&lt;/a&gt; &lt;small&gt;2011年04月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/05/05/24/0113207"&gt;米軍の機密情報がコピペで漏れる&lt;/a&gt; &lt;small&gt;2005年05月24日&lt;/small&gt; &lt;br&gt;&lt;a href="https://srad.jp/story/02/06/01/1616224"&gt;岩手県が氏名を「非表示」にしただけで個人情報を公開&lt;/a&gt; &lt;small&gt;2002年06月02日&lt;/small&gt; &lt;/p&gt;</description>
+<dc:creator>headless</dc:creator>
+<dc:date>2023-03-19T05:12:00+00:00</dc:date>
+<dc:subject>google</dc:subject>
+<slash:department>復元</slash:department>
+<slash:section>security</slash:section>
+<slash:comments>5</slash:comments>
+<slash:hit_parade>5,4,1,0,0,0,0</slash:hit_parade>
+<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/google_64.png"&gt;Google は Pixel の「マークアップ」ツールで発見された脆弱性 (CVE-2023-21036) を &lt;a href="https://source.android.com/docs/security/bulletin/pixel/2023-03-01"&gt;3 月のアップデート&lt;/a&gt;で修正したが、これを利用するエクスプロイト「&lt;a href="https://acropalypse.app/"&gt;aCropalypse&lt;/a&gt;」が公開されている
+(&lt;a href="https://www.da.vidbuchanan.co.uk/blog/exploiting-acropalypse.html"&gt;エクスプロイト作者のブログ記事&lt;/a&gt;、
+&lt;a href="https://9to5google.com/2023/03/18/pixel-markup-screenshot-vulnerability/"&gt;9to5Google の記事&lt;/a&gt;、
+&lt;a href="https://www.androidpolice.com/android-pixel-markup-exploit-discord-acropalypse/"&gt;Android Police の記事&lt;/a&gt;、
+&lt;a href="https://twitter.com/ItsSimonTime/status/1636857478263750656"&gt;Simon Aarons 氏のツイート&lt;/a&gt;)。&lt;br&gt;
+&lt;br&gt;
+マークアップはスクリーンショット撮影時に表示され、画像のクロップや書き込み・塗りつぶし等を可能にする。CVE-2023-21036 では編集の結果を保存する際にファイルサイズを切り詰めずに新しい画像データを上書きするため、元のデータが一部残されてしまう。具体的な処理を知ることは難しいが、エクスプロイト作者の David Buchanan 氏は Android 10 以降で &lt;a href="https://issuetracker.google.com/issues/180526528"&gt;2021 年に修正&lt;/a&gt;された &lt;a href="https://developer.android.com/reference/android/os/ParcelFileDescriptor#parseMode(java.lang.String)"&gt;ParcelFileDescriptor.parseMode&lt;/a&gt; のバグとみているようだ。&lt;br&gt;
+&lt;br&gt;
+脆弱性が修正されても既に保存したファイルが更新されるわけではない。このような画像をソーシャルメディアアプリやメッセージングアプリなどで送信する場合、読み取れない元の画像データはメタデータとともに削除されるが、Discord では 1 月までこのような処理が行われていなかったという。そのため、それ以前にアップロードしたスクリーンショットでは、隠したつもりの部分が復元されてしまう可能性がある。&lt;br&gt;
+&lt;br&gt;
+エクスプロイトの作者が過去に使用していた Pixel 3XL のスクリーンショットを Discord からダウンロードして復元処理を行ってみたところ、eBay の確認メールのスクリーンショットから自宅住所全体が復元されたそうだ。なお、復元処理はすべてローカルで行われるとのことだ。&lt;p&gt;
+	&lt;a href="https://security.srad.jp/story/23/03/19/044237/"&gt;すべて読む&lt;/a&gt;
+	
+		| &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/graphics"&gt;グラフィック&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/google"&gt;Google&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/bug"&gt;バグ&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/cellphone"&gt;携帯電話&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/android"&gt;Android&lt;/a&gt;
+	
+		| &lt;a href="https://srad.jp/stories/privacy"&gt;プライバシ&lt;/a&gt;
+		|
+	&lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/23/03/19/044237/&amp;amp;text=Google%20Pixel%E3%81%AE%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%84%E3%83%BC%E3%83%AB%E3%81%A7%E7%B7%A8%E9%9B%86%E5%89%8D%E3%81%AE%E7%94%BB%E5%83%8F%E3%81%8C%E5%BE%A9%E5%85%83%E3%81%A7%E3%81%8D%E3%82%8B%E8%84%86%E5%BC%B1%E6%80%A7%E3%80%81%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%97%E3%83%AD%E3%82%A4%E3%83%88%E3%81%8C%E5%85%AC%E9%96%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
+	&lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/23/03/19/044237/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
+	&lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/23/03/19/044237/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
+	&lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/23/03/19/044237/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
+	&lt;/p&gt;
+		&lt;p&gt;
+		関連ストーリー：
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/08/14/0532250"&gt;明るい肌色優先で話題になった Twitter のアルゴリズム、若さやスリムさも優先されることが明らかに&lt;/a&gt;
+			&lt;small&gt;2021年08月14日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/21/03/13/000217"&gt;Twitter、画像をクロップせずにタイムライン表示する機能をAndroidとiOSでテスト中&lt;/a&gt;
+			&lt;small&gt;2021年03月13日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/10/05/1858202"&gt;Twitter、明るい肌色優先が話題になった画像自動クロップで投稿者の選択肢を増やすなどの改善を計画&lt;/a&gt;
+			&lt;small&gt;2020年10月06日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://it.srad.jp/story/20/09/23/0329238"&gt;Twitterの画像自動クロップ表示機能、明るい肌色が優先されると話題に&lt;/a&gt;
+			&lt;small&gt;2020年09月23日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://security.srad.jp/story/18/05/29/0658229"&gt;財務省が公開した「森友学園」交渉記録文書、黒塗りが簡単に外せる状態だった&lt;/a&gt;
+			&lt;small&gt;2018年05月29日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/11/04/22/0516242"&gt;オンライン公開された政府文章、Ctrl+Aで「非公開の情報」が読めてしまった&lt;/a&gt;
+			&lt;small&gt;2011年04月22日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/05/05/24/0113207"&gt;米軍の機密情報がコピペで漏れる&lt;/a&gt;
+			&lt;small&gt;2005年05月24日&lt;/small&gt;
+		
+			&lt;br&gt;&lt;a href="https://srad.jp/story/02/06/01/1616224"&gt;岩手県が氏名を「非表示」にしただけで個人情報を公開&lt;/a&gt;
+			&lt;small&gt;2002年06月02日&lt;/small&gt;
+		
+		&lt;/p&gt;</content:encoded>
+</item>
 <item rdf:about="https://yro.srad.jp/story/23/03/19/0259200/">
 <title>米著作権局、AI を用いた作品の著作権登録に関するガイダンスを公開</title>
 <link>https://yro.srad.jp/story/23/03/19/0259200/</link>
@@ -67,8 +151,8 @@ Ars Technica の記事)。
 <dc:subject>ai</dc:subject>
 <slash:department>人間</slash:department>
 <slash:section>yro</slash:section>
-<slash:comments>4</slash:comments>
-<slash:hit_parade>4,4,0,0,0,0,0</slash:hit_parade>
+<slash:comments>14</slash:comments>
+<slash:hit_parade>14,14,0,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/ai_64.png"&gt;米著作権局は 16 日、人工知能 (AI) 技術の急速な進化による著作権法や政策の問題を調査するイニシアチブを開始するとともに、AI を用いた作品の著作権登録に関するガイダンスを公開した
 (&lt;a href="https://copyright.gov/newsnet/2023/1004.html"&gt;著作権局のニュース記事&lt;/a&gt;、
 &lt;a href="https://public-inspection.federalregister.gov/2023-05321.pdf"&gt;ガイダンス: PDF&lt;/a&gt;、
@@ -145,8 +229,8 @@ Habr の記事)。
 <dc:subject>graphics</dc:subject>
 <slash:department>最適</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>17</slash:comments>
-<slash:hit_parade>17,17,0,0,0,0,0</slash:hit_parade>
+<slash:comments>26</slash:comments>
+<slash:hit_parade>26,26,1,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/graphics_64.png"&gt;Yandex のエンジニアが Yandex Browser のパフォーマンスと安定性の問題を調べていたところ、AMD の GPU ドライバーの挙動がブラウザーの実行ファイル名によって変わることを発見したそうだ
 (&lt;a href="https://www.neowin.net/news/yandex-alleges-amds-windows-drivers-unfairly-favor-google-chrome-microsoft-edge/"&gt;Neowin の記事&lt;/a&gt;、
 &lt;a href="https://habr.com/ru/company/yandex/blog/721374/"&gt;Habr の記事&lt;/a&gt;)。&lt;br&gt;
@@ -235,8 +319,8 @@ Neowin の記事、
 <dc:subject>microsoft</dc:subject>
 <slash:department>解決</slash:department>
 <slash:section>it</slash:section>
-<slash:comments>21</slash:comments>
-<slash:hit_parade>21,21,2,1,1,0,0</slash:hit_parade>
+<slash:comments>22</slash:comments>
+<slash:hit_parade>22,22,2,1,1,1,1</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/microsoft_64.png"&gt;顧客が正規に購入した Windows 10 Pro でライセンス認証できない問題を解決するため、Microsoft のサポート担当者がクラックツールを使用したと報告されている
 (&lt;a href="https://www.bleepingcomputer.com/news/security/microsoft-support-cracks-windows-for-customer-after-activation-fails/"&gt;BleepingComputer の記事&lt;/a&gt;、
 &lt;a href="https://www.neowin.net/news/user-claims-microsoft-support-activated-their-windows-10-copy-with-pirated-script/"&gt;Neowin の記事&lt;/a&gt;、
@@ -332,8 +416,8 @@ APACeJ での成長はインクジェットプリンターの寄与が大きく�
 <dc:subject>printers</dc:subject>
 <slash:department>印刷</slash:department>
 <slash:section>hardware</slash:section>
-<slash:comments>36</slash:comments>
-<slash:hit_parade>36,34,4,0,0,0,0</slash:hit_parade>
+<slash:comments>39</slash:comments>
+<slash:hit_parade>39,37,4,0,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/printer_64.png"&gt;IDC のデータによると全世界のハードコピーペリフェラル (プリンター) 出荷台数は 2021 年下半期から 2022 年上半期にかけて減少していたが、2022 年第 4 四半期には再び 2 桁の成長率を回復したそうだ
 (&lt;a href="https://www.idc.com/getdoc.jsp?containerId=prUS50453823"&gt;プレスリリース&lt;/a&gt;)。&lt;br&gt;
 &lt;br&gt;
@@ -448,8 +532,8 @@ V-CON2A/2B が 2 段推進系コントローラ (PSC2) 経由で 2 段エンジ�
 <dc:subject>jaxa</dc:subject>
 <slash:department>電流</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>49</slash:comments>
-<slash:hit_parade>49,46,5,4,2,0,0</slash:hit_parade>
+<slash:comments>53</slash:comments>
+<slash:hit_parade>53,50,15,6,2,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/jaxa_64.png"&gt;AC0x01 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;JAXA は 16 日、&lt;a href="https://science.srad.jp/story/23/03/07/0217237/"&gt;2 段目エンジンが着火せず打ち上げ失敗に終わった H3 ロケット試験機 1 号機&lt;/a&gt;について、これまでの調査結果を宇宙開発利用に係る調査・安全有識者会合で報告した
 (&lt;a href="https://www3.nhk.or.jp/news/html/20230316/k10014010721000.html"&gt;NHK ニュースの記事&lt;/a&gt;、
 &lt;a href="https://www.asahi.com/articles/ASR3J6J2SR3JULBH00J.html"&gt;朝日新聞デジタルの記事&lt;/a&gt;、
@@ -575,8 +659,8 @@ PFAS に長期間曝露すると、がんを含む健康被害が引き起こさ
 <dc:subject>medicine</dc:subject>
 <slash:department>規制</slash:department>
 <slash:section>science</slash:section>
-<slash:comments>20</slash:comments>
-<slash:hit_parade>20,20,2,1,0,0,0</slash:hit_parade>
+<slash:comments>23</slash:comments>
+<slash:hit_parade>23,23,1,1,0,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/medicine_64.png"&gt;米バイデン-ハリス政権は 14 日、飲料水における 6 種の有機フッ素化合物、パー (ペル) フルオロアルキルおよびポリフルオロアルキル化合物 (PFAS) の基準値を定める全米レベルで初の規制案を発表した
 (&lt;a href="https://www.epa.gov/newsreleases/biden-harris-administration-proposes-first-ever-national-standard-protect-communities"&gt;ニュースリリース&lt;/a&gt;、
 &lt;a href="https://www.geekwire.com/2023/u-s-proposes-first-ever-federal-regulations-on-hazardous-forever-chemicals-in-drinking-water/"&gt;GeekWire の記事&lt;/a&gt;、
@@ -635,8 +719,8 @@ PFAS に長期間曝露すると、がんを含む健康被害が引き起こさ
 <dc:subject>slashback</dc:subject>
 <slash:department>アイデアはいいけど人通りが多い場所すぎる</slash:department>
 <slash:section>mainpage</slash:section>
-<slash:comments>96</slash:comments>
-<slash:hit_parade>96,94,10,7,2,0,0</slash:hit_parade>
+<slash:comments>98</slash:comments>
+<slash:hit_parade>98,96,10,7,2,0,0</slash:hit_parade>
 <content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/slashback_64.png"&gt;神戸と仙台にある施設「アンパンマンこどもミュージアム&amp;amp;モール」には、点字ブロック（点字鋲）の中にアンパンマンの顔が隠れているという仕掛けが施されていたそうだ。しかし、この仕掛けは点字ブロックを利用する視覚障害の間からは「子供がここでしゃがみ込んだりすると危ない」「探している子供に気づかず、蹴ったり突き飛ばしたりしたらまずい」とする意見が出ていたという（&lt;a href="https://maidonanews.jp/article/14860063"&gt;まいどなニュース&lt;/a&gt;、&lt;a href="https://maidonanews.jp/article/14861124"&gt;続報&lt;/a&gt;）。&lt;br&gt; &lt;br&gt;この話題を取り上げたまいどなニュースの記事によると、問題となっている隠し点字鋲は、1階のショッピングモールと、有料フロアである2階のミュージアムをつなぐスロープなどの数か所に設置されていたようだ。アンパンマンこどもミュージアム&amp;amp;モール側は当初、この件でのまいどなニュースからの質問に「ご質問にはお答えしかねます」との返答をしていたが、1本目の記事が配信された後の午後に回答があり、今後、通常の鋲に順次交換していくとすると連絡があったとしている。&lt;p&gt;
 	&lt;a href="https://srad.jp/story/23/03/16/1433259/"&gt;すべて読む&lt;/a&gt;
 	
@@ -711,63 +795,6 @@ PFAS に長期間曝露すると、がんを含む健康被害が引き起こさ
 		
 			&lt;br&gt;&lt;a href="https://opensource.srad.jp/story/22/06/22/1517257"&gt;オープンソースプロジェクトの脆弱性修正にかかる時間が 3 年間で倍以上に増加したとの調査結果&lt;/a&gt;
 			&lt;small&gt;2022年06月23日&lt;/small&gt;
-		
-		&lt;/p&gt;</content:encoded>
-</item>
-<item rdf:about="https://security.srad.jp/story/23/03/16/1441211/">
-<title>英政府、CPNI を発展させた新たなセキュリティ組織 NPSA を設立</title>
-<link>https://security.srad.jp/story/23/03/16/1441211/</link>
-<description>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/government_64.png"&gt;headless 曰く、英国のリシ・スナク首相は 13 日、英国政府の新たなセキュリティ組織 National Protective Security Authority (NPSA) を MI5 内に設立すると発表した
-(プレスリリース、
-NPSA の About ページ、
-The Register の記事)。
-
-NPSA は Center for the Protection of National Infrastructure (CPNI) が発展したもので、今日の英国が直面する脅威を反映し、国家の重要なインフラにとどまらずより幅広い権限を持つという。NPSA では現在の脅威を反映したガイダンスをセキュリティ知識がない人でもわかりやすく作成し、組織の規模や業種を限定せずにトレーニングなども提供していくとのことだ。&lt;p&gt; &lt;a href="https://security.srad.jp/story/23/03/16/1441211/"&gt;すべて読む&lt;/a&gt; | &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt; | &lt;a href="https://srad.jp/stories/unitedkingdom"&gt;英国&lt;/a&gt; | &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt; | &lt;a href="https://srad.jp/stories/government"&gt;政府&lt;/a&gt; | &lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/23/03/16/1441211/&amp;amp;text=%E8%8B%B1%E6%94%BF%E5%BA%9C%E3%80%81CPNI%20%E3%82%92%E7%99%BA%E5%B1%95%E3%81%95%E3%81%9B%E3%81%9F%E6%96%B0%E3%81%9F%E3%81%AA%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E7%B5%84%E7%B9%94%20NPSA%20%E3%82%92%E8%A8%AD%E7%AB%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt; &lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/23/03/16/1441211/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt; &lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/23/03/16/1441211/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt; &lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/23/03/16/1441211/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt; &lt;/p&gt; &lt;p&gt; 関連ストーリー： &lt;br&gt;&lt;a href="https://science.srad.jp/story/23/01/12/1328223"&gt;日米安保条約は宇宙空間も適用対象、日米両国が確認&lt;/a&gt; &lt;small&gt;2023年01月13日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/07/1547222"&gt;ウクライナ政府、民間IT技術者を集めてIT軍を組織&lt;/a&gt; &lt;small&gt;2022年03月08日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/20/01/31/1827219"&gt;NECも不正アクセスによる攻撃を受け情報漏洩&lt;/a&gt; &lt;small&gt;2020年01月31日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/15/09/21/2115257"&gt;英GCHQ、複雑すぎるパスワードの使用中止を推奨&lt;/a&gt; &lt;small&gt;2015年09月22日&lt;/small&gt; &lt;br&gt;&lt;a href="https://security.srad.jp/story/08/11/18/0341216"&gt;SSH通信において低確率ながら一部データが漏えいする可能性&lt;/a&gt; &lt;small&gt;2008年11月18日&lt;/small&gt; &lt;/p&gt;</description>
-<dc:creator>nagazou</dc:creator>
-<dc:date>2023-03-17T21:09:00+00:00</dc:date>
-<dc:subject>government</dc:subject>
-<slash:department>情報防衛</slash:department>
-<slash:section>security</slash:section>
-<slash:comments>1</slash:comments>
-<slash:hit_parade>1,0,0,0,0,0,0</slash:hit_parade>
-<content:encoded>&lt;img align="right" height="64" width="64" src="https://srad.jp/static/topics/government_64.png"&gt;headless 曰く、&lt;blockquote&gt;&lt;div&gt;&lt;p&gt;英国のリシ・スナク首相は 13 日、英国政府の新たなセキュリティ組織 &lt;a href="https://www.npsa.gov.uk/"&gt;National Protective Security Authority (NPSA)&lt;/a&gt; を MI5 内に設立すると発表した
-(&lt;a href="https://www.gov.uk/government/news/pm-announces-major-defence-investment-in-launch-of-integrated-review-refresh"&gt;プレスリリース&lt;/a&gt;、
-&lt;a href="https://www.npsa.gov.uk/about-npsa"&gt;NPSA の About ページ&lt;/a&gt;、
-&lt;a href="https://www.theregister.com/2023/03/14/uk_integrated_review_refresh/"&gt;The Register の記事&lt;/a&gt;)。&lt;br&gt;
-&lt;br&gt;
-NPSA は Center for the Protection of National Infrastructure (CPNI) が発展したもので、今日の英国が直面する脅威を反映し、国家の重要なインフラにとどまらずより幅広い権限を持つという。NPSA では現在の脅威を反映したガイダンスをセキュリティ知識がない人でもわかりやすく作成し、組織の規模や業種を限定せずにトレーニングなども提供していくとのことだ。&lt;/p&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;p&gt;
-	&lt;a href="https://security.srad.jp/story/23/03/16/1441211/"&gt;すべて読む&lt;/a&gt;
-	
-		| &lt;a href="https://security.srad.jp/"&gt;セキュリティセクション&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/unitedkingdom"&gt;英国&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/security"&gt;セキュリティ&lt;/a&gt;
-	
-		| &lt;a href="https://srad.jp/stories/government"&gt;政府&lt;/a&gt;
-		|
-	&lt;a href="https://twitter.com/share?url=https://security.srad.jp/story/23/03/16/1441211/&amp;amp;text=%E8%8B%B1%E6%94%BF%E5%BA%9C%E3%80%81CPNI%20%E3%82%92%E7%99%BA%E5%B1%95%E3%81%95%E3%81%9B%E3%81%9F%E6%96%B0%E3%81%9F%E3%81%AA%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E7%B5%84%E7%B9%94%20NPSA%20%E3%82%92%E8%A8%AD%E7%AB%8B" title="この記事をTwitterでつぶやく"&gt;&lt;img alt="この記事をTwitterでつぶやく" border="0" src="//images.srad.jp/classic/img/twitter_32.png/20150127" /&gt;&lt;/a&gt;
-	&lt;a href="//www.facebook.com/sharer.php?u=https://security.srad.jp/story/23/03/16/1441211/" title="この記事をFacebookで共有"&gt;&lt;img src="//images.srad.jp/classic/img/facebook_32.png" border="0" alt="この記事をFacebookで共有" /&gt;&lt;/a&gt;
-	&lt;a href="https://plus.google.com/share?url=https://security.srad.jp/story/23/03/16/1441211/" title="この記事をGoogle Plusで共有"&gt;&lt;img src="https://www.gstatic.com/images/icons/gplus-32.png" border="0" alt="この記事をGoogle Plusで共有" /&gt;&lt;/a&gt;
-	&lt;a href="//b.hatena.ne.jp/entry/https://security.srad.jp/story/23/03/16/1441211/" title="このエントリーをはてなブックマークに追加"&gt;&lt;img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="32" height="32" style="border: none;" border="0" /&gt;&lt;/a&gt;
-	&lt;/p&gt;
-		&lt;p&gt;
-		関連ストーリー：
-		
-			&lt;br&gt;&lt;a href="https://science.srad.jp/story/23/01/12/1328223"&gt;日米安保条約は宇宙空間も適用対象、日米両国が確認&lt;/a&gt;
-			&lt;small&gt;2023年01月13日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/22/03/07/1547222"&gt;ウクライナ政府、民間IT技術者を集めてIT軍を組織&lt;/a&gt;
-			&lt;small&gt;2022年03月08日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/20/01/31/1827219"&gt;NECも不正アクセスによる攻撃を受け情報漏洩&lt;/a&gt;
-			&lt;small&gt;2020年01月31日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/15/09/21/2115257"&gt;英GCHQ、複雑すぎるパスワードの使用中止を推奨&lt;/a&gt;
-			&lt;small&gt;2015年09月22日&lt;/small&gt;
-		
-			&lt;br&gt;&lt;a href="https://security.srad.jp/story/08/11/18/0341216"&gt;SSH通信において低確率ながら一部データが漏えいする可能性&lt;/a&gt;
-			&lt;small&gt;2008年11月18日&lt;/small&gt;
 		
 		&lt;/p&gt;</content:encoded>
 </item>
