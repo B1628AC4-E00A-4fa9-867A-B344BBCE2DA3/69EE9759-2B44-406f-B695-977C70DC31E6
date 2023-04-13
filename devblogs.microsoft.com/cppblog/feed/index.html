@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Wed, 05 Apr 2023 07:01:18 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 13 Apr 2023 15:01:48 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,135 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++23&#8217;s New Fold Algorithms</title>
+		<link>https://devblogs.microsoft.com/cppblog/cpp23s-new-fold-algorithms/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/cpp23s-new-fold-algorithms/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Thu, 13 Apr 2023 14:55:40 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32015</guid>
+
+					<description><![CDATA[<p>New fold algorithms in C++23, what they do, how to use them.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23s-new-fold-algorithms/">C++23&#8217;s New Fold Algorithms</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>C++20 added new versions of the standard library algorithms which take ranges as their first argument rather than iterator pairs, alongside other improvements. However, key algorithms like <code>std::accumulate</code> were not updated. This has been done in C++23, with the new <code>std::ranges::fold_*</code> family of algorithms. The standards paper for this is <a href="https://wg21.link/p2322">P2322</a> and was written by Barry Revzin. It been implemented in <a href="https://learn.microsoft.com/visualstudio/releases/2022/release-notes#summary-of-whats-new-in-this-release-of-visual-studio-2022-version-175">Visual Studio 2022 version 17.5</a>. In this post I’ll explain the benefits of the new “rangified” algorithms, talk you through the new C++23 additions, and explore some of the design space for fold algorithms in C++.</p>
+<h2 id="background-rangified-algorithms">Background: Rangified Algorithms</h2>
+<p>C++20’s algorithms make several improvements to the old iterator-based ones. The most obvious is that they now can take a range instead of requiring you to pass iterator pairs. But they also allow passing a “projection function” to be called on elements of the range before being processed, and the use of C++20 concepts for constraining their interfaces more strictly defines what valid uses of these algorithms are. These changes allow you to make refactors like:</p>
+<pre><code class="language-c++">// C++17 algorithm
+cat find_kitten(const std::vector&lt;cat&gt;&amp; cats) {
+    return *std::find_if(cats.begin(), cats.end(), 
+        [](cat const&amp; c) { return c.age == 0; });
+}
+
+// C++20 algorithm
+cat find_kitten(std::span&lt;cat&gt; cats) {
+    return *std::ranges::find(cats, 0, &amp;cat::age);
+}</code></pre>
+<p>The differences here are:</p>
+<ol>
+<li>Instead of having to pass <code>cats.begin()</code> and <code>cats.end()</code>, we just pass <code>cats</code> itself.</li>
+<li>Since we are comparing a member variable of the <code>cat</code> to <code>0</code>, in C++17 we need to use <code>std::find_if</code> and pass a closure which accesses that member and does the comparison. Since the rangified algorithms support projections, in C++20 we can use <code>std::ranges::find</code> and pass <code>&amp;cat::age</code> as a projection, getting rid of the need for the lambda completely.</li>
+</ol>
+<p>These improvements can greatly clean up code which makes heavy use of the standard library algorithms.</p>
+<p>Unfortunately, alongside the algorithms which reside in the <code>&lt;algorithm&gt;</code> header, there are also several important ones in the <code>&lt;numeric&gt;</code> header, and these were not rangified in C++20<a href="#foot1"><sup>1</sup></a>. In this post we’re particularly interested in <code>std::accumulate</code> and <code>std::reduce</code>.</p>
+<h2 id="accumulate-and-reduce"><code>accumulate</code> and <code>reduce</code></h2>
+<p><code>std::accumulate</code> and <code>std::reduce</code> are both <a href="https://en.wikipedia.org/wiki/Fold_(higher-order_function)">fold</a> operations. They &#8220;fold&#8221; or &#8220;reduce&#8221; or &#8220;combine&#8221; multiple values into a single value. Both take two iterators, an initial value, and a binary operator (which defaults to <code>+</code>). They then run the given operator over the range of values given by the iterators, collecting a result as they go. For instance, given <code>std::array&lt;int,3&gt; arr = {1,2,3}</code>, <code>std::accumulate(begin(arr), end(arr), 0, std::plus())</code> will run <code>(((0 + 1) + 2) + 3)</code>. Or <code>std::accumulate(begin(arr), end(arr), 0, f)</code> will run <code>f(f(f(0, 1), 2), 3)</code>.</p>
+<p>These functions are both what are called <em>left folds</em> because they run from left to right. There&#8217;s also <em>right folds</em>, which as you may guess, run from right to left. For the last example a right fold would look like <code>f(1, f(2, f(3, 0)))</code>. For some operations, like <code>+</code>, these would give the same result, but for operations which are not <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a> (like <code>-</code>), it could make a difference.</p>
+<p>So why do we have both <code>std::accumulate</code> and <code>std::reduce</code>? <code>std::reduce</code> was added in C++17 as one of the many <a href="https://devblogs.microsoft.com/cppblog/using-c17-parallel-algorithms-for-better-performance/">parallel algorithms</a> which let you take advantage of parallel execution for improved performance. The reason it has a different name than <code>std::accumulate</code> is because it has different constraints on what types and operations you can use: namely the operation used must be both associative and <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a>.</p>
+<p>To understand why, consider the following code:</p>
+<pre><code class="language-cpp">std::array&lt;int,8&gt; a {0,1,2,3,4,5,6,7};
+auto result = std::reduce(std::execution::par, //execute in parallel 
+    begin(a), end(a), 0, f);</code></pre>
+<p>If <code>f</code> is associative, then <code>std::reduce</code> could reduce the first half of <code>a</code> on one CPU core, reduce the second half of <code>a</code> on another core, then call <code>f</code> on the result. However, if <code>f</code> is <em>not</em> associative, this could result in a different answer than carrying out a pure left fold. As such, requiring associativity lets <code>std::reduce</code> distribute the reduction across multiple units of execution.</p>
+<p>Requiring commutativity likewise enables some potential optimizations. One is that the implementation is free to reorder operations as it likes. If, for example, some calls to <code>f</code> take longer than others, <code>reduce</code> could use whichever intermediate results are available without having to wait around for the &#8220;right&#8221; result. Commutativity also enables vectorization when using the <code>std::execution::par_unseq</code> policy. For example, if <code>f</code> is addition, the first half of <code>a</code> could be loaded into one vector register, the second half loaded into another, and a vector addition executed on them. This would result in <code>(0 + 4) + (1 + 5) + (2 + 6) + (3 + 7)</code>. Notice that the operands have been interleaved: this requires commutativity.</p>
+<h2 id="stdrangesfold_"><code>std::ranges::fold_*</code></h2>
+<p>C++23 comes with six fold functions which fulfil different important use cases. The one you&#8217;ll reach for most is <code>std::ranges::fold_left</code>.</p>
+<h3 id="fold_left"><code>fold_left</code></h3>
+<p>You can use <code>fold_left</code> in place of calls to <code>std::accumulate</code>. For instance, I have three cats, and when I brush them, I collect all the loose fur as I go so I can throw it away:</p>
+<pre><code class="language-cpp">fur brush(fur existing_fur, cat&amp; c);
+std::vector&lt;cat&gt; cats = get_cats(); 
+
+// C++20
+auto loose_fur = std::accumulate(begin(cats), end(cats), fur{}, brush);
+// C++23
+auto loose_fur = std::ranges::fold_left(cats, fur{}, brush);
+
+throw_away(loose_fur);</code></pre>
+<p><code>std::accumulate</code> is really a generic left fold, but its name suggests summation, and the defaulting of the binary operator to addition further contributes to this. This makes uses of <code>accumulate</code> for non-summation purposes look a little clunky. This is why the new version is instead called <code>fold_left</code>, and does not have a default operator.</p>
+<h3 id="fold_right"><code>fold_right</code></h3>
+<p>As you can probably guess, since there&#8217;s a <code>fold_left</code> function, there&#8217;s also a <code>fold_right</code> function. For associative operations like <code>brush</code>, there&#8217;s no real difference in behaviour. But say we have a function which takes some amount of food and feeds half of it to a cat, returning the leftovers:</p>
+<pre><code class="language-cpp">food feed_half(cat&amp; c, food f) {
+    auto to_feed = f / 2;
+    c.eaten += to_feed;
+    return f - to_feed;
+}</code></pre>
+<p>This operation is not associative, therefore using <code>fold_left</code> or <code>fold_right</code> would result in feeding different cats different amounts of food. We could call <code>fold_right</code> like this:</p>
+<pre><code class="language-cpp">std::vector&lt;cat&gt; cats = get_cats();
+//feed cats from right to left, starting with 100 food
+auto leftovers = std::ranges::fold_right(cats, 100, feed_half); </code></pre>
+<p>Note that for <code>fold_right</code>, the order of arguments to the operator are flipped from <code>fold_left</code>: the accumulator is on the right rather than the left.</p>
+<p>In these examples we&#8217;ve been able to pick a reasonable initial value for our folds (<code>fur{}</code> in the first, <code>100</code> in the second). But how do we pick our initial element? What if there is no good initial value to pick?</p>
+<h3 id="aside-on-initial-element">Aside on initial element</h3>
+<p><code>std::reduce</code> allows omitting the initial element for the fold, in which case it uses a value-initialized object of the given iterator&#8217;s value type (e.g. <code>0</code> for <code>int</code>). This can be handy in some cases, such as summing integers, but doesn&#8217;t work so well in others, such as taking the product of integers. Usually what we want for the initial element is some <em>identity element</em> for the value type of the range with respect to the given binary operator. Given any object <code>x</code> of type <code>T</code> and operation <code>f</code>, the identity element <code>id</code> is one for which <code>f(id,x) == x</code>. For example, the identity element for the pair <code>int, operator+</code> is <code>0</code>. For <code>int, operator*</code> it&#8217;s <code>1</code>. For <code>std::string, operator+</code> it&#8217;s <code>""</code>.</p>
+<p>These pairs of types and associative binary operators which have an identity element turn out to be surprisingly common in programming, they&#8217;re called <a href="https://en.wikipedia.org/wiki/Monoid">monoids</a>. Ben Deane has several great talks on monoids in C++, I&#8217;d highly recommend <a href="https://www.youtube.com/watch?v=INnattuluiM">watching this one</a>.</p>
+<p>We don&#8217;t have a way to easily get at the identity element of a given monoid in C++. You could imagine implementing some <code>monoid_traits</code> class template which could be specialised by users to support custom types. This could let <code>fold_left</code> be implemented something like (omitting constraints for brevity):</p>
+<pre><code class="language-cpp">template &lt;class Rng, class F, class T = std::ranges::range_value_t&lt;Rng&gt;&gt;
+constexpr T fold_left (Rng&amp;&amp; rng, F&amp;&amp; op, T init = monoid_traits&lt;std::ranges::range_value_t&lt;Rng&gt;, F&gt;::identity_element());</code></pre>
+<p>Maybe you think that&#8217;s horrifying and too much work. I might agree for many cases. I do think it&#8217;s an interesting design area though, and I know <a href="https://graphblas.org/">GraphBLAS</a> does something like this; there&#8217;s a <a href="https://www.youtube.com/watch?v=xMBNCtFV8sI">CppCon talk</a> which shows the kinds of things they do with monoid traits. <a href="https://wg21.link/p1813">P1813</a> explored a similar idea for a concepts design for numeric algorithms.</p>
+<p>I think the C++23 design makes the right decision in simply not defaulting the initial element at all. This forces you to think about it and not accidentally supply a value-initialized value in cases where it&#8217;s not correct.</p>
+<h3 id="fold_left_first-and-fold_right_last"><code>fold_left_first</code> and <code>fold_right_last</code></h3>
+<p>But what if you don&#8217;t have an identity element for your type? Then you need to pull out the first element by-hand, which is quite unwieldly and a bit tricky to get right for <a href="https://en.cppreference.com/w/cpp/iterator/input_iterator">input iterators</a>:</p>
+<pre><code class="language-cpp">auto b = std::ranges::begin(rng);
+auto e = std::ranges::end(rng);
+auto init = *b;
+fold_left(std::ranges::next(b), e, std::move(init), f);</code></pre>
+<p>As such, many languages provide an alternative <code>fold</code> function which uses the first element of the range as the initial element (thus additionally requiring the range to be non-empty).</p>
+<p>The version we have in C++23 has this too, it calls them <code>fold_left_first</code> and <code>fold_right_last</code>. This lets you simply write:</p>
+<pre><code class="language-cpp">std::ranges::fold_left_first(rng, f);</code></pre>
+<p>Much better.</p>
+<h3 id="fold_left_with_iter-and-fold_left_first_with_iter"><code>fold_left_with_iter</code> and <code>fold_left_first_with_iter</code></h3>
+<p>The final two versions of <code>fold</code> which are in C++23 are ones which expose an additional result computed by the fold: the end iterator. Recall that for some ranges, the type returned by <code>std::ranges::end</code> is not an iterator, but a <em>sentinel</em>: some rule for when to finish iteration. For some ranges, computing the iterator for the range which is equal to what <code>std::ranges::end</code> returns may actually be quite expensive. Since carrying out the fold necessarily requires computing this iterator, C++23 provides functions which return this iterator alongside the value computed.</p>
+<p>For example, say we have a collection of cats sorted by age, and we have some food which is specially formulated for younger cats. We could split the food between the younger cats like so:</p>
+<pre><code class="language-cpp">std::vector&lt;cat&gt; cats = get_sorted_cats();
+auto young_cats = cats | std::views::take_while([](auto c) { return c.age &lt; 7; });
+auto leftover_food = std::ranges::fold_left(young_cats, food_for_young_cats, feed_half);</code></pre>
+<p>However, now if we want to give some other food to the older cats, we need to recompute the point in <code>cats</code> where the young cats stop and the older cats begin:</p>
+<pre><code class="language-cpp">auto first_old_cat = std::ranges::find_if(cats, [](auto c) { return c.age &gt;= 7; });
+give_some_other_food(first_old_cat, std::ranges::end(cats));</code></pre>
+<p><code>fold_left_with_iter</code> lets you avoid the recomputation:</p>
+<pre><code class="language-cpp">std::vector&lt;cat&gt; cats = get_sorted_cats();
+auto young_cats = cats | std::views::take_while([](auto c) { return c.age &lt; 7; });
+auto [first_old_cat, leftover_food] = std::ranges::fold_left_with_iter(young_cats, food_for_young_cats, feed_half);
+
+give_some_other_food(first_old_cat, std::ranges::end(cats));</code></pre>
+<h2 id="what-about-reduce">What about <code>reduce</code>?</h2>
+<p>The <code>fold</code> family of functions extend and replace <code>std::accumulate</code>. But what about <code>std::reduce</code>? <code>std::ranges::reduce</code> is planned, but no one has written the necessary standards proposal for it yet. It wouldn&#8217;t be <em>that</em> different from <code>std::ranges::fold_*</code>, but there&#8217;s some subtle design points, like different constraints on the binary operator to allow <code>op(*it, acc)</code>, <code>op(acc, *it)</code>, and <code>op(*it, *it)</code>.</p>
+<h2 id="what-about-projections">What about projections?</h2>
+<p>I said at the start that the rangified algorithms have 3 main benefits:</p>
+<ol>
+<li>Can pass a range rather than iterator pair</li>
+<li>Are constrained by concepts</li>
+<li>Support projection functions</li>
+</ol>
+<p>Only the first two apply for <code>fold_*</code>, however: projection functions aren&#8217;t supported for a rather subtle reason. You can see <a href="https://wg21.link/p2322r6">P2322r6</a> for all the details, but essentially, for the <code>fold_left_first*</code> and <code>fold_right_last*</code> overloads, allowing projections would incur an extra copy even in cases where it shouldn&#8217;t be required. As such, projections were removed from those overloads, and then from the remaining three for consistency.</p>
+<p>If you want to use a projection function with <code>fold_left</code>, you could do something like:</p>
+<pre><code class="language-cpp">auto res = fold_left(rng | std::views::transform(projection), init, f);</code></pre>
+<h2 id="feedback">Feedback</h2>
+<p>You can try out the feature in <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">Visual Studio 2022 version 17.5</a>. If you have any questions, comments, or issues with the feature, you can comment below, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Thanks to Christopher Di Bella, Barry Revzin, and Stephan T. Lavavej for feedback and information.</p>
+<hr />
+<p><sup><a id="foot1"></a>1</sup>Why? Quoting Casey Carter: &#8220;Every time someone asks why we didn’t cover <code>&lt;numeric&gt;</code> and <code>&lt;memory&gt;</code> algorithms: We thought 187 pages of Technical Specification was enough.&#8221;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23s-new-fold-algorithms/">C++23&#8217;s New Fold Algorithms</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp23s-new-fold-algorithms/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Maximize Unreal Engine Development with the Latest Integrations in Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/empower-your-unreal-engine-development-with-the-latest-ue-integrations-in-visual-studio-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/empower-your-unreal-engine-development-with-the-latest-ue-integrations-in-visual-studio-2022/#comments</comments>
@@ -689,99 +818,6 @@ The __if_exists and __if_not_exists keywords in the Active Template Library (ATL
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cmake-debugger-allows-you-to-debug-your-cmake-scripts-and-more/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio 2022 version 17.5 for C++ Developers</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-17-5-for-cpp-devs/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-17-5-for-cpp-devs/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 21 Feb 2023 20:45:03 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31800</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.5 is now generally available! This post summarizes the new features you can find in this release for C++. See the Visual Studio 17.5 announcement to learn about all of the features in the release.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-5-for-cpp-devs/">Visual Studio 2022 version 17.5 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.5 is now generally available! This post summarizes the new features you can find in this release for C++. See the <a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-5-released/">Visual Studio 17.5 announcement</a> to learn about all of the features in the release. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the</p>
-<h2 id="contents">Contents</h2>
-<ul>
-<li><a href="#_Toc127193067">Arm64</a></li>
-<li><a href="#_Toc127193068">Productivity and Game Development</a></li>
-<li><a href="#_Toc127193072">Code Safety</a></li>
-<li><a href="#_Toc127193073">Standards Conformance</a></li>
-<li><a href="#_Toc127193076">Cross Platform &amp; Embedded</a></li>
-</ul>
-<h1 id="arm64"><a name="_Toc127193067"></a>Arm64</h1>
-<p>In 17.3 you could use Visual Studio as a native Arm64 application. In 17.4 you could use our native Arm64 toolchain in production. Continuing our progress, in 17.5 you can now obtain a native Arm64 Clang toolset with our LLVM workload!</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs1.png"><img decoding="async" class="aligncenter size-full wp-image-31832" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs1.png" alt="Image vs1" width="297" height="150" /></a></p>
-<h1 id="productivity-and-game-development"><a name="_Toc127193068"></a>Productivity and Game Development</h1>
-<h2 id="build-performance"><a name="_Toc127193069"></a>Build Performance</h2>
-<p>One of our highest voted Developer Community tickets was regarding the <a href="https://developercommunity.visualstudio.com/t/std::move-and-similar-functions-resu/1681875">runtime overhead of functions like std::move and std::forward in debug builds</a>. In 17.5 we addressed this issue, making these cast-like functions never produce function calls in generated code, even in debug mode. Depending on your projects, this could noticeably improve performance of your debug builds. This feature is supported by a new attribute, [[msvc::intrinsic]]. It can be applied to non-recursive functions consisting of a single cast, which take only one parameter. You can read more about these changes in <a href="https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/">Improving the State of Debug Performance in C++</a>.</p>
-<h2 id="developer-productivity"><a name="_Toc127193070"></a>Developer Productivity</h2>
-<p><em>This section used to say that Brace Pair Colorization and Spell Check were available in this release. Unfortunately these are being delayed until 17.6. You can try them out in 17.6 Preview 1 which is <a href="https://visualstudio.microsoft.com/vs/preview/">now available</a>.</em></p>
-<p>17.5 comes with a host of new productivity features, which are outlined below, and you can learn more about them in <a href="https://devblogs.microsoft.com/cppblog/brace-pair-colorization-and-more-in-visual-studio/">C++ Brace Pair Colorization and More in Visual Studio</a>.</p>
-<p>Reimagined Member List is a new experimental feature which puts the members whose types match the current context you are in at the top of the list for easy access. This is currently being rolled out to a subset of users, and we will be exploring this space further in future releases, evaluating more criteria for promoting items to the top of the list.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-4.png"><img decoding="async" class="aligncenter size-large wp-image-31824" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-4.png" alt="Text Description automatically generated" width="640" height="250" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-4.png 696w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-4-300x117.png 300w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>When you hover over a macro, the expanded macro gets displayed in a pop-up. With new formatting and a monospaced font you’ll be able to read the expanded macro much easier. You will also have two new options: to copy the expanded macro to your clipboard, and to replace the macro invocation with its expansion.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-5.png"><img decoding="async" class="aligncenter size-large wp-image-31825" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-5.png" alt="Text Description automatically generated" width="505" height="212" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-5.png 505w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/text-description-automatically-generated-5-300x126.png 300w" sizes="(max-width: 505px) 100vw, 505px" /></a></p>
-<p>Visual Studio now has a Spell Checker that helps in making your spelling accurate. This feature checks the spelling of all words inside comments, and names on declarations will be checked by separating camelCase and underscored words. Using quick actions you can then easily select a replacement, or choose to ignore the spelling issue, adding the word to your personal dictionary.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-5-2.png"><img decoding="async" class="aligncenter size-large wp-image-31826" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-5-2.png" alt="Image word image 31800 5" width="640" height="185" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-5-2.png 641w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-5-2-300x87.png 300w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<h2 id="unreal-engine"><a name="_Toc127193071"></a>Unreal Engine</h2>
-<p>You can now view properties from base classes modified in an Unreal Blueprint asset without leaving Visual Studio. Double-click in a Blueprint reference for a C++ class or property to open the UE Asset Inspector.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-6-2.png"><img decoding="async" class="aligncenter size-large wp-image-31827" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-6-2.png" alt="Image word image 31800 6" width="640" height="207" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-6-2.png 837w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-6-2-300x97.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/word-image-31800-6-2-768x249.png 768w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>&nbsp;</p>
-<h1 id="code-safety"><a name="_Toc127193072"></a>Code Safety</h1>
-<p>If you want less noise when using the Lifetime Checker, you can use the new high-confidence versions of the existing warnings. As of 17.5, the high-confidence warnings are still experimental, but depending on the feedback we might include them in some of the recommended profiles in future versions. You can learn more in <a href="https://devblogs.microsoft.com/cppblog/high-confidence-lifetime-checks-in-visual-studio-version-17-5-preview-2/">High-confidence Lifetime Checks in Visual Studio version 17.5 Preview 2</a>.</p>
-<h1 id="standards-conformance"><a name="_Toc127193073"></a>Standards Conformance</h1>
-<h2 id="c23"><a name="_Toc127193074"></a>C++23</h2>
-<p>We’re continuing our work on standards conformance for C++23, giving you several new standard library features to try out.</p>
-<p><code>std::ranges::fold_left</code>, <code>fold_right</code> and friends define <a href="https://en.wikipedia.org/wiki/Fold_(higher-order_function)">fold</a> operations, similar to <code>std::accumulate</code>, but more general. For example:</p>
-<pre class="prettyprint language-default"><code class="language-default">std::vector&lt;double&gt; v = {0.25, 0.75};
-auto sum = ranges::fold_left(v, 0, std::plus());</code></pre>
-<p><code>std::views::zip</code> is a range adaptor for “zipping” together multiple ranges, with the Nth element being a tuple of the Nth elements of all the supplied ranges. For example:</p>
-<pre class="prettyprint language-default"><code class="language-default">std::vector&lt;std::string&gt; cats { "marshmallow", "milkshake", "lexical cat" };
-std::vector&lt;int&gt; ages { 4, 4, 6 };
-// {{"marshmallow", 4}, {"milkshake", 4}, {"lexical cat", 6}}
-std::views::zip(cats, ages)</code></pre>
-<p><code>std::format_string</code> provides a way to take a compile-time checked format string as a function argument. For example:</p>
-<pre class="prettyprint language-default"><code class="language-default">template &lt;typename... Args&gt;
-void log(std::format_string&lt;Args...&gt; s, Args&amp;&amp;... args) {
-    if (logging_enabled) {
-        log_raw(std::format(s, std::forward&lt;Args&gt;(args)...));
-    }
-}
-
-log("cat {} is {} years old", cat.name(), cat.age());</code></pre>
-<p>For more details on what is new and upcoming in the standard library, check out our <a href="https://github.com/microsoft/STL/wiki/Changelog">changelog on GitHub</a>.</p>
-<h2 id="c11"><a name="_Toc127193075"></a>C11</h2>
-<p>We’re also expanding our C11 optional feature support. You can now use an experimental implementation of C11 atomic primitives (&lt;stdatomic.h&gt;) with the <code>/experimental:c11atomics</code> flag in <code>/std:c11 </code>mode or later. You can learn more in <a href="https://devblogs.microsoft.com/cppblog/c11-atomics-in-visual-studio-2022-version-17-5-preview-2/">C11 Atomics in Visual Studio 2022 version 17.5 Preview 2</a>.</p>
-<p>&nbsp;</p>
-<h1 id="cross-platform-embedded"><a name="_Toc127193076"></a>Cross Platform &amp; Embedded</h1>
-<h2 id="linux"><a name="_Toc127193077"></a>Linux</h2>
-<p>If you are targeting Linux platforms, you can now interact with remote processes with full terminal I/O with the Visual Studio Integrated Terminal. This lets you debug interactive terminal applications with ease, all from within Visual Studio. Learn more at <a href="https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/">Debug Linux Console apps in Visual Studio’s Integrated Terminal</a>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/LinuxConsole.gif"><img decoding="async" class="aligncenter wp-image-31555 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/01/LinuxConsole.gif" alt="Linux Console allows input, output, and supports color" width="1706" height="1080" /></a></p>
-<h2 id="embedded"><a name="_Toc127193078"></a>Embedded</h2>
-<p>Concurrent monitoring is now supported in the Serial Monitor. This allows you to monitor multiple ports at the same time, side by side! Press the “Open an additional monitor” button to get started.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs9.png"><img decoding="async" class="aligncenter size-large wp-image-31840" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs9.png" alt="Image vs9" width="640" height="360" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs9.png 752w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs9-300x169.png 300w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<h2 id="cmake"><a name="_Toc127193079"></a>CMake</h2>
-<p>If you have multiple CMake targets in one project, you can now select multiple targets to build from the CMake Targets view. Use Ctrl+Click or Shift+Click to select the set of targets you want to build, right click on one of them, and select “Build Selection” to build them all.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs10.png"><img decoding="async" class="aligncenter size-large wp-image-31841" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs10.png" alt="Image vs10" width="341" height="198" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs10.png 341w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs10-300x174.png 300w" sizes="(max-width: 341px) 100vw, 341px" /></a></p>
-<p>CMakePresets.json gives you a standard way to express your CMake build configurations which you can easily check in to source control. You can now use CMakePresets.json version 5 in Visual Studio. See the <a href="https://cmake.org/cmake/help/v3.24/manual/cmake-presets.7.html">CMake documentation</a> for information on new features.</p>
-<p>If you have large test suites, you may want to make the most of all of your hardware to run them as fast as possible. To support this, Test Explorer can now build and test multiple CMake targets in parallel. Enable this with the “Run Tests in Parallel” option.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs11.png"><img decoding="async" class="aligncenter size-full wp-image-31842" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs11.png" alt="Image vs11" width="456" height="154" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs11.png 456w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/vs11-300x101.png 300w" sizes="(max-width: 456px) 100vw, 456px" /></a></p>
-<h2 id="developer-containers"><a name="_Toc127193080"></a>Developer Containers</h2>
-<p>For those of you using Developer Containers, you are now able to run them on a remote Linux Machine, and to open a terminal window into the currently running Developer Container.</p>
-<h1 id="send-us-your-feedback"><a name="_Toc127193081"></a>Send us your feedback</h1>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-5-for-cpp-devs/">Visual Studio 2022 version 17.5 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-17-5-for-cpp-devs/feed/</wfw:commentRss>
-			<slash:comments>14</slash:comments>
 		
 		
 			</item>
