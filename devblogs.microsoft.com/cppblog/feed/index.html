@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Fri, 14 Apr 2023 15:53:25 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 18 Apr 2023 18:53:41 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,188 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Functional exception-less error handling with C++23&#8217;s optional and expected</title>
+		<link>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 18 Apr 2023 18:53:41 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31951</guid>
+
+					<description><![CDATA[<p>C++23's new facilities for handling disappointments without exceptions.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/">Functional exception-less error handling with C++23&#8217;s optional and expected</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><em>This post is an updated version of <a href="https://blog.tartanllama.xyz/optional-expected/">one I made over five years ago</a>, now that everything I talked about is in the standard and implemented in Visual Studio.</em></p>
+<p>In software things can go wrong. Sometimes we might expect them to go wrong. Sometimes it&#8217;s a surprise. In most cases we want to build in some way of handling these misfortunes. Let&#8217;s call them <a href="https://wg21.link/p0157">disappointments</a>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/stdoptional-how-when-and-why/"><code>std::optional</code> was added in C++17</a> to provide a new standard way of expressing disappointments and more, and it has been extended in C++23 with <a href="https://wg21.link/p0798">a new interface inspired by functional programming</a>.</p>
+<p><code>std::optional&lt;T&gt;</code> expresses &#8220;either a <code>T</code> or nothing&#8221;. C++23 comes with a new type, <a href="https://wg21.link/P0323"><code>std::expected&lt;T,E&gt;</code></a> which expresses &#8220;either the expected <code>T</code>, or some <code>E</code> telling you what went wrong&#8221;. This type also comes with that <a href="https://wg21.link/p2505">special new functional interface</a>. As of <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2022 version 17.6 Preview 3</a>, all of these features are available in our standard library. Armed with an STL implementation you can try yourself, I&#8217;m going to exhibit how to use <code>std::optional</code>&#8216;s new interface, and the new <code>std::expected</code> to handle disappointments.</p>
+<p>One way to express and handle disappointments is exceptions:</p>
+<pre><code class="language-cpp">void pet_cat() {
+    try {
+        auto cat = find_cat();
+        scratch_behind_ears(cat);
+    }
+    catch (const no_cat_found&amp; err) {
+        //oh no
+        be_sad();
+    }
+}</code></pre>
+<p>There are a myriad of discussions, resources, rants, tirades, and debates about the value of exceptions<sup><a href="https://www.youtube.com/watch?v=XVofgKH-uu4">1</a><a href="https://stackoverflow.com/questions/1736146/why-is-exception-handling-bad">2</a><a href="https://stackoverflow.com/questions/13835817/are-exceptions-in-c-really-slow">3</a><a href="https://www.shanekirk.com/2015/06/c-exceptions-the-good-the-bad-and-the-ugly/">4</a><a href="https://www.acodersjourney.com/2016/08/top-15-c-exception-handling-mistakes-avoid/">5</a><a href="https://mortoray.com/2012/04/02/everything-wrong-with-exceptions/">6</a></sup>, and I will not repeat them here. Suffice to say that there are cases in which exceptions are not the best tool for the job. For the sake of being uncontroversial, I&#8217;ll take the example of disappointments which are expected within reasonable use of an API.</p>
+<p>The Internet loves cats. Suppose that you and I are involved in the business of producing the cutest images of cats the world has ever seen. We have produced a high-quality C++ library geared towards this sole aim, and we want it to be at the bleeding edge of modern C++.</p>
+<p>A common operation in feline cutification programs is to locate cats in a given image. How should we express this in our API? One option is exceptions:</p>
+<pre><code class="language-cpp">// Throws no_cat_found if a cat is not found.
+image_view find_cat (image_view img);</code></pre>
+<p>This function takes a view of an image and returns a smaller view which contains the first cat it finds. If it does not find a cat, then it throws an exception. If we&#8217;re going to be giving this function a million images, half of which do not contain cats, then that&#8217;s a <em>lot</em> of exceptions being thrown. In fact, we&#8217;re pretty much using exceptions for control flow at that point, which is <a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#e3-use-exceptions-for-error-handling-only">A Bad Thing</a><img src="https://s.w.org/images/core/emoji/14.0.0/72x72/2122.png" alt="™" class="wp-smiley" style="height: 1em; max-height: 1em;" />.</p>
+<p>What we really want to express is a function which either returns a cat if it finds one, or it returns nothing. Enter <code>std::optional</code>.</p>
+<pre><code class="language-cpp">std::optional&lt;image_view&gt; find_cat (image_view img);</code></pre>
+<p><a href="https://en.cppreference.com/w/cpp/utility/optional"><code>std::optional</code></a> was introduced in C++17 for representing a value which may or may not be present. It is intended to be a vocabulary type &#8212; i.e. the canonical choice for expressing some concept in your code. The difference between this signature and the previous one is powerful; we&#8217;ve moved the description of what happens on an error from the documentation into the type system. Now it&#8217;s impossible for the user to forget to read the docs, because the compiler is reading them for us, and you can be sure that it&#8217;ll shout at you if you use the type incorrectly.</p>
+<p>Now we&#8217;re ready to use our <code>find_cat</code> function along with some other friends from our library to make embarrassingly adorable pictures of cats:</p>
+<pre><code class="language-cpp">std::optional&lt;image_view&gt; get_cute_cat (image_view img) {
+    auto cropped = find_cat(img);
+    if (!cropped) {
+      return std::nullopt;
+    }
+
+    auto with_tie = add_bow_tie(*cropped);
+    if (!with_tie) {
+      return std::nullopt;
+    }
+
+    auto with_sparkles = make_eyes_sparkle(*with_tie);
+    if (!with_sparkles) {
+      return std::nullopt;
+    }
+
+    return add_rainbow(make_smaller(*with_sparkles));
+}</code></pre>
+<p>Well this is&#8230; okay. The user is made to explicitly handle what happens in case of an error, so they can&#8217;t forget about it, which is good. But there are two issues with this:</p>
+<ol>
+<li>There&#8217;s no information about <em>why</em> the operations failed.</li>
+<li>There&#8217;s too much noise; error handling dominates the logic of the code.</li>
+</ol>
+<p>I&#8217;ll address these two points in turn.</p>
+<h3 id="why-did-something-fail">Why did something fail?</h3>
+<p><code>std::optional</code> is great for expressing that some operation produced no value, but it gives us no information to help us understand why this occurred; we&#8217;re left to use whatever context we have available, or (please, no) output parameters. What we want is a type which either contains a value, or contains some information about why the value isn&#8217;t there. This is called <code>std::expected</code>.</p>
+<p>With <code>std::expected</code> our code might look like this:</p>
+<pre><code class="language-cpp">std::expected&lt;image_view, error_code&gt; get_cute_cat (image_view img) {
+    auto cropped = find_cat(img);
+    if (!cropped) {
+      return no_cat_found;
+    }
+
+    auto with_tie = add_bow_tie(*cropped);
+    if (!with_tie) {
+      return cannot_see_neck;
+    }
+
+    auto with_sparkles = make_eyes_sparkle(*with_tie);
+    if (!with_sparkles) {
+      return cat_has_eyes_shut;
+    }
+
+    return add_rainbow(make_smaller(*with_sparkles));
+}</code></pre>
+<p>Now when we call <code>get_cute_cat</code> and don&#8217;t get a lovely image back, we have some useful information to report to the user as to why we got into this situation.</p>
+<h3 id="noisy-error-handling">Noisy error handling</h3>
+<p>Unfortunately, with both the <code>std::optional</code> and <code>std::expected</code> versions, there&#8217;s still a lot of noise. This is a disappointing solution to handling disappointments.</p>
+<p>What we really want is a way to express the operations we want to carry out while pushing the disappointment handling off to the side. As is becoming increasingly trendy in the world of C++, we&#8217;ll look to the world of functional programming for help. In this case, the help comes in the form of <code>transform</code> and <code>and_then</code>.</p>
+<p>If we have some <code>std::optional</code> and we want to carry out some operation on it if and only if there&#8217;s a value stored, then we can use <code>transform</code>:</p>
+<pre><code class="language-cpp">cat make_cuter(cat);
+
+std::optional&lt;cat&gt; result = maybe_get_cat().transform(make_cuter);
+//use result</code></pre>
+<p>This code is roughly equivalent to:</p>
+<pre><code class="language-cpp">cat make_cuter(cat);
+
+auto opt_cat = maybe_get_cat();
+if (opt_cat) {
+   cat result = make_cuter(*opt_cat);
+   //use result
+}</code></pre>
+<p>If we want to carry out some operation <em>which could itself fail</em> then we can use <code>and_then</code>:</p>
+<pre><code class="language-cpp">std::optional&lt;cat&gt; maybe_make_cuter (cat);
+
+std::optional&lt;cat&gt; result = maybe_get_cat().and_then(maybe_make_cuter);
+//use result</code></pre>
+<p>This code is roughly equivalent to:</p>
+<pre><code class="language-cpp">std::optional&lt;cat&gt; maybe_make_cuter (const cat&amp;);
+
+auto opt_cat = maybe_get_cat();
+if (opt_cat) {
+   std::optional&lt;cat&gt; result = maybe_make_cuter(*opt_cat);
+   //use result
+}</code></pre>
+<p><code>and_then</code> and <code>transform</code> for <code>expected</code> act in much the same way as for <code>optional</code>: if there is an expected value then the given function will be called with that value, otherwise the stored unexpected value will be returned. Additionally, there is a <code>transform_error</code> function which allows mapping functions over unexpected values.</p>
+<p>The real power of these functions comes when we begin to chain operations together. Let&#8217;s look at that original <code>get_cute_cat</code> implementation again:</p>
+<pre><code class="language-cpp">std::optional&lt;image_view&gt; get_cute_cat (image_view img) {
+    auto cropped = find_cat(img);
+    if (!cropped) {
+      return std::nullopt;
+    }
+
+    auto with_tie = add_bow_tie(*cropped);
+    if (!with_tie) {
+      return std::nullopt;
+    }
+
+    auto with_sparkles = make_eyes_sparkle(*with_tie);
+    if (!with_sparkles) {
+      return std::nullopt;
+    }
+
+    return add_rainbow(make_smaller(*with_sparkles));
+}</code></pre>
+<p>With <code>transform</code> and <code>and_then</code>, our code transforms into this:</p>
+<pre><code class="language-cpp">std::optional&lt;image_view&gt; get_cute_cat (image_view img) {
+    return find_cat(img)
+           .and_then(add_bow_tie)
+           .and_then(make_eyes_sparkle)
+           .transform(make_smaller)
+           .transform(add_rainbow);
+}</code></pre>
+<p>With these two functions we&#8217;ve successfully pushed the error handling off to the side, allowing us to express a series of operations which may fail without interrupting the flow of logic to test an <code>optional</code>. For more discussion about this code and the equivalent exception-based code, I&#8217;d recommend reading <a href="https://twitter.com/supahvee1234">Vittorio Romeo</a>&#8216;s <a href="https://vittorioromeo.info/index/blog/adts_over_exceptions.html">Why choose sum types over exceptions?</a> article.</p>
+<h3 id="a-theoretical-aside">A theoretical aside</h3>
+<p>I didn&#8217;t make up <code>transform</code> and <code>and_then</code> off the top of my head; other languages have had equivalent features for a long time, and the theoretical concepts are common subjects in <a href="https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/">Category Theory</a>.</p>
+<p>I won&#8217;t attempt to explain all the relevant concepts in this post, as others have done it far better than I could. The basic idea is that <code>transform</code> comes from the concept of a <em>functor</em>, and <code>and_then</code> comes from <em>monads</em>. These two functions are called <code>fmap</code> and <code>&gt;&gt;=</code> (bind) in Haskell. The best description of these concepts which I have read is <a href="https://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html">Functors, Applicatives, And Monads In Pictures</a> by Aditya Bhargava. Give it a read if you&#8217;d like to learn more about these ideas.</p>
+<h3 id="a-note-on-overload-sets">A note on overload sets</h3>
+<p>One use-case which is annoyingly verbose is passing overloaded functions to <code>transform</code> or <code>and_then</code>. For example:</p>
+<pre><code class="language-cpp">cat make_cuter(cat);
+
+std::optional&lt;cat&gt; c;
+auto cute_cat = c.transform(make_cuter);</code></pre>
+<p>The above code works fine. But as soon as we add another overload to <code>make_cuter</code>:</p>
+<pre><code class="language-cpp">cat make_cuter(cat);
+dog make_cuter(dog);
+
+std::optional&lt;cat&gt; c;
+auto cute_cat = c.transform(make_cuter);</code></pre>
+<p>then it fails to compile, because it&#8217;s not clear which overload we want to pass to transform.</p>
+<p>One solution for this is to use a generic lambda:</p>
+<pre><code class="language-cpp">std::optional&lt;cat&gt; c;
+auto cute_cat = c.transform([](auto x) { return make_cuter(x); });</code></pre>
+<p>Another is a <code>LIFT</code> macro:</p>
+<pre><code class="language-cpp">#define FWD(...) std::forward&lt;decltype(__VA_ARGS__)&gt;(__VA_ARGS__)
+#define LIFT(f) \
+    [](auto&amp;&amp;... xs) noexcept(noexcept(f(FWD(xs)...))) -&gt; decltype(f(FWD(xs)...)) \
+    { return f(FWD(xs)...); }
+
+std::optional&lt;cat&gt; c;
+auto cute_cat = c.transform(LIFT(make_cuter));</code></pre>
+<p>Personally I hope to see <a href="https://wg21.link/p0834">overload set lifting</a> in some form get into the standard so that we don&#8217;t need to bother with the above solutions.</p>
+<p>If you want to read more about specifically this problem, I have a <a href="https://blog.tartanllama.xyz/passing-overload-sets/">whole blog post</a> on it.</p>
+<h3 id="try-them-out">Try them out</h3>
+<p>The functional extensions to <code>std::expected</code> and <code>std::optional</code> are available in <a href="https://visualstudio.microsoft.com/vs/preview/">Visual Studio 2022 version 17.6 Preview 3</a>. Please try them out and let us know what you think! If you have any questions, comments, or issues with the features, you can comment below, or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
+<p>If you&#8217;re stuck on old versions of C++, I have written implementations of <code>optional</code> and <code>expected</code> with the functional interfaces as single-header libraries, released under the <a href="https://creativecommons.org/share-your-work/public-domain/cc0/">CC0</a> license. You can find them at <a href="https://github.com/TartanLlama/optional"><code>tl::optional</code></a> and <a href="https://github.com/TartanLlama/expected"><code>tl::expected</code></a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/">Functional exception-less error handling with C++23&#8217;s optional and expected</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</title>
 		<link>https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/#comments</comments>
@@ -819,45 +1001,6 @@ The __if_exists and __if_not_exists keywords in the Active Template Library (ATL
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>View files on your Remote Machines using the new Remote File Explorer in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Mon, 27 Feb 2023 19:28:52 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31871</guid>
-
-					<description><![CDATA[<p>We are excited to announce that we have added a new tool window, the Remote File Explorer, to Visual Studio in version 17.6 Preview 1.  This window provides you with the ability to browse, upload, and download files and folders on your remote machines that you are connected to via the Connection Manager within your Visual Studio instance.  </p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/">View files on your Remote Machines using the new Remote File Explorer in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span class="TextRun SCXW68103097 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW68103097 BCX8">We</span><span class="NormalTextRun SCXW68103097 BCX8"> are excited to announce that we</span><span class="NormalTextRun SCXW68103097 BCX8"> have added </span><span class="NormalTextRun CommentStart SCXW68103097 BCX8">a new</span> <span class="NormalTextRun SCXW68103097 BCX8">tool window</span><span class="NormalTextRun SCXW68103097 BCX8">, the </span><span class="NormalTextRun SCXW68103097 BCX8">Remote File Explorer</span><span class="NormalTextRun SCXW68103097 BCX8">,</span><span class="NormalTextRun SCXW68103097 BCX8"> to Visual Studio in version 17.6 Preview 1. </span><span class="NormalTextRun SCXW68103097 BCX8"> This</span><span class="NormalTextRun SCXW68103097 BCX8"> window</span> <span class="NormalTextRun SCXW68103097 BCX8">provides you with the </span><span class="NormalTextRun SCXW68103097 BCX8">ability</span><span class="NormalTextRun SCXW68103097 BCX8"> to browse</span><span class="NormalTextRun SCXW68103097 BCX8">, upload, and download</span><span class="NormalTextRun SCXW68103097 BCX8"> files and folders on your remote machines that you are connected to via the Connection Manager </span><span class="NormalTextRun SCXW68103097 BCX8">within your</span><span class="NormalTextRun SCXW68103097 BCX8"> Visual Studio</span><span class="NormalTextRun SCXW68103097 BCX8"> instance</span><span class="NormalTextRun SCXW68103097 BCX8">.</span><span class="NormalTextRun SCXW68103097 BCX8"> </span></span><span class="EOP SCXW68103097 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png"><img decoding="async" class="size-full wp-image-31872 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png" alt="The Remote File Explorer lets you view your files on your remote machines" width="660" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest-300x212.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></a></p>
-<h3 aria-level="2" aria-level="2" id="how-do-i-access-the-remote-file-explorer"><span data-contrast="none">How do I access the Remote File Explorer?</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">To access the Remote File Explorer, </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">download the latest version of Visual Studio</span></a><span data-contrast="auto"> and ensure “Remote File Explorer for Linux” is checked under the optional downloads in the Linux and embedded development with C++ toolset: </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection.png"><img decoding="async" class="alignnone size-full wp-image-31894" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection.png" alt="Select Remote File Explorer for Linux from Linux development with C++ workload" width="1476" height="715" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection.png 1476w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection-300x145.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection-1024x496.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Linux-and-Embedded-selection-768x372.png 768w" sizes="(max-width: 1476px) 100vw, 1476px" /></a></p>
-<p><span data-contrast="auto">Once downloaded, you can open it at any time via View &gt; Remote File Explorer in Visual Studio.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<h3 aria-level="2" aria-level="2" id="what-can-i-accomplish-with-the-remote-file-explorer"><span data-contrast="none">What can I accomplish with the Remote File Explorer?</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">The Remote File Explorer allows you to browse your file directories on your remote machine. To expand and load a given folder’s contents, just double-click on the folder icon or press the left arrow key.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png"><img decoding="async" class="size-full wp-image-31872 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png" alt="The Remote File Explorer lets you view your files on your remote machines" width="660" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/remote-file-explorer-latest-300x212.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></a></p>
-<p><span class="TextRun SCXW174413588 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW174413588 BCX8">You are also able to download and upload files and folders to a given directory</span><span class="NormalTextRun SCXW174413588 BCX8"> via the icons in the toolbar</span><span class="NormalTextRun SCXW174413588 BCX8"> or by </span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW174413588 BCX8">right-clicking</span><span class="NormalTextRun SCXW174413588 BCX8"> the item you want to interact with.</span><span class="NormalTextRun SCXW174413588 BCX8"> </span></span><span class="EOP SCXW174413588 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Right-click-context-menu.png"><img decoding="async" class="wp-image-31874 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Right-click-context-menu.png" alt="Right-clicking in the Remote File Explorer pops up a context menu for you to do actions like upload and download" width="483" height="313" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Right-click-context-menu.png 769w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/RFE-Right-click-context-menu-300x195.png 300w" sizes="(max-width: 483px) 100vw, 483px" /></a></p>
-<p><span class="TextRun SCXW4185234 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW4185234 BCX8">Additionally, you can</span><span class="NormalTextRun SCXW4185234 BCX8"> toggle the target machine by using the dropdown</span><span class="NormalTextRun SCXW4185234 BCX8"> in the toolbar</span><span class="NormalTextRun SCXW4185234 BCX8"> to change your connect</span><span class="NormalTextRun SCXW4185234 BCX8">ed machine, refresh directory content and sync changes using the </span><span class="NormalTextRun CommentStart SCXW4185234 BCX8">refresh </span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW4185234 BCX8">icon, and</span><span class="NormalTextRun SCXW4185234 BCX8"> rename or </span><span class="NormalTextRun SCXW4185234 BCX8">delete</span><span class="NormalTextRun SCXW4185234 BCX8"> files and directories using the toolbar</span><span class="NormalTextRun SCXW4185234 BCX8"> and right-click menu</span><span class="NormalTextRun SCXW4185234 BCX8">.</span> <span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW4185234 BCX8">Refreshes</span> <span class="NormalTextRun SCXW4185234 BCX8">will also occur</span><span class="NormalTextRun SCXW4185234 BCX8"> automatically whenever a user </span><span class="NormalTextRun SCXW4185234 BCX8">performs an action in the Remote File </span><span class="NormalTextRun SCXW4185234 BCX8">Explorer but</span><span class="NormalTextRun SCXW4185234 BCX8"> can a</span><span class="NormalTextRun SCXW4185234 BCX8">dditionally</span><span class="NormalTextRun SCXW4185234 BCX8"> be triggered by pressing the spacebar key.</span></span><span class="EOP SCXW4185234 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span class="TextRun SCXW155685544 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW155685544 BCX8">Along the</span><span class="NormalTextRun SCXW155685544 BCX8"> bottom pane</span><span class="NormalTextRun SCXW155685544 BCX8">,</span><span class="NormalTextRun SCXW155685544 BCX8"> users can view</span><span class="NormalTextRun SCXW155685544 BCX8"> any ongoing </span><span class="NormalTextRun SCXW155685544 BCX8">and past </span><span class="NormalTextRun SCXW155685544 BCX8">file operations, as well as cancel any file operation </span><span class="NormalTextRun SCXW155685544 BCX8">at</span><span class="NormalTextRun SCXW155685544 BCX8"> any given time.</span></span><span class="EOP SCXW155685544 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane.png"><img decoding="async" class="alignnone size-full wp-image-31875" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane.png" alt="There is a bottom pane where you can view all ongoing and past file operations" width="1375" height="376" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane.png 1375w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane-300x82.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane-1024x280.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/02/File-Operation-Pane-768x210.png 768w" sizes="(max-width: 1375px) 100vw, 1375px" /></a></p>
-<h3 aria-level="2" aria-level="2" id="send-us-your-feedback"><span data-contrast="none">Send us your feedback!</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:40,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h3>
-<p><span data-contrast="auto">We hope the Remote File Explorer helps you with your remote development workflows. </span><a href="https://visualstudio.microsoft.com/vs/preview/"><span data-contrast="none">Download the latest preview version of Visual Studio</span></a><span data-contrast="auto"> and give it a try.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">Please let us know your thoughts and what additional capabilities you’d like to see from this feature next! We are actively developing this feature set and would love to hear what would improve your workflow even more. The comments below are open and we also have a </span><a href="https://developercommunity.visualstudio.com/t/Remote-File-SSH-Explorer-Suggestions/10262117?space=8&amp;entry=suggestion"><span data-contrast="none">Visual Studio Feedback ticket</span></a><span data-contrast="auto"> open to track any requests that you can comment on. You can also find us on Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="auto">) or via email at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="auto">. To open a bug, please see </span><a href="https://developercommunity.visualstudio.com/report?space=8&amp;entry=problem"><span data-contrast="none">Visual Studio Feedback</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/">View files on your Remote Machines using the new Remote File Explorer in Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
