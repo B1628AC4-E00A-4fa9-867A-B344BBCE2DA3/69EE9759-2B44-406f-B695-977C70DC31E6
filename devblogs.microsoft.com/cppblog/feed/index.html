@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 18 Apr 2023 18:53:41 +0000</lastBuildDate>
+	<lastBuildDate>Sat, 22 Apr 2023 04:29:13 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,183 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Sat, 22 Apr 2023 04:29:13 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32119</guid>
+
+					<description><![CDATA[<p>The 2023.04.15 release of the vcpkg package manager is available. This blog post summarizes changes from February 25th, 2023 to April 15th, 2023 for the Microsoft/vcpkg, Microsoft/vcpkg-tool, and Microsoft/vcpkg-docs GitHub repos.<br />
+Some stats for this period:</p>
+<p>39 new ports were added to the open-source registry.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/">vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.04.15">2023.04.15 release of the vcpkg package manager is available</a>. This blog post summarizes changes from February 25<sup>th</sup>, 2023 to April 15<sup>th</sup>, 2023 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a>, and <a href="https://github.com/microsoft/vcpkg-docs">Microsoft/vcpkg-docs</a> GitHub repos.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li><strong>39 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
+<li><strong>957 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
+<li>There are now <strong>2,190 total libraries</strong> available in the vcpkg public registry.</li>
+<li><strong>125 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
+<li>The main vcpkg repo has over <strong>5,300 forks</strong> and <strong>18,400 stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="notable-changes">Notable Changes</h3>
+<h4 id="vcpkg-now-included-with-visual-studio-ide">vcpkg now included with Visual Studio IDE</h4>
+<p>As of Visual Studio 2022 (version 17.6), vcpkg is now added by default for IDE installations that include C++ workloads. Visual Studio users can run vcpkg commands from a Developer Command Prompt for Visual Studio targeting a new version of the IDE – both the ones embedded in the IDE as well as external terminals. You must run <code>vcpkg integrate install</code> to configure the built-in copy of vcpkg as the one for use by the IDE and in order to add enable MSBuild and CMake integration. More details will be shared in a separate blog post (coming soon!).</p>
+<p>&nbsp;</p>
+<h4 id="new-community-xbox-triplets">New Community Xbox Triplets</h4>
+<p>vcpkg now supports targeting Xbox out of the box with four new community triplets. The appropriate triplet is automatically chosen when using the <em>Gaming.Xbox.*.x64</em> custom platforms in the Microsoft GDK with Xbox Extensions via the <code>vcpkg integrate</code> functionality. This makes it easy for developers to build open-source dependencies for this platform. Thank you to Chuck Walbourn from the Xbox organization for preparing these triplets.</p>
+<table style="width: 27.2013%; height: 100px;">
+<tbody>
+<tr style="height: 38px;">
+<td style="width: 37.1938%; height: 38px;" width="168"><strong>Triplet</strong></td>
+<td style="width: 62.8062%; height: 38px;" width="287"><strong>Description</strong></td>
+</tr>
+<tr style="height: 26px;">
+<td style="width: 37.1938%; height: 26px;" width="168">x64-xbox-scarlett</td>
+<td style="width: 62.8062%; height: 26px;" width="287">Builds DLLs for Xbox Series X|S</td>
+</tr>
+<tr style="height: 10px;">
+<td style="width: 37.1938%; height: 10px;" width="168">x64-xbox-scarlett-static</td>
+<td style="width: 62.8062%; height: 10px;" width="287">Builds static C++ libraries for Xbox Series X|S</td>
+</tr>
+<tr style="height: 10px;">
+<td style="width: 37.1938%; height: 10px;" width="168">x64-xbox-xboxone</td>
+<td style="width: 62.8062%; height: 10px;" width="287">Builds DLLs for Xbox One</td>
+</tr>
+<tr style="height: 16px;">
+<td style="width: 37.1938%; height: 16px;" width="168">x64-xbox-xboxone-static</td>
+<td style="width: 62.8062%; height: 16px;" width="287">Builds static C++ libraries for Xbox One</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>Another benefit of these new triplets is for open-source library maintainers, who can validate that their code will build against the <code>WINAPI_FAMILY_GAMES</code> partition used on Xbox using only the public Windows SDK.</p>
+<p>To learn more about the new triplets and how to use them, visit <a href="https://walbourn.github.io/vcpkg-now-supports-targeting-xbox/">Chuck’s blog post</a> on the topic.</p>
+<p>&nbsp;</p>
+<h4 id="official-vcpkg-tool-release-architecture-is-now-amd64">Official vcpkg Tool Release Architecture is Now amd64</h4>
+<p>vcpkg tool releases on GitHub are now amd64 (was previously x86), as we do not expect many users to prefer x86 going forward.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1005">Microsoft/vcpkg-tool#1005</a></p>
+<p>&nbsp;</p>
+<h4 id="binary-caching-support-for-github-actions-cache">Binary Caching Support for GitHub Actions Cache</h4>
+<p>The vcpkg binary caching feature now works with the <a href="https://docs.github.com/en/rest/actions/cache">GitHub Actions Cache</a>. GitHub Actions Cache allows you to use a REST API to query and manage the cache for repositories in <a href="https://docs.github.com/en/actions">GitHub Actions</a>.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/836">Microsoft/vcpkg-tool#836</a> (thanks @quyykk!)</p>
+<p>&nbsp;</p>
+<h4 id="vcpkg-use-now-stacks-with-previous-use-or-activate-commands-but-not-vice-versa"><span style="font-size: 18pt;"><code>vcpkg use</code> now stacks with previous <code>use</code> or <code>activate</code> commands (but not vice versa)</span></h4>
+<p>For artifacts users, we have made the behavior of <span style="font-size: 12pt;"><code>vcpkg use</code></span> and <span style="font-size: 12pt;"><code>vcpkg activate</code></span> consistent when used multiple times. You can run <code>vcpkg use</code> after previously running <span style="font-size: 12pt;"><code>vcpkg use</code></span> on another artifact to enable both artifacts at the same time. You can also run <span style="font-size: 12pt;"><code>vcpkg use</code></span> after a previous <span style="font-size: 12pt;"><code>vcpkg activate</code></span> to enable all artifacts invoked by both <span style="font-size: 12pt;"><code>activate</code></span>and <span style="font-size: 12pt;"><code>use</code></span>. This does not work in reverse however – running <span style="font-size: 12pt;"><code>vcpkg activate</code></span> after <span style="font-size: 12pt;"><code>vcpkg use</code></span> will activate only the artifacts in the manifest at the time of activation, ignoring the artifact previously enabled via <span style="font-size: 12pt;"><code>vcpkg use</code></span>.  Lastly, when activating or deactivating artifacts, console output provides clearer feedback about what is going on.</p>
+<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/944">Microsoft/vcpkg-tool#944</a></p>
+<p>&nbsp;</p>
+<h4 id="bug-fixes-performance-improvements">Bug Fixes / Performance Improvements</h4>
+<ul>
+<li><code>vcpkg install --only-downloads</code> now works when run on ports that call other helper ports, assuming the helper ports are still only downloading files and not building them (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/901">Microsoft/vcpkg-tool#901</a>).</li>
+<li><em>vcpkg.json</em> manifests now allow the user to specify port version 0 explicitly as a version constraint (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/916">Microsoft/vcpkg-tool#916</a>, thanks @horenmar!)</li>
+<li>Added localization throughout the tool in areas where it was missing.</li>
+<li>Fixed several issues preventing vcpkg artifacts from working when the vcpkg root directory is set to read-only. Also required to enable vcpkg to be shipped with the Visual Studio IDE. (PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/938">Microsoft/vcpkg-tool#938</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/939">Microsoft/vcpkg-tool#939</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/940">Microsoft/vcpkg-tool#940</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/941">Microsoft/vcpkg-tool#941</a>).</li>
+<li>Fixed a crash when running <code>vcpkg integrate-install powershell</code> (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/965">Microsoft/vcpkg-tool#965</a>, thanks @autoantwort!).</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
+<table style="width: 13.3692%;" width="258">
+<tbody>
+<tr>
+<td style="width: 63.0189%; text-align: left;" width="163"><strong>triplet</strong></td>
+<td style="width: 36.6038%; text-align: center;" width="95"><strong>ports available</strong></td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-windows</td>
+<td style="width: 36.6038%; text-align: center;" width="95">2,040</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x86-windows</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,974</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-windows-static</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,942</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-windows-static-md</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,957</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">arm64-windows</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,620</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-linux</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,982</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-osx</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,911</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">x64-uwp</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,115</td>
+</tr>
+<tr>
+<td style="width: 63.0189%;" width="163">arm-uwp</td>
+<td style="width: 36.6038%; text-align: center;" width="95">1,061</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank You to Our Contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg, vcpkg-tool, or vcpkg-docs repos in this release:</p>
+<ul>
+<li>autoantwort (67 commits)</li>
+<li>dg0yt (38 commits)</li>
+<li>Neumann-A (15 commits)</li>
+<li>FtZPetruska (9 commits)</li>
+<li>talregev (6 commits)</li>
+<li>ex-purple (5 commits)</li>
+<li>SchaichAlonso (5 commits)</li>
+<li>JackBoosY (5 commits)</li>
+<li>DragonJoker (4 commits)</li>
+<li>coryan (4 commits)</li>
+<li>Osyotr (3 commits)</li>
+<li>myd7349 (3 commits)</li>
+<li>chausner (3 commits)</li>
+<li>xiaozhuai (3 commits)</li>
+<li>horenmar (3 commits)</li>
+<li>quyykk (2 commits)</li>
+<li>RT222 (2 commits)</li>
+<li>Pospelove (2 commits)</li>
+<li>Tradias (2 commits)</li>
+<li>daschuer (2 commits)</li>
+<li>an-tao (2 commits)</li>
+<li>luncliff (2 commits)</li>
+<li>BurningEnlightenment (2 commits)</li>
+<li>AenBleidd (2 commits)</li>
+<li>Thomas1664 (1 commit)</li>
+<li>yurybura (1 commit)</li>
+<li>danielaparker (1 commit)</li>
+<li>janisozaur (1 commit)</li>
+<li>ahmedyarub (1 commit)</li>
+<li>koprok (1 commit)</li>
+<li>m-kuhn (1 commit)</li>
+<li>kobykahane (1 commit)</li>
+<li>cmello (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn More</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.04.15">full 2023.04.15 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/">vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Functional exception-less error handling with C++23&#8217;s optional and expected</title>
 		<link>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/#comments</comments>
@@ -948,59 +1125,6 @@ In the world of Arm microcontrollers there are many silicon vendors,</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>An alternative to __if_exists in ATL</title>
-		<link>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/#respond</comments>
-		
-		<dc:creator><![CDATA[Anju Del Moral Gonzalez]]></dc:creator>
-		<pubDate>Tue, 28 Feb 2023 16:00:15 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31879</guid>
-
-					<description><![CDATA[<p>What are _if_exists and __if_not_exists<br />
-The __if_exists and __if_not_exists keywords in the Active Template Library (ATL) allow a user to test at compile time whether an identifier exists.  If the identifier exists, the associated statement block is executed.  __if_exists and __if_not_exists can be applied to the names of variables,</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/">An alternative to __if_exists in ATL</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h3 id="what-are-_if_exists-and-__if_not_exists">What are <code>_if_exists</code> and <code>__if_not_exists</code></h3>
-<p>The<code> __if_exists</code> and <code>__if_not_exists</code> keywords in the Active Template Library (ATL) allow a user to test at compile time whether an identifier exists.  If the identifier exists, the associated statement block is executed. <code> __if_exists</code> and <code>__if_not_exists</code> can be applied to the names of variables, functions, typedefs, as well as other identifiers.  You can read more about the specifics of their use and potential pitfalls on <a href="https://docs.microsoft.com/en-us/cpp/cpp/if-exists-statement?view=msvc-170">MSDN</a>, and in Raymond Chen’s <a href="https://devblogs.microsoft.com/oldnewthing/20190828-00/?p=102812">blogpost</a> about the keywords.</p>
-<h3 id="why-you-shouldnt-use-_if_exists-or-__if_not_exists">Why you shouldn’t use <code>_if_exists</code> or <code>__if_not_exists</code></h3>
-<p>Although these keywords seem like they’d be useful, they’ve been problematic for years.  Also, <code>_if_exists</code> and <code>__if_not_exists</code> are also incompatible with the recommended compiler <code>/permissive-</code> switch, which specifies standards-conforming compiler behavior, thus they also can’t be used with the new C++20 modules feature.</p>
-<h3 id="alternatives-to-__if_exists-and-__if_not_exists">Alternatives to <code>__if_exists</code> and <code>__if_not_exists</code></h3>
-<p>Starting with Visual Studio 2022 17.2 Preview 3, because MSVC with <code>/permissive-</code> (required by modules!) doesn&#8217;t support <code>__if_exists</code>, ATL has a new macro— <code>_ATL_MODULES</code>—which will replace code that looks like:</p>
-<pre class="prettyprint language-default"><code class="language-default">__if_exists(m_nAccessors)</code></pre>
-<p>with code that looks like:</p>
-<pre class="prettyprint language-default"><code class="language-default">if constexpr(_Has_m_nAccessors&lt;_Self&gt;::value)</code></pre>
-<p>By default, you can still use <code>__if_exists</code> and <code>__if_not_exists</code>, and you can use the old ATL code, but if you wish to use the modern <code>/permissive-</code> compiler mode, you&#8217;ll need to switch. Notice that is only supported from c++ 17 and forward.</p>
-<h3 id="changes-in-atl-macros">Changes in ATL Macros</h3>
-<p>Some ATL Macros were affected by the removal of <code>__if_exists</code>. You need to be aware of the following changes:</p>
-<ul>
-<li>There are now two versions of <code>BEGIN_PROPERTY_MAP</code> and <code>BEGIN_PROP_MAP</code>: <code>*_WITHOUT_ATL_PROP_NOTIFY_EVENT_CLASS_TYPEDEF</code> should be used in classes where there is <em>no</em> <code>_ATL_PROP_NOTIFY_EVENT_CLASS</code> typedef; <code>*_WITH_ATL_PROP_NOTIFY_EVENT_CLASS</code> versions should be used in classes where there <em>is </em>an <code>_ATL_PROP_NOTIFY_EVENT_CLASS</code> typedef.</li>
-<li><code>DECLARE_REGISTRY_RESOURCE</code>, <code>DECLARE_REGISTRY_RESOURCE_ID</code> – These macros have new versions.
-<ul>
-<li><code>WITH_MODULE</code> should be used where there is a global variable named <code>_Module</code> that is of a subtype of <code>CComModule</code></li>
-<li><code>WITHOUT_MODULE</code> version should be used when there is no such global variable available.</li>
-<li>V2 versions: In order for the new macros to emulate the original <code>__if_exists</code> behavior we need to know the name of the containing class. The previous versions of the macros do so using a non-Standard MSVC-specific extension.  The new versions require the user to pass the name of the containing class to the macro.  Whenever possible users should use the V2 versions.</li>
-</ul>
-</li>
-<li><code>BEGIN_CONNECTION_POINT_MAP</code>, <code>BEGIN_ATTRCONNECTION_POINT_MAP</code> – These macros define the typedef <code>_atl_conn_classtype</code> if it wasn’t already defined. Because we cannot detect if it already exists, there are now two versions of these macros:
-<ul>
-<li><code>*_WITHOUT_ATL_CONN_CLASSTYPE_TYPEDEF</code> should be used if there is <em>no</em> <code>_atl_conn_classtype</code> typedef</li>
-<li><code>*_WITH_ATL_CONN_CLASSTYPE_TYPEDEF</code> should be used ­in classes where there <em>is </em>an <code>_atl_conn_classtype</code> typedef already existing</li>
-</ul>
-</li>
-</ul>
-<h3 id="why-you-should-consume-the-atl-with-the-_atl_modules-flag">Why you should consume the ATL with the <code>_ATL_MODULES</code> flag</h3>
-<p>One of the most important consequences of these changes is that ATL can now be used with header units!  Read more about the benefits of Modules, including improved throughput, here (<a href="https://learn.microsoft.com/cpp/build/walkthrough-header-units">https://learn.microsoft.com/cpp/build/walkthrough-header-units</a>)</p>
-<p>Special thanks to Miya Natsuhara, who made all of these changes on the ATL codebase.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/">An alternative to __if_exists in ATL</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/an-alternative-to-__if_exists-in-atl/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
