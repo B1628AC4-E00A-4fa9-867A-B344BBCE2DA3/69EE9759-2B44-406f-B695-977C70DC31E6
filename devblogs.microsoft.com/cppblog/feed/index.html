@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Sat, 22 Apr 2023 04:29:13 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 26 Apr 2023 17:57:17 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,95 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Documentation for C++20 Ranges</title>
+		<link>https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Wed, 26 Apr 2023 17:52:01 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Documentation]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32095</guid>
+
+					<description><![CDATA[<p>C++20 introduced Ranges to the standard library: a new way of expressing composable transformations on collections of data. This feature adds a huge amount of expressive power and flexibility to C++. As with many concepts in C++, that power comes with new concepts to learn,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/">Documentation for C++20 Ranges</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>C++20 introduced Ranges to the standard library: a new way of expressing composable transformations on collections of data. This feature adds a huge amount of expressive power and flexibility to C++. As with many concepts in C++, that power comes with new concepts to learn, and some complexity which can be difficult to navigate.</p>
+<p>One way of taming that complexity is through complete, clear, comprehensive documentation.</p>
+<p>Christopher Di Bella and Sy Brand (one of the co-authors of this post) presented their ideas for C++ documentation in the era of concepts in their <a href="https://www.youtube.com/watch?v=nm45t2fnUms">CppCon 2021 talk</a>. Tyler Whitney (the other co-author, and manager of our C++ documentation at Microsoft) has expanded these ideas and exhaustively documented the range adaptors available in the standard library for you.</p>
+<p>To check it out, go to <a href="https://learn.microsoft.com/cpp/standard-library/ranges">&lt;ranges&gt; on Microsoft Learn</a>.</p>
+<p>In this post, we’ll talk through some of the complexity of using and documenting Ranges, and outline the principles behind the documentation which Tyler has written.</p>
+<p>But first, a quick introduction to Ranges for those of you who are not familiar with the feature.</p>
+<h2 id="what-are-ranges">What are Ranges?</h2>
+<p>At a high level, a range is something that you can iterate over. A range is represented by an iterator that marks the beginning of the range, and a <em>sentinel</em> that marks the end of the range. The sentinel may be the same type as the begin iterator, or it may be different, which lets Ranges support operations which simple iterator pairs can’t. The C++ Standard Library containers such as <code>vector</code> and <code>list</code> are ranges. A range abstracts iterators in a way that simplifies and amplifies your ability to use the Standard Template Library (STL).</p>
+<p>STL algorithms usually take iterators that point to the portion of the collection that they should operate on. For example, you could sort a vector with <code>std::sort(myVector.begin(), myVector.end());</code>. However, carrying out an algorithm across a range is such a common operation, we’d rather not have to retrieve the begin and end iterators every time. With ranges, you can instead call <code>std::ranges::sort(myVector);</code>.</p>
+<p>But perhaps the most important benefit of ranges is that you can compose STL algorithms that operate on ranges in a style that&#8217;s reminiscent of functional programming.</p>
+<p>Traditional C++ algorithms don’t compose well. For example, if you wanted to build a vector of squares from the elements in another vector that are divisible by three, you could write something like:</p>
+<pre class="prettyprint language-default"><code class="language-default">std::vector&lt;int&gt; input = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+std::vector&lt;int&gt; intermediate, output;
+
+std::copy_if(input.begin(), input.end(), std::back_inserter(intermediate),
+             [](const int i) { return i%3 == 0; });
+
+std::transform(intermediate.begin(), intermediate.end(), std::back_inserter(output), [](const int i) {return i*i; });</code></pre>
+<p>With ranges, you can produce a range with the same values without the intermediate vector:</p>
+<pre class="prettyprint language-default"><code class="language-default">// requires /std:c++20
+std::vector&lt;int&gt; input = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+auto output = input
+    | std::views::filter([](const int n) {return n % 3 == 0; })
+    | std::views::transform([](const int n) {return n * n; });</code></pre>
+<p>Besides being easier to read, this code avoids the memory allocation that&#8217;s required for the intermediate vector and its contents. It also allows you to compose two operations.</p>
+<p>In the preceding code, each element that&#8217;s divisible by three is combined with an operation to square that element. The pipe (<code>|</code>) symbol chains the operations together and is read left to right.</p>
+<p>Importantly, the <em>range adaptors</em> returned by <code>std::views::filter</code> and <code>std::views::transform</code> compute their results on-demand: i.e. those closures are only ever called when you ask for an item. This lets you express concepts like infinite ranges with ease.</p>
+<p>However, not all ranges were created equal. Different ranges have different characteristics and capabilities, and it can be difficult to understand what operations you are able to carry out just by looking at function signatures and concept definitions. Let’s look at some of these differences.</p>
+<h2 id="types-of-ranges">Types of ranges</h2>
+<p>We used the example of <code>sort()</code> earlier. There are all <span style="text-decoration: line-through;">sorts </span>kinds of sorting algorithms with different performance characteristics. If we have a large enough range and want to sort in-place, then we’ll often reach for <a href="https://en.wikipedia.org/wiki/Quicksort">quicksort</a>. However, this requires us to be able to swap any two arbitrary elements of the range.</p>
+<p>It’s easy to see how we can do this for a <code>std::vector</code>, where we can index to any location in constant-time. But for something like <code>std::forward_list</code>, which is a singly-linked list, it suddenly seems prohibitively expensive.</p>
+<p>As such, <code>std::ranges::sort</code> requires that the range you give it be a <em>random-access range</em>: one where you can access any element in constant-time like you can with <code>std::vector</code>. There’s a bunch of concepts in the standard library which can be used to check the access capabilities of a given range: whether it’s random-access, contiguous in memory, allows bidirectional iteration, allows only forward iteration, or is single-pass. These are all in the <code>std::ranges</code> namespace, and have names like <code>random_access_range</code> and <code>bidirectional_range</code>.</p>
+<p>However, it’s not just the access capabilities we might need to know. For example, some algorithms have optimized implementations for when you can retrieve the size of your range in <a href="https://en.wikipedia.org/wiki/Amortized_analysis">amortized constant-time</a> (<code>std::ranges::sized_range</code>). Some ranges cannot be iterated over if they are const allow you to keep using iterators they give you even after the range itself has been destroyed.</p>
+<p>Unfortunately, working out whether a given range will work with a given adaptor or algorithm can be difficult just looking at the function signatures and constraints. For example, to work out if a given range adaptor is const iterable, we need to check the signatures of begin and end, look for any const-qualified overloads, then check the constraints of those overloads to see if calling them would be valid for our use case.</p>
+<p>Additionally, these characteristics can affect not only whether some code should compile, but also its performance. Due to the importance of these characteristics and the difficulty of extracting them from APIs, we as documenters should identify the set which users of ranges need to know and surface them in a clear way.</p>
+<h2 id="what-users-of-ranges-need-to-know">What users of ranges need to know</h2>
+<p>If you want to use a given range adapter, like <code>std::views::transform</code>, there are many different considerations.</p>
+<p>Most importantly is: what does this range do? For something like filter, this is fairly clear. But for others like common, it’s not so obvious if you don’t have the necessary background knowledge. Naming is hard.</p>
+<p>We also need to know the usual things such as: how do we construct this adaptor, what parameters does it take, what are its members? And of course, are there any usage examples we can leverage?</p>
+<p>However, with Ranges there’s also all of the characteristics we mentioned in the last section, like whether or not the range is random-access. We’ve identified the following characteristics as the most important. These are taken from the <a href="https://learn.microsoft.com/en-us/cpp/standard-library/view-classes">top-level Learn article on view classes</a>:</p>
+<ul>
+<li>Range adaptor: The range adaptor that creates the given view (e.g. <code>std::views::transform</code> for <code>std::ranges::transform_view</code>). You typically use a range adaptor to create a view rather than create a view class directly, so it should be listed for convenience.</li>
+<li>Underlying range: Views have different iterator requirements for the kind of underlying range that they can use, e.g. <code>split_view</code> requires that the underlying range is a <code>forward_range</code>.</li>
+<li>View iterator category: The iterator category of the view. When a view adapts a range, the iterator type for the view is typically the same as the iterator type of the underlying range. However, it might be different for some views.</li>
+<li>Element type: The type of the elements that the view&#8217;s iterator returns. For example, <code>filter_view</code>’s elements will be of the same type as the underlying range, but <code>transform_view</code>’s elements will be of the type which the transformation function returns.</li>
+<li>Sized: Whether the view can return the number of elements that it refers to in amortized constant time. Not all views can, e.g. <code>filter_view</code>.</li>
+<li>Common range: Whether the view is a <code>common_range</code>, which means that the begin iterator and sentinel types are the same. Common ranges are useful for older code that works with iterator pairs. An example is iterator pair constructors for a sequence container, like <code>vector(ranges::begin(x), ranges::end(x))</code>.</li>
+<li>Borrowed range: Whether the view is a borrowed range. <code>borrowed_range&lt;T&gt;</code> means you can use iterators for <code>T</code> after <code>T</code> is destroyed.
+<ul>
+<li>No standard container is a borrowed range because destroying the container destroys the elements and invalidates any iterators. In that case, we say that the iterators are left &#8220;dangling&#8221; after destruction.</li>
+</ul>
+</li>
+<li>Is const iterable: Whether you can iterate over a const instance of the view. Not all const views can be iterated. If a view isn&#8217;t const iterable, you can&#8217;t iterate with <code>for (const auto&amp; element : as_const(theView))</code> or pass it to a function that takes a const reference to the view and then tries to iterate over it.</li>
+</ul>
+<h2 id="our-documentation">Our documentation</h2>
+<p>Tyler has exhaustively documented all of the range adaptors in the C++20 standard library following the above principles.</p>
+<p>If you want to use a range adaptor, your first port of call should be our <a href="https://learn.microsoft.com/en-us/cpp/standard-library/range-adaptors">“Range adaptors”</a> page, which gives high-level information about each range adaptor, alongside examples and links to the view classes which are created by those adaptation functions.</p>
+<p>If you then need to know information about a given view class, such as whether it’s const iterable, or sized, you can then follow the link to the specific page for that type. For example, here’s the range characteristics for <code>std::ranges::reverse_view</code>, all neatly laid out:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/view2.png"><img decoding="async" class="aligncenter size-full wp-image-32099" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/view2.png" alt="Image view2" width="941" height="512" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/view2.png 941w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/view2-300x163.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/view2-768x418.png 768w" sizes="(max-width: 941px) 100vw, 941px" /></a></p>
+<p>We also have documentation for the <a href="https://learn.microsoft.com/cpp/standard-library/range-concepts?view=msvc-170">concepts</a>, <a href="https://learn.microsoft.com/cpp/standard-library/range-functions?view=msvc-170">functions</a>, and <a href="https://learn.microsoft.com/cpp/standard-library/ranges-alias-templates?view=msvc-170">alias templates</a> defined in the <code>&lt;ranges&gt;</code> header.</p>
+<h2 id="future-work">Future Work</h2>
+<p>Currently all the range adaptors in the C++20 standard library have been documented. Several new ones have been added in C++23, but are not yet present in our docs.</p>
+<p>Similarly, we are still working on documenting the huge amount of “rangified” algorithms which have been added to the standard library: the versions of functions in the &lt;algorithm&gt; header which now take ranges, are decorated with template constraints, and allow passing projection functions.</p>
+<h2 id="send-us-your-feedback">Send us your feedback</h2>
+<p>Please check out our <a href="https://learn.microsoft.com/en-us/cpp/standard-library/ranges">Ranges documentation on Microsoft Learn</a> and let us know your feedback! You can do so directly using the “Feedback” button near the top of the articles, or you can create a GitHub Issue using the buttons at the bottom of each page.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/">Documentation for C++20 Ranges</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Fill in the ISO C++ Developer Survey</title>
 		<link>https://devblogs.microsoft.com/cppblog/fill-in-the-iso-c-developer-survey/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/fill-in-the-iso-c-developer-survey/#respond</comments>
@@ -1001,102 +1090,6 @@ or via <a href="mailto:ASanDev@microsoft.com">ASanDev@microsoft.com</a>.</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/stdstring-now-supports-address-sanitizer/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Code Analysis Improvements in Visual Studio 17.6</title>
-		<link>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Fri, 03 Mar 2023 16:00:07 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=31902</guid>
-
-					<description><![CDATA[<p>Code Analysis Improvements in VS 17.6</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/">Code Analysis Improvements in Visual Studio 17.6</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. We are adding richer code safety checks and addressing high impact customer feedback bugs posted on the <a href="https://developercommunity.visualstudio.com/cpp">C++ Developer Community</a> page. Thank you for engaging with us and giving us great feedback on the past releases and early previews leading to this point. Below is the detailed overview of the improvements we made to our code analysis tools.</p>
-<h2 id="improvements-to-existing-checks">Improvements to existing checks</h2>
-<p>We improved many checks to find more errors and emit fewer false positives. This section contains some highlights of the work we did over the past months.</p>
-<h3 id="unwrapping-empty-stdoptionals">Unwrapping empty std::optionals</h3>
-<p>The initial version of <a href="https://aka.ms/cpp/warnings/C26830">C26830</a>, which checks for the safe unwrapping of <code>std::optional</code>, did not support the <code>operator==</code> free function and reported a false C26830 for the code below:</p>
-<pre><code class="language-cpp">int f(std::optional&lt;int&gt; o) {
-  if (o == std::nullopt)
-      return 42;
-  // Previously, C26830 was emitted below.
-  return *o;
-}</code></pre>
-<p>After our improvements the analyzer no longer warns on the code above. This addition can also help finding more problems when a condition is accidentally inverted:</p>
-<pre><code class="language-cpp">int f(std::optional&lt;int&gt; o) {
-  if (o != std::nullopt)
-    return 42;
-  return *o; // C26829 emitted.
-}</code></pre>
-<p>We relaxed <a href="https://aka.ms/cpp/warnings/C26829">C26829</a> and <a href="https://aka.ms/cpp/warnings/C26830">C26830</a> to not warn when the <code>value</code> method is invoked on a potentially empty <code>std::optional</code>. Calling <code>value</code> on an empty optional will raise an exception, which some users prefer to catch instead of checking for emptiness upfront. When this exception is unacceptable, we introduced <a href="https://aka.ms/cpp/warnings/C26859">C26859</a> and <a href="https://aka.ms/cpp/warnings/C26860">C26860</a>, which forces an explicit null-check, guaranteeing that no exception is thrown. This was a request from this <a href="https://developercommunity.visualstudio.com/t/MSVC-emits-incorrect-C26829-warning-in-v/10205240">DevCom ticket</a>.</p>
-<h3 id="support-conditional-moves">Support conditional moves</h3>
-<p>Some APIs in the STL will consume an argument in some cases but leave it unchanged in others. Previously, the use <a href="https://aka.ms/cpp/warnings/C26800">use after move check</a> assumed that these select APIs will <em>always</em> consume the argument. We improved the check to better understand some commonly used APIs in the STL and avoid emitting false positives. For example, the following code snippet will no longer trigger any warnings:</p>
-<pre><code class="language-cpp">int f() {
-  std::map&lt;int, MyType&gt; myMap;
-  MyType val;
-  auto emplaceResult = myMap.try_emplace(1, std::move(val));
-  if (!emplaceResult.second) { // val was not inserted into the map
-    val.method(); // Previously, C26800 was emitted.
-  }
-}</code></pre>
-<p>In this code snippet, when the second element of the returned pair is false, <code>val</code> was not consumed by <code>try_emplace</code>. In that scenario, it is safe to use <code>val</code>. This problem was reported in a <a href="https://developercommunity.visualstudio.com/t/False-positive-on-code-analysis:-Warning/10117317">DevCom ticket</a>.</p>
-<h3 id="other-improvements">Other improvements</h3>
-<p>We also made many smaller improvements to other existing checks including:</p>
-<ul>
-<li>Improvements to the lifetime analysis</li>
-<li>Fixed false positives in <a href="https://aka.ms/cpp/warnings/C26440">C26440</a></li>
-<li>Fixed some missed warnings in <a href="https://aka.ms/cpp/warnings/C26481">C26481</a></li>
-<li>Fixed some false positives in <a href="https://aka.ms/cpp/warnings/C26813">C26813</a> <a href="https://developercommunity.visualstudio.com/t/analyze-false-positive-C26813-warning-f/10150977">reported on DevCom</a></li>
-</ul>
-<h2 id="improvements-to-the-code-analysis-engine">Improvements to the code analysis engine</h2>
-<h3 id="better-modeling-for-stdpair-and-stdswap">Better modeling for std::pair and std::swap</h3>
-<p>Our engine analyzes every function in isolation. Consequently, the analyzer does not always have the necessary information about other functions in order to deduce certain facts. Doing function-local analysis was a deliberate design decision to ensure good performance and scalability in our checks. To mitigate the loss of precision, we often add explicit modeling to widely used constructs like <code>pair</code>, rely on type information like <code>gsl::not_null</code>, or annotations like SAL. Consider the following code:</p>
-<pre><code class="language-cpp">void f(std::optional&lt;int&gt; opt) {
-  auto p = std::make_pair(opt, opt.has_value());
-  if (!p.second)
-    *p.first = 42; // dereferencing an empty optional! C26829 emitted.
-}</code></pre>
-<p>Since the analyzer does not look into the definition of <code>std::make_pair</code>, it previously did not understand that this function will store its second argument into the <code>second</code> field of the returned object. As a result, a high-confidence warning was never emitted when <code>p</code> is dereferenced. As of 17.6, we have added explicit modeling of <code>std::pair</code> and its related methods, so that the analyzer will be able catch more bugs such as in the example above, and emit fewer false positives, all while maintaining local static analysis.</p>
-<p>The <code>std::swap</code> function received similar treatment. We will correctly diagnose the problem in the code snippet below:</p>
-<pre><code class="language-cpp">void f() {
-  std::optional&lt;int&gt; opt{2};
-  std::optional&lt;int&gt; opt2{};
-  std::swap(opt, opt2);
-  *opt = 42;  // C26829 emitted.
-}</code></pre>
-<h3 id="better-support-for-suppression-attributes">Better support for suppression attributes</h3>
-<p>Previously <code>[[gsl::suppress]]</code> did not work on declarations. This is now fixed so the following code works as expected:</p>
-<pre><code class="language-cpp">void f(std::optional&lt;int&gt; o) {
-  if (o)
-    return;
-  [[gsl::suppress(26829)]]
-  int v = *o; // No longer raise C26829 for unwrapping the empty optional
-}</code></pre>
-<h3 id="other-fixes">Other fixes</h3>
-<p>We worked on many other fixes, including:</p>
-<ul>
-<li>Better support for <code>if constexpr</code></li>
-<li>Fixed a problem with modeling while loops reported in <a href="https://developercommunity.visualstudio.com/t/False-positive-on-code-analysis:-Warning/10116339">this DevCom ticket</a></li>
-<li>More precise modeling for temporary objects</li>
-<li>The engine now understand that the standard throwing operator new will not return null pointers</li>
-<li>Better modeling for initializer expressions</li>
-<li>Made the source locations of some warnings more precise</li>
-</ul>
-<h2 id="conclusion">Conclusion</h2>
-<p>Visual Studio 2022 17.6 features many improvements to our code analysis tools. Give it a try and let us know what you think.
-The work that we do is heavily influenced by feedback we receive on the <a href="https://developercommunity.visualstudio.com/search?space=62">Developer Community</a> so thank you again for your participation. Please continue to file feedback and let us know if there is a checker or rule that you would like to see added to C++ Core Check. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on Twitter.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/">Code Analysis Improvements in Visual Studio 17.6</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
