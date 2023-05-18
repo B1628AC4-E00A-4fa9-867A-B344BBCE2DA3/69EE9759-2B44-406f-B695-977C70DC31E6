@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>C++ tutorials, C and C++ news, and information about Visual Studio, Visual Studio Code, and Vcpkg from the Microsoft C++ team.</description>
-	<lastBuildDate>Tue, 16 May 2023 17:36:22 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 18 May 2023 20:49:06 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,67 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg is Now Included with Visual Studio</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/#comments</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Thu, 18 May 2023 20:20:50 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32242</guid>
+
+					<description><![CDATA[<p>As of Visual Studio 2022 version 17.6, the vcpkg C/C++ package manager is included as an installable component for the C++ Desktop and C++ Gaming workloads. You can also find it in the installer by searching for vcpkg package manager under the Individual components tab.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/">vcpkg is Now Included with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>As of Visual Studio 2022 version 17.6, the vcpkg C/C++ package manager is included as an installable component for the C++ Desktop and C++ Gaming workloads. You can also find it in the installer by searching for <em>vcpkg package manager</em> under the <em>Individual components</em> tab.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png"><img decoding="async" class="alignnone size-full wp-image-32244" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png" alt="Image VS Installer with vcpkg checkbox" width="2438" height="1260" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png 2438w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-300x155.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-1024x529.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-768x397.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-1536x794.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-2048x1058.png 2048w" sizes="(max-width: 2438px) 100vw, 2438px" /></a></p>
+<p>&nbsp;</p>
+<h3 id="using-the-visual-studio-copy-of-vcpkg">Using the Visual Studio Copy of vcpkg</h3>
+<p>After you install or update Visual Studio with the vcpkg component checked, the package manager will be installed in your Visual Studio installation directory.</p>
+<p>You can run vcpkg commands directly from the <em>Developer Command Prompt for Visual Studio</em> or <em>Developer PowerShell for Visual Studio</em>. This also works for the equivalent consoles embedded in the IDE. vcpkg output is localized according to your Visual Studio language. Both ports and artifacts are supported.</p>
+<p>As with all copies of vcpkg, to initialize it with the IDE, you will first need to run <code>vcpkg integrate install</code> before running other commands. This will enable MSBuild and CMake IDE integration with this copy of vcpkg. You will need to run this command with administrator privileges.</p>
+<p>Importantly, the copy of vcpkg that ships with the IDE supports manifests but <strong>does not support classic mode</strong>. The reason for this is that classic mode requires write access to the vcpkg installation directory, but in this case it is in Program Files and the Visual Studio installer requires ownership of it. You can still use classic mode by running integrate install to an external copy of vcpkg instead.</p>
+<p>&nbsp;</p>
+<h3 id="recap-existing-vcpkg-ide-integration">Recap: Existing vcpkg IDE Integration</h3>
+<p>vcpkg was already supported by Visual Studio even before this update. Below is a recap of what you can do with the package manager in the IDE. In order to enable this functionality, you must have run vcpkg integrate install once in the past. Once that is done, you do not need to re-run this command.</p>
+<p>&nbsp;</p>
+<h4 id="intellisense-support">IntelliSense Support</h4>
+<p>Code calling an external library installed with vcpkg will have working IntelliSense, including autocompletion, semantic colorization, code navigation, and refactoring features.</p>
+<p>&nbsp;</p>
+<h4 id="msbuild-integration">MSBuild Integration</h4>
+<p>There are several MSBuild properties for configuring vcpkg for your project. These are available under <em>Configuration Properties &gt; vcpkg</em>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png"><img decoding="async" class="alignnone size-full wp-image-32246" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png" alt="Image vcpkg MSBuild properties" width="774" height="530" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png 774w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties-300x205.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties-768x526.png 768w" sizes="(max-width: 774px) 100vw, 774px" /></a></p>
+<p>Importantly, you will want to set “<em>Use Vcpkg Manifest</em>” to “<em>Yes</em>” if you intend to use vcpkg in manifest mode with your MSBuild project. Once this is turned on, if you have a <em>vcpkg.json</em> file in your project, vcpkg will automatically be called every time you do a build to check if any dependencies need to be installed or updated. The package manager will then restore missing dependencies, allowing the build to proceed.</p>
+<p>&nbsp;</p>
+<h4 id="cmake-integration">CMake Integration</h4>
+<p>The IDE automatically picks up the <em>vcpkg.cmake</em> toolchain file and passes it to the CMake command line behind the scenes, allowing you to use the CMake IDE experience seamlessly. Furthermore, if you have a <em>vcpkg.json</em> manifest file in your project, vcpkg will automatically run when CMake configures itself on project load or when the CMake cache is manually generated. The package manager will automatically install or update any missing dependencies, in accordance with the manifest file, allowing you to build your project successfully.</p>
+<p>Furthermore, CMake find_package() calls also have IntelliSense autocompletion for various libraries available via vcpkg.</p>
+<p>&nbsp;</p>
+<h4 id="environment-activation-with-vcpkg-artifacts">Environment Activation with vcpkg Artifacts</h4>
+<p>If you have the <em>Linux and embedded development</em> workload installed in Visual Studio, you can automatically install and activate tools required for your development environment if they are configured as <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifacts</a> and they are defined in a manifest file. For more details, see <a href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg Environment Activation in Visual Studio</a>.</p>
+<p>&nbsp;</p>
+<h3 id="known-issues">Known Issues</h3>
+<p>The following features do not work yet with the built-in copy of vcpkg but are planned to be fixed in future updates to Visual Studio:</p>
+<ul>
+<li>The <em>Tools &gt; Options &gt; vcpkg package manager</em> setting that lets you point to a custom copy of vcpkg for managing vcpkg artifacts still exists and works for its intended purpose but does not replace the built-in copy of vcpkg in other contexts like running commands in the terminal. In the future, we plan to use this setting as a way for users to globally set their preferred copy of vcpkg within VS rather than having to run <code>vcpkg integrate install</code> from that copy of vcpkg.</li>
+<li>Being able to use the built-in copy without having to run <code>vcpkg integrate install</code></li>
+<li>The quick action lightbulb that appears when an IntelliSense error detects a code reference to a library that cannot be found and offers to install it with vcpkg will not work with the built-in copy as this feature uses classic mode.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="give-us-feedback">Give Us Feedback</h3>
+<p>Try out the latest version of <a href="https://visualstudio.microsoft.com/">Visual Studio 2022</a> and give us feedback! To learn more about vcpkg, <a href="https://vcpkg.io/">visit the website</a>.</p>
+<p>If you have feedback about Visual Studio features and how vcpkg integrates with Visual Studio, please visit the <em>Help &gt; Send Feedback</em> menu in Visual Studio or visit the <a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a> feedback website.</p>
+<p>If you have feedback about the vcpkg package manager itself, please file issues or start discussion threads in the <a href="https://github.com/microsoft/vcpkg">vcpkg GitHub repository</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/">vcpkg is Now Included with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Visual Studio 2022 version 17.6 for C++ Developers</title>
 		<link>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/#comments</comments>
@@ -1067,97 +1128,6 @@ auto cute_cat = c.transform(LIFT(make_cuter));</code></pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp23s-optional-and-expected/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</title>
-		<link>https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/#comments</comments>
-		
-		<dc:creator><![CDATA[Michael Price]]></dc:creator>
-		<pubDate>Thu, 13 Apr 2023 18:15:25 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Game Development]]></category>
-		<category><![CDATA[Incredibuild]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32022</guid>
-
-					<description><![CDATA[<p>Note: This post was co-authored with Incredibuild&#8217;s Director of Product Marketing, Yohai West.<br />
-We are pleased to announce that Visual Studio version 17.6 Preview 3 includes Incredibuild&#8217;s most advanced developer acceleration platform: Incredibuild 10. This release includes several notable, new features that empower teams to speed up the development process:</p>
-<p>Patent-pending Build Cache technology allows developers to cache build outputs so that they can be reused by all team members.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/">Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span style="font-size: 10pt;">Note: This post was co-authored with Incredibuild&#8217;s Director of Product Marketing, <a href="https://www.linkedin.com/in/yohai-west-5191744/">Yohai West</a>.</span></p>
-<p>We are pleased to announce that Visual Studio version 17.6 Preview 3 includes Incredibuild&#8217;s most advanced developer acceleration platform: Incredibuild 10. This release includes several notable, new features that empower teams to speed up the development process:</p>
-<ul>
-<li>Patent-pending Build Cache technology allows developers to cache build outputs so that they can be reused by all team members.</li>
-<li>A smart and flexible enterprise license management mechanism, managed via a new web-based Coordinator user interface.</li>
-<li>Incredibuild Cloud optimization automatically manages the best mix of on-demand and spot resources, enabling organizations to use smaller and more affordable machines, while maintaining optimal performance and cost.</li>
-</ul>
-<p>In this post we&#8217;ll detail how these features can improve your daily development.</p>
-<h3 id="build-cache-cache-what-you-can-distribute-the-rest">Build Cache &#8211; cache what you can; distribute the rest</h3>
-<p>Incredibuild 10&#8217;s most significant addition is its <a href="https://docs.incredibuild.com/win/latest/windows/build_cache.htm">Build Cache technology</a>. Incredibuild breaks down development processes into smaller tasks that can be executed independently, and Build Cache saves time and resources by reusing the cached outputs for previously executed tasks. Build Cache extends the incremental builds you are already likely familiar with by providing access to the outputs that your entire team has created. This means that an incremental build only has to build <strong>your</strong> changes and can rely on the cache when you have merged a teammate&#8217;s unrelated changes into yours. Additionally, temporarily working on a different branch won’t cause a large build when you switch back to your original branch.</p>
-<p>For any task outputs that are not in the cache, the Incredibuild Grid can distribute those tasks across its pool of compute cores. The Incredibuild Grid can allocate a pool of machines to meet the needed capacity for the tasks, including <a href="https://docs.incredibuild.com/win/latest/windows/cloud_overview.html">on-premises machines and static and on-demand spot instances provided by Incredibuild Cloud</a>. The machines in the grid don&#8217;t need a compiler to be installed or the code to be present, as <a href="https://docs.incredibuild.com/win/latest/windows/virtualization_tech.html">the Incredibuild Grid takes care of it all</a>. Once those tasks are completed and cached using Build Cache, they never have to be executed again, dramatically reducing build times for your entire team. These features working in tandem means that you can <em>cache what you can; distribute the rest</em>.</p>
-<h4 id="build-from-home-without-impacting-your-speed">Build from home without impacting your speed</h4>
-<p><a href="https://docs.incredibuild.com/win/latest/windows/work_from_home.html">Working from home</a> affects build speeds due to limited upstream bandwidth. Build Cache lets you rely more on downstream bandwidth, giving you greater speed and better performance when starting new builds. With Build Cache you can reuse previous build data stored on your local machine to dramatically reduce build times without impacting your bandwidth.</p>
-<h4 id="deployment-examples">Deployment Examples</h4>
-<p>Build Cache can be deployed in different ways depending on how your Clients connect to Endpoints. A single Client can function as its own Endpoint (local), multiple Clients can connect to a single Endpoint (shared), and more complex or dynamic deployments are possible as well.</p>
-<table style="border-collapse: collapse; width: 100%;">
-<tbody>
-<tr>
-<td style="width: 19.0818%;"><strong>Local</strong></td>
-<td style="width: 47.5848%;"><span style="font-size: 10pt;">Uses the same Initiator Agents to host the Build Cache Endpoint and Build Cache Client. This means that each agent can only benefit from the cache of builds that were previously run on the same machine. This can be ideal if you are not sharing code with other developers, or if you are working from home with limited bandwidth.</span></td>
-<td style="width: 33.3333%;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-local.png"><img decoding="async" class="wp-image-32026" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-local-300x281.png" alt="Relation diagram showing a single Incredibuild Coordinator and 4 Initiator systems, each with their own local cache." width="205" height="182" /></a></td>
-</tr>
-<tr>
-<td style="width: 19.0818%;"><strong>Shared</strong></td>
-<td style="width: 47.5848%;"><span style="font-size: 10pt;">Uses a single Agent to host the Build Cache Endpoint. Multiple Initiator Agents contribute to and benefit from the same build cache. However, only one initiator can edit/write to the cache at any given time.</span></td>
-<td style="width: 33.3333%;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-shared.png"><img decoding="async" class="wp-image-32031" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-shared-171x300.png" alt="Relation diagram showing a single Incredibuild Coordinator and 2 Initiator systems, both using the same shared cache." width="110" height="181" /></a></td>
-</tr>
-<tr>
-<td style="width: 19.0818%;"><strong>Dynamically Shared</strong></td>
-<td style="width: 47.5848%;"><span style="font-size: 10pt;">Uses more than one Build Cache Endpoint that is used by more than one Client. The Clients define a default Endpoint, but you can override this in the build command to use a different Endpoint as well. This is ideal for CI environments that are running different builds. They can dynamically fetch the context of the build they are running and use the appropriate Endpoint.</span></td>
-<td style="width: 33.3333%;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-dynamic-shared.png"><img decoding="async" class="wp-image-32034" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-dynamic-shared-300x259.png" alt="Relation diagram showing a single Incredibuild Coordinator and 4 Initiator systems, each of them connected to 2 different dynamically shared caches." width="234" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-dynamic-shared-300x259.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-dynamic-shared.png 420w" sizes="(max-width: 234px) 100vw, 234px" /></a></td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<h4 id="how-does-build-cache-work">How Does Build Cache Work?</h4>
-<p>Builds are often processed in tree-like structures based on the dependencies in your code. The files in the first layer are used to create the files in the second layer, and those files are used to create the files in the next layer, and so on until the final output is produced.</p>
-<p>As builds are processed, Incredibuild saves details of the process for future use. Each part of the process that is generated from other files is saved as a pair of input files and output files in the cache. If you run a build after changing some of the files, Build Cache can reuse cached outputs for the same inputs, to prevent parts of the process from running.</p>
-<p>You can define if an Agent contributes to the cache or just reads from it in the Agent Settings. However, each Endpoint can only process content from one build at a time. If two builds attempt to write to the same Endpoint at once, only the content from the first build will be added to the cache.</p>
-<h4 id="build-cache-summary">Build Cache Summary</h4>
-<p>Details of how much time was saved from using the Build Cache is included in the output of your builds. This can be seen in the Build Monitor’s output tab, as well as the output you see in the command line.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1.png"><img decoding="async" class="wp-image-32039" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1.png" alt="A screenshot showing the Incredibuild Build Cache summary. It shows a Build Cache Efficiency of 41% and 23 minutes saved for the 2217 tasks that were cached." width="698" height="251" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1.png 1045w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1-300x108.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1-1024x368.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-build-cache-example-output-1-768x276.png 768w" sizes="(max-width: 698px) 100vw, 698px" /></a></p>
-<p>Enabling Build Cache requires an additional license for every Initiator that is using Build Cache. Visit <a href="https://www.incredibuild.com/pricing">Incredibuild&#8217;s description of available plans</a> in order to obtain Build Cache licenses.</p>
-<h3 id="smart-licenses-managed-via-the-new-coordinator-ui">Smart licenses managed via the new Coordinator UI</h3>
-<p>Incredibuild 10’s smart licenses let you be truly efficient with the resources you have. Instead of locking licenses onto devices that don’t always need them, you can allocate cores and initiators to the right place, at the right time. More importantly, you can work in any environment—on-premises, cloud, or hybrid. With Incredibuild 10’s <a href="https://docs.incredibuild.com/win/latest/windows/coordinator_agents_list.html">new Coordinator UI</a>, you can also gain better visibility into how your licenses are being used, where there are gaps, and how you can better deploy cores to avoid those gaps.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents.jpg"><img decoding="async" class="wp-image-32061 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents.jpg" alt="Screenshot of the Incredibuild Coordinator web UI. You can easily see how many machines are online, how many cores are busy, and the number of builds happening." width="1098" height="687" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents.jpg 1098w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents-300x188.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents-1024x641.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/04/incredibuild-coordinator-agents-768x481.jpg 768w" sizes="(max-width: 1098px) 100vw, 1098px" /></a></p>
-<h3 id="scale-to-the-cloud">Scale to the cloud</h3>
-<p>Whether you are fully building in the cloud or bursting when needed, <a href="https://docs.incredibuild.com/cloud/cloud_setup_standard.html">Incredibuild Cloud</a> automatically spins up and down the best mix of on-demand and spot instances. With Incredibuild 10 you get more visibility with the Incredibuild Cloud license. Reporting gives you easy access to license consumption, lets you see how many cores are available from your purchase, and get license status updates and predictions all in one place.</p>
-<h3 id="user-testimonials">User Testimonials</h3>
-<p>Incredibuild is a crucial part of the development process for many of their users, including many of the leading game development studios and companies delivering software for large enterprises. Game studios can have large codebases for their titles and can have dozens of employees working on different aspects of a title, from game engine developers and networking developers, to level designers and artists. With so many changes constantly going into their products, Incredibuild’s acceleration technologies make a real difference to delivering a project on time and on budget.</p>
-<blockquote>
-<h3 id="incredibuild-absolutely-impacts-our-ability-to-iterate-and-move-forward-we-couldnt-do-anything-without-it"><span style="font-size: 18pt;"><a href="https://developer.microsoft.com/games/customer-stories/cloud-build-pipelines-the-coalition">Incredibuild absolutely impacts our ability to iterate and move forward. We couldn’t do anything without it.</a></span></h3>
-<p style="text-align: right;"><span style="font-size: 10pt;">&#8211; Joe Vogt, IT Manager, <a href="https://www.thecoalitionstudio.com/">The Coalition</a></span></p>
-</blockquote>
-<p>&nbsp;</p>
-<blockquote>
-<h3 id="the-ability-of-the-incredibuild-cloud-helpers-to-tear-themselves-down-when-theyre-not-being-used-helps-cuts-costs-in-azure-and-the-improved-build-times-and-test-times-significantly-improve-o"><span style="font-size: 18pt;"><a href="https://youtu.be/DfOCzAYGhrE">The ability of the Incredibuild Cloud helpers to tear themselves down when they’re not being used helps cuts costs in Azure, and the improved build times and test times significantly improve our developers’ ability to get their work done faster.</a></span></h3>
-<p style="text-align: right;"><span style="font-size: 10pt;">&#8211; Chad Shaffer, Senior Software Development System Engineer, <a href="https://www.minitab.com/">Minitab</a></span></p>
-</blockquote>
-<h3 id="summary">Summary</h3>
-<p>Long C++  builds are not something you should take as a given. If you do not use any build acceleration tool, we highly recommend that you try Incredibuild, with its direct integration inside Visual Studio, Incredibuild 10 brings with it some major improvements, the most significant being the Build Cache that works together with the distribution engine. The new license model as well as other new features make this version something you should check if you haven’t done so already.</p>
-<p>For a full product walkthrough, watch <a href="https://www.youtube.com/watch?v=M7zMl2WOp6g">Incredibuild’s CppCon 2022 demo session</a>.</p>
-<h4 id="try-it-and-talk-to-us">Try it and Talk to Us</h4>
-<p>We encourage you to download Visual Studio 2022 version 17.6 Preview 3 and try out Incredibuild 10. You can use the Visual Studio Installer to install Incredibuild. Just select any of the following workloads: <strong>Desktop development with C++</strong>, <strong>Mobile development with C++</strong>, or <strong>Game development with C++</strong>. Then check the box for <strong>Incredibuild &#8211; Build Acceleration</strong> in the installation details and complete the installation. There is now a free-forever license for 2 developers (free version does not include a Build Cache license), so it’s super easy to install and to start using it for your projects.</p>
-<p>We can be reached via the comments below or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. If you encounter other problems with Visual Studio or have other suggestions, you can use the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report a Problem</a> tool in Visual Studio or head over to the <a href="https://developercommunity.visualstudio.com/spaces/62/index.html">Visual Studio Developer Community</a>. Suggestions for or problems with Incredibuild can be <a href="https://www.incredibuild.com/contact-us">sent directly to them</a>. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a> and <a href="https://twitter.com/incredibuild">@incredibuild</a>).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/">Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
