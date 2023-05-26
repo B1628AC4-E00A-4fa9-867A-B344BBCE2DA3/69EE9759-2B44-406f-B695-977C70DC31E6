@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 25 May 2023 16:16:08 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 26 May 2023 16:01:38 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,152 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Delivering Delightful Performance for More Than One Billion Users Worldwide</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2023/05/26/delivering-delightful-performance-for-more-than-one-billion-users-worldwide/</link>
+		
+		<dc:creator><![CDATA[Sharif Farag]]></dc:creator>
+		<pubDate>Fri, 26 May 2023 16:01:38 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56776</guid>
+
+					<description><![CDATA[<p>Over the past year, we have made major strides in improving fundamentals across Windows.  From enhancing Windows’ speed and reliability to optimizing the performance of its flagship applications to improving Window’s sustainability, we have been</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2023/05/26/delivering-delightful-performance-for-more-than-one-billion-users-worldwide/">Delivering Delightful Performance for More Than One Billion Users Worldwide</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Over the past year, we have made major strides in improving fundamentals across Windows.  From enhancing Windows’ speed and reliability to optimizing the performance of its flagship applications to improving Window’s sustainability, we have been working diligently to deliver faster, more reliable, and more efficient computing experiences that our users love.
+
+Among the highlights from the last year:
+<ul>
+ 	<li>We improved frequently used shell interactions like Taskbar, Notifications, and Quick Settings by as much as 15%!</li>
+ 	<li>Getting users into productivity faster by improving the time it takes to get to the desktop by 10% and reducing the impact of startup apps by over 50%.</li>
+ 	<li>Making PCs more sustainable with our new Energy Recommendations and Carbon-Aware Windows Update. We see a 6% average reduction in energy consumption for the users who use the recommended energy settings</li>
+ 	<li>Windows 11 is the most reliable version of Windows ever, with recent updates continuing to improve reliability.</li>
+ 	<li>Microsoft Edge starts up faster than ever before and saves memory with features like Sleeping Tabs, which saves up to 83% of memory for background tabs.</li>
+ 	<li>The new Teams app for Windows is 2x faster while using half the resources.</li>
+</ul>
+Today, we’re going to give you a behind-the-scenes peek into how performance improvements are delivered!  Windows operates at a massive scale – with over one billion users and a rich PC ecosystem, and there are innumerable combinations of usage patterns, key apps, and hardware.  Windows is foundational to many products too, each with varying needs – it powers your PC, it is the host OS for Azure, and it is core to Xbox and HoloLens.  With Windows 11, we are also releasing more frequently, increasing the need to protect against regressions and shortening our cycle for driving improvements.  Thankfully, we have built infrastructure and tools that help us find, understand, and fix performance problems at the massive scale Windows operates at.
+<h3>Delivering Performance at Scale</h3>
+If you go back 10 years ago, life as a performance analyst in Windows was challenging!  We would develop an operating system for months before it was released to external users as a beta release, and then we responded to bugs that were filed by our users and partners.  When you received a bug indicating users had performance issues in some scenarios, we did not always have the information necessary to root cause the bug.  Reproducing the issue was often a challenge.  Once you have found and understood the issue, how do you know how common it is?  As you can imagine, this process was slow and cumbersome.  Fast forward to today, when it’s hard to even remember those days.
+
+Today we have a richer, more comprehensive story to guarantee great performance.  It starts during the design phase, where teams define strong performance goals to ensure our products meet the needs of our users.  Significant research has gone into users’ expectations, and we rely on that research to guide our goal-setting for user interactions.  We call these “interaction classes”, and they help us set targets and ensure we have the right UX affordances for experiences, whether they’re a nearly instant interaction like opening the Start Menu or longer like deleting files.
+
+<img class="alignnone wp-image-56778 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-1-Interaction-Classes.png" alt="" width="967" height="354" />
+
+During development, we protect performance with daily performance gates that measure key Windows performance indicators ranging from Windows UX experiences, application experiences, resume from standby/sleep, memory and storage, and more.  Every day, we run over one million machine hours of validation.  This helps protect our daily build quality and ensures that teams can be productive.  Once we complete selfhost and evaluate our performance measures on our own devices, we flight builds to our vibrant Windows Insider community who provides us rich feedback on quality issues they observe across a breadth of device configurations and use cases.
+
+<img class="alignnone wp-image-56779 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-2-By-the-numbers.png" alt="" width="975" height="345" />
+
+<em><strong>Diagnostic data by the numbers: (1) Over 2.5 million cabs per day; (2) over 12 million performance traces per year; (3) over 70.4 billion scenario performance data points per year.</strong> </em>
+
+The scale of feedback we receive, both through feedback and perf diagnostic data, is massive.  Over the past few years we have invested in capturing performance and other Windows quality measures via diagnostic data in addition to backend services to analyze the information we get and to identify issues.  For important scenarios, we can now see the distribution of the real-world performance observed by our users across our broad ecosystem of devices.  Performance is a spectrum, not one number, and what you experience on your system may be quite different from another user with different hardware, running different apps, and using their system differently.  Another key innovation for us is the ability to analyze traces at scale and find issues that are on the critical path of a scenario’s responsiveness. This is a rich tool that allows us to tease apart what is causing performance issues in traces – ranging from scenario-specific code, IO delays, all the way down to kernel level scheduling optimizations and even driver quality issues.
+<h3>Deploying These Techniques to Ensure Delightful Experiences</h3>
+<strong>Delivering a great Instant On experience (Resume from Modern Standby with Windows Hello)</strong>
+
+With Windows 11, you can get back to productivity more quickly than ever with Windows Hello and Instant On.  Most laptops today use Modern Standby and Windows Hello to offer a password-less logon experience.  Our goal is to get you back to productivity in seconds, and our latest generation of Surface PCs, like the Surface Laptop 5 and Surface Pro 9 are 10% faster than the prior generations.  We were able to achieve this with performance improvements in silicon, camera drivers, display drivers, and the OS over the last few releases.
+
+A responsive, fluid, and fast Windows experience requires great baseline performance <strong><em>and</em></strong> the ability to deliver that consistently.  The negative performance feedback we receive for Windows Hello is infrequent, but when it occurs, it is often due to longer times to unlock your device.  Here is a look at how Windows engineers improve the baseline performance and consistency for scenarios like Instant On.
+<ul>
+ 	<li><strong>Measurement</strong>: All performance analysis starts with adding code to emit diagnostic data events that can be used for measurement or identifying system resource usage. We rely heavily on <a href="https://learn.microsoft.com/en-us/windows-hardware/test/wpt/event-tracing-for-windows">ETW</a> to measure daily results to ensure we prevent regressions prior to selfhost.</li>
+ 	<li><strong>Optimize the baseline</strong>: We analyze ETW traces through automated trace analysis techniques using <a href="https://learn.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/create_the_data_access_layer">DataLayer</a> and in some cases manually using <a href="https://learn.microsoft.com/en-us/windows-hardware/test/wpt/windows-performance-analyzer">Windows Performance Analyzer (WPA</a>). In WPA, engineers deploy a range of analysis techniques from resource usage (like <a href="https://learn.microsoft.com/en-us/windows-hardware/test/wpt/cpu-analysis">CPU Analysis</a>) to <a href="https://learn.microsoft.com/en-us/windows-hardware/test/wpt/optimizing-performance-and-responsiveness-exercise-3">critical path analysis</a> to identify issues in software and hardware that can be optimized.</li>
+ 	<li><strong>Optimize the distribution at scale</strong>:
+<ul>
+ 	<li>Using the optics that engineering teams add to their features, we observe light weight performance data (e.g. overall time for Windows Hello face authentication) across a diversity of Windows hardware. From this data, we can see the gap between the 90th/95th/99th percentiles and more common cases at the 10th and 50th percentiles.</li>
+ 	<li>We then collect verbose performance diagnostics at scale from a smaller sample of Windows users across a diversity of hardware and Windows OS configurations.</li>
+ 	<li>We then leverage our automatic trace analysis techniques using resource usage and critical path analysis, to build a stack chart of performance issues across the distribution and their relative impact. This scale analysis helps us deeply understand the performance bottlenecks across a broad range of devices and helps us prioritize the most impactful opportunities.  This chart shows an example of this analysis for Windows Hello face authentication.</li>
+ 	<li>Finally, we double-check a set of the top performance traces in these buckets from the scale approach to confirm the insights from scale analysis and build a solution with engineering teams.</li>
+</ul>
+</li>
+</ul>
+<img class="alignnone wp-image-56780 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-3-Windows-Hello-example.png" alt="" width="624" height="314" />
+<ul>
+ 	<li><strong>Listen to customer feedback</strong>: Feedback from customers through channels like Feedback Hub help us identify areas where we need new optics or investigation outside of our current flow. For Instant On, our team monitors a few Feedback Hub categories and contexts like "Power and Battery >> Sleep" and "Security and Privacy >> Windows Hello Face." When customers "Add more details" in Feedback Hub by reproducing and hitting "Record my issue," we have the rich data necessary to diagnose problems effectively.</li>
+</ul>
+Across recent Windows 11 updates, we have optimized:
+<ul>
+ 	<li><strong>More security with better performance for Enhanced Secure Sign-On (ESS)</strong>. ESS provides increased security by building memory enclaves that can be hidden from the rest of the system.  We improved performance by up to 10% in cases where the system is under memory pressure by more efficiently handling the secure enclaves’ large slabs of memory.  This also enables us to ship on a larger range of RAM sizes.</li>
+ 	<li><strong>Consistent Windows Hello performance with app orchestration</strong>. When you resume your machine and kick off Windows Hello, apps also start resuming in the background and can consume system resources, slowing down your Hello performance.  We delay the resume of these apps until after Windows Hello camera startup and face authentication is complete.</li>
+</ul>
+And when customers update to the May 2023 release, they will have an even faster Instant On experience with fewer Remote Procedure Calls (RPCs) on the lock screen that can save up to 8% in cases where many apps are resuming.
+<h3>What Am I Getting with the May Update?</h3>
+We continue to invest in ensuring core Windows scenarios have great fundamentals.  Over the course of the last year, we also asked each feature team-building experiences in Windows to take a close look at their features to find additional opportunities to optimize the OS experiences.  We were surprised and energized by the breadth of optimizations made across the entire product, and we are excited to bring these improvements to all our users as part of the February and May updates.
+
+We started this effort by conducting trainings across the entire organization on best practices, techniques, and educating the organization on the latest tools and techniques for performance analysis.  The energy and momentum that this created was invigorating as every team was empowered to improve any part of the operating system they chose.  This effort resulted in over 300 different performance improvements across Windows!  Here is a subset of some of the improvements available for you on all your Windows 11 devices.
+
+<strong>Faster, more responsive post-boot experience</strong>
+
+Today, when you boot a PC, there are a number of things that happen behind the scenes.  If you have a lot of apps registered to start at boot, it can be a stampede of apps all clamoring for resources to launch.  While investigating a boot perf issue, we experimented with moderating app startups.
+
+What we found was we can both ensure the apps the user is trying to interact with are responsive and prioritized, and also that in many cases the background apps finish launching faster due to reduced contention.  Rather than unleash all the start up apps at once, we moderate their launches.  This helps avoid significant contention at launch and ensures the foreground app the user is interacting with stays performant and responsive.
+
+These improvements most benefit devices with fewer resources, and we measured a 25-50% improvement in application launch times in the time period after logon in our experiment with multiple startup apps.  The image below helps visualize this, where we moderate startup apps to ensure that user-initiated operations can run with less contention.  In this example, you can see the user’s app completes its launch faster, and the background startup apps also complete in a similar timeframe due to less contention for resources.
+
+<img class="alignnone wp-image-56781 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-4-Moderated-app-start-up.png" alt="" width="874" height="318" />
+
+<strong>File Explorer improvements</strong>
+
+We made several improvements in File Explorer, including improving launch time of File explorer for users who have files stored in the cloud by avoiding I/O to enumerate cloud files.  We also looked at deleting files and made improvements to bulk file delete operations by over 40% as shown in our results below!
+
+<img class="alignnone wp-image-56777 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-5-File-Explorer-delete.png" alt="" width="414" height="366" />
+
+While it may be rare for users to delete large numbers of files on their device all at once, the example shows the breadth of the improvements we set out to bring to Windows 11 users.
+
+<strong>Reduced game stutter with high report rate mice</strong>
+
+We know gamers hate stutter, and we’re fixing issues throughout Windows so that an untimely frame-freeze won’t take gamers out of their immersive experiences.  Gamers love to push their systems to the limit in search of the best experiences in-game.  Many also use sensitive, high DPI, high report rate mice to shave milliseconds off their response times and increase precision.  At the same time, the world of gaming is more connected than ever with gamers relying on an increasing number of background apps while playing, like voice chat, streaming, apps for configuring your keyboard, mouse, or graphics card, and more.  The Windows input stack was being pushed to its limits with high report rate mice and their input being delivered to not just the game, but also multiple background processes.  In turn, that caused a significant amount of time processing input rather than providing as many cycles as possible for rendering the game experience.
+
+We set out to reduce the amount of processing time it took to handle input requests by throttling and coalescing background raw mouse listeners and capping their message rate.  Prior to these changes, we observed on a Surface Laptop Studio with a 1000 Hz mouse, a test bed of background listeners, and popular games that there was significant stutter.  After the improvements, on the same setup, we now deliver a smooth, uninterrupted gaming experience and preserve the low latency, high precision input experience in games while being efficient with input for background listeners!
+
+[caption id="attachment_56786" align="alignnone" width="600"]<img class="wp-image-56786 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-6-Before-mouse-change.gif" alt="" width="600" height="402" /> Figure 1: Before our changes[/caption]
+
+[caption id="attachment_56787" align="alignnone" width="600"]<img class="wp-image-56787 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-7-After-mouse-change.gif" alt="" width="600" height="402" /> Figure 2: After our changes[/caption]
+
+<strong>Something for everyone</strong>
+
+While the examples above highlight some of the improvements in the February and May updates, there are many other improvements available today, including:
+<ul>
+ 	<li>Taskbar improvements to ensure Taskbar is readily available after logging in</li>
+ 	<li>Task View performance improvements when devices are under heavy load</li>
+ 	<li>Improved performance of Windows Notification Service</li>
+ 	<li>Improved launch time of Quick Settings and Notification Center</li>
+ 	<li>Reduced threads, dlls, and graphics device count in Explorer</li>
+ 	<li>Reduced CPU usage of explorer</li>
+ 	<li>Reduced memory usage of Notification Center</li>
+ 	<li>Touch keyboard performance improvements</li>
+ 	<li>Resource usage reductions in multi-user scenarios</li>
+ 	<li>Reduced voice access and Narrator latency in larger documents</li>
+ 	<li>Improved voice typing activation time</li>
+ 	<li>Improved speed of theme changes</li>
+ 	<li>Reduced size on disk by leveraging features-on-demand via the Store</li>
+</ul>
+For developers, there is a lot coming in the May release too.  Some highlights that intersect fundamentals:
+<ul>
+ 	<li>New enhanced kernel minidump format for better debugging</li>
+ 	<li>Live kernel dumps can now be collected directly via Task Manager</li>
+ 	<li>New richer, more actionable third-party reliability data views in Partner Center</li>
+ 	<li>Windows Performance Analyzer (WPA) is now supported and available on Arm devices</li>
+</ul>
+<h3>Applications That Run on Windows Have Improved</h3>
+There are great recent wins across key apps on Windows as well that we should celebrate.  We partner closely with these teams, share approaches to performance and fundamentals, and collaborate on improvements.
+
+<strong>Microsoft Edge performance improvements</strong>
+
+Browsing the web is one of the most common activities users perform.  Edge continually invests in not just improving the browsing experience for users, but in improving performance and minimizing resource usage.  Sleeping Tabs was introduced in Edge over a year ago, and the team has continued to improve the effectiveness of it to reduce memory and power usage of tabs.  Most users have up to 7 tabs open at any point in time, and while only 1 tab is often visible, those other tabs can have significant impacts on both memory and power.
+
+With Sleeping Tabs, when you switch away from a tab we can reduce the memory and CPU usage of the background tabs, and just as importantly, we are able to resume faster than if we fully discarded the background tab.  Our diagnostic data shows that at the 75<sup>th</sup> percentile, a tab can consume as much as 400MB of private working set.  With up to 6 tabs in the background, this adds up to nearly 2.4GB of memory being consumed.  With Sleeping Tabs, we can reduce the private working set of a tab down to 75MB!  A savings of nearly 2GB of memory (83% reduction), providing memory to other applications and services.  In addition, we have seen an over 15% improvement in the startup time of the Edge browser!
+
+When you are mobile, getting the most out of your battery is important so you can keep working until you can plug in again.  Efficiency mode in Microsoft Edge helps you get the most out of every charge.  Through efficient reduction of CPU usage, Microsoft Edge can extend battery life on average of 25 minutes when efficiency mode is active.
+
+<img class="alignnone wp-image-56782 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-8-Edge-Sleeping-Tabs-1024x513.png" alt="" width="1024" height="513" />
+
+<strong>The New Microsoft Teams App for Windows</strong>
+
+Microsoft Teams has exploded in popularity over the past few years, and the team intently focused on scale and rapid growth.  Together, we spent quite a bit of time understanding the common use cases and scenarios.  A big focus for the team was moving to a new architecture and backend services that drove a 2x performance improvement, while consuming half the resources.  Bold fundamentals goals were set that required the team to step back and rearchitect significant parts of the software that enables all of us to connect and collaborate across the globe!  For more details on the improvements made with the new Teams client refer to the <a href="https://www.microsoft.com/en-us/microsoft-365/blog/2023/03/27/welcome-to-the-new-era-of-microsoft-teams/">Teams blog</a>.
+<h3><img class="alignnone wp-image-56783 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-9-Teams-Improvements.png" alt="" width="877" height="309" /><span style="font-size: min(max(16px, (1rem + 0.1961vw) - 0.70596px), 20px);">Thank You and What’s Next</span></h3>
+We continue to invest in driving performance, efficiency, and reliability with every update, and we are excited to have you experience these improvements firsthand.  Please continue to share feedback, and a very special thanks to our Windows Insider community for helping us continue to improve Windows for the over one billion users worldwide.  We have more on the way this coming year, and we are looking forward to ensuring your Windows experience gets better with every update.]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Announcing the Microsoft Store App Awards 2023 Winners!</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2023/05/23/announcing-the-microsoft-store-app-awards-2023-winners/</link>
 		
@@ -663,87 +809,6 @@ Choose your way to get started:
  	<li>If your app or game is not in the Microsoft Store yet, begin by <a href="https://learn.microsoft.com/en-us/windows/apps/publish/">publishing your Windows app.</a></li>
 </ul>
 To learn how Microsoft Store Ads can help consumers discover your app and for product updates and channel information, visit the <a href="https://about.ads.microsoft.com/en-us/solutions/ad-products/microsoft-store-ads?s_int=en-us-gct-web-src_msaweb-sub_blog-flx_storeadslaunch">Microsoft Store Ads page</a>.]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>What’s New in Windows App SDK 1.2</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2022/11/16/whats-new-in-windows-app-sdk-1-2/</link>
-		
-		<dc:creator><![CDATA[Gabby Bilka]]></dc:creator>
-		<pubDate>Wed, 16 Nov 2022 14:30:24 +0000</pubDate>
-				<category><![CDATA[Windows Developers]]></category>
-		<category><![CDATA[Release Updates]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56643</guid>
-
-					<description><![CDATA[<p>We are excited to announce that Windows App SDK 1.2 is now available! With WinAppSDK 1.2 you can now create widgets for the Windows 11 widget board, use the most modern WinUI controls – including media playback &#038; InfoBadge, and support HDR graphics</p>
-<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2022/11/16/whats-new-in-windows-app-sdk-1-2/">What’s New in Windows App SDK 1.2</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[We are excited to announce that Windows App SDK 1.2 is now available! With WinAppSDK 1.2 you can now create widgets for the Windows 11 widget board, use the most modern WinUI controls – including media playback & InfoBadge, and support HDR graphics through the DisplayInformation APIs among other additional features. We have also made several updates to improve platform reliability, stability, and performance to help you create robust, powerful, applications for Windows.
-
-Windows App SDK provides a unified set of APIs and tools to help you build beautiful & powerful Windows desktop apps. These APIs and tools can be used in a consistent way by any C++ Win32 or C# .NET app on a broad set of target Windows OS versions. WinAppSDK stays up to date with frequent, OS independent releases and supports the latest innovations in Windows app development – including .NET & Visual Studio.
-<h3>Get started with Windows App SDK</h3>
-To start using Windows App SDK, see <a href="https://learn.microsoft.com/windows/apps/windows-app-sdk/">Get started with Windows App SDK</a> to set up your development environment and learn more about the components included in this release. If you want to jump right in with building your first WinUI 3 desktop app, start with our <a href="https://learn.microsoft.com/windows/apps/winui/winui3/create-your-first-winui3-app?pivots=winui3-packaged-csharp">tutorial</a> or watch our <a href="https://mybuild.microsoft.com/sessions/0a0b3638-b56a-49e2-84f5-44eb8441423c?WT.mc_id=learnlive-20220524E">Learn Live session</a> released at Build 2022.
-<h2>Functionality introduced in Windows App SDK 1.2</h2>
-<h3>Widgets for third-party applications</h3>
-<img class="aligncenter wp-image-56644" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/10/Picture1-2.png" alt="" width="740" height="600" />
-
-With the launch of Windows 11, we introduced the widgets board featuring content curated by Windows. Widgets provide a glanceable view of important information with one touch access from the taskbar or swipe from the left side of a touch screen and are populated by apps currently installed on the device. Now with the launch of Windows App SDK 1.2, we are excited to make this functionality available for third-party developers to create widgets for their packaged Win32 apps and test them locally on the Windows 11 widgets board through our Windows Insider Program.  By creating widgets for your apps, your customers can easily and seamlessly stay up to date with information that matters to them.
-
-To get started developing Widgets for your app, check out the <a href="https://learn.microsoft.com/windows/apps/develop/widgets/widget-service-providers">Widgets development docs</a> and <a href="https://learn.microsoft.com/windows/apps/design/widgets/widgets-design-fundamentals">Widgets design fundamentals</a> for prerequisites, guidance and best practices.
-<h3>Latest WinUI controls including media playback</h3>
-<img class="aligncenter wp-image-56645" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/10/WASDK-UI-Collage.png" alt="" width="800" height="450" data-wp-editing="1" />
-
-WinUI 3 apps can play audio and video with the <a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.mediaplayerelement?view=windows-app-sdk-1.2">MediaPlayerElement</a> and <a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.mediatransportcontrols?view=windows-app-sdk-1.2">MediaTransportControls</a> media playback controls. For more info on how and when to use media controls, see <a href="https://learn.microsoft.com/en-us/windows/apps/design/controls/media-playback">Media players</a>.
-
-WinUI 3 has been updated with the latest controls, styles, and behaviors from WinUI 2.8. These updates include the addition of the <a href="https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.infobadge"><strong>InfoBadge</strong> </a>control, improvements to accessibility and high contrast mode, as well as bug fixes across controls. For more details, see the release notes for <a href="https://learn.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.7">WinUI 2.7</a> and <a href="https://learn.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.8">WinUI 2.8</a>.
-<h3>Voice and video calling in WinUI 3 apps via Azure Communication Services (ACS)</h3>
-You can now add <a href="https://learn.microsoft.com/azure/communication-services/how-tos/calling-sdk/manage-calls?pivots=platform-windows">voice</a> and <a href="https://learn.microsoft.com/azure/communication-services/how-tos/calling-sdk/manage-video?pivots=platform-windows">video</a> calling capabilities to your WinUI 3 applications that run on Windows, enabling rich communication experiences for desktop PCs. Azure Communication Services use the same infrastructure, services, and technologies that power Microsoft Teams calling experiences.
-
-Check out our conceptual documentation <a href="https://learn.microsoft.com/azure/communication-services/concepts/voice-video-calling/calling-sdk-features">overview</a> and try out quick starts and samples:
-<ul>
- 	<li><a href="https://learn.microsoft.com/azure/communication-services/quickstarts/voice-video-calling/getting-started-with-calling?pivots=platform-windows#winui-3-sample-code">Add voice calling to your WinUI 3 app</a></li>
- 	<li><a href="https://learn.microsoft.com/azure/communication-services/quickstarts/voice-video-calling/get-started-with-video-calling?pivots=platform-windows#winui-3-sample-code">Add 1:1 video calling to your WinUI 3 app</a></li>
-</ul>
-<h3>DisplayInformation</h3>
-Windows desktop apps can now support High Dynamic Range (HDR) and <a href="https://devblogs.microsoft.com/directx/auto-color-management/">Auto Color Management</a> (ACM) through the DisplayInformation class in WinAppSDK. This API is easier to use than ever before for Win32 apps, and app developers can now use one API to target <a href="https://learn.microsoft.com/windows/release-health/release-information">Windows version 1809 </a> and later. The DisplayInformation class enables you to monitor display-related information for an application view. This includes events to allow clients to monitor for changes in the application view affecting which display(s) the view resides on, as well as changes in displays that can affect the application view.
-<h3>Support for Visual Studio Arm64</h3>
-As early as Project Reunion (now WinAppSDK) 0.5, apps developed with WinAppSDK were able to <em>run</em> on Arm64. Starting with Visual Studio 17.3 Preview 2, you will be able to natively develop applications with WinAppSDK on Arm64 devices.
-
-To get started developing on an Arm64 device, check out our docs detailing <a href="https://learn.microsoft.com/windows/arm/overview">Windows on Arm</a> and <a href="https://devblogs.microsoft.com/visualstudio/arm64-visual-studio/">Arm64 Visual Studio</a>.
-<h3>Trimming for .NET apps</h3>
-You are now able to publish your .NET WinAppSDK apps trimmed. With CsWinRT 2.0, the C#/WinRT projections distributed in the WinAppSDK are trimmable. Publishing your app trimmed can reduce the disk footprint of your app by removing any unused code from trimmable binaries. Your app may also see a startup performance improvement. With a basic Hello World app, we have seen a ~80% disk footprint improvement and a ~7% startup performance improvement when published trimmed. With WinUI gallery, we have seen a ~45% disk footprint improvement.
-
-For more details on how you can enable trimming, trimming limitations (such as reflection against trimmable types), and trim warnings, see <a href="https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-self-contained">Trim self-contained deployments and executables</a>.
-<h3>Dynamic Refresh Rate</h3>
-Introduced in Windows 11, <a href="https://devblogs.microsoft.com/directx/dynamic-refresh-rate/">Dynamic Refresh Rate</a> (DRR) enables devices to seamlessly switch between a lower refresh rate and a higher refresh rate based on what users are doing on their PC. This helps to balance performance and power consumption. As part of WinUI 3 in Windows App SDK 1.2, Microsoft.UI.Composition will now support Dynamic Refresh Rate on devices that opt-in to the feature. Notably, through supporting DRR, <a href="https://blogs.windows.com/windows-insider/2022/02/16/announcing-windows-11-insider-preview-build-22557/#:~:text=We%E2%80%99re%20expanding%20Dynamic,then%20restart%20Edge.">devices running Windows 22H2</a> will automatically have smoother scrolling and interactions in your app without any other changes.
-
-To learn more about how to best support Dynamic Refresh Rate in your app, check out our <a href="https://aka.ms/drrtoolcode">Dynamic Refresh Rate Tool</a> (built on WinAppSDK 1.1) which shows how to use the <a href="https://aka.ms/compositorclock">Compositor Clock API</a> and support SwapChains.
-
-<img class="aligncenter wp-image-56664" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/11/GIF-2.gif" alt="" width="800" height="450" />
-<h3>AppNotificationBuilder</h3>
-<img class="aligncenter wp-image-56647" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2022/10/Picture2.png" alt="" width="800" height="386" />
-
-In Windows App SDK 1.1, we introduced the ability to create and send notifications from your application or a cloud service. App notifications can be used to inform the user of application status or state changes, or to prompt the user to take action with engaging and rich UI.
-
-With WinAppSDK 1.2, we’re introducing the <a href="https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.appnotifications.builder.appnotificationbuilder?view=windows-app-sdk-1.2">AppNotificationBuilder</a>, an alternative to XML payload to simplify creating and defining these notifications. To get started using the AppNotificationBuilder to create app notifications, check out the <a href="https://github.com/microsoft/WindowsAppSDK/blob/release/1.2-preview1/specs/AppNotifications/AppNotificationContentSpec/AppNotificationBuilder-spec.md">AppNotificationBuilder spec</a> on GitHub. Also see <a href="https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/notifications/app-notifications/app-notifications-quickstart">Quickstart: App notifications in the Windows App SDK</a> for an example of how to create a desktop Windows application that sends and receives local app notifications.
-<h3>Additional updates</h3>
-Outside of the new functionality introduced in WinAppSDK 1.2, there are also several performance, reliability, and development experience improvements. Of note, the WinAppSDK 1.2 binary on x64 is 11% smaller than WinAppSDK 1.1.5.
-
-Check out the <a href="https://aka.ms/windowsappsdk/1.2/1.2.0/release-notes">release notes</a> for the full list of fixed issues and updates in WinAppSDK 1.2.
-<h3>Upcoming experiences on WinAppSDK</h3>
-We are working with several development partners internal and external to Microsoft who are migrating their experiences to WinUI 3 and Windows App SDK. Stay tuned on our social channels for more information about these partnerships.
-<h3>Staying in the loop</h3>
-You can stay up to date with the team on the <a href="https://github.com/microsoft/WindowsAppSDK">Windows App SDK GitHub repo</a> and the <a href="https://github.com/microsoft/microsoft-ui-xaml/">WinUI GitHub repo</a>, and through our monthly <a href="https://www.youtube.com/playlist?list=PLI_J2v67C23ZqsolUDaHoFkF1GKvGrttB">WinUI Community Calls</a> where we share roadmap updates and other exciting news, and we demo new features.
-
-You can also connect with us on Twitter using <a href="https://twitter.com/search?q=%23WindowsAppSDK">#WindowsAppSDK</a> and <a href="https://twitter.com/WindowsUI">@WindowsUI</a>.
-
-We look forward to seeing the beautiful apps you create with WinAppSDK 1.2 & WinUI 3!
-
-Happy Coding!
-
-Windows App SDK team]]></content:encoded>
 					
 		
 		
