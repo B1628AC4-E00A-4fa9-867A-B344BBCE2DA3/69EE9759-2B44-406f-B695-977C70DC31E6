@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 24 May 2023 18:17:53 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 29 May 2023 14:42:26 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,152 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC ARM64 optimizations in Visual Studio 2022 17.6 </title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/#respond</comments>
+		
+		<dc:creator><![CDATA[Jiong Wang (ARM Ltd)]]></dc:creator>
+		<pubDate>Mon, 29 May 2023 14:42:26 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32267</guid>
+
+					<description><![CDATA[<p>In the last couple of months, the Microsoft C++ team has been working on improving MSVC ARM64 backend performance and we are excited to have a couple of optimizations available in the Visual Studio 2022 version 17.6. These optimizations improved code-generation for both scalar ISA and SIMD ISA (NEON).</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">MSVC ARM64 optimizations in Visual Studio 2022 17.6 </a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="auto">In the last couple of months, the Microsoft C++ team has been working on improving MSVC ARM64 backend performance and we are excited to have a couple of optimizations available in the </span><a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-6-now-available/"><span data-contrast="none">Visual Studio 2022 version 1</span><span data-contrast="none">7.6</span></a><span data-contrast="auto">. These optimizations improved code-generation for both scalar ISA and SIMD ISA (NEON). Let’s review some interesting optimizations in this blog.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-contrast="auto">Before diving into technical details, we&#8217;d encourage you to create feedback here at </span><a href="https://developercommunity.visualstudio.com/cpp"><span data-contrast="none">Developer Community</span></a><span data-contrast="auto"> if you have found performance issues. The feedback helps us prioritize work items in our backlog. This, </span><a href="https://developercommunity.visualstudio.com/t/arm64-backend-neon-optimize-neon-rig/10146259?q=backend+neon"><span data-contrast="none">optimize neon right shift into cmp</span></a><span data-contrast="auto">, is an example of good feedback. Including a tagged subject title, detailed description of the issue, and a simple repro simplifies our analysis work and helps us deliver a fix more quickly.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-contrast="auto">Now, let&#8217;s see the optimizations.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<h2 id="auto-vectorizer-supports-more-neon-instructions-with-asymmetric-operands">Auto-Vectorizer supports more NEON instructions with asymmetric operands</h2>
+<p><span data-contrast="auto">The ARM64 backend already supports some NEON instructions with asymmetric typed operands, like Add/Subtract Long operations (SADDL/UADDL/SSUBL/USUBL). These instructions add each vector element in the lower or upper half of the first source SIMD register to the corresponding vector element of the second source SIMD register and write the vector result to the destination SIMD register. The destination vector elements are twice as long as the source vector elements. Now, we have extended such support to Multiply-Add Long and Multiply-Subtract Long (<code>SMLAL</code>/<code>UMLAL</code>/<code>SMLSL</code>/<code>UMLSL</code>).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-contrast="auto">For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">void smlal(int * __restrict dst, int * __restrict a, 
+           short * __restrict b, short * __restrict c) 
+{ 
+    for (int i = 0; i &lt; 4; i++) 
+        dst[i] = a[i] + b[i] * c[i]; 
+} </code></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">sxtl        v19.4s,v16.4h 
+sxtl        v18.4s,v17.4h 
+mla         v20.4s,v18.4s,v19.4s </code><span data-contrast="auto"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559685&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></pre>
+<p><span data-contrast="auto">Extra signed extensions are performed on both source operands to match the type of destination. Now it has been optimized into a single </span><code>smlal v16.4s,v17.4h,v18.4h</code><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-contrast="auto">The ARM64 ISA further supports another variant for these operations, which is called Add/Subtract Wide. For them, the </span><span data-contrast="none">asymmetry happens between source operands, not between source and destination.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<p><span data-contrast="auto">For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">void saddw(int *__restrict dst, int *__restrict a, short *__restrict b) 
+{ 
+    for (int i = 0; i &lt; 4; i++) 
+        dst[i] = a[i] + b[i]; 
+}</code></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">sxtl        v17.4s,v16.4h 
+add         v18.4s,v17.4s,v18.4s  </code></pre>
+<p><span data-contrast="auto">The narrow source gets extra signed extension to match the other wide source. In the 17.6 release, this has been optimized into a single </span><code>saddw v16.4s,v16.4s,v17.4h</code><span data-contrast="auto">. The same applies to <code>UADDW</code>/<code>SSUBW</code>/<code>USUBW</code>.</span><span data-ccp-props="{&quot;134233117&quot;:true,&quot;134233118&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
+<h2 id="auto-vectorizer-now-supports-small-types-on-abs-min-max">Auto-vectorizer now supports small types on <code>ABS</code>/<code>MIN</code>/<code>MAX</code><code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></code></h2>
+<p><span data-contrast="auto"><code>ABS</code>/<code>MIN</code>/<code>MAX</code> have slightly complex semantics. Normally, the compiler middle-end or back-end will have a pattern matcher to recognize IR sequences with if-then-else semantics and see if they could be converted into <code>ABS</code>/<code>MIN</code>/<code>MAX</code>. There is an issue when the operands are in small types (int8 or int16) though.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-contrast="auto">As specified by the C++ standard, small types are promoted to <code>int</code>, which is 32-bit on ARM64. This is perfect for scalar operations because they really can only operate on scalar register width. For ARM64, the smallest width is 32-bit utilizing the sub-register. However, this is not true for SIMD ISA whose minimum operation width is the width of vector lane (element). For example, ARM64 NEON supports operating on int8, int16 for a couple of operations including <code>ABS</code>/<code>MIN</code>/<code>MAX</code>. So, to generate SIMD instructions operating on small element sizes and deliver higher computing throughput, the auto-vectorizer needs to do analysis and narrow the type back to the original small type when it is safe to do so.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">On top of this, <code>ABS</code>/<code>MIN</code>/<code>MAX</code> bring further challenges because their source operands are scattered in different basic blocks due to their built-in if-then-else semantics. We found the MSVC auto-vectorizer may only narrow the type of the operand in one basic block making it inconsistent with operands in other basic blocks. Such inconsistency will cause the auto-vectorizer to fail matching the pattern and cancel vectorization.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-contrast="auto"> For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">void test(signed char * __restrict a, signed char * __restrict b) 
+{ 
+    for (int i = 0; i &lt; 16; i++) 
+        a[i] = b[i] &gt; 0 ? b[i] : -b[i]; 
+}</code></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, there was no vectorization, and the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">ldrsb       w8,[x1,#1] 
+cmp         w8,#0 
+bgt         |$LN16@test_abs_v| 
+neg         w8,w8 
+sxtb        w8,w8 </code><span data-contrast="auto"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">In the 17.6 release, the code-generation has been improved into a single </span><code>abs v16.8h,v16.8h</code><i><span data-contrast="auto">.</span></i><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<h2 id="scalar-code-generation-improved-based-on-value-range-analysis">Scalar code-generation improved based on value range analysis</h2>
+<p><span data-contrast="auto">When one register is compared with an immediate value, the compiler can deduce the value range of the register, and this information is useful for later optimizations, for example evaluating comparison results statically.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">MSVC already has an infrastructure for doing value range deduction, the backend just needs to teach the middle-end about the semantics of its supported comparison instructions.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">The ARM64 backend previously missed this support for <code>CBZ</code> and <code>CMP</code>. For </span><code>cbz reg, label</code><i><span data-contrast="auto">, </span></i><span data-contrast="auto">the </span><code>reg</code> <span data-contrast="auto">must equal to zero in true path, and the same applies for <code>CBNZ</code> on false path. While for </span><code>cmp reg, #imm</code><i><span data-contrast="auto">, </span></i><span data-contrast="auto">the </span><code>reg</code> <span data-contrast="auto">must equal</span> <code>imm</code> <span data-contrast="auto">in true path. Knowing such equivalence, the compiler could simplify code-generation. Let’s see a simple example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">int cal(int a) 
+{ 
+    if (!a) 
+        return a; 
+    else 
+        return a * 2; 
+}</code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, MSVC was generating the following instruction sequence:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int cal(int)| PROC 
+        cbnz        w0,|$LN2@cal| 
+        mov         w0,#0         &lt;- redundant mov 
+        ret 
+|$LN2@cal| 
+        lsl         w0,w0,#1 
+        ret </code></pre>
+<p><span data-contrast="auto">The </span><code>mov w0, #0</code> <span data-contrast="auto">is redundant because when the execution reaches there, </span><code>w0</code> <span data-contrast="auto">must be zero. After our recent optimization, the code-generation is optimal in release 17.6:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int cal(int)| PROC 
+        lsl         w8,w0,#1 
+        cmp         w0,#0 
+        cseleq      w0,wzr,w8 
+        ret </code></pre>
+<h2 id="scalar-code-generation-improved-to-catch-more-if-conversion-opportunities">Scalar code-generation improved to catch more if-conversion opportunities</h2>
+<p><span data-contrast="auto">You may have noticed there is another difference in the code-generation for the above test case. <code>CSELEQ</code> is used instead of branch. The ARM64 ISA supports the <code>CSEL</code> instruction to do if-conversion which saves both execution cycles and code size. Previously, MSVC couldn’t generate <code>CSEL</code> when the selected value came from a return statement. We fixed this in the 17.6 release, so for the above example <code>CSELEQ</code> is used instead of <code>CBNZ</code>. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<p><span data-contrast="auto">In summary, for the if-return-else-return pattern, the ARM64 backend has been taught to generate a <code>CSEL</code> instruction if the return statement is in any of the following operations:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Wingdings" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Wingdings&quot;,&quot;469769242&quot;:[9642],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Unary: NOT and type conversion</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></li>
+<li data-leveltext="" data-font="Wingdings" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Wingdings&quot;,&quot;469769242&quot;:[9642],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">Binary: Add, Subtract, And/Or/Xor, Logical Shift Left/Right</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></li>
+</ul>
+<p><span data-contrast="auto">Let’s see another example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">int test (int a) {  
+    if (a &gt; 0xFFFF)  
+        return ~a;  
+    else 
+        return a;  
+} </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int test(int)| PROC 
+        mov         w8,#0xFFFF 
+        cmp         w0,w8 
+        ble         |$LN3@test| 
+        mvn         w0,w0 
+|$LN3@test| 
+        ret </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">It employs a branch and contains multiple basic blocks. In the 17.6 release, the code-generation is improved by if-conversion: it is lean and mean:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int test(int)| PROC 
+        mov         w8,#0xFFFF 
+        cmp         w0,w8 
+        cinvgt      w0,w0 
+        ret 
+</code></pre>
+<h2 id="arm64-instruction-combiner-now-supports-instructions-with-multiple-definitions">ARM64 instruction combiner now supports instructions with multiple definitions</h2>
+<p><span data-contrast="auto">As a modern compiler, MSVC is carrying out various instruction combinations across compilation stages. While a bunch of combine rules have already been implemented, we recently found one interesting case was missing. Take the following case for example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">int test(int a, int b) 
+{ 
+    if (a &lt; b) 
+        return b - a; 
+    else 
+        return 7; 
+} </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int test(int,int)| PROC 
+        cmp         w0,w1 
+        sub         w0,w1,w0 
+        blt         |$LN3@test| 
+        mov         w0,#7 
+|$LN3@test| 
+        ret </code></pre>
+<p><span data-contrast="auto">The </span><code>cmp w0, w1</code><span data-contrast="auto"> and the following </span><code>sub w0, w1, w0</code> <span data-contrast="auto">can be combined into a single <code>SUBS</code>. We missed it because the later stage combiner had glitches when supporting combining into instructions with multiple definitions. Now we have fixed this, so the code-generation in the 17.6 release has been improved into:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
+<pre class="prettyprint language-default"><code class="language-default">|int test(int,int)| PROC 
+        subs        w9,w1,w0 
+        mov         w8,#7 
+        cselgt      w0,w9,w8 
+        ret </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
+<p><span data-contrast="auto">The code-generation is utilizing <code>SUBS</code> to set the conditional code and doing subtraction at the same period, it also benefited from the above mentioned if-conversion optimization on return statement, so <code>CSEL</code> is used instead of branch</span></p>
+<h2 id="in-closing">In closing</h2>
+<p><span data-contrast="auto">That is all for this blog and we will keep you updated on our progress. Your feedback is very valuable for us. Please share your thoughts and comments with us through </span><span data-contrast="none">Virtual C++ Developer Community</span><span data-contrast="auto">. You can also reach us on Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="auto">), or via email at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;134233117&quot;:true,&quot;134233118&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">MSVC ARM64 optimizations in Visual Studio 2022 17.6 </a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2023 Pre-Conference Videos</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2023-pre-conference-videos/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2023-pre-conference-videos/#respond</comments>
@@ -797,183 +943,6 @@ It only takes about 10 minutes to complete and closes tomorrow, so please take t
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/fill-in-the-iso-c-developer-survey/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/#comments</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Sat, 22 Apr 2023 04:29:13 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32119</guid>
-
-					<description><![CDATA[<p>The 2023.04.15 release of the vcpkg package manager is available. This blog post summarizes changes from February 25th, 2023 to April 15th, 2023 for the Microsoft/vcpkg, Microsoft/vcpkg-tool, and Microsoft/vcpkg-docs GitHub repos.<br />
-Some stats for this period:</p>
-<p>39 new ports were added to the open-source registry.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/">vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.04.15">2023.04.15 release of the vcpkg package manager is available</a>. This blog post summarizes changes from February 25<sup>th</sup>, 2023 to April 15<sup>th</sup>, 2023 for the <a href="https://github.com/microsoft/vcpkg">Microsoft/vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool/">Microsoft/vcpkg-tool</a>, and <a href="https://github.com/microsoft/vcpkg-docs">Microsoft/vcpkg-docs</a> GitHub repos.</p>
-<p>Some stats for this period:</p>
-<ul>
-<li><strong>39 new ports</strong> were added to the open-source registry. If you are unfamiliar with the term ‘port’, they are packages that are built from source and are typically C/C++ libraries.</li>
-<li><strong>957 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our nine main triplets.</li>
-<li>There are now <strong>2,190 total libraries</strong> available in the vcpkg public registry.</li>
-<li><strong>125 contributors</strong> submitted PRs, issues, or participated in discussions in the repo.</li>
-<li>The main vcpkg repo has over <strong>5,300 forks</strong> and <strong>18,400 stars</strong> on GitHub.</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="notable-changes">Notable Changes</h3>
-<h4 id="vcpkg-now-included-with-visual-studio-ide">vcpkg now included with Visual Studio IDE</h4>
-<p>As of Visual Studio 2022 (version 17.6), vcpkg is now added by default for IDE installations that include C++ workloads. Visual Studio users can run vcpkg commands from a Developer Command Prompt for Visual Studio targeting a new version of the IDE – both the ones embedded in the IDE as well as external terminals. You must run <code>vcpkg integrate install</code> to configure the built-in copy of vcpkg as the one for use by the IDE and in order to add enable MSBuild and CMake integration. More details will be shared in a separate blog post (coming soon!).</p>
-<p>&nbsp;</p>
-<h4 id="new-community-xbox-triplets">New Community Xbox Triplets</h4>
-<p>vcpkg now supports targeting Xbox out of the box with four new community triplets. The appropriate triplet is automatically chosen when using the <em>Gaming.Xbox.*.x64</em> custom platforms in the Microsoft GDK with Xbox Extensions via the <code>vcpkg integrate</code> functionality. This makes it easy for developers to build open-source dependencies for this platform. Thank you to Chuck Walbourn from the Xbox organization for preparing these triplets.</p>
-<table style="width: 27.2013%; height: 100px;">
-<tbody>
-<tr style="height: 38px;">
-<td style="width: 37.1938%; height: 38px;" width="168"><strong>Triplet</strong></td>
-<td style="width: 62.8062%; height: 38px;" width="287"><strong>Description</strong></td>
-</tr>
-<tr style="height: 26px;">
-<td style="width: 37.1938%; height: 26px;" width="168">x64-xbox-scarlett</td>
-<td style="width: 62.8062%; height: 26px;" width="287">Builds DLLs for Xbox Series X|S</td>
-</tr>
-<tr style="height: 10px;">
-<td style="width: 37.1938%; height: 10px;" width="168">x64-xbox-scarlett-static</td>
-<td style="width: 62.8062%; height: 10px;" width="287">Builds static C++ libraries for Xbox Series X|S</td>
-</tr>
-<tr style="height: 10px;">
-<td style="width: 37.1938%; height: 10px;" width="168">x64-xbox-xboxone</td>
-<td style="width: 62.8062%; height: 10px;" width="287">Builds DLLs for Xbox One</td>
-</tr>
-<tr style="height: 16px;">
-<td style="width: 37.1938%; height: 16px;" width="168">x64-xbox-xboxone-static</td>
-<td style="width: 62.8062%; height: 16px;" width="287">Builds static C++ libraries for Xbox One</td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<p>Another benefit of these new triplets is for open-source library maintainers, who can validate that their code will build against the <code>WINAPI_FAMILY_GAMES</code> partition used on Xbox using only the public Windows SDK.</p>
-<p>To learn more about the new triplets and how to use them, visit <a href="https://walbourn.github.io/vcpkg-now-supports-targeting-xbox/">Chuck’s blog post</a> on the topic.</p>
-<p>&nbsp;</p>
-<h4 id="official-vcpkg-tool-release-architecture-is-now-amd64">Official vcpkg Tool Release Architecture is Now amd64</h4>
-<p>vcpkg tool releases on GitHub are now amd64 (was previously x86), as we do not expect many users to prefer x86 going forward.</p>
-<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1005">Microsoft/vcpkg-tool#1005</a></p>
-<p>&nbsp;</p>
-<h4 id="binary-caching-support-for-github-actions-cache">Binary Caching Support for GitHub Actions Cache</h4>
-<p>The vcpkg binary caching feature now works with the <a href="https://docs.github.com/en/rest/actions/cache">GitHub Actions Cache</a>. GitHub Actions Cache allows you to use a REST API to query and manage the cache for repositories in <a href="https://docs.github.com/en/actions">GitHub Actions</a>.</p>
-<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/836">Microsoft/vcpkg-tool#836</a> (thanks @quyykk!)</p>
-<p>&nbsp;</p>
-<h4 id="vcpkg-use-now-stacks-with-previous-use-or-activate-commands-but-not-vice-versa"><span style="font-size: 18pt;"><code>vcpkg use</code> now stacks with previous <code>use</code> or <code>activate</code> commands (but not vice versa)</span></h4>
-<p>For artifacts users, we have made the behavior of <span style="font-size: 12pt;"><code>vcpkg use</code></span> and <span style="font-size: 12pt;"><code>vcpkg activate</code></span> consistent when used multiple times. You can run <code>vcpkg use</code> after previously running <span style="font-size: 12pt;"><code>vcpkg use</code></span> on another artifact to enable both artifacts at the same time. You can also run <span style="font-size: 12pt;"><code>vcpkg use</code></span> after a previous <span style="font-size: 12pt;"><code>vcpkg activate</code></span> to enable all artifacts invoked by both <span style="font-size: 12pt;"><code>activate</code></span>and <span style="font-size: 12pt;"><code>use</code></span>. This does not work in reverse however – running <span style="font-size: 12pt;"><code>vcpkg activate</code></span> after <span style="font-size: 12pt;"><code>vcpkg use</code></span> will activate only the artifacts in the manifest at the time of activation, ignoring the artifact previously enabled via <span style="font-size: 12pt;"><code>vcpkg use</code></span>.  Lastly, when activating or deactivating artifacts, console output provides clearer feedback about what is going on.</p>
-<p>PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/944">Microsoft/vcpkg-tool#944</a></p>
-<p>&nbsp;</p>
-<h4 id="bug-fixes-performance-improvements">Bug Fixes / Performance Improvements</h4>
-<ul>
-<li><code>vcpkg install --only-downloads</code> now works when run on ports that call other helper ports, assuming the helper ports are still only downloading files and not building them (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/901">Microsoft/vcpkg-tool#901</a>).</li>
-<li><em>vcpkg.json</em> manifests now allow the user to specify port version 0 explicitly as a version constraint (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/916">Microsoft/vcpkg-tool#916</a>, thanks @horenmar!)</li>
-<li>Added localization throughout the tool in areas where it was missing.</li>
-<li>Fixed several issues preventing vcpkg artifacts from working when the vcpkg root directory is set to read-only. Also required to enable vcpkg to be shipped with the Visual Studio IDE. (PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/938">Microsoft/vcpkg-tool#938</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/939">Microsoft/vcpkg-tool#939</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/940">Microsoft/vcpkg-tool#940</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/941">Microsoft/vcpkg-tool#941</a>).</li>
-<li>Fixed a crash when running <code>vcpkg integrate-install powershell</code> (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/965">Microsoft/vcpkg-tool#965</a>, thanks @autoantwort!).</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="total-ports-available-for-tested-triplets">Total Ports Available for Tested Triplets</h3>
-<table style="width: 13.3692%;" width="258">
-<tbody>
-<tr>
-<td style="width: 63.0189%; text-align: left;" width="163"><strong>triplet</strong></td>
-<td style="width: 36.6038%; text-align: center;" width="95"><strong>ports available</strong></td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-windows</td>
-<td style="width: 36.6038%; text-align: center;" width="95">2,040</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x86-windows</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,974</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-windows-static</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,942</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-windows-static-md</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,957</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">arm64-windows</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,620</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-linux</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,982</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-osx</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,911</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">x64-uwp</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,115</td>
-</tr>
-<tr>
-<td style="width: 63.0189%;" width="163">arm-uwp</td>
-<td style="width: 36.6038%; text-align: center;" width="95">1,061</td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<p>While vcpkg supports a much larger variety of target platforms and architectures, the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<p>&nbsp;</p>
-<h3 id="thank-you-to-our-contributors">Thank You to Our Contributors</h3>
-<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the vcpkg, vcpkg-tool, or vcpkg-docs repos in this release:</p>
-<ul>
-<li>autoantwort (67 commits)</li>
-<li>dg0yt (38 commits)</li>
-<li>Neumann-A (15 commits)</li>
-<li>FtZPetruska (9 commits)</li>
-<li>talregev (6 commits)</li>
-<li>ex-purple (5 commits)</li>
-<li>SchaichAlonso (5 commits)</li>
-<li>JackBoosY (5 commits)</li>
-<li>DragonJoker (4 commits)</li>
-<li>coryan (4 commits)</li>
-<li>Osyotr (3 commits)</li>
-<li>myd7349 (3 commits)</li>
-<li>chausner (3 commits)</li>
-<li>xiaozhuai (3 commits)</li>
-<li>horenmar (3 commits)</li>
-<li>quyykk (2 commits)</li>
-<li>RT222 (2 commits)</li>
-<li>Pospelove (2 commits)</li>
-<li>Tradias (2 commits)</li>
-<li>daschuer (2 commits)</li>
-<li>an-tao (2 commits)</li>
-<li>luncliff (2 commits)</li>
-<li>BurningEnlightenment (2 commits)</li>
-<li>AenBleidd (2 commits)</li>
-<li>Thomas1664 (1 commit)</li>
-<li>yurybura (1 commit)</li>
-<li>danielaparker (1 commit)</li>
-<li>janisozaur (1 commit)</li>
-<li>ahmedyarub (1 commit)</li>
-<li>koprok (1 commit)</li>
-<li>m-kuhn (1 commit)</li>
-<li>kobykahane (1 commit)</li>
-<li>cmello (1 commit)</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="learn-more">Learn More</h3>
-<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2023.04.15">full 2023.04.15 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/">vcpkg 2023.04.15 Release: vcpkg ships in Visual Studio, Xbox triplets, GitHub Actions Cache Support, and More…</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
