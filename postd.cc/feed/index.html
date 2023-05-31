@@ -1,4 +1,749 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 24 May 2023 10:59:28 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[2022年のCSS]]></title><description><![CDATA[写真： Jr Korpa on Unsplash Intro：2021年はこれまでCSSにとって盛りだくさんな一年でした。
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 31 May 2023 04:36:10 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[フロントエンドパフォーマンスのチェックリスト2021年版（PDF、Apple Pages、MS Word）-前編]]></title><description><![CDATA[クイックサマリー：2021年のWebパフォーマンスを高速化しましょう。
+毎年恒例のフロントエンドパフォーマンスのチェックリスト（PDF、Apple Pages、MS Wordに対応）は、指標やツール…]]></description><link>https://postd.cc/front-end-performance-2021-checklist-1/</link><guid isPermaLink="false">https://postd.cc/front-end-performance-2021-checklist-1/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><pubDate>Wed, 31 May 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：2021年のWebパフォーマンスを高速化しましょう。
+毎年恒例のフロントエンドパフォーマンスのチェックリスト（<a href="https://www.dropbox.com/s/34noajrbm324iai/performance-checklist-1.4.pdf?dl=0">PDF</a>、<a href="https://www.dropbox.com/s/ikuk5ikcxxv39uu/performance-checklist-1.4.pages?dl=0">Apple Pages</a>、<a href="https://www.dropbox.com/scl/fi/s7ctdj89zd5zlvtt7dkhi/performance-checklist-1.4.docx?dl=0&#x26;rlkey=2xzs55e3kdg1jcraw5u1tnpl8">MS Word</a>に対応）は、指標やツールからフロントエンドのテクニックに至るまで、現代のWebで高速なユーザ体験を生み出すために知る必要があるすべてを提供します。
+このチェックリストは2016年から更新を続けてきました。
+<a href="https://www.smashingmagazine.com/the-smashing-newsletter/">メールのニュースレターでも、フロントエンドに関する便利な情報をご確認いただけます</a>。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>このガイドは、<a href="https://logrocket.com/?utm_source=smashing&#x26;utm_medium=syndication&#x26;utm_campaign=sm_q12021#utm_source=smashing&#x26;utm_medium=syndication&#x26;utm_campaign=sm_q12021">LogRocket</a>に勤務する筆者の友人の厚意によるサポートを受けています。
+LogRocketは、<strong>フロントエンドパフォーマンスのモニタリング</strong>、セッションリプレイ、製品分析を組み合わせ、顧客体験の向上に貢献するサービスです。
+また、DOM完了時間、サーバ初期応答時間（TTFB）、初回入力までの遅延時間（FID）、クライアントのCPUとメモリの利用状況などの重要な指標を追跡します。
+LogRocketの無料トライアルは<a href="https://logrocket.com/?utm_source=smashing&#x26;utm_medium=syndication&#x26;utm_campaign=sm_q12021#utm_source=smashing&#x26;utm_medium=syndication&#x26;utm_campaign=sm_q12021">こちら</a>です。</p></div></div>
+<p>Webパフォーマンスは厄介な代物だと思いませんか。
+どうすれば現在のパフォーマンスを実際に知ることができるのでしょう。
+いったい何がパフォーマンスのボトルネックになっているのでしょうか。
+読み込みに時間がかかるJavaScriptか、表示が遅いWebフォントか、サイズが大きい画像か、それとも緩慢なレンダリングでしょうか。
+果たして私たちは、ツリーシェイキング、スコープホイスティング、コード分割による最適化や、インターセクションオブザーバー、プログレッシブハイドレーション、クライアントヒント、HTTP/3、サービスワーカー、さらにはエッジワーカーによる、手の込んだ読み込みパターンを使用した最適化を十分に行っているでしょうか。
+そして最も重要な点として、<strong>いったいどこからパフォーマンス改善に手をつけ</strong>、どのように長期にわたってパフォーマンスを重視する文化を確立すればよいのでしょうか。</p>
+<p>かつては、パフォーマンスは通常、あくまで後で考えるものでした。
+プロジェクトの最後の最後まで後回しにされた結果、最小化、連結、アセットの最適化に加え、
+場合によりサーバのconfigファイルにいくつかの微調整を加えるだけで済むことが珍しくありませんでした。
+いま振り返ってみると、状況はずいぶん変わったように感じられます。</p>
+<p>パフォーマンスは単なる技術的な問題ではありません。
+アクセシビリティやユーザビリティから検索エンジン最適化に至るまで、あらゆる要素に影響を与えます。
+パフォーマンスをワークフローに組み込むならば、デザインはパフォーマンスへの影響を考慮して決定する必要があります。
+<strong>パフォーマンスは継続的に測定、監視、改良しなければなりません</strong>。
+さらに、Webの複雑性が高まることによって新たな課題が生まれ、指標の追跡が困難になっています。
+なぜなら、端末、ブラウザ、プロトコル、ネットワークのタイプとレイテンシによってデータが大きく変わるからです（CDN、ISP、キャッシュ、プロキシ、ファイアウォール、ロードバランサ、サーバのすべてがパフォーマンスに関係します）。</p>
+<p>それでは、プロジェクトの最初からWebサイトの最終リリースまで、パフォーマンスを改善するときに考慮すべきことをすべてまとめた全体像を作成するとしたら、どのようなものになるでしょうか。
+以下に（なるべく偏りがなく客観的な）<strong>フロントエンドパフォーマンスのチェックリスト2021年版</strong>を紹介します。
+高速な反応時間と円滑なユーザインタラクションを確保し、Webサイトがユーザの帯域幅を奪わないようにするために、考慮する必要がある項目の最新情報をまとめました。</p>
+<h2>目次<a href="#00">＃</a></h2>
+<p><strong>前編</strong></p>
+<ul>
+<li><a href="#01">準備段階：計画と指標</a><br>
+パフォーマンスを重視する文化、Core Web Vitals、パフォーマンスのプロファイル、CrUX、Lighthouse、FID、TTI、CLS、端末。</li>
+<li><a href="#02">現実的な目標の設定</a><br>
+パフォーマンスバジェット、パフォーマンス目標、RAILフレームワーク、170KB/30KBバジェット。</li>
+<li><a href="#03">環境の定義</a><br>
+フレームワークの選択、パフォーマンスコストの基準設定、Webpack、依存関係、CDN、フロントエンドアーキテクチャ、CSR、SSR、CSR + SSR、静的レンダリング、プリレンダリング、PRPLパターン。</li>
+</ul>
+<p><strong>中編</strong></p>
+<ul>
+<li>アセットの最適化<br>
+Brotli、AVIF、WebP、レスポンシブ画像、AV1、アダプティブメディア読み込み、動画圧縮、Webフォント、Googleフォント。</li>
+</ul>
+<p><strong>後編</strong></p>
+<ul>
+<li>ビルドの最適化<br>
+JavaScriptモジュール、モジュール/ノーモジュールのパターン、ツリーシェイキング、コード分割、スコープホイスティング、Webpack、デファレンシャルサービング、Webワーカー、WebAssembly、JavaScriptバンドル、React、SPA、パーシャルハイドレーション、インポート・オン・インタラクション、サードパーティ、キャッシュ</li>
+<li>デリバリの最適化<br>
+遅延読み込み、インターセクションオブザーバー、遅延レンダリングとデコーディング、クリティカルCSS、ストリーミング、リソースヒント、レイアウトシフト、サービスワーカー。</li>
+<li>ネットワーク接続、HTTP/2、HTTP/3<br>
+OCSPステープリング、EV/DV証明書、パッケージング、IPv6、QUIC、HTTP/3。</li>
+<li>テストとモニタリング<br>
+監査ワークフロー、プロキシブラウザ、404ページ、GDPRに基づくcookie同意プロンプト、パフォーマンス診断CSS、アクセシビリティ。</li>
+<li>手軽に成果を上げる</li>
+<li>チェックリストのダウンロード（PDF、Apple Pages、MS Word）</li>
+<li>さあ、始めよう！</li>
+</ul>
+<p>（<a href="https://www.dropbox.com/s/34noajrbm324iai/performance-checklist-1.4.pdf?dl=0">チェックリストのPDFファイル</a>（166KB）、<a href="https://www.dropbox.com/s/ikuk5ikcxxv39uu/performance-checklist-1.4.pages?dl=0">編集可能なApple Pagesファイル</a>（275KB）、<a href="https://www.dropbox.com/scl/fi/s7ctdj89zd5zlvtt7dkhi/performance-checklist-1.4.docx?dl=0&#x26;rlkey=2xzs55e3kdg1jcraw5u1tnpl8">.docxファイル</a>（151KB）も自由にダウンロードできます。皆さんが最適化を楽しめますように！）</p>
+<h2>準備段階：計画と指標 <a href="#01">#</a><a name="01"></a></h2>
+<p>細かい最適化はパフォーマンスを維持するにはとても重要ですが、明確な目標を念頭に置くことも必要不可欠です。
+測定可能な目標を定め、プロセス全体を通したすべての意思決定に反映させるようにしましょう。
+目標設定に関してはいくつもの異なるモデルがあり、以下で紹介するモデルは筆者の独断によるものです。
+早いうちに自分が何を優先するかを決めるようにしましょう。</p>
+<h3>01. パフォーマンスを重視する文化を確立する。</h3>
+<p>多くの組織において、フロントエンドの開発者は、共通する基本的な問題が何であるかや、それを修正するためにどんな戦略を採用すべきかをはっきりと把握しています。
+しかし、パフォーマンスを重視する文化がしっかりと確立されていないと、意思決定のたびに部門同士で争いが起き、分断化した組織になってしまいます。
+開発を進めるには、ビジネスのステークホルダーの支持が必要です。
+支持を得るには、速度（特に、後で詳しく説明するCore Web Vitals）の向上が、ステークホルダーが関心を持っている基準や重要業績評価指標（KPI）にプラスの影響を与えるというケーススタディ、すなわち<a href="https://medium.com/%40armelpingault/how-to-convince-your-client-to-focus-on-web-performance-a-case-study-35f12385689">概念実証（PoC）</a>を確立しなければなりません。</p>
+<p>パフォーマンス向上のメリットをより明確にする手段として、例えばコンバージョン率と、アプリケーション読み込み速度やレンダリングのパフォーマンスの相関を明らかにし、<a href="https://simplified.dev/performance/impact-of-web-performance">収益パフォーマンスへの影響</a>を示すことができます。
+あるいは、<a href="https://drive.google.com/file/d/1o0lWk3c-d3xRuLw61jVeQwHJr_SdOCYP/view">サーチボットのクローリング率</a>（PDF、27～50ページ）を利用しても良いでしょう。</p>
+<p>開発/デザインチームと業務/マーケティングチームの方向性がしっかりと一致していなければ、パフォーマンスを長く維持することはできません。
+カスタマーサービスと営業チームによく寄せられる苦情を精査し、直帰率が高い場合やコンバージョン率が低下した場合は詳しく分析しましょう。
+そして、パフォーマンスの向上によって、こうしたよくある問題を軽減することができないか調べてみましょう。
+どのステークホルダーと話すのかに応じて、<a href="https://youtu.be/SE0HhF4TO0Q?t=1052">主張の内容を調整する</a>ことも必要です。</p>
+<p>モバイルとデスクトップの両方でパフォーマンス実験を行い、結果を測定してみましょう（例えば、<a href="https://dev.to/thegreengreek/show-me-the-money-justifying-performance-improvements-using-google-analytics-3231">Google Analytics</a>などを利用できます）。
+こうした実験は、現実のデータに基づき、自社に合ったケーススタディを構築するのに役立ちます。
+さらに、<a href="https://wpostats.com/">WPO Stats</a>上で公表されたケーススタディと実験データを利用することで、なぜパフォーマンスが重要なのか、それがユーザ体験と業績指標にどのような影響を与えるのか、これらに対する企業の感性が磨かれます。
+ただし、パフォーマンスが重要だと主張するだけでは不十分です。
+測定と追跡が可能な目標を定め、それを継続的に観測する必要があります。</p>
+<p>そのためには、どうすればよいのでしょうか。Allison McKnightは、<a href="https://vimeo.com/album/4970467/video/254947097">長期的なパフォーマンスの向上</a>に関する講演の中で、Etsyにおいてパフォーマンスを重視する文化の確立をどのように促進したかに関する包括的なケーススタディを紹介しています（<a href="https://speakerdeck.com/aemcknig/building-performance-for-the-long-term">スライド</a>）。
+最近では、Tammy Evertsが、小規模な組織と大規模な組織の両方で<a href="https://www.youtube.com/watch?v=SE0HhF4TO0Q">非常に高いパフォーマンスを上げるチームの習慣</a>について語っています。</p>
+<p>こうした対話を組織内で実施するときは、UXがさまざまな体験のスペクトルであるのと同様に、<a href="https://medium.com/firebase-developers/how-fast-should-your-site-load-cfb14be48e8b">Webパフォーマンスにも幅がある</a>という点に留意するのが重要です。
+<a href="https://mailchi.mp/perf.email/56?e=7a7df41374">Karolina Szczur</a>が述べているとおり、「1つの数値だけが望ましい評価をもたらすと考えるのは誤っています」。
+したがって、パフォーマンスに関する目標は、きめ細かく、追跡可能で、目に見えるものである必要があります。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9b76f03b-6b76-4d18-9c54-f1280ba3e91b/conversion-rate-tracking-performance-szptss.jpg">
+<em>モバイルでは、ユーザが体験する読み込み時間が速い場合、セッション当たりの収益は平均と比べて17％増加します。（<a href="https://mailchi.mp/perf.email/56?e=7a7df41374">Addy Osmani</a>による<a href="https://simplified.dev/performance/impact-of-web-performance">Impact of Web Performance</a>からの引用）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9e69134f-4ec0-4bb7-803b-ebce880b8029/bounce-rate-time-to-app-load-opt.png">
+<em>1つの数値だけが望ましい評価をもたらすと考えるのは誤っています。（画像の出典：<a href="https://mailchi.mp/perf.email/56?e=7a7df41374">Karolina Czczur</a>による<a href="https://simplified.dev/performance/impact-of-web-performance">Performance is a distribution</a>からの引用）</em></p>
+<h3>02. 目標：最も速い競合サイトよりも20％以上速くなることを目指す。</h3>
+<p><a href="https://www.smashingmagazine.com/2015/09/why-performance-matters-the-perception-of-time/#the-need-for-performance-optimization-the-20-rule">心理学的な調査</a>によれば、ユーザがあなたのWebサイトを競合サイトよりも速いと感じるには、比較対象との速度差が20％以上で速くなければなりません。
+主要な競合サイトを調べ、こうしたサイトのモバイルとデスクトップにおけるパフォーマンス関連の指標を収集し、それらを上回るための基準値を設定しましょう。
+ただし、正確な成果や目標を定めるには、まず自社サイトの分析を精査し、ユーザ体験の全体像を把握する必要があります。
+その後は、90パーセンタイル値に相当するユーザ体験を再現し、テストしてみましょう。</p>
+<p>競合サイトのパフォーマンスを把握する最初の一歩として、<a href="https://web.dev/fast/chrome-ux-report">Chrome UX Report</a>（CrUX。既製のRUMデータセット。Ilya Grigorikの<a href="https://vimeo.com/254834890">動画による紹介はこちら</a>、Rick Viscomiによる詳細なガイドはこちら）や、Chrome UX Reportに基づくRUMモニタリングツールである<a href="https://treo.sh/sites">Treo</a>を利用することができます。
+データはChromeブラウザのユーザから収集されるため、レポートはChrome固有のものとなりますが、幅広い訪問者に関して、とても詳細なパフォーマンスの分布（最も重要なのはCore Web Vitalsのスコア）を知ることが可能です。
+なお、新たなCrUXデータセットは毎月第2火曜日に公表されます。</p>
+<p>他にも以下を利用することができます。</p>
+<ul>
+<li>Addy Osmaniの<a href="https://crux-compare.netlify.app/">Chrome UX Report Compare Tool</a></li>
+<li><a href="https://www.thinkwithgoogle.com/feature/mobile/">Speed Scorecard</a>（収益への影響の推定も可能）</li>
+<li><a href="https://ruxt.dexecure.com/compare">Real User Experience Test Comparison</a></li>
+<li><a href="https://www.sitespeed.io/">SiteSpeed CI</a>（合成テストに基づく）</li>
+</ul>
+<p>注記：<a href="https://developers.google.com/speed/pagespeed/insights/">Page Speed Insights</a>や<a href="https://dev.to/addyosmani/monitoring-performance-with-the-pagespeed-insights-api-33k7">Page Speed Insights API</a>（非推奨とはなっていません）を使用する場合、CrUXのパフォーマンスデータは、単なる合計値ではなく特定ページのデータを取得できます。
+このデータは、「ランディングページ」や「商品一覧」などのアセットにパフォーマンス目標を設定するときには、合計値よりもはるかに役立つ可能性があります。
+バジェットのテストにCIを使用する場合において、CrUXを目標設定に使用したときは、テスト対象の環境がCrUXと一致するようにしてください（Patrick Meenanに感謝します）。</p>
+<p>速度を重視する理由を示すのに助けが必要な場合、パフォーマンス不良遅いパフォーマンスによるコンバージョン率の低下や直帰率の上昇を可視化したい場合、あるいは組織内でRUMソリューションを提唱する必要がある場合は、Sergey Chernyshevが<a href="https://dev.to/addyosmani/monitoring-performance-with-the-pagespeed-insights-api-33k7">開発したUX Speed Calculator</a>を利用しましょう。
+このオープンソースのツールは、データをシミュレーションし、可視化することで、あなたの意見を理解してもらうのに役立ちます。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/b5eebba0-3123-4d14-8ead-4be33834e6c0/smashing-distribution-opt.png">
+<em>CrUXは、Google Chromeのユーザからトラフィックを収集し、時系列のパフォーマンス分布の概要を作成します。<a href="https://g.co/chromeuxdash">Chrome UXダッシュボード</a>で独自のCrUXを作成することが可能です。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/b5eebba0-3123-4d14-8ead-4be33834e6c0/smashing-distribution-opt.png">プレビューを拡大</a>）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/430e2362-e8f8-4db9-9ac2-2187fd638d52/16-ux-speed-calculator-front-end-performance-checklist-2020.png">
+あなたの意見を理解してもらうために、パフォーマンスに関する証拠が必要なときは、<a href="https://ux-speed-calculator.netlify.com/">UX Speed Calculator</a>が便利です。これは実際のデータに基づき、パフォーマンスが直帰率、コンバージョン率、合計収益に与える影響を可視化します。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/430e2362-e8f8-4db9-9ac2-2187fd638d52/16-ux-speed-calculator-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</p>
+<p>時には、もっと詳しいデータが欲しいこともあるでしょう。
+CrUXのデータを、すでに持っている他のデータと組み合わせ、競合サイトや自社プロジェクトのどこでパフォーマンスが遅くなり、どこに盲点があり、非効率な部分があるのかを迅速に見つけ出したい場合です。Harry Robertsは、自分の仕事に<a href="https://csswizardry.com/2020/11/site-speed-topography/">Site-Speed Topographyスプレッドシート</a>を利用しています。
+彼はこのスプレッドシートを、主要なページの種類ごとにパフォーマンスを分析し、主要指標がどのように変わるかを追跡するのに使っています。
+Google Sheets、Excel、OpenOfficeドキュメント、CSV形式で<a href="https://gumroad.com/l/site-speed-topography">スプレッドシートをダウンロード</a>できます。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/cc19294f-7bed-4974-ab6f-6344b51e538c/milestones-chart-opt.png">
+<em><a href="https://csswizardry.com/2020/11/site-speed-topography/">Topography</a>。主要指標がサイトの主なページごとに表示されている。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/cc19294f-7bed-4974-ab6f-6344b51e538c/milestones-chart-opt.png">プレビューを拡大</a>）</em></p>
+<p>徹底的に追求したい場合は、（<a href="https://www.npmjs.com/package/lighthouse-parade">Lighthouse Parade</a>を通じて）<a href="https://cloudfour.com/thinks/big-picture-performance-analysis-using-lighthouse-parade/">サイトのすべてのページに対してLighthouseのパフォーマンス監査を実施することができます</a>。結果はCSV形式で保存可能です。
+これは、競合サイトのどの特定のページ（またはページのタイプ）のパフォーマンスが悪い（または優れている）かや、何に重点的に取り組むべきかを特定するのに役立ちます（ただし、自社サイトなら<a href="https://github.com/GoogleChrome/web-vitals/">分析エンドポイントにデータを送信</a>する方が良いでしょう）。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/98a2d45b-e3b6-468b-994e-1bd6b08b0794/hero-lighthouse-parade-opt.png">
+<em><a href="https://cloudfour.com/thinks/big-picture-performance-analysis-using-lighthouse-parade/">Lighthouse Parade</a>を使用すれば、サイトのあらゆるページに対してパフォーマンス監査を実施し、結果をCSV形式で保存できます。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/98a2d45b-e3b6-468b-994e-1bd6b08b0794/hero-lighthouse-parade-opt.png">プレビューを拡大</a>）</em></p>
+<p>このようにデータを収集し、<a href="https://danielmall.com/articles/how-to-make-a-performance-budget/">スプレッドシート</a>（※訳注：原文指定URL消失）を設定し、時間を20％削減することで、目標（パフォーマンスバジェット）を確立します。
+これで、テストで測定を行う準備ができました。
+バジェットを気にかけながら、インタラクティブになるまでの時間（TTI）を高速化するためにペイロードを最小限にしようとしている場合、これが合理的な方法であると言えます。</p>
+<p>始めるのにリソースが必要なら、以下を利用してみましょう。</p>
+<ul>
+<li>Addy Osmaniは、<a href="https://medium.com/%40addyosmani/start-performance-budgeting-dabde04cf6a3">パフォーマンスバジェット作成の始め方</a>、新機能の影響を定量化する方法、バジェットを超過している場合にどこから手をつけるべきかについて、とても詳しい記事を執筆しています。</li>
+<li>Lara Hoganの<a href="https://designingforperformance.com/weighing-aesthetics-and-performance/#approach-new-designs-with-a-performance-budget">パフォーマンスバジェットからデザインにアプローチするためのガイド</a>は、デザイナーにとって便利なヒントを提供します。</li>
+<li>Harry Robertsは、<a href="https://requestmap.webperf.tools/">Request Map</a>を使用して、サードパーティのスクリプトがパフォーマンスに与える影響を表示するための<a href="https://csswizardry.com/2018/05/identifying-auditing-discussing-third-parties/">Google Sheetsの設定ガイド</a>を公表しています。</li>
+<li>Jonathan Fieldingの<a href="https://www.performancebudget.io/">Performance Budget Calculator</a>や、Katie Hempeniusの<a href="https://perf-budget-calculator.firebaseapp.com/">perf-budget-calculator</a>と<a href="https://browserdiet.com/calories/">Browser Calories</a>（※訳注：原文指定URL消失）は、バジェット作成の助けとなります（この情報を教えてくれた<a href="https://medium.com/%40fox/talk-the-state-of-the-web-3e12f8e413b3">Karolina Szczur</a>に感謝します）。</li>
+<li>多くの企業では、パフォーマンスバジェットは、特定のポイントを超過しないための目安となるように、野心的ではなく現実的な内容に設定すべきです。この場合、過去2週間で最悪のデータを基準値として選び、それを出発点とするのも方法の一つです。<a href="https://csswizardry.com/2020/01/performance-budgets-pragmatically/">Performance Budgets, Pragmatically</a>という記事では、そのための戦略が紹介されています。</li>
+<li>また、ビルドサイズを示したグラフ付きのダッシュボードを設定することで、パフォーマンスバジェットと現在のパフォーマンスの両方を可視化できます。そのためのツールは数多く存在しており、例を挙げると<a href="https://www.sitespeed.io/">SiteSpeed.ioダッシュボード</a>（オープンソース）、<a href="https://speedcurve.com/">SpeedCurve</a>、<a href="https://calibreapp.com/">Calibre</a>などがあります。<a href="https://perf.rocks/tools/">perf.rocks</a>では、さらに多くのツールを探すことができます。</li>
+</ul>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/fc5615ec-2ffd-4510-a94f-d781c17267a7/browser-calories-opt.png">
+<em><a href="https://browserdiet.com/calories/">Browser Calories</a>は、パフォーマンスバジェットを設定し、ページがその数値を超過しているかどうかを測定するのに役立ちます。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/fc5615ec-2ffd-4510-a94f-d781c17267a7/browser-calories-opt.png">プレビューを拡大</a>）</em></p>
+<p>バジェットを設定したら、<a href="https://web.dev/fast/incorporate-performance-budgets-into-your-build-tools">Webpack Performance HintsとBundlesize</a>、<a href="https://github.com/GoogleChrome/lighthouse-ci">Lighthouse CI</a>、<a href="https://github.com/paulirish/pwmetrics">PWMetrics</a>や<a href="https://www.sitespeed.io/">Sitespeed CI</a>を利用してビルドのプロセスに組み込み、プルリクエストに対してバジェットを実行し、PRコメントにスコアの履歴を表示するようにします。</p>
+<p>パフォーマンスバジェットをチーム全体に浸透させるには、<a href="https://web.dev/use-lighthouse-for-performance-budgets/">Lightwalletを通じてLighthouseにパフォーマンスバジェットを統合する</a>か、<a href="https://github.com/treosh/lighthouse-ci-action">LHCI Actionを使用してGitHub Actionsに手早く統合しましょう</a>。何らかのカスタマイズが必要な場合は、<a href="https://github.com/trulia/webpagetest-charts-api">webpagetest-charts-api</a>を利用できます。
+これはWebPageTestの結果から図表を作成するエンドポイントのAPIです。</p>
+<p>しかし、パフォーマンスバジェットだけでは、パフォーマンスに対する認識を高めることはできないでしょう。
+<a href="https://medium.com/%40Pinterest_Engineering/a-one-year-pwa-retrospective-f4a2f4129e05">Pinterest</a>のように、カスタマイズされた<a href="https://medium.com/pinterest-engineering/a-one-year-pwa-retrospective-f4a2f4129e05#d6bc">ESLint</a>のルールを定めることで、依存関係が多く、バンドルのサイズを膨張させるファイルやディレクトリからのインポートを禁止できます。
+また、チーム全体で共有できる「安全な」パッケージの一覧を設定しましょう。</p>
+<p>さらに、ビジネスにとって最もメリットが大きい必要不可欠なカスタマータスクについて考えてみてください。
+<strong>必要不可欠なアクションについて、許容できる速度の基準値</strong>に関する調査と議論を行い、その基準値を決定しましょう。
+さらに、組織全体が承認した「UXを考慮した」<a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance">User Timingの測定ポイント</a>を設定しましょう。
+多くの場合、ユーザジャーニーは多様な部門の業務に関係します。
+そのため、許容できる速度について合意できるか次第で、今後のパフォーマンスに関する議論が促進されるか妨げられるかが変わってきます。
+追加的なリソースと機能による追加コストを可視化し、把握するようにしてください。</p>
+<p>パフォーマンスに関する取り組みと、その他の技術的な取り組み（製品の新機能の開発、リファクタリング、世界中の新たなターゲット層へのリーチなど）の整合性を取るようにしましょう。
+そうすれば、今後の展開について議論をするたびに、パフォーマンスについても一緒に議論することができます。
+コードベースが新しい場合や、リファクタリングされたばかりの場合は、パフォーマンス目標を達成するのがはるかに簡単になります。</p>
+<p>また、<a href="https://twitter.com/patmeenan">Patrick Meenan</a>が提案しているとおり、デザインプロセスの間に、<strong>読み込みのシーケンスとトレードオフについて計画すること</strong>は考慮に値します。
+早いうちに必要不可欠な部分に優先順位をつけ、それが表示される順番を定めれば、表示を遅らせて構わないものも把握できます。
+この順番はCSSとJavaScriptのインポートシーケンスも反映し、ビルドプロセスでこれらを扱いやすいようにするのが理想的です。
+また、ページ読み込み中の「中間」の状態（例えば、Webフォントの読み込みが終わるまで）における視覚的なユーザ体験がどのようなものであるべきかについても検討しておきましょう。</p>
+<p>パフォーマンスを重視する強固な文化を組織内で確立したら、過去の自社サイトに比べて20％高速化することを目指し、時が経っても優先順位を忘れないようにしましょう（Guy Podjarnyに感謝します）。
+ただし、顧客のタイプと利用行動がさまざまであること（Tobias Baldaufは<a href="https://calendar.perfplanet.com/2020/y-u-no-revenue-cadence-cohorts-trained-behavior/">カデンスとコホート</a>と呼んでいます）や、ボットのトラフィックと季節的な影響も考慮してください。</p>
+<p>とにかく計画することが大切です。プロジェクトの初期に、「手の届く所にある」最適化を即座に実行するのは魅力的で、すぐに成果を上げたい場合は良い戦略かもしれません。
+しかし、計画を立てず、自社に合った現実的なパフォーマンス目標を定めない限り、パフォーマンスを優先し続けることはとても困難になるでしょう。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/dbbae59c-44fa-4967-9598-33e56ab07475/10-treo-front-end-performance-checklist-2020.jpeg">
+<em><a href="https://treo.sh/">Treo</a>は現実のデータに基づく競合分析を提供します。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/dbbae59c-44fa-4967-9598-33e56ab07475/10-treo-front-end-performance-checklist-2020.jpeg">プレビューを拡大</a>）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/0ae6761d-b6d6-4a0f-baa6-22e7543a3830/11-metrics-front-end-performance-checklist-2020.png">
+<em>2020年初頭に新たな指標がLighthouse v6に導入されました。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/0ae6761d-b6d6-4a0f-baa6-22e7543a3830/11-metrics-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+<h3>03. 適切な指標を選択する。</h3>
+<p><a href="https://speedcurve.com/blog/rendering-metrics/">すべての指標が同等に重要なわけではありません</a>。
+自社のアプリケーションにとって、どの指標が最も重要であるかを調査しましょう。
+通常は、インターフェースの最も重要なピクセルのレンダリングをどれだけ速く開始できるかや、これらのレンダリングされたピクセルへの<strong>入力に対してどれだけ速く応答できるか</strong>が重要となります。
+何が重要な指標であるかを知ることで、現在の取り組みに対する最善の最適化目標が分かります。
+最終的には、ユーザ体験の決め手となるのは読み込みイベントでもサーバの応答時間でもなく、UIがどれだけサクサク動くと感じられるかです。</p>
+<p>どういうことかというと、ページ全体の読み込み時間（例えばonLoadやDOMContentLoadedなど）に注目するよりも、<a href="https://web.dev/user-centric-performance-metrics/">顧客の印象に合わせて</a>ページの読み込みに優先順位を付けるべきだという意味です。
+つまり、注目すべき指標が微妙に異なっているのです。
+実際、適切な指標の選択というプロセスにおいて、明確に選択すべき指標は存在しません。</p>
+<p>Tim Kadlecの調査と、Marcos Iglesiasの<a href="https://docs.google.com/presentation/d/e/2PACX-1vTk8geAszRTDisSIplT02CacJybNtrr6kIYUCjW3-Y_7U9kYSjn_6TbabEQDnk9Ao8DX9IttL-RD_p7/pub?start=false&#x26;loop=false&#x26;delayms=10000&#x26;slide=id.g3ccc19d32d_0_98">講演</a>のメモによれば、<strong>従来の指標</strong>はいくつかのグループに分けられます。
+通常、パフォーマンスを完全に把握するにはすべての指標が必要ですが、個別のケースでは一部の指標が他の指標よりも重要となります。</p>
+<ul>
+<li>数量ベースの指標は、複数のリクエスト、ウェイト、パフォーマンススコアを測定します。
+アラートを設定したり、時系列の変化をモニタリングしたりするのには向いていますが、ユーザ体験の把握には向いていません。</li>
+<li>マイルストーン指標（例えばTime To First ByteやTime To Interactiveなど）は、プロセスが読み込まれるまでの状態を利用します。
+ユーザ体験の把握やモニタリングには向いていますが、複数のマイルストーン間で何が起きているかを把握するのには向きません。</li>
+<li>レンダリング指標（例えばStart Render TimeやSpeed Indexなど）は、コンテンツのレンダリングの速さの推定値を提供します。
+レンダリングのパフォーマンスの測定や修正には向いていますが、重要なコンテンツが表示されるタイミングや、そのコンテンツとのインタラクションが可能になるタイミングの測定には向きません。</li>
+<li>カスタム指標（例えばTwitterの<a href="https://blog.alexmaccaw.com/time-to-first-tweet">Time To First Tweet</a>やPinterestの<a href="https://medium.com/%40Pinterest_Engineering/driving-user-growth-with-performance-improvements-cfc50dafadd7">PinnerWaitTime</a>など）は、ユーザごとにカスタマイズされた特定のイベントを測定します。
+ユーザ体験を正確に描写するのには向いていますが、指標を拡張したり、競合サイトと比較したりするのには向きません。</li>
+</ul>
+<p>全体像を把握するには、通常はこれらすべてのグループの有用な指標に注目します。
+一般に、最も特別な意味を持ち、重要とされる指標を以下に紹介します。</p>
+<ul>
+<li><a href="https://calibreapp.com/blog/time-to-interactive/">Time to Interactive</a>（TTI）<br>
+レイアウトが<strong>安定</strong>し、主要なWebフォントが表示され、メインスレッドがユーザの入力を十分に処理できるようになるまでの時間を表します。
+つまり、ユーザとUIのインタラクションが可能になるまでの時間です。
+ユーザがタイムラグなしでサイトを利用するためにどの程度待つ必要があるかを把握するための主要な指標です。
+Boris Schapiraは<a href="https://blog.dareboost.com/en/2019/05/time-to-interactive-tti-measure-interactivity/">信頼性が高いTTIの測定方法</a>に関して詳細な記事を書いています。</li>
+<li><a href="https://developers.google.com/web/updates/2018/05/first-input-delay">First Input Delay</a>（FID）、またはInput responsiveness<br>
+ユーザが最初にサイトとのインタラクションを実施してから、ブラウザが実際にそのインタラクションに対して<strong>応答できる</strong>までの時間です。
+ユーザがサイトと実際にインタラクションをするときに何が起きるかを把握できるため、TTIでは捕捉できない部分を補完する指標としてとても優れています。
+これはRUMの指標としてのみ使用されることを意図しています。
+ブラウザでFIDを測定するための<a href="https://github.com/GoogleChromeLabs/first-input-delay">JavaScriptライブラリ</a>も存在します。</li>
+<li><a href="https://web.dev/lcp/">Largest Contentful Paint</a>（LCP）<br>
+ページを読み込む過程において、ページの<strong>重要なコンテンツ</strong>が読み込まれる可能性が高い時点を示します。
+前提として、ページの最も重要な要素は、<a href="https://medium.com/speedrank-app/new-performance-metric-what-is-largest-contentful-paint-dc784a497dd5">ユーザのビューポートに表示される最も大きな要素</a>であると想定しています。
+スクロールしなくても見える範囲と、スクロールしなければ見えない範囲の両方で要素がレンダリングされる場合、見える範囲の部分のみが重要とみなされます。</li>
+<li><a href="https://web.dev/tbt/">Total Blocking Time</a>（TBT）<br>
+ページとのインタラクションが確実に可能になる前の時点で、その<a href="https://web.dev/tbt/">ページとのインタラクションが不可能である度合いの深刻さ</a>を定量化することに役立つ指標です（インタラクションが確実に可能であるとは、メインスレッドに、50ミリ秒以上を要するタスク（<a href="https://calendar.perfplanet.com/2017/tracking-cpu-with-long-tasks-api/">ロングタスク</a>）が存在しない時間が5秒以上続くことを指します）。
+この指標は、最初の描画からTime to Interactive（TTI）までの間において、メインスレッドが一定時間にわたってブロックされており、入力への応答が妨げられていた時間の合計を測定するものです。
+そのため、当然ながら、TBTが小さいことは良いパフォーマンスの目安となります。（ArtemとPhilに感謝します）。</li>
+<li><a href="https://web.dev/cls">Cumulative Layout Shift</a>（CLS）<br>
+この指標は、ユーザがサイトにアクセスしたときに、予期しない<strong>レイアウトシフト</strong>（ブラウザによるリフロー）（※訳注：ページ閲覧中に広告等の要素が読み込まれて、ガタンとコンテンツの位置がずれること）を体験する頻度を測定します。
+これは、不安定な要素と、それが全体的なユーザ体験に与える影響を検証するものです。
+このスコアは低いほど優れています。</li>
+<li><a href="https://dev.to/borisschapira/web-performance-fundamentals-what-is-the-speed-index-2m5i">Speed Index</a><br>
+ページのコンテンツがどれだけ速く目に見える形で表示されるかを測定します。
+スコアが低いほど優れています。
+Speed Indexのスコアは、<strong>視覚的な表示の速度</strong>に基づいて計算されますが、あくまで計算上の値です。
+このスコアはビューポートのサイズにも影響されるため、ターゲット層に合わせてテスト上のさまざまな設定を定める必要があります。
+LCPがより重要な指標となるにつれて、Speed Indexの重要性が低下していることに注意してください（<a href="https://twitter.com/borisschapira">Boris</a>（※訳注：原文指定URL消失）とArtemに感謝します）。</li>
+<li>CPU使用時間<br>
+メインスレッドが描画、レンダリング、スクリプティング、読み込み作業のためにブロックされた頻度と時間の長さを表す指標です。
+CPU使用時間が長いことは、低品質なユーザ体験の明確な指標となります。
+つまり、ユーザがアクションとレスポンスの間に、はっきりと分かるタイムラグを体験するということです。
+WebPageTestでは、<a href="https://deanhume.com/ten-things-you-didnt-know-about-webpagetest-org/">"Chrome"タブで"Capture Dev Tools Timeline"を選択</a>することで、WebPageTestを使用している端末上で実行されるメインスレッドの内訳を明らかにすることができます。</li>
+<li><a href="https://calendar.perfplanet.com/2019/javascript-component-level-cpu-costs/">Component-Level CPU Costs</a><br>
+Stoyan Stefanovが提案したこの指標は、CPU使用時間と同様に、JavaScriptが<strong>CPUに与える影響</strong>を測定します。
+基本的な考え方は、コンポーネント当たりのCPUインストラクションの回数を利用して、全体的なユーザ体験に対する影響を独立に把握するというものです。
+<a href="https://calendar.perfplanet.com/2019/javascript-component-level-cpu-costs/">PuppeteerとChrome</a>を利用して実装できます。</li>
+<li><a href="https://www.frustrationindex.com/">FrustrationIndex</a><br>
+上記の指標の多くは特定のイベントが発生したタイミングを明らかにするものですが、Tim VereeckeのFrustrationIndexは指標を個別に見るのではなく、指標の間のギャップに注目します。
+これは、Title is visible、First content is visible、Visually ready、Page looks readyなどのエンドユーザが体験する主要なマイルストーンに注目し、ページ読み込み中のフラストレーションの水準を示すスコアを算出します。
+ギャップが大きいほど、ユーザがイライラする可能性は高くなります。
+恐らく、ユーザ体験の優れたKPIになるでしょう。
+Timは <a href="https://calendar.perfplanet.com/2019/frustrationindex-mind-the-gap/">FrustrationIndexとその機能に関する詳しい記事</a>を公表しています。</li>
+<li><a href="https://calendar.perfplanet.com/2017/measuring-adweight/">Ad Weight Impact</a><br>
+サイトが広告収入に依存している場合、広告関連のコードの重さを調べることは役に立ちます。
+Paddy Gantiの<a href="https://calendar.perfplanet.com/2017/measuring-adweight/">スクリプト</a>は、2つのURL（1つは通常のURL、もう1つは広告をブロックしたもの）を構築し、WebPageTestを通じた比較動画の作成を促し、両者の差に関するレポートを生成します。</li>
+<li><a href="https://phabricator.wikimedia.org/phame/live/7/post/117/performance_testing_in_a_controlled_lab_environment_-_the_metrics/">偏りに関する指標</a><br>
+<a href="https://phabricator.wikimedia.org/phame/live/7/post/117/performance_testing_in_a_controlled_lab_environment_-_the_metrics/">Wikipediaのエンジニアが述べているとおり</a>、測定結果にどれだけの<strong>変動</strong>があるかというデータは、ツールをどこまで信頼すべきか、データの偏りと外れ値にどこまで注意すべきかに関して、有益な情報をもたらす可能性があります。
+大きな変動は、設定を調整する必要があるというサインです。このデータは、例えばサードパーティのスクリプトが大きな変動の原因となっているなどの理由により、特定のページの測定値の信頼性が比較的低いことを把握するのにも役立ちます。
+また、ブラウザの新しいバージョンが導入されたときに、パフォーマンスに支障がないか確認するために、ブラウザのバージョンを追跡するのも良い考えかもしれません。</li>
+<li><a href="https://speedcurve.com/blog/user-timing-and-custom-metrics/">カスタム指標</a><br>
+カスタム指標は、ビジネス上のニーズと顧客体験によって決まります。
+それには、重要なピクセル、不可欠なスクリプト、必要なCSS、重要なアセットを特定し、それらがユーザにどれだけ速く提供されるかを測定する必要があります。
+例えば、<a href="https://speedcurve.com/blog/web-performance-monitoring-hero-times/">Hero Rendering Times</a>をモニタリングしたり、<a href="https://css-tricks.com/breaking-performance-api/">Performance API</a>を使用したりすることで、ビジネスにとって重要なイベントについて特定のタイムスタンプを示すことができます。
+また、テストの終了時に任意のJavaScriptを実行すれば、<a href="https://github.com/WPO-Foundation/webpagetest-docs/blob/master/user/custom_metrics.md">WebPageTestでカスタム指標を収集する</a>（※訳注：原文指定URL消失）ことも可能です。</li>
+</ul>
+<p>なお、<a href="https://developers.google.com/web/tools/lighthouse/audits/first-meaningful-paint">First Meaningful Paint</a>（FMP）が上記の概要に含まれていないことに注意してください。
+FMPは、サーバが何らかのデータをどれだけ速く出力するかに関する情報を提供してきました。
+FMPの時間が長いことは通常、JavaScriptがメインスレッドをブロックしていることを表していましたが、バックエンドやサーバの問題に関連している可能性もありました。
+しかし、この指標は最近、約20％のケースで正確ではないとみられることが判明し、<a href="https://calendar.perfplanet.com/2019/developing-the-largest-contentful-paint-metric/">非推奨とされています</a>。
+FMPは、信頼性が高く、解釈しやすいLCPにほとんど取って代わられています。
+<a href="https://web.dev/first-meaningful-paint/">現在はLighthouseでもサポートされていません</a>。
+<a href="https://web.dev/metrics/">最新のユーザ中心のパフォーマンス指標と推奨事項</a>をダブルチェックし、自社のページに問題がないことを確認しましょう（Patrick Meenanに感謝します）。</p>
+<p>Steve Soudersは<a href="https://speedcurve.com/blog/rendering-metrics/">これらの指標の多くについて詳しく説明しています</a>。
+重要な点として、Time-To-Interactiveはいわゆるラボ環境で自動化された監査を実行することによって測定されますが、First Input Delayは実際のユーザ体験を示すものであり、現実のユーザがはっきりと分かるタイムラグを体験したことを意味しています。
+一般的には、両方を常に測定・追跡するのが良いでしょう。</p>
+<p>アプリケーションの状況に応じて、好ましい指標は変わる可能性があります。
+例えば、Netflix TVのUIにとっては<a href="https://medium.com/netflix-techblog/crafting-a-high-performance-tv-user-interface-using-react-3350e5a6ad3b">キー入力への応答性、メモリ使用、TTI</a>が特に決定的な意味を持ち、Wikipediaにとっては、<a href="https://phabricator.wikimedia.org/phame/live/7/post/117/performance_testing_in_a_controlled_lab_environment_-_the_metrics/">最初と最後の視覚的表示の変化と、CPU使用時間の指標</a>がより重要となります。</p>
+<p>注記：FIDとTTIはともに、スクロールの挙動を考慮していません。
+スクロールはメインスレッド外で処理されるため、独立的に発生する可能性があります。
+そのため、コンテンツを消費するサイトの多くでは、これらの指標の重要性は大幅に低くなるかもしれません（Patrickに感謝します）。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/5d80f91c-9807-4565-b616-a4735fcd4949/network-requests-first-input-delay.png">
+<em>ユーザ中心のパフォーマンス指標は、実際のユーザ体験について、優れた情報を提供します。<a href="https://developers.google.com/web/updates/2018/05/first-input-delay">First Input Delay</a>（FID）は、まさにこれを実現することを目指す新たな指標です。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/5d80f91c-9807-4565-b616-a4735fcd4949/network-requests-first-input-delay.png">プレビューを拡大</a>）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/7231a3c8-f610-4609-9829-27628aaf54bf/core-web-vitals-opt.jpg">
+<em>新たなCore Web Vitalsの概要。LCP &#x3C; 2.5秒、FID &#x3C; 100ミリ秒、CLS &#x3C; 0.1（<a href="https://twitter.com/addyosmani/status/1257704191528599552/photo/1">Core Web Vitals</a>、<a href="https://twitter.com/addyosmani/status/1257704191528599552">Addy Osmani</a>のツイートより引用）。</em></p>
+<h3>04. Core Web Vitalsを測定・最適化する。</h3>
+<p>長い間、パフォーマンス指標はかなり技術的なものであり、サーバがどれだけ速く応答するか、ブラウザの読み込みがどれだけ速いかといったエンジニア側の視点に重点を置いていました。
+こうした指標は、サーバのタイミングではなく、実際のユーザ体験を把握する方法を見つけ出すために、時とともに変化してきました。
+2020年5月、GoogleはCore Web Vitalsを発表しました。
+これはユーザに重点を置いた一連の新しいパフォーマンス指標で、各指標が別個のユーザ体験の要素を表します。</p>
+<p>各指標について、Googleは許容できる速度の範囲の推奨目標を示しています。
+この評価に合格するには、すべてのページビューの75％以上で「Good」の範囲を超える必要があります。
+Core Web Vitalsは急速に広まり、2021年5月にはCore Web VitalsがGoogle検索ランキングシグナルに導入されたことで（ページエクスペリエンスのランキングアルゴリズムのアップデート）、多くの企業がパフォーマンススコアに関心を向けるようになりました。</p>
+<p>ここでは、Core Web Vitalsを一つずつ見ていくとともに、これらの指標を考慮してユーザ体験を最適化するための便利なテクニックとツールを紹介します（この記事の一般的なアドバイスに従うことで、Core Web Vitalsスコアを改善できるでしょう）。</p>
+<ul>
+<li>
+<p>Largest Contentful Paint （LCP）&#x3C; 2.5秒。</p>
+<p>ページの読み込みを測定し、ビューポートに表示される最大の画像またはテキストブロックのレンダリング時間を報告します。
+したがって、LCPは、サーバ応答時間の遅さ、ブロッキングCSS、実行中のJavaScript（ファーストパーティかサードパーティかを問わない）、Webフォントの読み込み、重いレンダリングや描画作業、読み込みが遅い画像、スケルトンスクリーン、クライアントサイドのレンダリングなど、重要な情報のレンダリングを遅らせるあらゆる要素の影響を受けます。</p>
+<p>優れたユーザ体験を実現するには、LCPは、ページの読み込みが最初に開始されてから2.5秒以内とすべきです。
+これは、ページ内で最初に表示される部分を可能な限り早くレンダリングする必要があることを意味します。
+そのためには、各テンプレート向けにクリティカルCSSをカスタマイズし、 <code class="language-text">&lt;head&gt;</code> の順番を調整し、クリティカルなアセットを先読みすることが必要となります（これらの点については後で説明します）。</p>
+<p>LCPスコアが低い主な理由は、通常は画像です。
+Fast 3Gで2.5秒未満のLCPを達成するには（十分に最適化されたサーバでホスティングし、レンダリングはすべて静的で、クライアントサイドでのレンダリングは行わず、画像は専用の画像CDNによるものである場合）、理論上の画像の最大サイズはわずか約144KBとなります。
+これが画像の応答性の高さや、（preloadによる）クリティカルな画像の早期の先読みが重要である理由です。</p>
+<p>簡単なtips：ページ上で何がLCPの対象となるかを特定するには、DevToolsのパフォーマンスパネルの"Timings"のLCPバッジにカーソルを合わせてください（Tim Kadlecに感謝します）。</p>
+</li>
+<li>
+<p>First Input Delay（FID）&#x3C; 100ミリ秒。</p>
+<p>UIの応答性、すなわちユーザによる独立した入力イベント（タップやクリックなど）に反応できるようになる前に、ブラウザが他のタスクによってビジー状態となる時間の長さを測定します。
+この指標は、メインスレッドが（特にページの読み込み中に）ビジー状態となることによる遅れを把握できるように設計されています。</p>
+<p>目標はすべてのインタラクションにつき50～100ミリ秒を維持することです。
+これを達成するには、ロングタスク（50ミリ秒を超える時間にわたってメインスレッドをブロックするタスク）を特定してそれを分割すること、バンドルを複数のまとまりにコード分割すること、JavaScriptの実行時間を短縮すること、データ取得を最適化すること、サードパーティのスクリプト実行を延期すること、WebワーカーによってJavaScriptをバックグラウンドスレッドに移動すること、プログレッシブハイドレーションを活用してSPAにおけるリハイドレーションコストを削減することが必要です。</p>
+<p>簡単なtips：一般に、FIDスコアを改善するための信頼性が高い戦略は、大規模なバンドルを小規模なバンドルに分割して、ユーザが必要なときにバンドルを提供することで、メインスレッドの作業を最小化し、ユーザインタラクションの遅延を防ぐことです。この点については後で詳しく説明します。</p>
+</li>
+<li>
+<p>Cumulative Layout Shift（CLS）&#x3C; 0.1。</p>
+<p>UIの視覚的な安定性を測定することで、円滑で自然なインタラクションを確実にします。
+この指標では、ページのライフスパン全体で発生したあらゆる予期しないレイアウトシフトについて、すべての個々のレイアウトシフトのスコアを合計します。
+すでに表示されている要素のページ内の位置が変化した場合は常に、個々のレイアウトシフトが発生したとみなされます。
+このスコアは、コンテンツのサイズと、移動した距離に基づいています。</p>
+<p>シフトが発生するたびに（例えば、フォールバックフォントとWebフォントのフォントメトリックが異なる場合、広告、エンベッドやインラインフレームが遅れて表示される場合、画像や動画のアスペクト比が保存されない場合、CSSが遅いために再描画が必要になる場合、JavaScriptが遅いために変更が挿入される場合など）、CLSスコアに影響を与えます。
+優れたユーザ体験として推奨されるCLSの値は0.1未満です。</p>
+</li>
+</ul>
+<p>Core Web Vitalsが、予測可能な年1回のサイクルで、時とともに変化すると見込まれていることは注目に値します。
+初年度のアップデートの可能性としては、First Contentful PaintがCore Web Vitalsに昇格すること、FIDの基準値が引き下げられること、シングルページアプリケーションのサポートが改善することなどが考えられます。
+また、セキュリティ、プライバシー、アクセシビリティ（！）に関する考慮事項とともに、読み込み後のユーザ入力に対する応答のウェイトが大きくなる可能性もあります。</p>
+<p>Core Web Vitalsに関しては、一見の価値がある有用なリソースや記事が数多く存在します。</p>
+<ul>
+<li>Web Vitals Leaderboardでは、モバイル、タブレット、デスクトップ、3Gと4Gでスコアを競合と比較することができます。</li>
+<li>Core SERP Vitalsは、CrUXのCore Web VitalsをGoogle検索結果に表示できるChromeエクステンションです。</li>
+<li>Layout Shift GIF Generatorは、シンプルなGIFでCLSを可視化します（コマンドラインでも利用できます）。</li>
+<li>web-vitalsライブラリでは、Core Web Vitalsを収集し、それをGoogle - Analytics、Google Tag Managerなどの分析エンドポイントに送信できます。</li>
+<li>Analyzing Web Vitals with WebPageTestでは、Patrick Meenanが、WebPageTestがCore Web Vitalsに関するデータをどのように明らかにするかを説明しています。</li>
+<li>Optimizing with Core Web Vitalsは50分間の動画です。この動画では、Addy Osmaniが、eコマースのケーススタディでCore Web Vitalsを改善する方法を明らかにしています。</li>
+<li>Cumulative Layout Shift in PracticeとCumulative Layout Shift in the Real Worldは、Nic Jansmaによる総合的な内容の記事です。これらの記事では、CLSに関するほとんどのテーマと、それが直帰率、セッションタイム、レイジクリック（狭いエリアでのクリックやタップの連打）などの主要な指標とどのように関係しているかについて扱っています。</li>
+<li>What Forces Reflowは、JavaScriptでリクエストされたときや呼び出されたときに、ブラウザが同期してスタイルとレイアウトを計算するトリガーとなるプロパティやメソッドの一覧です。</li>
+<li>CSS Triggersは、レイアウト、ペイント、コンポジットをトリガーするCSSプロパティの一覧です。</li>
+<li>Fixing Layout Instabilityは、WebPageTestを使用して不安定なレイアウトの問題を特定・修正するためのガイドです。</li>
+<li>Cumulative Layout Shift, The Layout Instability Metricは、Boris Schapiraが執筆したCLSに関するとても詳細なガイドで、CLSの計算、測定、最適化の方法を取り扱っています。</li>
+<li>How To Improve Core Web Vitalsでは、各指標（FCP、TTI、TBTなどの他のWeb Vitalsを含む）や、それがいつ、どのように測定されるのかをSimon Hearneが詳細に説明しています。</li>
+</ul>
+<p>では、Core Web Vitalsとは<strong>追跡すべき究極の指標なのでしょうか？</strong>そうとは限りません。確かにCore Web Vitalsは、<a href="https://blog.cloudflare.com/start-measuring-web-vitals-with-browser-insights/">Cloudflare</a>、<a href="https://treo.sh/">Treo</a>、<a href="https://speedcurve.com/blog/web-vitals-user-experience/">SpeedCurve</a>、<a href="https://calibreapp.com/blog/core-web-vitals">Calibre</a>、<a href="https://calendar.perfplanet.com/2020/analyzing-web-vitals-with-webpagetest/">WebPageTest</a>（<a href="https://twitter.com/patmeenan/status/1346902718837895168">すでにフィルム型のビューに追加済み</a>）、<a href="https://blog.newrelic.com/product-news/w3c-context-trace-cumulative-layout-shift-measurement/">Newrelic</a>、<a href="https://apps.shopify.com/vitals-1">Shopify</a>、<a href="https://twitter.com/vercel/status/1259866549319618560">Next.js</a>、<a href="https://twitter.com/ChromiumDev/status/1266044527409639424">すべてのGoogleツール</a>（PageSpeed Insights、Lighthouse + CI、Search Consoleなど）やその他数多くのソリューションやプラットフォームを含め、ほとんどのRUMソリューションとプラットフォームにすでに導入されています。
+しかし、Katie Sylor-Millerが<a href="https://sylormiller.com/posts/2020/core-web-vitals/">説明しているとおり</a>、Core Web Vitalsには、<a href="https://sylormiller.com/posts/2020/core-web-vitals/">対応ブラウザが限られていること</a>、実際はユーザ体験のライフサイクル全体を測定していないこと、FIDとCLSの変化をビジネスの成果と結びつけるのが困難であることといった大きな問題があります。</p>
+<p>Core Web Vitalsには進化を期待すべきですが、当面の間は、パフォーマンス面の状況をよく把握できるように、Core Web Vitalsとカスタマイズ指標を常に組み合わせるのが賢明でしょう。</p>
+<h3>05. ターゲット層の代表的な端末でデータを収集する。</h3>
+<p>正確なデータを収集するには、テストを行う端末を徹底的に選び抜く必要があります。
+ほとんどの企業では、最も一般的な端末のタイプに基づいてアナリティクスを検証し、ユーザプロファイルを構築すべきです。
+しかし、アナリティクスだけでは全体像が分からないことはよくあります。
+ターゲット層の大部分は、反応が遅すぎるというだけでサイトを離れる（そして戻ってこない）可能性があります。
+その場合、こうしたユーザの端末は、アナリティクスで最も一般的な端末として表示される可能性は低いでしょう。
+そのため、ターゲット層の一般的な端末に関して、追加調査を実施するのは良いアイデアかもしれません。</p>
+<p>IDCによれば、2020年の世界の<a href="https://www.idc.com/promo/smartphone-market-share/os">スマートフォン出荷台数全体の84.8％（※訳注：原文執筆時）はAndroid端末</a>でした。
+消費者は平均で<a href="https://www.cnbc.com/2019/05/17/smartphone-users-are-waiting-longer-before-upgrading-heres-why.html">2年ごとにスマートフォンをアップグレードしており</a>、米国では<a href="https://www.mobileworldlive.com/devices/news-devices/us-phone-upgrade-cycle-stretches-to-33-months/">スマートフォンの買い替えサイクルは33カ月</a>となっています。
+世界で最もよく売れているスマートフォンの平均コストは200ドル未満とみられます。</p>
+<p>上記よりもやや悲観的な想定に基づくと、代表的な端末は、<strong>2年以上使用されている</strong>Android端末で、価格は200ドル以下、通信規格は低速の3G、RTTは400ミリ秒、通信速度は400kbpsとなります。
+これは当然、企業によって大きく異なる可能性がありますが、世の中の大部分の顧客に十分に近い想定であると言えます。
+さらに、ターゲット市場の現在の<a href="https://www.amazon.co.uk/gp/bestsellers/electronics/356496011/ref=sr_bs_1">Amazonベストセラー</a>を確認するのは良いアイデアかもしれません。（このアドバイスをくれたTim Kadlec、Henri Helvetica、Alex Russellに感謝します）。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/1436a0fc-40ed-4665-8fbb-bae8aa1ad740/amazon-bestsellers-opt.png">
+<em>新たなサイトやアプリを開発するときは、現在のターゲット市場の<a href="https://www.amazon.co.uk/gp/bestsellers/electronics/356496011/ref=sr_bs_1">Amazonベストセラー</a>を必ず最初にチェックしましょう。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/1436a0fc-40ed-4665-8fbb-bae8aa1ad740/amazon-bestsellers-opt.png">プレビューを拡大</a>）</em></p>
+<p>では、どの端末をテストに選べばよいのでしょうか。その答えは、上記のプロファイルによく一致した端末です。<a href="https://twitter.com/katiehempenius/statuses/1067969800205422593">少し古いMoto G4/G5 Plus</a>、中価格帯のSamsung端末（Galaxy A50、S8）、Nexus 5X、Xiaomi Mi A3、Xiaomi Redmi Note 7などの優良な中級レベルの端末、Alcatel 1XやCubot X19などの遅い端末を、<a href="https://www.smashingmagazine.com/2016/11/worlds-best-open-device-labs/">オープンデバイスラボ</a>などでテストするのは良い選択肢の1つです。サーマルスロットリング済みのさらに遅い端末でのテストには、Nexus 4が利用できます。価格はわずか約100ドルです。</p>
+<p>また、各端末で使用されているチップセットを確認し、<strong>1つのチップセットに対するテストを過剰に行わないようにしましょう</strong>。
+SnapdragonやApple、ローエンドのRockchipやMediatekは数世代で十分です（Patrickに感謝します）。</p>
+<p>手元に端末がない場合は、<strong>スロットリングした3Gネットワーク</strong>（例：RTTは300ミリ秒、下り1.6Mbps、上り0.8Mbps）とCPU（5倍減速）でモバイルのユーザ体験をデスクトップでエミュレートしてみましょう。
+その後、通常の3G、遅い4G（例：RTTは170ミリ秒、下り9Mbps、上り9Mbps）、Wi-Fiへ徐々に切り替えていきます。パフォーマンスへの影響をより明確にするには、<a href="https://www.theverge.com/2015/10/28/9625062/facebook-2g-tuesdays-slow-internet-developing-world">2G Tuesdays</a>を導入したり、<a href="https://twitter.com/thommaskelly/status/938127039403610112">スロットリングした3G/4Gネットワークをオフィスに設定</a>してテストを高速化したりすることもできます。</p>
+<p>モバイル端末では、<a href="https://youtu.be/JvJ0v5OohNg?t=892">デスクトップマシンに比べてスピードが4～5倍遅くなる</a>と予想されることに注意しましょう。
+モバイル端末のGPU、CPU、メモリ、バッテリーの特性はさまざまです。
+そのため、平均的な端末のプロファイルを把握し、常に<a href="https://www.webpagetest.org/easy">そうしたデバイスでテストを行う</a>ことが重要です。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_auto/w_800/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/dfe1a4ec-2088-4e39-8a39-9f2010380a53/tuesday-2g-opt.png">
+<em>1週間で接続が最も遅い日を決めるという手段もあります。Facebookは、接続が遅い環境への認識と感度を高めるため、<a href="https://www.theverge.com/2015/10/28/9625062/facebook-2g-tuesdays-slow-internet-developing-world">2G Tuesdays</a>という取り組みを導入しました。（<a href="https://www.businessinsider.com/facebook-2g-tuesdays-to-slow-employee-internet-speeds-down-2015-10?IR=T">画像の出典</a>）</em></p>
+<p>幸運にも、データ収集を自動化したり、上記の指標に従ってWebサイトのパフォーマンスを時系列で測定したりするための素晴らしい選択肢は数多く存在します。パフォーマンスをよく把握するには、<a href="https://twitter.com/izzionfire/status/1326102215573041152">ラボデータとフィールドデータの両方</a>の複数のパフォーマンス指標をカバーする必要があることに注意しましょう。</p>
+<ul>
+<li><strong>合成テストツール</strong>は、事前に定めた端末とネットワークの設定に基づき、再現可能な環境でラボデータを収集します（Lighthouse、Calibre、WebPageTestなど）。</li>
+<li><strong>リアルユーザモニタリング</strong>（RUM）ツールは、ユーザのインタラクションを継続的に評価し、フィールドデータを収集します（SpeedCurve、New Relicなど。これらのツールでは合成テストも可能です）。</li>
+</ul>
+<p>前者は、サービスを開発しつつ、パフォーマンスに関する問題を特定、分離、修正することに役立つので、開発中は特に便利です。
+後者は、生のデータ、つまりユーザが実際にサイトにアクセスしたときのデータを測定し、パフォーマンスのボトルネックを把握するのに役立つので、長期的なメンテナンスに向いています。</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation_timing_API">Navigation Timing</a>、<a href="https://developer.mozilla.org/en-US/docs/Web/API/Resource_Timing_API">Resource Timing</a>、<a href="https://css-tricks.com/paint-timing-api/">Paint Timing</a>、<a href="https://w3c.github.io/longtasks/">Long Tasks</a>などのビルトインRUM APIを利用することで、合成テストツールとRUMは一体となってアプリケーションのパフォーマンスの全体像を明らかにします。<a href="https://calibreapp.com/">Calibre</a>、<a href="https://treo.sh/">Treo</a>、<a href="https://speedcurve.com/">SpeedCurve</a>、<a href="https://www.akamai.com/us/en/products/performance/mpulse-real-user-monitoring.jsp">mPulse</a>、<a href="https://github.com/akamai/boomerang">Boomerang</a>、<a href="https://www.sitespeed.io/">Sitespeed.io</a>を利用することもできます。これらはいずれも、パフォーマンスをモニタリングするための素晴らしい選択肢です。
+さらに、<a href="https://www.smashingmagazine.com/2018/10/performance-server-timing/">Server Timingヘッダ</a>では、バックエンドとフロントエンドのパフォーマンスを1カ所でモニタリングすることも可能です。</p>
+<p><strong>注記</strong>：スロットリングについては、ブラウザ外の<a href="https://calendar.perfplanet.com/2016/testing-with-realistic-networking-conditions/">ネットワークレベルで設定を行う</a>方が常に安全です。
+その理由の1つとして、DevToolsには、導入方法の関係上、HTTP/2のプッシュとのインタラクションに問題があることが挙げられます（YoavとPatrickに感謝します）。
+Mac OSでは<a href="https://nshipster.com/network-link-conditioner/">Network Link Conditioner</a>、Windowsでは<a href="https://github.com/WPO-Foundation/win-shaper/releases">Windows Traffic Shaper</a>、Linuxでは<a href="https://wiki.linuxfoundation.org/networking/netem">netem</a>、FreeBSDでは<a href="http://info.iet.unipi.it/~luigi/dummynet/">dummynet</a>を利用できます。</p>
+<p>テストはLighthouseで実施する可能性が高いでしょう。
+その場合は以下に留意してください。</p>
+<ul>
+<li><a href="https://github.com/GoogleChrome/lighthouse-ci">Lighthouse CIを使用</a>することで、Lighthouseスコアを時系列で追跡できます（<a href="https://twitter.com/_developit/status/1266112451155841024">とても素晴らしい</a>機能です）。</li>
+<li><a href="https://calendar.perfplanet.com/2020/running-lighthouse-in-github-actions/">GitHub ActionsでLighthouseを実行</a>することで、PRのたびにLighthouseレポートを取得できます。</li>
+<li>（<a href="https://www.npmjs.com/package/lighthouse-parade">Lighthouse Parade</a>を通じて）<a href="https://cloudfour.com/thinks/big-picture-performance-analysis-using-lighthouse-parade/">サイトのすべてのページに対してLighthouseのパフォーマンス監査を実施することができます</a>。結果はCSV形式で保存されます。</li>
+<li><a href="https://twitter.com/TheRealNooshu/status/1273045993035005952">Lighthouse Scores Calculator</a>と<a href="https://twitter.com/HenriHelvetica/status/1237408016250687488">Lighthouse metric weights</a>を使用することで、必要に応じて詳細な情報を把握できます。</li>
+<li>Lighthouseは<a href="https://addons.mozilla.org/en-US/firefox/addon/google-lighthouse/">Firefoxでも利用できます</a>が、内部でPageSpeed Insights APIを利用し、<a href="https://twitter.com/boostmarks/status/1261183488037961728">ヘッドレスChrome 79 User-Agentに基づいてレポートを作成します</a>（※訳注：原文指定URL消失）。</li>
+</ul>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9c380575-7a95-48cc-bd49-08bbd2c006bd/lighthouse-ci-opt.png">
+<em><a href="https://github.com/GoogleChrome/lighthouse-ci">Lighthouse CI</a>はとても素晴らしいツールで、Lighthouseの継続的な実行、その結果の保存と取得、結果に対するアサーションが可能です。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9c380575-7a95-48cc-bd49-08bbd2c006bd/lighthouse-ci-opt.png">プレビューを拡大</a>）</em></p>
+<h3>06. テスト用の「クリーン」な「顧客」プロファイルを設定する。</h3>
+<p>パッシブなモニタリングツールでテストを実行する場合、（<a href="https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Multiple_profiles">Firefox</a>（※訳注：原文指定URL消失）と<a href="https://support.google.com/chrome/answer/2364824?hl=en&#x26;co=GENIE.Platform=Desktop">Chrome</a>において）偏った結果を避けるために、アンチウイルスソフトやバックグラウンドのCPUタスクをオフにする、バックグラウンドの帯域幅転送を除外する、ブラウザ拡張機能がインストールされていないクリーンなユーザプロファイルでテストを行うといった戦略がよく使われます。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/78d6672a-013c-4b55-b258-7efd153a30d9/chrome-extension-page-cpu-time-opt.png">
+<em>DebugBearのレポートは、パスワードマネージャ、アドブロッカ、EvernoteやGrammarlyといった人気のアプリケーションなど、<a href="https://www.debugbear.com/blog/2020-chrome-extension-performance-report">遅い拡張機能ワースト20</a>を明らかにしています。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/78d6672a-013c-4b55-b258-7efd153a30d9/chrome-extension-page-cpu-time-opt.png">プレビューを拡大</a>）</em></p>
+<p>しかし、顧客がどの<strong>ブラウザ拡張機能</strong>を頻繁に使用しているかを調査し、専用の「顧客」プロファイルに基づいてテストを実施するのも良いアイデアです。
+実際、一部の拡張機能はアプリケーションの<a href="https://twitter.com/denar90_/statuses/1065712688037277696">パフォーマンスに重大な影響を与える</a>可能性があります（<a href="https://www.debugbear.com/blog/2020-chrome-extension-performance-report">2020 Chrome Extension Performance Report</a>）。
+ユーザがその拡張機能を大量に使用する場合、それを事前に織り込んでおくべきかもしれません。したがって、「クリーン」なプロファイルのみによるテスト結果は楽観的過ぎて、現実のシナリオでは悲惨な状況になる可能性があります。`</p>
+<h3>07. 同僚とパフォーマンス目標を共有する。</h3>
+<p>今後の誤解を避けるために、チームのあらゆるメンバーがパフォーマンス目標をよく理解するようにしましょう。
+デザインにせよ、マーケティングにせよ、その中間の何かにせよ、あらゆる意思決定は<strong>パフォーマンスに影響</strong>します。
+チーム全体に責任とオーナーシップを分配することは、その後のパフォーマンスに重点を置いた意思決定の合理化につながります。
+デザインに関する意思決定と、パフォーマンスバジェットや早期に定めた優先事項の対応関係を明らかにしましょう。</p>
+<h2>現実的な目標の設定 <a href="#02">#</a><a name="02"></a></h2>
+<h3>08. 応答時間100ミリ秒、60fps。</h3>
+<p>インタラクションがスムーズに感じられるには、インターフェースがユーザの入力から100ミリ秒以内に応答する必要があります。
+それ以上遅いと、ユーザはアプリにタイムラグがあると感じます。
+<a href="https://www.smashingmagazine.com/2015/10/rail-user-centric-model-performance/">ユーザ中心主義のパフォーマンスモデルであるRAIL</a>は、<strong>妥当な目標</strong>を掲げています。
+その目標とは、応答時間を100ミリ秒未満にするには、遅くとも50ミリ秒未満ごとにメインスレッドを解放するようにページを作成しなければならないというものです。
+<a href="https://developers.google.com/web/tools/lighthouse/audits/estimated-input-latency">Estimated Input Latency</a>は、この基準値を満たしているかどうかを明らかにします。
+理想的には、この値は50ミリ秒未満であるべきです。
+アニメーションなどの負荷が大きい部分では、可能な場合は他に何も処理せず、不可能な場合は処理を絶対的な最小限に抑えるのが望ましいと言えます。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_auto/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/c91c910d-e934-4610-9dc5-369ec9071b57/rail-perf-model-opt.png">
+<em><a href="https://developers.google.com/web/fundamentals/performance/rail">RAIL</a>はユーザ中心主義のパフォーマンスモデル。</em></p>
+<p>また、アニメーションの各フレームは16ミリ秒未満とし、1秒間のフレーム数が60フレーム（1秒÷60=16.6ミリ秒）となるようにすべきです。
+なるべく1フレームを10ミリ秒未満にするのが望ましいと言えます。
+ブラウザは新たなフレームを画面に描画するのに時間がかかるため、16.6ミリ秒の基準値に達する前にコードの実行が終了するようにすべきです。
+120fpsに関する議論はすでに始まっており（例えば、iPad Proの画面のリフレッシュレートは120Hz）、Surmaは<a href="https://dassur.ma/things/120fps/">120fpsを実現するためのレンダリングパフォーマンスソリューション</a>についての記事を執筆していますが、現時点では120fpsを目指さなくてもよいでしょう。</p>
+<p>パフォーマンスを予想するときは悲観的であるべきですが、<a href="https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/">インターフェースをデザインするときは楽観的であるべき</a>であり、<a href="https://philipwalton.com/articles/idle-until-urgent/">アイドルタイムは賢明に活用すべき</a>です（<a href="https://github.com/GoogleChromeLabs/idlize">idlize</a>、<a href="https://github.com/TehShrike/idle-until-urgent">idle-until-urgent</a>、react-idleをチェックしましょう）。
+当然ながら、上記の目標は読み込みのパフォーマンスではなく、ランタイムのパフォーマンスに適用されます。</p>
+<h3>09. 3GでFID&#x3C;100ミリ秒、LCP&#x3C;2.5秒、TTI&#x3C;5秒。クリティカルなファイルの容量は170KB未満（gzip形式で圧縮した場合）。</h3>
+<p>最終的な目標としては、（達成するのはとても困難かもしれませんが）<a href="https://www.youtube.com/watch?v=_srJ7eHS3IM&#x26;feature=youtu.be&#x26;t=6m21s">Time To Interactiveは5秒未満</a>、リピート訪問については2秒未満（サービスワーカーによってのみ達成可能）とするのが良いでしょう。
+Largest Contentful Paintは2.5秒未満を目指し、Total Blocking TimeとCumulative Layout Shiftを最小化しましょう。
+許容できるFirst Input Delayは70～100ミリ秒未満です。
+上記のとおり、低速な3Gネットワークに接続された200ドルのAndroidスマートフォン（Moto G4など）を、400ミリ秒のRTTと400kbpsの転送速度によってエミュレートしたものを基準とします。</p>
+<p>Web上のコンテンツを迅速に提供するには、2つの大きな制約があり、それが妥当なファイル容量を実質的に決める要因となります。
+まず、<a href="https://hpbn.co/building-blocks-of-tcp/#slow-start">TCP Slow Start</a>による<strong>ネットワークデリバリの制約</strong>があります。
+HTMLの最初の14KB（10個のTCPパケットが各1460バイトで約14.25 KB。
+<a href="https://www.tunetheweb.com/blog/critical-resources-and-the-first-14kb/">ただし、鵜呑みにすべきではありません</a>）は、最もクリティカルなペイロードのチャンクであり、バジェットのうち最初のラウンドトリップで提供できる唯一の部分です（モバイルのウェイクアップタイムの関係上、RTTが400ミリ秒の場合に1秒間で受信できるのはこの部分に限られます）。</p>
+<p><img src="https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9c5bf6fb-5027-4388-abd2-4355b9c8994f/new-congestion-control-opt.png">
+<em>TCP接続では、小規模な輻輳ウィンドウからスタートして、ラウンドトリップごとにウィンドウを2倍に拡大します。最初のラウンドトリップでは14KBを提供することが可能です。出典：<a href="https://hpbn.co/building-blocks-of-tcp/#slow-start">High Performance Browser Networking</a>（Ilya Grigorik著）。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/9c5bf6fb-5027-4388-abd2-4355b9c8994f/new-congestion-control-opt.pngv">プレビューを拡大</a>）</em></p>
+<p>もう1つの制約として、JavaScriptのパーシングと実行時間の関係上、メモリとCPUに対する<strong>ハードウェアの制約</strong>があります（これらについては後で詳しく説明します）。
+最初のパラグラフで述べた目標を達成するには、JavaScriptにとってクリティカルなファイルの容量のバジェットを考慮することが必要です。
+バジェットの適切な容量についてはさまざまな意見があります（プロジェクトの性質にも大きく依存します）が、170KBのJavaScriptファイルをgzip形式で圧縮した場合、中価格帯のスマートフォンではパーシングとコンパイルに最大で1秒かかります。
+170KBのファイルを解凍すると容量が3倍（0.7MB）になると想定すると、それだけでMoto G4/G5 Plusでは「まとも」なユーザ体験が失われかねません。</p>
+<p>Wikipediaのサイトの場合、2020年に、<a href="https://twitter.com/MonsieurPerf/status/1252184196426104832">コードの実行速度はWikipediaのユーザにとって世界全体で19％速くなりました</a>。
+ですから、もしWebパフォーマンスの指標に前年比で変化がない場合、それは通常、環境の継続的な改善に伴って、自社サイトが実質的に後退しているという警戒すべきサインです（<a href="https://techblog.wikimedia.org/2020/05/07/measuring-the-performance-of-wikipedia-visitors-devices/">詳細はGilles Dubucのブログ記事を参照</a>）。</p>
+<p>東南アジア、アフリカ、インドなどの成長中の市場をターゲットとする場合、まったく異なる制約に直面することになります。
+Addy Osmaniは<a href="https://dev.to/addyosmani/loading-web-pages-fast-on-a-20-feature-phone-8h6">フィーチャーフォンの主な制約</a>（例えば、低コストの優良な端末は少数、高品質なネットワークは利用できない、モバイルデータ通信のコストが大きい）、<strong>PRPL-30バジェット</strong>、こうした環境における開発のガイドラインについて述べています。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/02143033-61ad-4808-bf3e-9c5f6a515927/12-30kb-front-end-performance-checklist-2020.png">
+<em><a href="https://dev.to/addyosmani/loading-web-pages-fast-on-a-20-feature-phone-8h6">Addy Osmaniによれば</a>、遅延読み込み経路における推奨容量も35KB未満です。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/02143033-61ad-4808-bf3e-9c5f6a515927/12-30kb-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/d9d1033f-f45f-4789-aca1-1bb61fbd44c5/13-prpl-budget-front-end-performance-checklist-2020.jpeg">
+<em>Addy Osmaniは、フィーチャーフォンをターゲットとする場合のPRPL-30パフォーマンスバジェット（gzip形式で圧縮・軽量化した初期バンドル30KB）を<a href="https://dev.to/addyosmani/loading-web-pages-fast-on-a-20-feature-phone-8h6">提唱しています</a>。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/d9d1033f-f45f-4789-aca1-1bb61fbd44c5/13-prpl-budget-front-end-performance-checklist-2020.jpeg">プレビューを拡大</a>）</em></p>
+<p>実際、GoogleのAlex Russellは、妥当な容量の上限として<a href="https://infrequently.org/2017/10/can-you-afford-it-real-world-web-performance-budgets/">gzip形式で130～170KBを目指すこと</a>を推奨しています。
+現実には、ほとんどのサービスはこの上限に近づいてすらいません。
+現在のバンドル容量の中央値は<a href="https://beta.httparchive.org/reports/state-of-javascript#bytesJs">約452KB</a>で、2015年初めと比べて53.6％増加しています。
+これはミドルクラスのモバイル端末で12～20秒のTime To Interactiveに相当します。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/1b311ffb-7c1e-442c-8122-53ee39fe5b7b/11-perf-phones-front-end-performance-checklist-2020.png">
+<em>上記のグラフは、2019年に世界で最も売れたスマートフォンについて、GeekbenchでCPUパフォーマンスのベンチマークを比較したものです。JavaScriptはシングルコアのパフォーマンスにとって負担となり（他のWebプラットフォームに比べて本質的にシングルスレッドとなりやすいことに注意してください）、CPUの制約を受けます。Addyの記事「<a href="https://dev.to/addyosmani/loading-web-pages-fast-on-a-20-feature-phone-8h6">Loading Web Pages Fast On A $20 Feature Phone</a>」より引用。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/1b311ffb-7c1e-442c-8122-53ee39fe5b7b/11-perf-phones-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+<p>しかし、バンドル容量のバジェットを超えることもできます。
+例えば、ブラウザのメインスレッドのアクティビティ、つまりレンダリング開始前の描画時間に基づいてパフォーマンスバジェットを設定することや、<a href="https://calendar.perfplanet.com/2017/tracking-cpu-with-long-tasks-api/">フロントエンドでCPUに大きな負荷をかけている存在を見つけ出すことが可能です</a>。
+<a href="https://calibreapp.com/">Calibre</a>、<a href="https://speedcurve.com/">SpeedCurve</a>、<a href="https://github.com/siddharthkp/bundlesize">Bundlesize</a>などのツールは、バジェットを管理するのに役立ち、ビルドのプロセスに統合できます。</p>
+<p>最後に、パフォーマンスのバジェットはおそらく<strong>固定すべきではありません</strong>。
+ネットワーク接続に合わせて、<a href="https://twitter.com/katiehempenius/status/1075478356311924737">パフォーマンスのバジェットは調整すべきです</a>。
+ただし、接続が遅くなると、どのように利用してもペイロードは大幅に「重く」なります。</p>
+<p><strong>注記</strong>：HTTP/2が普及し、<a href="https://www.speedtest.net/ookla-5g-map">5G</a>と<a href="https://twitter.com/FredKSchott/status/1313910775199612929">HTTP/3</a>の登場が近づき、スマートフォンが急速に進化し、SPAが繁栄するなかで、上記のような厳格なバジェットを設定するのは奇妙に思えるかもしれません。
+しかし、ネットワークの輻輳、インフラ開発の遅さ、<a href="https://youtu.be/JvJ0v5OohNg?t=397">データ上限</a>、プロキシブラウザ、<a href="https://timkadlec.com/remembers/2019-08-29-save-data-usage/">省データモード</a>から隠れたローミング手数料に至るまで、ネットワークやハードウェアの予測不能な性質に対処するときには、こうしたバジェットは合理的に感じられるはずです。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_auto/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/3bb4ab9e-978a-4db0-83c3-57a93d70516d/file-size-budget-fast-default-addy-osmani-opt.png">
+<em><a href="https://speakerdeck.com/addyosmani/fast-by-default-modern-loading-best-practices">Fast By Default:Modern loading best practices</a>（Addy Osmani著）より（スライド19）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/949e5601-04e7-48ee-91a5-10bd7af19a0f/perf-budgets-network-connection.jpg">
+<em>パフォーマンスのバジェットは、平均的なモバイル端末のネットワークの状況に応じて調整すべきです。（画像の出典：<a href="https://twitter.com/katiehempenius/status/1075478356311924737">Katie Hempenius</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/949e5601-04e7-48ee-91a5-10bd7af19a0f/perf-budgets-network-connection.jpg">プレビューを拡大</a>）</em></p>
+<h2>環境の定義<a href="#03">#</a><a name="03"></a></h2>
+<h3>10. ビルドツールを選択・設定する。</h3>
+<p><a href="https://24ways.org/2017/all-that-glisters/">現在、流行しているツールに気をとられすぎないようにしましょう</a>。
+Gruntにせよ、Gulpにせよ、Webpackにせよ、Parcelにせよ、あるいは複数のツールの組み合わせにせよ、自分のビルド環境にこだわるべきです。
+必要な成果を出していて、ビルドのプロセスを維持するのに支障がない限り、それで問題ありません。</p>
+<p>ビルドツールのなかでは、Rollupや<a href="https://www.snowpack.dev/">Snowpack</a>の勢いが強まっていますが、最も定評があるのはWebpackのようです。
+Webpackでは、ビルドの容量を最適化するために、文字どおり何百ものプラグインが利用できます。
+<a href="https://webpack.js.org/blog/2020-12-08-roadmap-2021/">Webpack Roadmap 2021</a>に注目しましょう。</p>
+<p>最近登場した特に注目すべき戦略の1つは、<a href="https://web.dev/granular-chunking-nextjs/">Next.jsとGatsbyにおいてWebpackでグラニュラチャンキングを行い</a>、コードの重複を最小化することです。
+デフォルトでは、すべてのエントリポイントで共有されていないモジュールは、それを利用しないルートでもリクエストされる可能性があります。
+その結果、必要以上にコードがダウンロードされ、オーバーヘッドが発生します。
+Next.jsにおけるグラニュラチャンキングでは、<strong>サーバサイドのビルドマニフェストファイル</strong>を利用して、出力されたどのチャンクをさまざまなエントリポイントで使用するかを決定できます。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/733b3ac0-489e-44d5-b7ed-bcfa67a6a575/js-size-reductions-across-all-routes.jpg">
+<em>Webpackプロジェクトのコードの重複を削減するためにgranular chunkingを利用できます。Next.jsとGatsbyではデフォルトで有効です。画像の出典：<a href="https://twitter.com/addyosmani/status/1256153891135258624">Addy Osmani</a>。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/733b3ac0-489e-44d5-b7ed-bcfa67a6a575/js-size-reductions-across-all-routes.jpg">プレビューを拡大</a>）</em></p>
+<p><a href="https://webpack.js.org/plugins/split-chunks-plugin/">SplitChunksPlugin</a>では、いくつかの条件に応じて複数の分割済みのチャンクを作成し、複数のルートで重複したコードを取得することを防ぎます。
+これはページの読み込み時間や、操作中のキャッシングを改善します。
+この機能はNext.js 9.2とGatsby v2.20.7に搭載されています。</p>
+<p>とはいえ、Webpackを始めるのは難しいかもしれません。
+そこで、Webpackの世界に飛び込みたい人のために、素晴らしいリソースを紹介します。</p>
+<ul>
+<li><a href="https://webpack.js.org/concepts/">Webpackのドキュメント</a>は、当然ながら、良い出発点となります。Raja Raoの<a href="https://medium.com/%40rajaraodv/webpack-the-confusing-parts-58712f8fcad9">Webpack — The Confusing Bits</a>や、Andrew Welchの<a href="https://medium.com/%40rajaraodv/webpack-the-confusing-parts-58712f8fcad9">An Annotated Webpack Config</a>も最初の一歩に適しています。</li>
+<li>Sean Larkinは<a href="https://webpack.academy/p/the-core-concepts">Webpack:The Core Concepts</a>という無料の講義を提供しています。Jeffrey Wayも<a href="https://laracasts.com/series/webpack-for-everyone">Webpack for Everyone</a>という素晴らしい無料の講義を公開しています。どちらもWebpackの導入として優れた内容です。</li>
+<li><a href="https://frontendmasters.com/courses/webpack-fundamentals/">Webpack Fundamentals</a>は、FrontendMastersが公開したSean Larkinによる4時間の講義で、とても包括的な内容となっています。</li>
+<li><a href="https://github.com/webpack/webpack/tree/master/examples">Webpack examples</a>は、トピックと目的別に、すぐに使えるWebpack設定を数多く公開しています。さらに、基本設定ファイルを生成する<a href="https://webpack.jakoblind.no/">Webpack設定のコンフィギュレータ</a>もあります。</li>
+<li><a href="https://github.com/webpack-contrib/awesome-webpack">awesome-webpack</a>は、Webpackに関する便利なリソース、ライブラリ、ツールを厳選したリストです。記事、動画、講義、書籍や、Angular、Reactやフレームワークを問わないプロジェクトの例も含まれています。</li>
+<li><a href="https://codeascraft.com/2020/02/03/production-webpack-builds/">The journey to fast production asset builds with Webpack</a>はEtsyのケーススタディです。EtsyがどのようにRequireJSベースのJavaScriptビルドシステムからWebpackへ移行し、どうやってビルドを最適化し、13,200を超えるアセットを平均<strong>4分</strong>で管理しているかを説明しています。
+<a href="https://twitter.com/iamakulov/status/1275769142809944064">Webpack performance tips</a>は、Ivan Akulovによる宝の山のようなスレッドです。パフォーマンスに焦点を当てた数多くのtipsを紹介しており、その中には<a href="https://twitter.com/iamakulov/status/1275819105644412942">特にWebpackに焦点を当てたものもあります</a>。</li>
+<li><a href="https://github.com/iamakulov/awesome-webpack-perf">awesome-webpack-perf</a>というGitHubリポジトリは、パフォーマンス向上のための便利なWebpackツールとプラグインの宝庫です。こちらもIvan Akulovがメンテナンスしています。</li>
+</ul>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/df28a3b5-b899-4a9e-93d1-be97569e9198/etsy-journey-fast-production-builds-webpack.jpg">
+<em>Etsyが<a href="https://codeascraft.com/2020/02/03/production-webpack-builds/">Webpackによって本番環境用の高速なビルドを実現するまでの道のり</a>（<a href="https://twitter.com/addyosmani/status/1240563662143668224">Addy Osmani</a>より）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/df28a3b5-b899-4a9e-93d1-be97569e9198/etsy-journey-fast-production-builds-webpack.jpg">プレビューを拡大</a>）</em></p>
+<h3>11. プログレッシブエンハンスメントをデフォルトで使用する。</h3>
+<p><a href="https://briefs.video/videos/is-progressive-enhancement-dead-yet/">プログレッシブエンハンスメント</a>は、提唱されてから何年も経ちますが、それでもフロントエンドのアーキテクチャやデプロイの指針としておくのが無難です。
+まずは中心となるユーザ体験の設計・開発を行い、それから先進的な機能によって対応ブラウザのユーザ体験を向上させることで、ユーザ体験を<a href="https://resilientwebdesign.com/">強固</a>にすることができます。貧弱な画面とブラウザを搭載した遅いマシンが、最適化されていないネットワークからアクセスしてもWebサイトの動作が速いのならば、優れたブラウザを搭載した高速なマシンが、真っ当なネットワークからアクセスすればもっと速く動くはずです。</p>
+<p>実際、<a href="https://www.youtube.com/watch?v=puUPpVrIRkc&#x26;t=488s">アダプティブなモジュール提供</a>によって、プログレッシブエンハンスメントは新たなレベルに進んだように感じられます。
+これは、ローエンドの端末には中核のみの「ライト」なユーザ体験を提供し、ハイエンドの端末では洗練された機能によってユーザ体験を向上させるというものです。
+プログレッシブエンハンスメントは、当面は消えないでしょう。</p>
+<h3>12. パフォーマンスの強固な基準を選択する。</h3>
+<p>読み込みに影響を与える未知の要因は数多くあります。
+例えば、ネットワーク、サーマルスロットリング、キャッシュエビクション、サードパーティのスクリプト、パーサのブロッキングパターン、ディスクI/O、IPCレイテンシ、インストール済みの拡張機能、アンチウイルスソフトウェアとファイアウォール、バックグラウンドのCPUタスク、ハードウェアとメモリの制約、L2とL3のキャッシングの差、RTTSなどです。
+その中でも<a href="https://v8.dev/blog/cost-of-javascript-2019">JavaScript</a>は、レンダリングをデフォルトでブロックするWebフォントや、メモリを使いすぎることが多い画像に次いで、ユーザ体験の中で特にコストが重い部分となっています。
+パフォーマンスのボトルネックが<a href="https://calendar.perfplanet.com/2017/tracking-cpu-with-long-tasks-api/">サーバからクライアントへ移動している</a>ことを踏まえ、私たち開発者はこうした未知の要因のすべてをもっと詳しく検討する必要があります。</p>
+<p>170KBのバジェットには、すでにクリティカルパスHTML/CSS/JavaScript、ルータ、状態管理、ユーティリティ、フレームワーク、アプリケーションロジックが含まれているため、選択したフレームワークの<a href="https://www.twitter.com/kristoferbaxter/status/908144931125858304">ネットワーク転送コスト、パース/コンパイル時間、ランタイムコストを徹底的に検証</a>（※訳注：原文指定URL消失）しなければなりません。
+幸運なことに、過去数年間で、ブラウザによるスクリプトのパースとコンパイルの速度は大幅に改善しています。
+しかし、JavaScriptの実行は依然として主要なボトルネックとなっているため、スクリプトの実行時間とネットワークによく注意すれば大きな効果があるでしょう。</p>
+<p>Tim Kadlecは、モダンなフレームワークのパフォーマンスについて素晴らしい調査を実施しており、その内容を"<a href="https://timkadlec.com/remembers/2020-04-21-the-cost-of-javascript-frameworks/">JavaScript frameworks have a cost</a>"という記事にまとめています。
+私たちはスタンドアロンのフレームワークの影響についてよく議論しますが、Timが述べているとおり、<strong>実際には複数のフレームワークを利用する</strong>ことは珍しくありません。
+例えば、モダンなフレームワークにゆっくりと移行しつつある旧バージョンのjQueryと、旧バージョンのAngularを利用したいくつかの古いアプリケーションを併用しているかもしれません。
+そのため、JavaScriptバイト数とCPU実行時間の<strong>累積コスト</strong>を調査する方が合理的です。
+この累積コストによって、たとえハイエンド端末でも、ぎりぎり利用できるレベルのユーザ体験までたちまち落ち込んでしまう可能性があります。</p>
+<p>一般に、モダンなフレームワークは、<strong>あまり高性能でない端末を重視していません</strong>。
+そのため、スマートフォンとデスクトップにおけるユーザ体験は、パフォーマンスの面で劇的に異なることがよくあります。
+調査によれば、ReactやAngularを利用したサイトは、他のサイトよりもCPU時間が長い傾向があります（当然ながら、必ずしもReactがVue.jsよりもCPUにとって高コストという意味ではありません）。</p>
+<p>Timによれば、一つ明確に言えるのは、「サイトのビルドにフレームワークを使用する場合、たとえ最善のシナリオであっても、<strong>初期のパフォーマンス</strong>に関するトレードオフが発生する」ということです。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/f892dfcd-f690-40b5-ad33-218a33cc85b3/cost-of-frameworks-cpu-mobile-only.png">
+<img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/876d32d5-0a68-4a08-b3f1-d4c103729cfa/cost-of-frameworks-bytes-desktop.png">
+<em>モバイル端末のスクリプト関連のCPU時間と、デスクトップ端末のJavaScriptバイト数。一般に、ReactやAngularを利用しているサイトは、他のサイトよりもCPU時間が長い傾向があります。しかし、これはサイトをビルドする方法によって変わります。<a href="https://timkadlec.com/remembers/2020-04-21-the-cost-of-javascript-frameworks/">Tim Kadlecの調査</a>より。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/876d32d5-0a68-4a08-b3f1-d4c103729cfa/cost-of-frameworks-bytes-desktop.png">プレビューを拡大</a>）</em></p>
+<h3>13. フレームワークと依存関係を評価する。</h3>
+<p>現在、<a href="https://twitter.com/jaffathecake/status/923805333268639744">あらゆるプロジェクトがフレームワークを必要とするわけでも、シングルページアプリケーションのあらゆるページがフレームワークの読み込みを必要とするわけでもありません</a>。
+Netflixの場合、「React、複数のライブラリ、対応するアプリのコードをクライアントサイドから削除したところ、JavaScriptの総容量を200KB以上削減し、ログアウト後のホームページにおける<a href="https://www.youtube.com/watch?t=11m32s&#x26;v=V8oTJ8OZ5S0&#x26;feature=youtu.be">NetflixのTime To Interactiveを50％以上減らすことができました</a>」。
+同社のチームは、ユーザがランディングページで消費する時間を利用して、ユーザが次にアクセスする可能性が高いページのReactを先読みするようにしました（<a href="https://jakearchibald.com/2017/netflix-and-react/">詳細はこちら</a>）。</p>
+<p>それでは、クリティカルなページから既存のフレームワークを完全に削除した場合はどうなるでしょうか。
+Gatsbyでは、<a href="https://www.npmjs.com/package/gatsby-plugin-no-javascript">gatsby-plugin-no-javascript</a>によって、Gatsbyが作成したすべてのJavaScriptファイルを静的HTMLファイルから削除できます。
+Vercelでは、<a href="https://github.com/vercel/next.js/pull/11949">特定のページについて、本番環境のランタイムJavaScriptを無効化できます</a>（実験的な機能です）。</p>
+<p>フレームワークを選択すると、少なくとも数年間はそのフレームワークを使い続けます。
+そのため、フレームワークを使用する必要がある場合は、<a href="https://www.youtube.com/watch?v=6I_GwgoGm1w">十分な情報に基づき</a>、<a href="https://medium.com/%40ZombieCodeKill/choosing-a-javascript-framework-535745d0ab90#.2op7rjakk">よく考えて</a>選択しなければなりません。これは私たちが重視する主要なパフォーマンス指標に関して特に当てはまります。</p>
+<p>データによれば、フレームワークは、デフォルトではとても高コストです。
+<a href="https://twitter.com/hdjirdeh/status/1280731085379211265">Reactページの58.6％には1MB超のJavaScriptが含まれており</a>、Vue.jsのページ読み込みのFirst Contentful Paintが1.5秒未満である割合は36％です。
+<a href="https://blog.uncommon.is/the-baseline-costs-of-javascript-frameworks-f768e2865d4a">Ankur Sethiの調査</a>によれば、「Reactアプリケーションは、どんなに最適化しても、インドの平均的なスマートフォンでは<strong>読み込みが約1.1秒より速くならない</strong>でしょう。
+Angularアプリは、起動まで常に2.7秒以上かかります。Vueアプリのユーザは、利用を始められるまで1秒以上待つ必要があります」。
+いずれにせよ、インドはあなたの主要なターゲット市場ではないかもしれません。
+しかし、最適ではないネットワーク環境からサイトにアクセスするユーザは、同様の体験をするでしょう。</p>
+<p>もちろん、SPAを高速化することは可能ですが、最初から速いわけではありません。
+そのため、SPAを高速化し、それを維持し続けるための時間と労力を考慮する必要があります。
+おそらく、初めはパフォーマンスコストの基準を低めに設定する方が簡単でしょう。</p>
+<p><strong>それでは、どのようにフレームワークを選択すれば良いのでしょうか</strong>。
+選択肢を選ぶ前に、少なくとも容量と初期実行時間の合計コストについて考えると良いでしょう。
+<a href="https://github.com/developit/preact">Preact</a>、<a href="https://github.com/infernojs/inferno">Inferno</a>、<a href="https://vuejs.org/">Vue</a>、<a href="https://svelte.technology/">Svelte</a>、<a href="https://www.smashingmagazine.com/2020/03/introduction-alpinejs-javascript-framework/">Alpine</a>、<a href="https://github.com/Polymer/polymer">Polymer</a>などのコストが軽い選択肢でも、十分役割を果たします。
+基準となる容量が、アプリケーションのコードの制約を定めることとなります。</p>
+<p>Seb Markbågeが<a href="https://twitter.com/sebmarkbage/status/829733454119989248">述べている</a>とおり、フレームワークのスタートアップコストを測定する良い方法の1つは、<strong>まず画面をレンダリングし、次にそれを削除し、またレンダリングする</strong>ことです。
+それによって、フレームワークがどのように拡大するかが分かります。
+最初のレンダリングは、コンパイルが遅いコードのウォームアップとしての役割を果たします。
+これらのコードは、拡大する際にツリー全体にメリットをもたらします。
+2回目のレンダリングは基本的に、ページの複雑性が増す場合に、ページにおけるコードの再利用がパフォーマンス特性にどのような影響を与えるかをエミュレートするものです。</p>
+<p>Sacha Greifの<a href="https://medium.freecodecamp.org/the-12-things-you-need-to-consider-when-evaluating-any-new-javascript-library-3908c4ed3f49">12項目からなるスコアリングシステム</a>では、例えば機能、アクセシビリティ、安定性、パフォーマンス、<strong>パッケージのエコシステム</strong>、コミュニティ、学習曲線、ドキュメント、ツール、実績、チーム、互換性、セキュリティなどを調査することで、候補（あるいはJavaScriptライブラリ全般）を評価することまで可能です。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/6c1d426d-cf12-43de-a926-cea743ac1bf3/perf-track-opt.png">
+<em><a href="https://perf-track.web.app/">Perf Track</a>は、フレームワークのパフォーマンスを広範囲にわたって追跡します。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/6c1d426d-cf12-43de-a926-cea743ac1bf3/perf-track-opt.png">プレビューを拡大</a>）</em></p>
+<p>長い時間をかけてWebで収集されたデータに頼ることもできます。
+例えば、<a href="https://perf-track.web.app/">Perf Track</a>は広範囲にわたってフレームワークのパフォーマンスを追跡しており、Angular、React、Vue、Polymer、Preact、Ember、Svelte、AMPでビルドしたWebサイトのオリジンの<strong>Core Web Vitals</strong>スコアの合計値を明らかにしています。
+Gatsby、Next.js、Create React Appや、Nuxt.js（Vue）、Sapper（Svelte）でビルドしたWebサイトを指定し、比較することも可能です。</p>
+<p>手始めに、アプリケーションにとって<strong>適切なデフォルトのフレームワーク</strong>を選ぶことから始めると良いでしょう。
+<a href="https://gatsbyjs.org/">Gatsby</a>（React）、<a href="https://nextjs.org/">Next.js</a>（React）、<a href="https://vuepress.vuejs.org/">Vuepress</a>（Vue）、<a href="https://github.com/developit/preact-cli">Preact CLI</a>、<a href="https://github.com/Polymer/pwa-starter-kit">PWA Starter Kit</a>は、平均的なモバイルハードウェアにおいて初期設定で高速な読み込みを実現できるため、デフォルトとしてちょうど良い存在です。
+また、<a href="https://web.dev/learn/#frameworks">web.devによるReactとAngularのためのフレームワークごとのパフォーマンスガイド</a>も見てみましょう（Phillipに感謝します）。</p>
+<p>シングルページアプリケーションを丸ごとビルドするときは、少し目新しいアプローチを実践できるかもしれません。
+<a href="https://github.com/turbolinks/turbolinks">Turbolinks</a>は15KBのJavaScriptライブラリで、画面のレンダリングにJSONではなくHTMLを使用します。
+リンク先にアクセスすると、ページ全体を読み込むコストを発生させることなく、Turbolinksがページを自動的に取得し、 <code class="language-text">&lt;body&gt;</code> 要素を置き換え、 <code class="language-text">&lt;head&gt;</code> 要素をマージします。
+<a href="https://twitter.com/dhh/status/1341420143239450624">詳細を手早く知りたい人はこちら</a>、<a href="https://hotwire.dev/">Turbolinksの完全なドキュメントについてはこちら（Hotwire）</a>をご確認ください。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/fb9e201e-6247-4cf2-911f-ab968623981c/09-high-sell-phones-front-end-performance-checklist-2020.jpg">
+<em>最も売れているスマートフォンのCPUと演算性能（画像の出典：<a href="https://speakerdeck.com/addyosmani/the-cost-of-javascript-in-2019">Addy Osmani</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/fb9e201e-6247-4cf2-911f-ab968623981c/09-high-sell-phones-front-end-performance-checklist-2020.jpg">プレビューを拡大</a>）</em></p>
+<h3>14. クライアントサイドレンダリングか、サーバサイドレンダリングか？答えは両方。</h3>
+<p>これはとても熱い議論が交わされるテーマです。
+究極的なアプローチは、一種の<a href="https://aerotwist.com/blog/when-everything-is-important-nothing-is/">段階的な起動</a>を導入することでしょう。
+つまり、サーバサイドレンダリングを使用してFirst Contentful Paintを高速化する一方、必要最低限のJavaScriptを導入し、Time To InteractiveがFirst Contentful Paintと乖離しないようにします。
+JavaScriptがFCPよりも遅すぎる場合、ブラウザは、そのJavaScriptをパース、コンパイル、実行する間に<a href="https://davidea.st/articles/measuring-server-side-rendering-performance-is-tricky">メインスレッドをロック</a>するため、<a href="https://philipwalton.com/articles/why-web-developers-need-to-care-about-interactivity/">サイトやアプリケーションのインタラクティブ性を低下させる</a>こととなります。</p>
+<p>これを避けるには、<strong>関数の実行を個別の非同期タスクに常に分割</strong>し、可能な場合は<code class="language-text">requestIdleCallback</code>を使用しましょう。
+Webpackの<a href="https://developers.google.com/web/updates/2017/11/dynamic-import">動的な<code class="language-text">import()</code>サポート</a>を利用してUIの一部の読み込みを遅延させることで、読み込み、パース、コンパイルのコストを、ユーザが本当に必要になるまで回避できないか検討してみましょう（Addyに感謝します）。</p>
+<p>上記のとおり、Time To Interactive（TTI）は、ナビゲーションの時点とインタラクションが可能になる時点までの間の時間を表します。
+厳密には、この指標は、最初のコンテンツのレンダリング後、<strong>所要時間が50ミリ秒を超える</strong>JavaScriptタスク（ロングタスク）が存在しない状態が初めて5秒間続いた時点として定義されます。
+50ミリ秒を超えるタスクが発生すると、5秒間の計測はやり直しです。
+その結果、ブラウザが初めてインタラクティブになったかと思えば、すぐにインタラクティブでなくなり、最終的にはインタラクティブな状態に戻るという状況が起きます。</p>
+<p>インタラクティブな状態に達すると、必要に応じて、あるいは時間が許す限り、アプリの本質的でない部分を起動することができます。
+残念ながら、<a href="https://aerotwist.com/blog/when-everything-is-important-nothing-is/#which-to-use-progressive-booting">Paul Lewisが指摘したとおり</a>、フレームワークは通常、開発者にも分かる単純な優先順位の概念を持っていません。
+そのため、ほとんどのライブラリとフレームワークでは、段階的な起動を導入するのは簡単ではありません。</p>
+<p>それでも、私たちは段階的な起動に近づいています。最近はいくつかの選択肢を検討できるようになりました。
+Houssein DjirdehとJason Millerの<a href="https://www.youtube.com/watch?v=k-A2VfuUROg">Rendering on the Web</a>という講演と、JasonとAddyの<a href="https://developers.google.com/web/updates/2019/02/rendering-on-the-web">モダンなフロントエンドアーキテクチャ</a>に関する記事は、こうした選択肢の全体像が分かる素晴らしい内容です。
+以下の概要は、彼らの優れた成果に基づくものです。</p>
+<ul>
+<li>
+<p><strong>フルサーバサイドレンダリング（SSR）</strong></p>
+<p>WordPressなどの古典的なSSRでは、すべてのリクエストは完全にサーバ上で処理されています。
+リクエストされたコンテンツは、完成したHTMLページとして返送され、ブラウザはそれをすぐにレンダリングすることができます。
+そのため、SSRアプリは、例えばDOM APIをあまり活用できません。
+First Contentful PaintとTime To Interactiveのギャップは通常は小さく、HTMLがブラウザに送信された時点ですぐにページをレンダリングできます。</p>
+<p>ブラウザが応答を得る前に処理が行われるため、データを取得し、クライアント側でテンプレートを作成するための追加的なラウンドトリップの必要はありません。
+しかし、<strong>サーバのシンクタイム</strong>、ひいてはTime To First Byteが<strong>長くなり</strong>、モダンなアプリケーションのレスポンシブでリッチな機能は活用できません。</p>
+</li>
+<li>
+<p><strong>静的レンダリング</strong></p>
+<p>プロダクトはシングルページアプリケーションとしてビルドされますが、ビルドのステップの一環として、すべてのページが最小限のJavaScriptによって静的HTMLへとプリレンダリングされます。
+このことは、静的レンダリングでは、<strong>あり得るすべてのURL</strong>に対して個別のHTMLファイルを事前に生成することを意味しますが、これは多くのアプリケーションにとって可能ではありません。
+しかし、ページのHTMLをすぐに生成する必要はないため、一貫して高速なTime To First Byteを実現できます。
+したがって、ランディングページを速く表示し、その後のページのSPAフレームワークを先読みすることが可能です。
+<a href="https://medium.com/dev-channel/a-netflix-web-performance-case-study-c0bcde26a9d9">Netflixはこのアプローチを採用し</a>、読み込みとTime To Interactiveを50％削減しています。</p>
+</li>
+<li>
+<p><strong>サーバサイドレンダリングと（リ）ハイドレーション（ユニバーサルレンダリング、SSR + CSR）</strong></p>
+<p>SSRとCSRの両方のアプローチの良いとこ取りを目指すことも可能です。
+ハイドレーションを利用する場合、サーバから返送されるHTMLページには、クライアントサイドの完全なアプリケーションを読み込むスクリプトも含まれています。
+それによって、（SSRのように）高速なFirst Contentful Paintを実現し、それから（リ）ハイドレーションによるレンダリングを続けるのが理想です。
+残念なことに、こうしたケースはまれです。
+たいてい、ページの準備は整っているように見えるのに、ユーザの入力には応答できず、レイジクリックや離脱につながっています。</p>
+<p>Reactでは、<a href="https://alligator.io/react/server-side-rendering/">ExpressなどのNodeサーバで<code class="language-text">ReactDOMServer</code>モジュールを使用</a>し、トップレベルのコンポーネントを静的なHTML文字列としてレンダリングするために<code class="language-text">renderToString</code>メソッドを呼び出すことができます。</p>
+<p>Vue.jsでは、<a href="https://ssr.vuejs.org/">vue-server-rendererを使用</a>し、<code class="language-text">renderToString</code>でVueインスタンスをHTMLにレンダリングすることが可能です。
+Angularでは、<a href="https://angular.io/guide/universal">@nguniversalを使用</a>し、クライアントのリクエストを、サーバによって完全にレンダリングされたHTMLページに変換できます。
+<a href="https://nextjs.org/">Next.js</a>（React）や<a href="https://nuxtjs.org/">Nuxt.js</a>（Vue）では、完全なサーバサイドレンダリング体験を最初から実現可能です。</p>
+<p>このアプローチにはデメリットがあります。クライアントサイドアプリの完全な柔軟性を実現しつつ、高速なサーバサイドレンダリングを提供できる一方で、First Contentful PaintとTime To Interactiveの<strong>ギャップが拡大</strong>し、First Input Delayが増加するのです。
+<a href="https://addyosmani.com/blog/rehydration/">リハイドレーションはコストがとても大きくなります</a>。
+この戦略だけでは、Time To Interactiveが大幅に遅くなるため、通常は十分ではありません。</p>
+</li>
+<li>
+<p><strong>ストリーミングサーバサイドレンダリングとプログレッシブハイドレーション（SSR + CSR）</strong></p>
+<p>Time To InteractiveとFirst Contentful Paintのギャップを最小限にするために、複数のリクエストを同時にレンダリングし、<strong>コンテンツが生成されるたびにチャンクとして送信</strong>します。
+そのため、ブラウザにコンテンツを送信する前に完全なHTML文字列を待つ必要がなく、Time To First Byteが改善されます。</p>
+<p>Reactでは、renderToString()の代わりに<a href="https://reactjs.org/docs/react-dom-server.html#rendertonodestream">renderToNodeStream()</a>を使用することで、応答をパイプし、HTMLをチャンクで送信できます。
+Vueでは、<a href="https://ssr.vuejs.org/guide/streaming.html">renderToStream()</a>によるパイプとストリームが可能です。
+React Suspenseでは、同じ目的に<a href="https://medium.com/maxime-heckel/asynchronous-rendering-with-react-c323cda68f41">非同期レンダリング</a>を使用できるでしょう。</p>
+<p>クライアントサイドでは、アプリケーション全体を一度に起動するのではなく、<strong>コンポーネントを段階的に起動します</strong>。
+まずアプリケーションのセクションをコード分割によって独立したスクリプトに分割し、次にそれを（優先順位に従って）徐々にハイドレートします。
+つまり、クリティカルなコンポーネントを先にハイドレートし、残りは後でハイドレートすることができます。
+クライアントサイドとサーバサイドのレンダリングの役割は、コンポーネントごとに異なる形で定義することが可能です。
+また、コンポーネントが表示されるまで、またはそれがユーザとのインタラクションに必要になるまで、あるいはブラウザがアイドル状態になるまで、一部のコンポーネントの<strong>ハイドレーションを遅らせる</strong>こともできます。</p>
+<p>Vueについては、Markus Oberlehnerが、<a href="https://markus.oberlehner.net/blog/how-to-drastically-reduce-estimated-input-latency-and-time-to-interactive-of-ssr-vue-applications/">ユーザとのインタラクションに応じたハイドレーション</a>と<a href="https://github.com/maoberlehner/vue-lazy-hydration">vue-lazy-hydration</a>を使用してSSRアプリのTime To Interactiveを削減するためのガイドを公表しています。
+vue-lazy-hydrationは、コンポーネントの表示や特定のユーザインタラクションに応じたハイドレーションを可能にする初期段階のプラグインです。
+Angularチームは、<a href="https://github.com/vikerman/ivy-universal">Ivy Universal</a>を使用してプログレッシブハイドレーションに取り組んでいます。
+<a href="https://medium.com/%40luke_schmuke/how-we-achieved-the-best-web-performance-with-partial-hydration-20fab9c808d5">PreactとNext.jsでパーシャルハイドレーションを実装する</a>こともできます。</p>
+</li>
+<li>
+<p><a href="https://developers.google.com/web/updates/2019/02/rendering-on-the-web#trisomorphic"><strong>トライソモルフィックレンダリング</strong></a></p>
+<p>サービスワーカーを導入している場合、初期やJS以外のナビゲーションには<strong>ストリーミングサーバレンダリング</strong>を使用し、それらがインストールされた後に、サービスワーカーがナビゲーションのためのHTMLレンダリングに取りかかるようにすることができます。
+この場合、サービスワーカーはコンテンツをプリレンダリングし、同一セッション内の新規ビューをレンダリングするためのSPAスタイルのナビゲーションを有効にします。
+サーバ、クライアントページ、サービスワーカーの間で同じテンプレートやルーティングコードを共有できる場合に効果的です。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/d1c78c47-f803-4923-96ff-99c6a4a14cbb/08-trisomorphic-front-end-performance-checklist-2020.png">
+<em>トライソモルフィックレンダリングでは、サーバ、DOM、サービスワーカーの3カ所のどこでも同じコードをレンダリングします。（画像の出典：<a href="https://developers.google.com/web/updates/2019/02/rendering-on-the-web#trisomorphic">Google Developers</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/d1c78c47-f803-4923-96ff-99c6a4a14cbb/08-trisomorphic-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+</li>
+<li>
+<p><strong>CSRとプリレンダリング</strong></p>
+<p>プリレンダリングはサーバサイドレンダリングに似ていますが、サーバでページを動的にレンダリングするのではなく、ビルドの際にアプリケーションを静的HTMLへレンダリングします。
+静的なページは、クライアントサイドのJavaScriptがあまり存在しなくても完全にインタラクティブとなりますが、<strong>プリレンダリングの仕組みは異なっています</strong>。
+基本的に、プリレンダリングは、ビルド時にクライアントサイドアプリケーションの初期状態を静的HTMLとして取得します。
+一方で、ページをインタラクティブにするにはアプリケーションをクライアント側で起動する必要があります。</p>
+<p>Next.jsでは、アプリを静的HTMLにプリレンダリングすることで、<a href="https://nextjs.org/docs/advanced-features/static-html-export">静的HTMLエクスポート</a>を使用できます。
+Reactを使用したオープンソースの静的サイトジェネレータである<a href="https://www.gatsbyjs.org/">Gatsby</a>では、<code class="language-text">renderToString</code>メソッドの代わりに<code class="language-text">renderToStaticMarkup</code>メソッドをビルド時に使用しています。
+シンプルな静的ページには不要なDOM属性を使わず、メインのJSチャンクをプリロードし、将来のルートをプリフェッチします。</p>
+<p>Vueでは、同じ目的を達成するために<a href="https://vuepress.vuejs.org/">Vuepress</a>を使用可能です。
+<a href="https://github.com/GoogleChromeLabs/prerender-loader">Webpackではprerender-loader</a>も使用できます。
+Naviも<a href="https://frontarm.com/navi/en/guides/static-rendering/">静的レンダリング</a>を提供しています。</p>
+<p>その結果、Time To First ByteとFirst Contentful Paintが改善し、両者のギャップが縮小します。
+コンテンツが大きく変化すると予想される場合、このアプローチは使用できません。
+また、すべてのページを生成するには、事前にすべてのURLを把握する必要があります。
+一部のコンポーネントはプリレンダリングを使用してレンダリングできることもありますが、動的な要素が必要な場合は、コンテンツを取得するためにアプリに頼らなければなりません。</p>
+</li>
+<li>
+<p><strong>フルクライアントサイドレンダリング（CSR）</strong></p>
+<p>すべてのロジック、レンダリング、起動がクライアント側で実施されます。
+そのため、通常はTime To InteractiveとFirst Contentful Paintの間に膨大なギャップが発生します。
+結果として、一部をレンダリングするだけでもクライアント側でアプリ全体を起動する必要があるため、アプリケーションが<strong>遅く感じることがよくあります</strong>。
+JavaScriptにはパフォーマンスコストがあるため、アプリケーションに応じてJavaScriptの量が増加すると、その影響を抑えるために、積極的なコード分割とJavaScriptの遅延が絶対に必要になります。
+こうしたケースでは、インタラクティブ性があまり必要とされない場合に備え、通常は<strong>サーバサイドレンダリング</strong>を採用する方が良いアプローチとなるでしょう。
+それが不可能な場合は、<a href="https://developers.google.com/web/fundamentals/architecture/app-shell">App Shellモデル</a>の使用を検討してみましょう。</p>
+<p>一般に、<a href="https://itnext.io/server-side-rendering-with-react-redux-and-react-router-fa5b67d4965e">SSRはCSRよりも高速です</a>。しかし、世の中の多くのアプリは、依然としてCSRを導入していることがよくあります。</p>
+</li>
+</ul>
+<p>結局、クライアントサイドとサーバサイドのどちらが良いのでしょうか。一般に、<strong>完全なクライアントサイドのフレームワークを使用するのは、それが絶対に必要なページだけに制限する</strong>のが良いでしょう。高度なアプリケーションでは、サーバサイドのレンダリングのみに頼るのも良い考えではありません。サーバレンダリングとクライアントレンダリングのどちらも、不完全だと悲惨なことになります。
+CSRとSSRのどちらが好みであるにせよ、重要なピクセルは可能な限り早くレンダリングし、レンダリングとTime To Interactiveのギャップは最小限になるようにしましょう。ページがあまり変化しない場合はプリレンダリングを検討し、可能ならばフレームワークの起動を遅らせてみてください。サーバサイドレンダリングでは<strong>HTMLをチャンクでストリーム</strong>し、クライアントサイドレンダリングでは<strong>プログレッシブハイドレーション</strong>を実装しましょう。そして、表示やインタラクションのタイミングで、あるいはアイドルタイムの間にハイドレーションを実施し、両者の良いとこ取りをしましょう。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/e8d2728f-ab3c-4b56-a265-e6c6d456e600/03-jason-front-end-performance-checklist-2020.png">
+<em>クライアントサイドとサーバサイドのレンダリングの選択肢をスペクトルで表しています。また、Google I/OでJasonとHousseinが<a href="https://www.youtube.com/watch?v=k-A2VfuUROg">アプリケーションのアーキテクチャによるパフォーマンスへの影響</a>について議論した内容もチェックしてみましょう。（画像の出典：<a href="https://twitter.com/_developit/status/1093223382223605762">Jason Miller</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/e8d2728f-ab3c-4b56-a265-e6c6d456e600/03-jason-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/f7b675e3-6338-40ea-b7a1-5a07ee6e52cc/08-progressive-hydration-front-end-performance-checklist-2020.png">
+<em>AirBnBはプログレッシブハイドレーションの実験を実施しています。不要なコンポーネントを遅らせ、ユーザインタラクション（スクロール）に応じて、またはアイドルタイムの間に読み込んでいます。これにより、TTIが改善することがテストで判明しています。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/f7b675e3-6338-40ea-b7a1-5a07ee6e52cc/08-progressive-hydration-front-end-performance-checklist-2020.png">プレビューを拡大</a>）</em></p>
+<h3>15. どれだけのコンテンツを静的な状態で提供できるか？</h3>
+<p>開発しているのが大規模なアプリケーションであるにせよ、小規模なサイトであるにせよ、どのコンテンツなら、実行時に動的に生成するのではなく<strong>CDN（<a href="https://jamstack.org/">JAM Stack</a>）から静的に提供</strong>できるかを検討することには価値があります。
+無数のプロダクトとフィルタや、数多くのカスタマイズの選択肢があったとしても、クリティカルなランディングページを静的に提供し、あなたが選んだフレームワークからそれらのページを分離したいと思うかもしれません。</p>
+<p>世の中には多くの<a href="https://jamstack.org/generators/">静的サイトジェネレータ</a>があり、ジェネレータが生成するページは通常、<a href="https://www.11ty.dev/speedlify/">とても高速です</a>。
+リクエスト時にサーバやクライアントでページビューを生成するのではなく、事前にプリビルドするコンテンツが多いほど、優れたパフォーマンスを実現できます。</p>
+<p>Markus Oberlehnerは、<a href="https://markus.oberlehner.net/blog/building-partially-hydrated-progressively-enhanced-static-websites-with-isomorphic-preact-and-eleventy/">Building Partially Hydrated, Progressively Enhanced Static Websites</a>という記事で、プログレッシブエンハンスメントを実現し、JavaScriptのバンドル容量を最小限にしつつ、静的サイトジェネレータとSPAを使用してWebサイトを構築する方法を説明しています。
+Markusはツールとして<strong>EleventyとPreact</strong>を使用しており、ツールの設定、パーシャルハイドレーションの追加、遅延ハイドレーション、クライアントエントリファイル、Preact向けのBabelの設定、RollupによるPreactのバンドルについて、始めから終わりまで解説しています。</p>
+<p>最近は大規模サイトでJAMStackが使用されるようになったことで、パフォーマンスに関して新たに検討すべき問題が出てきました。
+その問題とは<strong>ビルド時間</strong>です。
+実際、新たなデプロイのたびに無数のページをビルドするのには数分間かかる可能性があります。
+そのため、ビルド時間を60倍改善する<a href="https://www.gatsbyjs.com/blog/2020-04-22-announcing-incremental-builds/">Gatsbyのインクリメンタルビルド</a>を利用すると良いでしょう。
+WordPress、Contentful、Drupal、Netlify CMSなどの一般的なCMSソリューションとのインテグレーション機能もあります。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/93501951-ccc7-48be-8f01-f148cbfa6c75/incremental-static-regeneration.png">
+<em>Next.jsによるインクリメンタルな静的サイト再生成。（画像の出典：<a href="https://www.prisma.io/blog/jamstack-with-nextjs-prisma-jamstackN3XT">Prisma.io</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/93501951-ccc7-48be-8f01-f148cbfa6c75/incremental-static-regeneration.png">プレビューを拡大</a>）</em></p>
+<p>また、Next.jsは<a href="https://nextjs.org/blog/next-9-5#stable-incremental-static-regeneration">事前のインクリメンタルな静的サイト生成</a>機能を発表しました。
+この機能では、トラフィックの流入に伴い、バックグラウンドで再レンダリングを行うことで、ランタイムに新たな静的ページを追加し、既存のページがすでにビルドされた後も更新できるようになります。</p>
+<p>もっとコストが軽いアプローチが必要な場合はどうすべきでしょうか。
+Nicola Goutayは、<a href="https://www.youtube.com/watch?v=taOyVmLgym4">Eleventy, Alpine and Tailwind: towards a lightweight Jamstack</a>という講演で、CSR、SSRや両者の中間にあるものの違いや、コストが軽いアプローチを使用する方法を説明しています。
+また、<a href="https://github.com/orbit-love/orbit-web">GitHubリポジトリ</a>ではアプローチの実践方法も紹介しています。</p>
+<h3>16. PRPLパターンとアプリケーションシェルアーキテクチャの使用を検討する。</h3>
+<p>フレームワークによって、パフォーマンスに与える影響は違っており、異なる最適化戦略が必要とされます。
+そのため、自分が使用するフレームワークの仕組みはすべて明確に理解しなければなりません。
+Webアプリを開発するときは、<a href="https://developers.google.com/web/fundamentals/performance/prpl-pattern/">PRPLパターン</a>と<a href="https://developers.google.com/web/updates/2015/11/app-shell">アプリケーションシェルアーキテクチャ</a>について検討しましょう。
+考え方はとても単純です。
+初期ルートが高速にレンダリングされるように、インタラクティブな状態を実現するために必要最小限のコードをプッシュし、サービスワーカーを使用したリソースのキャッシングとプリキャッシングを行います。
+その後、必要なルートの非同期的な遅延読み込みを実施します。</p>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_auto/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/bb4716e5-d25b-4b80-b468-f28d07bae685/app-build-components-dibweb-c-scalew-879-opt.png">
+<em><a href="https://developers.google.com/web/fundamentals/performance/prpl-pattern/">PRPL</a>は、クリティカルなリソースのプッシュ（Pushing）、初期ルートのレンダリング（Rendering）、残りのルートのプリキャッシング（Pre-caching）、残りのルートの必要に応じた遅延読み込み（Lazy-loading）の頭文字を表します。</em>
+<img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_auto/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/6423db84-4717-4aeb-9174-7ae96bf4f3aa/appshell-1-o0t8qd-c-scalew-799-opt.jpg">
+<a href="https://developers.google.com/web/updates/2015/11/app-shell">アプリケーションシェル</a>とは、ユーザインタフェースの機能に必要な最小限のHTML、CSS、JavaScriptです。</p>
+<h3>17. APIのパフォーマンスを最適化しているか？</h3>
+<p>APIは、アプリケーションがエンドポイントを通じて内部やサードパーティのアプリケーションにデータを提供するための通信チャネルです。
+<a href="https://www.smashingmagazine.com/2012/10/designing-javascript-apis-usability/">APIのデザインとビルド</a>をするときは、サーバとサードパーティのリクエストの間の通信を可能にする妥当なプロトコルが必要です。
+<a href="https://www.smashingmagazine.com/2018/01/understanding-using-rest-api/">Representational State Transfer</a>（<a href="https://web.archive.org/web/20130116005443/https:/tomayko.com/writings/rest-to-my-wife">REST</a>）は、そのようなプロトコルの中で、定評ある合理的な選択肢です。
+RESTでは、パフォーマンスと信頼性が高いスケーラブルな方法でコンテンツをアクセス可能にするために、開発者が従うべき一連の制約を定めています。
+RESTの制約に従うWebサービスは、RESTfulなWebサービスと呼ばれます。</p>
+<p>古き良きHTTPリクエストと同様に、APIからデータが取得される場合、サーバの応答の遅れはエンドユーザにも波及し、そのため<strong>レンダリングが遅延</strong>します。
+リソースが何らかのデータをAPIから取得する場合、対応するエンドポイントからデータをリクエストする必要があります。
+コメント、および各コメントの筆者の写真が付属している記事など、複数のリソースからデータをレンダリングするコンポーネントは、レンダリングが可能になる前に、すべてのデータを取得するためにサーバとの間で複数回のラウンドトリップが必要になるかもしれません。
+さらに、RESTを通じて返されるデータの量は、コンポーネントのレンダリングに必要な量を超えていることがよくあります。</p>
+<p>多くのリソースがAPIからのデータを必要とする場合、APIがパフォーマンスのボトルネックとなりかねません。</p>
+<p><a href="https://graphql.org/">GraphQL</a>は、こうした問題の有効な解決策となります。
+GraphQLはいわば、API向けのクエリ言語であり、データ用に定義した型システムを使用してクエリを実行するためのサーバサイドのランタイムです。
+RESTとは異なり、GraphQLは1度のリクエストですべてのデータを取得できます。
+返されるデータは必要なちょうどの量となっており、RESTでよくある過大なデータや過少なデータの取得は起きません。</p>
+<p>さらに、GraphQLはスキーマ（データの構造に関するメタデータ）を使用しているため、好きな構造にデータを組織することが可能です。
+例えば、<a href="https://medium.com/%40wmdmark/how-graphql-replaces-redux-3fff8289221d">GraphQLなら、状態管理を処理するためのJavaScriptコードを削除</a>することで、以前よりもクリーンなアプリケーションコードを生成し、クライアント側での実行を高速化できます。</p>
+<p>GraphQLを始めたい場合や、パフォーマンスに関する問題に直面している場合は、以下の記事が良い参考になるかもしれません。</p>
+<ul>
+<li><a href="https://www.smashingmagazine.com/2018/01/graphql-primer-new-api-part-1/">A GraphQL Primer: Why We Need A New Kind Of API</a>（Eric Baer著）</li>
+<li><a href="https://www.smashingmagazine.com/2018/01/graphql-primer-new-api-part-2/">A GraphQL Primer: The Evolution Of API Design</a>（Eric Baer著）</li>
+<li><a href="https://blog.logrocket.com/designing-graphql-server-optimal-performance/">Designing a GraphQL server for optimal performance</a>（Leonardo Losoviz著）</li>
+<li><a href="https://medium.com/%40wtr/graphql-performance-explained-cb4b43412fb4">GraphQL performance explained</a>（Wojciech Trocki著）</li>
+</ul>
+<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/5fda8d85-1151-4d0b-b2f6-da354ebae345/redux-rest-apollo-graphql.png">
+<em>RESTとGraphQLの差を現した図。左側はRedux + REST、右側はApollo + GraphQLとの対話を表しています。（画像の出典：<a href="https://web.archive.org/web/20180324125829/https:/hackernoon.com/how-graphql-replaces-redux-3fff8289221d?gi=47fd50e442aa">Hacker Noon</a>）（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/5fda8d85-1151-4d0b-b2f6-da354ebae345/redux-rest-apollo-graphql.png">プレビューを拡大</a>）</em></p>
+<h3>18. AMPとInstant Articlesのどちらを使用するか？</h3>
+<p>組織の優先課題と戦略に応じて、Googleの<a href="https://www.ampproject.org/">AMP</a>、Facebookの<a href="https://www.facebook.com/formedia/solutions/instant-articles">Instant Articles</a>（※訳注：原文指定URL消失）、あるいはAppleの<a href="https://developer.apple.com/news-publisher/">Apple News</a>の使用を検討すると良いかもしれません。
+これらがなくても優れたパフォーマンスを実現することはできますが、AMPは堅固なパフォーマンスフレームワークと無料のコンテンツデリバリネットワーク（CDN）を提供します。
+一方、Instant ArticlesはFacebook上の表示とパフォーマンスを改善します。</p>
+<p>こうした技術には、<strong>パフォーマンスが保証される</strong>というユーザにとって明確なメリットがあるように思われます。
+ですから、場合によっては、サイズが膨大な可能性がある「通常の」ページよりも、AMP、Apple News、Instant Articlesのページへのリンクの方が好まれることさえあるでしょう。
+大量のコンテンツを搭載し、多くのサードパーティコンテンツを扱うWebサイトにとって、こうした選択肢は、レンダリング時間を劇的に高速化するのに役立つ可能性があります。</p>
+<p><a href="https://timkadlec.com/remembers/2018-03-19-how-fast-is-amp-really/">しかし、必ずしもそうとは限りません</a>。
+Tim Kadlecによれば、例えば「AMPドキュメントは他のドキュメントよりも高速な傾向がありますが、それは必ずしもページのパフォーマンスが高いということを意味しません。
+AMPは、パフォーマンスの観点で特に大きな違いをもたらすものではないのです」。</p>
+<p>Webサイトの所有者にとってのメリットは明確です。
+こうしたフォーマットは、各プラットフォーム上で見つけやすく、<a href="https://ethanmarcotte.com/wrote/ampersand/">検索エンジンにおいて見やすくなります</a>。</p>
+<p>少なくとも、以前まではそうでした。
+AMPはトップストーリーに表示されるための<a href="https://developers.google.com/search/blog/2020/05/evaluating-page-experience">必要条件ではなくなった</a>ため、パブリッシャは<a href="https://searchengineland.com/will-publishers-drop-amp-when-its-no-longer-a-requirement-for-top-stories-335612">AMPから離れ</a>、従来の方式に回帰する可能性があります（Barryに感謝します）。</p>
+<p>それでも、AMPをPWAのデータソースとして再利用することで、<a href="https://www.smashingmagazine.com/2016/12/progressive-web-amps/">プログレッシブWeb AMP</a>を構築することも可能です。
+デメリットはあるでしょうか。
+当然ながら、クローズドプラットフォームでの表示のために、開発者は異なるバージョンのコンテンツを生成・維持する必要があります。
+Instant ArticlesとApple Newsの場合は、そのバージョンには<a href="https://www.w3.org/blog/TAG/2017/07/27/distributed-and-syndicated-content-whats-wrong-with-this-picture/">実際のURLが存在しないこととなります</a>（AddyとJeremyに感謝します）。</p>
+<h3>19. CDNを賢く選ぶ。</h3>
+<p>上記のとおり、データが動的である度合いによっては、コンテンツの一部を<a href="https://www.staticgen.com/">静的サイトジェネレータ</a>に「アウトソース」できるかもしれません。
+これをCDNにプッシュし、そこから静的なバージョンのコンテンツを提供すれば、サーバへのリクエストを回避することが可能です。
+もっと言えば、こうしたジェネレータの一部は、実際には<a href="https://tomdale.net/2017/09/compilers-are-the-new-frameworks/">Webサイトのコンパイラ</a>であり、最初から多くの自動最適化機能が提供されています。
+コンパイラが徐々に最適化を進めるため、コンパイルの出力も時とともに小さく、高速になります。</p>
+<p>注目すべき点として、CDNは動的なコンテンツも提供（およびオフロード）することができます。
+ですから、CDNを静的なアセットに限定する必要はありません。
+利用しているCDNが圧縮と変換（例：エッジでの画像の最適化とサイズ変更）を行っているか、CDNが<a href="https://www.filamentgroup.com/lab/servers-workers.html">サーバワーカー</a>、<a href="https://www.youtube.com/watch?v=W-tBI_n0m_w">A/Bテスト</a>（CDNのエッジ（サーバがユーザと最も近い部分）でページの静的な部分と動的な部分を組み立てるエッジ処理を含む）などのタスクに対応しているかをダブルチェックしましょう。
+また、<a href="https://blog.cloudflare.com/the-quicening/">利用しているCDNがHTTP over QUIC（HTTP/3）</a>をサポートしているか確認しましょう。</p>
+<p>Katie Hempeniusは<a href="https://web.dev/content-delivery-networks/">CDNの素晴らしいガイド</a>を執筆しており、<strong>優れたCDNの選び方</strong>、それを微調整する方法、CDNを評価するときに留意が必要なあらゆる細かい事項に関する情報を提供しています。
+一般に、コンテンツは可能な限り積極的にキャッシュし、Brotli、TLS 1.3、HTTP/2、HTTP/3などのCDNのパフォーマンス関連機能を有効化すると良いでしょう。</p>
+<p><strong>注記</strong>：Patrick MeenanとAndy Daviesの調査によれば、<code class="language-text">HTTP/2における優先度の制御</code>は、<a href="https://github.com/andydavies/http2-prioritization-issues#cdns--cloud-hosting-services">多くのCDNでは実質的に機能していない</a>ため、CDNを選択するときは気を付けましょう。
+Patrickは、自らの講演で<a href="https://youtu.be/sgjxuhFQktE?t=2626">HTTP/2における優先度</a>の制御について詳しく説明しています（Barryに感謝します）。</p>
+<p><img src="https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/647c043f-c4f7-4d6f-ad28-31ca1828352b/cdnperf-preview.png">
+<em><a href="https://www.cdnperf.com/">CDNPerf</a>は、毎日3億件のテストを収集・分析することにより、CDNのクエリの速度を測定します。（<a href="https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/647c043f-c4f7-4d6f-ad28-31ca1828352b/cdnperf-preview.png">プレビューを拡大</a>）</em></p>
+<p>CDNを選ぶときは、以下の<strong>比較サイト</strong>で、機能の詳細を確認することができます。</p>
+<ul>
+<li><a href="https://cdncomparison.com/">CDN Comparison</a>は、Cloudfront、Azure、KeyCDN、Fastly、Verizon、Stackpach、Akamaiなどの数多くのCDNの比較表です。</li>
+<li><a href="https://www.cdnperf.com/">CDN Perf</a>は、毎日3億件のテストを収集・分析することにより、CDNのクエリの速度を測定します。すべてのテスト結果は世界中のユーザのRUMデータに基づいています。<a href="https://www.dnsperf.com/">DNS Performance Comparison</a>と<a href="https://www.cloudperf.com/">Cloud Peformance Comparison</a>も確認してみましょう。</li>
+<li><a href="https://www.cdnplanet.com/guides/">CDN Planet Guides</a>では、Serve Stale、Purge、Origin Shield、Prefetch、Compressionなどの個別のトピックに関して、CDNの概要を説明しています。</li>
+<li><a href="https://almanac.httparchive.org/en/2019/cdn#cdn-adoption-and-usage">Web Almanac:CDN Adoption and Usage</a>は、上位のCDNプロバイダ、そのRTTとTLSの管理、TLSネゴシエーションタイム、HTTP/2の導入などに関する情報を提供します（残念ながら、データは2019年以降のものに限られます）。</li>
+</ul>
+<p>＜中編に続く＞</p>]]></content:encoded></item><item><title><![CDATA[2022年のCSS]]></title><description><![CDATA[写真： Jr Korpa on Unsplash Intro：2021年はこれまでCSSにとって盛りだくさんな一年でした。
 CSSワーキンググループはCSSの仕様にさまざまな変更を加え、既存機能を改…]]></description><link>https://postd.cc/css-in-2022/</link><guid isPermaLink="false">https://postd.cc/css-in-2022/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[CSS]]></category><pubDate>Thu, 27 Apr 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><em>写真： <a href="https://unsplash.com/@jrkorpa">Jr Korpa</a> on <a href="https://unsplash.com/s/photos/future">Unsplash</a></em></p>
 <p><strong>Intro</strong>：2021年はこれまでCSSにとって盛りだくさんな一年でした。
 CSSワーキンググループはCSSの仕様にさまざまな変更を加え、既存機能を改良するとともに多くの新機能を追加しました。
@@ -1636,119 +2381,5 @@ Qwikが新たなHTMLを認識するのはインタラクションが行われた
 <li><a href="https://builder-io.rippling-ats.com/">builder.io</a>の採用情報</li>
 </ul>
 <p>この記事はこれで終わりですが、私たちは今後数週間にわたって、Qwikとフロントエンドフレームワークの未来について記事を公開する予定です。お楽しみに。</p>
-<h2>シリーズ記事一覧</h2>
-<div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧はこちら</a>から参照できます。</p></div></div>]]></content:encoded></item><item><title><![CDATA[クロージャによる死（とQwikによる解決方法）]]></title><description><![CDATA[世界中にQwikを紹介した前回の記事では、
-多くの要素についてざっと触れるに留まり、詳細については後で説明するとお約束していました。
-Qwikとその背景にある設計思想を知る前に、まず私たち（業界）が…]]></description><link>https://postd.cc/death-by-closure-and-how-qwik-solves-it/</link><guid isPermaLink="false">https://postd.cc/death-by-closure-and-how-qwik-solves-it/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><pubDate>Thu, 24 Nov 2022 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>世界中にQwikを紹介した<a href="/a-first-look-at-qwik-the-html-first-framework/">前回の記事</a>では、
-多くの要素についてざっと触れるに留まり、詳細については後で説明するとお約束していました。
-Qwikとその背景にある設計思想を知る前に、まず私たち（業界）が現在の場所までどのようにたどり着いたかを理解しておくことが重要です。
-現代のフレームワークはある前提のもとに成り立っており、
-それが優れたTime to Interactive（TTI）スコアの実現を妨げているのですが、
-その前提とはどのようなものなのでしょうか。
-現行世代のフレームワークの現時点における限界を理解することで、
-Qwikの設計思想がなぜ最初は驚くべきものに思えるのか、より深く知ることができるでしょう。</p>
-<h2>TTIについて</h2>
-<p>TTIは、URLに遷移してからページがインタラクティブになるまでの時間を測定したものです。
-レスポンシブなサイトとしての体裁を整えるには、サーバーサイドレンダリング（SSR）が必須です。
-この背景にある考え方は、サイトを素早く表示し、ユーザがクリックすればいいか判断できるようになるまでに、
-アプリケーションが自身をブートし、すべてのリスナーをインストールするというものです。
-そのためTTIは、実際にはフレームワークがDOMリスナーをインストールするのにかかる時間を測定していると言えます。</p>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--85XBH76v--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/jlvs7wu983qt0846c2a1.png"></p>
-<p>上の図では、ブートからインタラクティブになるまでの時間に焦点を当てています。
-フレームワークがインタラクティブな状態に達するまでに実行すべきことすべてを理解できるよう、
-インタラクティブになった時点からスタートして逆にたどってみましょう。</p>
-<ol>
-<li>フレームワークはリスナーがどこにあるかを知る必要があります。しかし、この情報はフレームワークが簡単に利用できるものではありません。リスナーはテンプレートに<code class="language-text">described</code>（記述）されています。</li>
-<li>実は、筆者は<code class="language-text">described</code>よりも<code class="language-text">embedded</code>（埋め込み）という言葉のほうが適切だと考えています。情報が埋め込まれていると言えるのは、フレームワークが情報を簡単に利用できないからです。フレームワークは、リスナーのクロージャに到達するためにテンプレートを実行する必要があります。</li>
-<li>テンプレートを実行するにはダウンロードしなければなりません。しかし、ダウンロードされたテンプレートには import が含まれており、これを読み込むためにさらに多くのコードのダウンロードが必要です。テンプレートはそのサブテンプレートをダウンロードする必要があります。</li>
-<li>テンプレートの準備はできましたが、依然としてリスナーには到達していません。テンプレートの実行は、実際にはテンプレートとステートをマージすることを意味します。ステートがなければ、フレームワークはテンプレートを実行できず、リスナーにはたどり着けません。</li>
-<li>ステートはダウンロードしたり、クライアント側で計算したりする必要があります。頻繁に計算をするということは、ステートを計算するためにさらに多くのコードをダウンロードする必要があることを意味します。</li>
-</ol>
-<p>すべてのコードがダウンロードされると、フレームワークはステートを計算し、そのステートをテンプレートにフィードすることが可能になります。
-そして、ようやくリスナーのクロージャにたどり着き、クロージャをDOMにインストールできます。</p>
-<p>インタラクティブなステートに至るには多くの作業が必要です。
-現行世代のあらゆるフレームワークはこのように動作しています。
-つまり、フレームワークがリスナーを発見してインストールするには、
-結局はアプリケーションの大部分をダウンロードして実行しなければなりません。</p>
-<h2>クロージャについて</h2>
-<p>上記の問題の核は、コードをダウンロードするには大きな処理能力が必要であること、
-そしてフレームワークがリスナーを発見し、ページがインタラクティブな状態になるまでに長いCPU時間がかかることです。
-しかし、私たちはクロージャがコードとデータを囲い込むという性質を忘れています。
-これはとても便利な特性であり、私たちがクロージャを気に入っている理由です。
-しかし、これは同時にクロージャのすべてのデータとコードが、
-クロージャの実行時に遅延して作成されるのではなく、
-クロージャを作成した時点で利用可能でなければならないことも意味します。</p>
-<p>例としてシンプルなJSXテンプレートを見てみましょう（ただし、他のテンプレートシステムにも同じ問題があります）。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> <span class="token punctuation">{</span>addToCart<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./cart'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">function</span> <span class="token function">MyBuyButton</span><span class="token punctuation">(</span><span class="token parameter">props</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>cost<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token operator">...</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    Price<span class="token operator">:</span> <span class="token punctuation">{</span>cost<span class="token punctuation">}</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onclick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">addToCart</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      Add to cart
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>クロージャによる死</h2>
-<p>クロージャはコストが低いため、至るところで見られます。
-しかし、クロージャは本当に低コストなのでしょうか。
-その答えはイエスでもあり、ノーでもあります。
-確かに、ランタイムにおいて短時間で作成できるという意味では低コストです。
-しかし、コードを囲い込むために、クロージャがない場合より大幅に早くコードをダウンロードする必要があるという点では高コストです。
-さらに、ツリーシェイキングを妨害するという意味でも高コストです。
-そのため、筆者が「クロージャによる死」と呼ぶ状況が起きます。
-クロージャはDOMに設置されるリスナーであり、実行される可能性がほとんどないコードを囲い込みます。</p>
-<p>ページの「購入する」ボタンは複雑な割にしょっちゅうクリックされるようなものではありません。
-それでも「購入する」ボタンは、関連するすべてのコードのダウンロードをしきりに促します。
-これはクロージャがそのような仕組みになっているためです。</p>
-<h2>QwikはリスナーのHTMLシリアライズを可能にする</h2>
-<p>これまで、クロージャには隠れたコストがあるかもしれないと説明してきました。
-こうしたコストはコードの頻繁なダウンロードという形で生じます。そのため、クロージャを作成し、ユーザとインタラクティブなWebサイトの間に介在させるのは困難です。</p>
-<p>Qwikはリスナーの作成を可能な限り遅らせようとします。
-これを実現するために、Qwikは以下のルールを掲げています。</p>
-<ol>
-<li>リスナーはHTMLにシリアライズできなければならない。</li>
-<li>ユーザがリスナーとのインタラクションを行うまで、リスナーはコードを囲い込まない。</li>
-</ol>
-<p>これがどのように実現されるのか、実例で見てみましょう。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>MyComponent_click<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Click me!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p><code class="language-text">MyComponent_click.ts</code>ファイルの内容は以下のとおりです。</p>
-<div class="gatsby-highlight" data-language="ts"><pre style="counter-reset: linenumber NaN" class="language-ts line-numbers"><code class="language-ts"><span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token function">alert</span><span class="token punctuation">(</span><span class="token string">'Clicked'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>上記のコードをご覧ください。
-SSRはレンダリングプロセスの間にリスナーの場所を発見した後、
-その情報を捨てるのではなく、リスナーを属性としてHTMLにシリアライズします。
-そのため、クライアントはリスナーの場所を発見するためにテンプレートを再実行する必要がありません。
-その代わりとして、Qwikは以下のアプローチをとります。</p>
-<ol>
-<li><code class="language-text">qwikloader.js</code>をページにインストールする。このファイルのサイズは1KB未満で、実行には1ミリ秒もかからない。ファイルがとても小さくHTMLに埋め込むのが最善の方法であるため、サーバーとのラウンドトリップが不要になる。</li>
-<li><code class="language-text">qwikloader.js</code>は、1つのグローバルなイベントハンドラを登録し、バブリングを活用することで、すべてのイベントを同時にリッスンできる。addEventListenerの呼び出しが少なくなるため、インタラクティブな状態までの時間が短くなる。</li>
-</ol>
-<p>その結果が以下のとおりです。</p>
-<ol>
-<li>リスナーを発見するためにテンプレートをダウンロードする必要がない。リスナーは属性としてHTMLにシリアライズされる。</li>
-<li>リスナーを取得するためにテンプレートを実行する必要がない。</li>
-<li>テンプレートを実行するためにステートをダウンロードする必要がない。</li>
-<li>すべてのコードが遅延され、ユーザがリスナーとのインタラクションを行うときにのみダウンロードされる。</li>
-</ol>
-<p>Qwikは現行世代のフレームワークによるブートストラップのプロセスを省略し、1つのグローバルなイベントリスナーで代替します。
-この方法が最も優れているのは、アプリケーションのサイズに影響されないところです。
-どんなにアプリが大規模で複雑になってもリスナーは1つだけです。
-すべての情報がHTMLにシリアライズされているため、ダウンロードすべきブートストラップコードは常に一定で、その容量はアプリケーションの複雑性と無関係です。</p>
-<p>まとめると、Qwikの背景にある基本的な考え方は再開性（resumability）です。
-Qwikはサーバーの作業が中断された時点から作業を再開し、クライアント側が実行する必要があるファイルはわずか1KBです。
-このコードはアプリケーションがどんなに大規模で複雑になっても変わりません。
-これから数週間（訳注：原文では定期的に8記事まで公開されています）にわたって、
-Qwikがどのように作業を再開し、ステートを管理し、コンポーネントを独立にレンダリングするかを見ていきます。お楽しみに。</p>
-<p>私たちはQwikの未来や、Qwikが実現する新たな種類のユースケースに大いに期待しています。</p>
-<ul>
-<li><a href="https://stackblitz.com/edit/qwik-todo-demo">StackBlitz</a>で試す</li>
-<li><a href="https://github.com/builderio/qwik">github.com/builderio/qwik</a>でスターを送る </li>
-<li><a href="https://twitter.com/QwikDev">@QwikDev</a> と<a href="https://twitter.com/builderio">@builderio</a>をフォロー</li>
-<li><a href="https://discord.gg/JHVpZmqSs4">Discord</a>でチャット</li>
-<li><a href="https://builder-io.rippling-ats.com/">builder.io</a>の採用情報</li>
-</ul>
 <h2>シリーズ記事一覧</h2>
 <div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧はこちら</a>から参照できます。</p></div></div>]]></content:encoded></item></channel></rss>
