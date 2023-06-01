@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 01 Jun 2023 13:21:48 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 01 Jun 2023 16:02:00 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,70 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Dev Drive: Performance, Security and Control for Developers</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2023/06/01/dev-drive-performance-security-and-control-for-developers/</link>
+		
+		<dc:creator><![CDATA[Bridget Tueffers]]></dc:creator>
+		<pubDate>Thu, 01 Jun 2023 16:02:00 +0000</pubDate>
+				<category><![CDATA[Windows Developers]]></category>
+		<category><![CDATA[News]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56804</guid>
+
+					<description><![CDATA[<p>We are excited to introduce Dev Drive! A new storage volume optimized for developer workloads that delivers performance, security, and control. Dev Drive is built on the Resilient File System (ReFS) and combined with the new performance mode capabili</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2023/06/01/dev-drive-performance-security-and-control-for-developers/">Dev Drive: Performance, Security and Control for Developers</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[We are excited to introduce Dev Drive! A new storage volume optimized for developer workloads that delivers performance, security, and control. Dev Drive is built on the Resilient File System (ReFS) and combined with the new performance mode capability of Microsoft Defender Antivirus, provides up to 30% better performance for overall build times compared to current, in-market Windows 11 (22H2).
+<h3><strong>Performance and Security </strong></h3>
+We received feedback from developers that slow file io performance was disruptive to their workflow. In response, we analyzed the file system to understand where the bottlenecks were. Benchmarks were created across multiple end-to-end developer scenarios and across multiple languages. We then made optimizations to the file system and introduced a new performance capability for Microsoft Defender Antivirus. Now available in public preview, this new capability provides asynchronous scanning on a Dev Drive and does not change the security posture of your system drive or other drives  Asynchronous scanning provides improved security compared to traditional folder and process exclusions which are often used by developers. As a result, Dev Drive improves overall build performance, most notably in heavy file io based scenarios. For more information, see <a href="https://learn.microsoft.com/microsoft-365/security/defender-endpoint/microsoft-defender-endpoint-antivirus-performance-mode?view=o365-worldwide">Protecting Dev Drive using performance mode</a>.
+<h3><strong>Control</strong></h3>
+Beyond simply providing faster performance, the purpose of Dev Drive is to give control back to you, the developer. While there are specific configurations that Microsoft generally recommends, and have used as defaults, we have also created tools for you to further customize it. For example, administrators on the device can modify the behavior of filter manager to allow which filters are attached. You may wish to use additional filter drivers for app compat reasons, or if you have a different security posture, you can gain more performance by removing filters.
+
+<strong>Including new, easier UX</strong>
+
+Previously the “Disk Management” tool was used to set up and maintain disks. Now we have the same functionality with the modern Settings app. You can do everything you need to do to create a Dev Drive, including creating a new volume, creating & attaching a VHD, shrinking or expanding disk sizes, and creating partitions, all in one place.
+
+Here is the new Disks & Volumes UI to support creating a Dev Drive and VHD scenarios.
+
+<img class="alignnone wp-image-56806 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/06/Screenshot-2023-05-30-135009.png" alt="" width="691" height="273" />
+
+<strong>Guidance</strong>
+
+<strong> </strong>We recommend placing your working directories, repositories, and package caches on a <a href="http://aka.ms/devdrive">Dev Drive</a>. We are working with partners to fully take advantage of Dev Drive by default, see our partner blogs for <a href="https://aka.ms/vsdevdrive">Visual Studio and Dev Box</a> along with other features such as <a href="https://aka.ms/EngMSDevDrive">Copy on Write.</a> And our own documentation at aka.ms/devdrive for full configuration guidance.
+
+Since Dev Drive only enables a minimal set of filter drivers, any applications or features that depend on those filters will not work on a Dev Drive. For that reason we do not support all apps being installed on a Dev Drive. Developers should test their scenarios, and if needed, enable additional filters or keep their tools installed on another drive.
+<h3><strong>Benchmarks</strong></h3>
+<strong>How we tested</strong>
+
+Our testing plan while creating Dev Drive was two-fold:
+<ol>
+ 	<li>Build out automatic performance tests that would run on a build-by-build cadence</li>
+ 	<li>Test and profile our end-to-end scenarios regularly</li>
+</ol>
+We added automatic performance tests to our build labs to ensure that we had measurements tracking our performance for each build. We used the full git suite (clone, commit, etc.) in the lab. These tests enabled us to watch the progression of git clone performance, for example, build over build. Not only were we watching to ensure the speed of a single git clone operation was trending down, but we were also watching to see if any regressions were checked in by the development team for Dev Drive, or other feature teams working on similar components of the Windows OS.
+
+<strong>Validation and investigation testing</strong>
+
+To further test, validate and profile key developer workloads we’ve built a set of synthetic benchmarks which cover various workloads like Python, Node, .NET, and Java. We’ve worked with the Storage & File Systems and Defender teams to take traces, validate the improvements and find opportunities for further refinement to the file system and Defender.
+
+For these tests we created a consistent hardware setup using a Surface Laptop 4 to compare the default Windows 11 22H2 configuration with Defender enabled, against the latest builds with Dev Drive. We used common public repos and basic scenarios, a few of which are:
+<ul>
+ 	<li>Build <a href="https://github.com/OrchardCMS/OrchardCore">Orchard Core</a> project using .NET</li>
+ 	<li>Run <a href="https://github.com/django/django/tree/main/tests">django tests</a></li>
+ 	<li>Build <a href="https://github.com/spring-projects/spring-framework">Spring Framework</a> project using Gradle</li>
+ 	<li>Clone <a href="https://github.com/nodejs/node">Node</a> repo using Git</li>
+</ul>
+<strong>Results</strong>
+
+<strong> </strong>As you can see, every scenario benefits differently from the optimizations. Scenarios that are more file io heavy benefit the most from Dev Drive.
+
+<img class="alignnone wp-image-56805 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/06/Screenshot-2023-05-30-121342-1024x573.png" alt="" width="1024" height="573" />
+<h3><strong>Welcome to the Journey!</strong></h3>
+This is just the start of improvements to come. The Windows ecosystem consists of a wide variety of hardware configurations, with each configuration comes varied performance results. We invite you to help us test Dev Drive to ensure the product is impactful for the scenarios that matter most to you. Your feedback is incredibly valuable to us. We are excited for you to try out your developer scenarios on your hardware configuration and leave us feedback through Feedback Hub under the Dev Drive context. For more information visit: aka.ms/devdrive]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Introducing Dev Home</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2023/05/30/introducing-dev-home/</link>
 		
@@ -86,7 +150,7 @@ We are so excited to have you on this journey with us to make Dev Home a great p
 		<dc:creator><![CDATA[Sharif Farag]]></dc:creator>
 		<pubDate>Fri, 26 May 2023 16:01:38 +0000</pubDate>
 				<category><![CDATA[Uncategorized]]></category>
-		<category><![CDATA[News]]></category>
+		<category><![CDATA[Release Updates]]></category>
 		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56776</guid>
 
 					<description><![CDATA[<p>Over the past year, we have made major strides in improving fundamentals across Windows.  From enhancing Windows’ speed and reliability to optimizing the performance of its flagship applications to improving Window’s sustainability, we have been</p>
@@ -138,7 +202,7 @@ A responsive, fluid, and fast Windows experience requires great baseline perform
 </ul>
 <img class="alignnone wp-image-56780 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Figure-3-Windows-Hello-example.png" alt="" width="624" height="314" />
 <ul>
- 	<li><strong>Listen to customer feedback</strong>: Feedback from customers through channels like Feedback Hub help us identify areas where we need new optics or investigation outside of our current flow. For Instant On, our team monitors a few Feedback Hub categories and contexts like "Power and Battery &gt;&gt; Sleep" and "Security and Privacy &gt;&gt; Windows Hello Face." When customers "Add more details" in Feedback Hub by reproducing and hitting "Record my issue," we have the rich data necessary to diagnose problems effectively.</li>
+ 	<li><strong>Listen to customer feedback</strong>: Feedback from customers through channels like Feedback Hub help us identify areas where we need new optics or investigation outside of our current flow. For Instant On, our team monitors a few Feedback Hub categories and contexts like "Power and Battery >> Sleep" and "Security and Privacy >> Windows Hello Face." When customers "Add more details" in Feedback Hub by reproducing and hitting "Record my issue," we have the rich data necessary to diagnose problems effectively.</li>
 </ul>
 Across recent Windows 11 updates, we have optimized:
 <ul>
@@ -783,39 +847,6 @@ Learn more here: <a href="https://aka.ms/babylon6PerfPriModeDoc">https://aka.ms/
 Those are just some of the main features of Babylon.js 6.0 and there is much more! Tune in for future posts to learn more about the new rendering and tooling advancements that are available with Babylon.js 6.0.
 
 <strong>You can read the second blog in this series <a href="https://blogs.windows.com/windowsdeveloper/2023/04/27/part-2-babylon-js-6-0-key-rendering-advancements/">here</a>.</strong>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Microsoft Store App Awards 2023 nominations are now open!</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2023/03/15/microsoft-store-app-awards-2023-nominations-are-now-open/</link>
-		
-		<dc:creator><![CDATA[Zahara Kondo]]></dc:creator>
-		<pubDate>Wed, 15 Mar 2023 17:47:47 +0000</pubDate>
-				<category><![CDATA[Windows Developers]]></category>
-		<category><![CDATA[News]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56685</guid>
-
-					<description><![CDATA[<p><em>Microsoft Store App Awards is back this year! Nominations are now closed.</em><em> For more information, keep reading.</em></p>
-<p>Attention Windows users, developers, and app enthusiasts! We are excited to announce the upcoming <strong>Microsoft Stor</p>
-<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2023/03/15/microsoft-store-app-awards-2023-nominations-are-now-open/">Microsoft Store App Awards 2023 nominations are now open!</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<em>Microsoft Store App Awards is back this year! Nominations are now closed.</em><em> For more information, keep reading.</em>
-
-Attention Windows users, developers, and app enthusiasts! We are excited to announce the upcoming <strong>Microsoft Store App Awards 2023</strong>, the most anticipated event for the Microsoft Store community!
-
-After the incredible success of last year's awards, we are eager to celebrate the achievements of the brightest and most innovative minds in the industry. The 2022 award recipients brought forward an impressive lineup of apps that showcased the limitless possibilities of the Windows platform. From productivity to entertainment, from creativity to social networks, the array of apps  demonstrated excellence in their user experience, design, app quality, and most of all, <em>customer value</em>. Check out last year’s award-winning apps from the <a href="https://blogs.windows.com/windowsdeveloper/2022/05/27/announcing-the-microsoft-store-app-awards-winners/"><strong>Microsoft Store App Awards here</strong></a><strong>.</strong>
-
-This is just the beginning! We know that there are countless more outstanding apps in the <strong>Microsoft Store</strong> on Windows that deserve recognition, and that is where you come in. We want to hear from you, the users and enthusiasts, about <strong>your</strong> favorite apps that you believe should be recognized for the Microsoft Store App Awards 2023.
-
-So, <strong>we invite you to nominate your favorite apps in the Microsoft Store</strong> for the upcoming awards. This is your chance to recognize and showcase the apps that have made your Windows experience <strong>unforgettable</strong>, and to support the developers who have poured their hearts and souls into making them.
-
-We also encourage developers to spread the word about the awards and to invite their users to nominate their apps. We know that your passion and creativity are the driving force behind the <strong>Microsoft Store on Windows’</strong> success, and we want to recognize and reward that!
-
-Together, let's make the <strong>Microsoft Store App Awards 2023</strong> an unforgettable and thrilling celebration for <strong>Windows Developers</strong>. We cannot wait to see what the community has in store for us and to celebrate the best apps in the Microsoft Store. Let's keep pushing the boundaries of what is possible with Windows, and let's keep making amazing apps together!
-
-The nomination period is now closed.]]></content:encoded>
 					
 		
 		
