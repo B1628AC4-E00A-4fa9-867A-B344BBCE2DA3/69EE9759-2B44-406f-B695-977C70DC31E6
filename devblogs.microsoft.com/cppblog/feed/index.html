@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 15 Jun 2023 16:00:03 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 23 Jun 2023 00:34:10 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,46 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Include Cleanup and Visualize Macro Expansion</title>
+		<link>https://devblogs.microsoft.com/cppblog/include-cleanup-and-visualize-macro-expansion/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/include-cleanup-and-visualize-macro-expansion/#respond</comments>
+		
+		<dc:creator><![CDATA[Mryam Girmay]]></dc:creator>
+		<pubDate>Fri, 23 Jun 2023 00:34:10 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32440</guid>
+
+					<description><![CDATA[<p>Visual Studio 17.7 Preview 3 introduces new features that can help you with your productivity. We are thrilled to announce the release of Include Cleanup and Visualize Macro. To start using the features, ensure to update to the latest version of Visual Studio Preview.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/include-cleanup-and-visualize-macro-expansion/">Include Cleanup and Visualize Macro Expansion</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 17.7 Preview 3 introduces new features that can help you with your productivity. We are thrilled to announce the release of Include Cleanup and Visualize Macro. To start using the features, ensure to update to the latest version of Visual Studio Preview.</p>
+<p><div style="text-align:center"><a class="cta_button_link" href="https://visualstudio.microsoft.com/vs/preview/" style="text-transform: titlecase; display: inline-block; background-color: #5C2D91; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Download Visual Studio 2022 Preview</a></div></p>
+<h3 id="include-cleanup">Include Cleanup</h3>
+<p>Visual Studio now has  Include cleanup that helps improve your code’s quality by generating suggestions to remove unused header from your file. When you have unused include it will be dimmed(default setting), with a quick action that informs you about the include not being used. You can click on the light bulb to remove the unused include or all unused includes.</p>
+<p>This feature will also generate suggestions to add direct headers when there is a usage of indirect headers. This improves your productivity by reducing the amount of time it takes to compile, because you will be able to include direct dependencies. In this case, a quick action will inform you that the content’s direct header is not provided, and the light bulb will suggest adding direct dependency.</p>
+<p>This feature won’t generate suggestions to remove Precompiles Header (PCH). This is because your file might use the data from PCH and PCH contains precompiled data that accelerates the compilation process. Furthermore, this feature will involve remapping the STD header, because the implementation of the std::string header resides in xstring. However, suggesting xstring as an alternative would be misleading; instead, we should recommend using string.</p>
+<p>When you don’t want this feature to generate suggestions, you can inform it not to do so.</p>
+<ul>
+<li>If you have headers that are in exclusion list and you wanted them to be ignored from receiving suggestions, you can type “ ” in EditorConfig so that no suggestion will be generated for that header.</li>
+<li>If you have a header that have dependent header, and you don’t want this feature to generate suggestions for it, you can type “” in EditorConfig.</li>
+<li>If you have headers that needs remapping, you can type “” in EditorConfig and this feature will do the redirection for you.</li>
+</ul>
+<p>When users encounter IntelliSense scenarios where default functionality is not available, such as with Template or Single File IntelliSense, this feature will be unable to identify missing includes and consequently will not generate suggestions.</p>
+<p>C++ Include Cleanup will be on by default, and the setting will be found in <strong>Tools</strong> &gt; <strong>Options</strong> &gt; <strong>Environment</strong> &gt; <strong>Preview Features</strong></p>
+<p>Third  Image: option tools with Include cleanup</p>
+<p>When the feature is enabled, you have the option to make the suggestion to remove unused header to be dimmed or in squiggle below the header. For adding direct headers, will have options to change the squiggle colors, which is gray dots for something, yellow for warning, and red for error.</p>
+<h3 id="visualize-macro-expansion"><span class="TextRun SCXW225598563 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW225598563 BCX8" data-ccp-parastyle="heading 1">Visualize Macro Expansion</span></span><span class="EOP SCXW225598563 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></h3>
+<p><span class="TextRun SCXW194984705 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW194984705 BCX8">Visual Studio has introduced an enhanced Macro Expansion feature. Through conversations with Unreal Engine developers, we discovered the value of incorporating Design Time Step-by-Step Macro Expansion. This feature brings significant benefits, enabling you to </span><span class="NormalTextRun SCXW194984705 BCX8">comprehend</span><span class="NormalTextRun SCXW194984705 BCX8"> and review complex multi-level macro expansions in a step-by-step manner. When you hover over a macro, you can access Quick Info, which now includes the Visualize Expansion link in addition to the Copy and Expand Inline options. </span><span class="NormalTextRun SCXW194984705 BCX8">The Visual Expansion will enable you to visualize the preprocessor passes of the expansion.</span></span><span class="EOP SCXW194984705 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p><span class="TextRun SCXW217186909 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW217186909 BCX8">The Visual Expansion link opens a new window that initially displays the first step of macro expansion. By </span><span class="NormalTextRun SCXW217186909 BCX8">utilizing</span><span class="NormalTextRun SCXW217186909 BCX8"> the arrows next to the expansion step numbers, you can easily navigate through the </span><span class="NormalTextRun SCXW217186909 BCX8">subsequent</span><span class="NormalTextRun SCXW217186909 BCX8"> steps of the expansion. This feature proves especially valuable in scenarios involving nested macros with lengthy expansions. In cases where nested macros have long expansions, this feature will help to precisely </span><span class="NormalTextRun SCXW217186909 BCX8">identify</span><span class="NormalTextRun SCXW217186909 BCX8"> the actions taking place at each step, </span><span class="NormalTextRun SCXW217186909 BCX8">facilitating</span><span class="NormalTextRun SCXW217186909 BCX8"> a deeper understanding of the macro&#8217;s behavior. </span><span class="NormalTextRun SCXW217186909 BCX8">Ultimately, this</span><span class="NormalTextRun SCXW217186909 BCX8"> feature </span><span class="NormalTextRun SCXW217186909 BCX8">greatly enhances</span><span class="NormalTextRun SCXW217186909 BCX8"> the efficiency of your debugging efforts, enabling you to pinpoint and resolve issues more effectively.</span></span><span class="EOP SCXW217186909 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:259}"> </span></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/include-cleanup-and-visualize-macro-expansion/">Include Cleanup and Visualize Macro Expansion</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/include-cleanup-and-visualize-macro-expansion/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Build Insights Now Available in Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/#respond</comments>
@@ -493,72 +533,6 @@ In the run up to the conference we will be publishing new C++ videos every day.<
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio 2022 version 17.6 for C++ Developers</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 16 May 2023 17:36:22 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32176</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.6 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/">Visual Studio 2022 version 17.6 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.6 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/visualstudio/install/update-visual-studio?view=vs-2022">Update Visual Studio Learn page</a>.</p>
-<h1 id="cross-platform">Cross-Platform</h1>
-<p>You’re used to debugging your C++ code with a lot of help from the IDE, but what about your build system? You can use the new CMake Debugger to debug your CMake scripts at configure time.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png"><img decoding="async" class="aligncenter size-full wp-image-32179" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png" alt="View of CMake D" width="846" height="667" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png 846w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1-300x237.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1-768x606.png 768w" sizes="(max-width: 846px) 100vw, 846px" /></a></p>
-<p>You can set breakpoints based on filenames, line numbers, and when CMake errors are triggered, and can view call stacks of filenames and watch defined variables. Furthermore, the locals window will track CMake variables, targets, and tests.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png"><img decoding="async" class="aligncenter size-full wp-image-32180" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png" alt="Image vc2" width="935" height="406" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png 935w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2-300x130.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2-768x333.png 768w" sizes="(max-width: 935px) 100vw, 935px" /></a></p>
-<p>We’ve added a new Remote File Explorer feature. With this you can browse, upload, and download files to your remote machine listed in the Connection Manager, directly from Visual Studio.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png"><img decoding="async" class="aligncenter size-full wp-image-32181" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png" alt="Remote file explorer window" width="660" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3-300x212.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></a></p>
-<h1 id=""></h1>
-<p>You can now use the Create Member Function feature to quickly add constructors and equality operators to your classes. When you have a class with member data, three dots will appear under the class name, and hovering over them will display a screwdriver icon. The drop-down from the screwdriver icon will display the new member function suggestions. With this, you can add a default constructor, constructor with all fields, equality operator, and equality operator with all fields.  You can learn more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/create-c-member-function-in-visual-studio/">Create C++ Member Function in Visual Studio</a> blog post.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/items.gif"><img decoding="async" class="aligncenter wp-image-32192 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/items.gif" alt="Create member function feature in action" width="1280" height="930" /></a></p>
-<p>We made improvements to the Solution &#8211; Close scenario, which makes closing a solution containing C++ projects faster. The overall perf improvements can make closing a solution in some cases from 20% faster for small codebases, to 50% faster in some cases for large solutions (1000+ projects). We expect the wins to be more noticeable in large projects. For Chromium, the improvements are typically 50% faster, saving 20 seconds of time.</p>
-<p>The Visual Studio Installer now lets you install Incredibuild 10, which comes with a host of new features, including new build cache technology, an improved license management system, and cloud optimization. You can find out more about these features and how you can use them in our <a href="https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/">Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</a> blog post.</p>
-<h1 id="conformance">Conformance</h1>
-<p>We have added initial support for C++20 mode in C++/CLI projects. All C++20 headers can be <code>#included</code> in a <code>/clr</code> compilation without restrictions. You can find out more details in our <a href="https://aka.ms/cpp20-cppcli">C++20 Support for C++/CLI blog post</a>.</p>
-<p>We continue to work on C++23 support in our standard library, as well as improving our support for existing standards. Many of these features have been contributed by you folks in the community: thank you! You can find the full changelist on the <a href="https://github.com/microsoft/STL/wiki/Changelog">Microsoft STL GitHub page</a>. Here are some highlights:</p>
-<ul>
-<li><a href="https://wg21.link/P1223R5">P1223R5</a> <code>ranges::find_last</code>, <code>ranges::find_last_if</code>, <code>ranges::find_last_if_not</code></li>
-<li><a href="https://wg21.link/P2321R2">P2321R2</a> <code>views::zip_transform</code></li>
-<li><a href="https://wg21.link/P2474R2">P2474R2</a> <code>views::repeat</code></li>
-<li><a href="https://wg21.link/P2505R5">P2505R5 </a>Monadic Functions for <code>expected</code></li>
-<li>Activated the vectorized implementations of <code>find()</code>, <code>count()</code>, <code>ranges::find()</code>, and <code>ranges::count()</code> for more scenarios involving pointer elements.</li>
-<li>Added visualizers for <code>error_category</code> and <code>error_code</code>.</li>
-<li>Improved the output of <code>source_location::function_name()</code>. It now includes both function parameter types and template arguments.</li>
-</ul>
-<h1 id="game-development">Game Development</h1>
-<p>Visual Studio 2022 version 17.6 comes with built-in support for HLSL and a new tool to view Unreal Engine logs.</p>
-<p>HLSL (High Level Shading Language) is a DirectX-specific programming language used to create shaders in game development and rendering applications. The popular <a href="https://github.com/tgjones/HlslTools">HLSL Tools extension by Tim Jones</a> is now available as part of Visual Studio, providing syntax highlighting, statement completion, go-to-definition, and more! To use HLSL Tools, please enable the component in the &#8220;Game development with C++&#8221; or &#8220;Game development with Unity&#8221; workload in the Visual Studio Installer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6.png"><img decoding="async" class="aligncenter size-large wp-image-32185" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-1024x575.png" alt="HLSL syntax highlighting" width="640" height="359" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-1024x575.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-768x432.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6.png 1379w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>The Unreal Engine Log viewer is available at View &gt; Other Windows &gt; Unreal Engine Log. To filter your logs, click on the &#8220;Categories&#8221; or &#8220;Verbosity&#8221; dropdowns.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1.png"><img decoding="async" class="aligncenter size-large wp-image-32187" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-1024x323.png" alt="Unreal Engine Log viewer" width="640" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-1024x323.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-300x95.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-768x242.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1.png 1449w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>Note that Unreal Engine integrations will only show up when you are working on an Unreal Engine project. To ensure these features are active, double check that the “IDE support for Unreal Engine” component is enabled in the “Game development for C++” workload in the VS Installer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png"><img decoding="async" class="aligncenter size-large wp-image-32184" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png" alt="Image vc5" width="618" height="629" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png 618w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-295x300.png 295w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-48x48.png 48w" sizes="(max-width: 618px) 100vw, 618px" /></a></p>
-<h1 id="embedded">Embedded</h1>
-<p>If you use <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a> projects, you can now import these directly into Visual Studio! Selecting File &gt; Open &gt; Import STM32CubeIDE project will generate a CMake project with device flashing and debugging settings for STLink.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png"><img decoding="async" class="aligncenter size-full wp-image-32188" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png" alt="Image vc8" width="444" height="183" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png 444w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8-300x124.png 300w" sizes="(max-width: 444px) 100vw, 444px" /></a></p>
-<p>To use this feature you must have the STM32CubeIDE installed with the board support package for your device.</p>
-<p>If your project has an .ioc file you can open the context menu and open STM32CubeMX for your project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png"><img decoding="async" class="aligncenter size-full wp-image-32189" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png" alt="Image vc9" width="522" height="288" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png 522w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9-300x166.png 300w" sizes="(max-width: 522px) 100vw, 522px" /></a></p>
-<p>You can find out more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/">Importing ST projects into Visual Studio</a> blog post.</p>
-<h1 id="vcpkg">vcpkg</h1>
-<p>As of Visual Studio 2022 version 17.6, vcpkg is now added by default for IDE installations that include C++ workloads. You can run vcpkg commands from a Developer Command Prompt for Visual Studio targeting a new version of the IDE—both the ones embedded in the IDE as well as external terminals. Both the Developer Command Prompt and Developer PowerShell consoles are supported. You must run to configure the built-in copy of vcpkg as the one for use by the IDE and in order to enable MSBuild and CMake integration.</p>
-<p>vcpkg now supports targeting Xbox out of the box with four new community triplets. The appropriate triplet is automatically chosen when using the Gaming.Xbox.*.x64 custom platforms in the Microsoft GDK with Xbox Extensions via the vcpkg integrate functionality. This makes it easy for developers to build open-source dependencies for this platform. Thank you to Chuck Walbourn from the Xbox organization for preparing these triplets. You can read more about them in his blog post on <a href="https://walbourn.github.io/vcpkg-now-supports-targeting-xbox/">Xbox support for vcpkg</a>.</p>
-<p>Find out more in our <a href="https://aka.ms/vcpkg-VS-17.6">vcpkg Package Manager is Now Included with Visual Studio</a> blog post!</p>
-<h1 id="send-us-your-feedback">Send us your feedback!</h1>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/">Visual Studio 2022 version 17.6 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
 		
 		
 			</item>
