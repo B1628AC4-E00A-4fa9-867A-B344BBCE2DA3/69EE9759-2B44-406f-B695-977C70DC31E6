@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 15 Jun 2023 16:00:03 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 26 Jun 2023 16:19:51 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,101 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Using Key Events with warning C26800</title>
+		<link>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/#respond</comments>
+		
+		<dc:creator><![CDATA[Dmitry Kobets]]></dc:creator>
+		<pubDate>Mon, 26 Jun 2023 16:19:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Documentation]]></category>
+		<category><![CDATA[Experimental]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32325</guid>
+
+					<description><![CDATA[<p>Here's how you can use Key Events to fix warning C26800</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/">Using Key Events with warning C26800</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">MSVC&#8217;s Code Analysis Key Events</a> are a useful tool for quickly getting to the root-cause of your static analysis warnings. This blog post highlights how Key Events may be used with warning <a href="https://learn.microsoft.com/cpp/code-quality/c26800?view=msvc-170"><code>C26800</code></a> <code>Use of a moved from object</code> to quickly narrow down the problematic code.</p>
+<h2 id="c26800-warning-recap">C26800 warning recap</h2>
+<p>Warning C26800 catches code that attempts to use an object that is in a moved-from state:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+int main()
+{
+    std::string string_owner = "this string will be moved!";
+    std::string new_string_owner = std::move(string_owner);
+    std::cout &lt;&lt; string_owner &lt;&lt; std::endl; // Warning C26800 Use of a moved from object: ''string_owner'' (lifetime.1).
+}</code></pre>
+<p>Instead of <code>this string will be moved!</code>, the print statement in the above example will produce an empty output line when run.</p>
+<p>The move from <code>string_owner</code> into <code>new_string_owner</code> happens on the line <em>immediately</em> preceding its use in the print statement, so it&#8217;s instantly clear why the output is incorrect. But this is a trivial example. Real world code is rarely this straightforward.</p>
+<h2 id="a-more-complex-example-sans-key-events">A more complex example, sans Key Events</h2>
+<p>Consider a more convoluted example. The following code defines a function that is not only significantly longer than in the first code snippet, but is also littered with all sorts of intervening business logic (represented by <code>// ...</code>).</p>
+<pre><code class="language-cpp">#include &lt;string&gt;
+void take_ownership(std::string&amp;&amp;) { /* ... */ }
+void use_string(std::string) { /* ... */ }
+void my_buggy_function(bool some_condition, bool some_other_condition)
+{
+    std::string my_string{ "this is a string!" };
+    bool my_flag{ false };
+
+    // ...
+
+    if (some_condition)
+    {
+        take_ownership(std::move(my_string)); // (a)
+    }
+
+    // ...
+
+    if (some_other_condition) // (b)
+    {
+        my_flag = true;
+
+        // ...
+
+        my_string = "the string is reset"; // (c)
+
+        // ...
+    }
+
+    // ...
+
+    if (my_flag &amp;&amp; !some_other_condition) // (d)
+    {
+        take_ownership(std::move(my_string)); // (e)
+    }
+
+    // ...
+
+    use_string(my_string); // Use of a moved from object: ''my_string'' (lifetime.1). (f)
+}</code></pre>
+<p>As in the simple example, a developer tasked with solving this bug will be looking to answer the question: where is <code>my_string</code> moved? A natural approach would likely be to start on line <code>(f)</code>, and to scan backwards through the code. This process would look something like:</p>
+<ul>
+<li>Starting at the warning location and looking a few lines up, the <code>take_ownership(std::move(my_string));</code> on line <code>(e)</code> immediately offers itself up as the culprit. To realize that this is a red-herring requires evaluating the condition on line <code>(d)</code>, which requires tracing even higher up into the function&#8217;s depths, delving further into the confusing business logic.</li>
+<li>Eventually, once satisfied that the move on line <code>(e)</code> is actually unreachable (oops!), the developer recommences the upwards traversal, eventually landing on the <code>move</code> on line <code>(a)</code>. But not before noticing the write to <code>my_string</code> on line <code>(c)</code>.</li>
+<li>The developer must now solve the puzzle of why this re-assignment (on line <code>(c)</code>) is not preventing the warning all the way down on line <code>(f)</code>.</li>
+<li>After spending far too long running back and forth through the code, the developer finally convinces themselves that it might be possible for the condition on line <code>(b)</code> to be false, thus skipping the reset on line <code>(c)</code>. The mystery is finally solved.</li>
+</ul>
+<p>There must be an easier way. Enter Key Events.</p>
+<h2 id="solution-made-simple-with-key-events">Solution made simple with Key Events</h2>
+<p>As of Visual Studio 17.5 Preview 1, Key Events have been enabled for the warning C26800. Using the <a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/#presentation-of-key-events-through-sarif-viewer-extension">Microsoft SARIF Viewer extension</a>, this check can now precisely explain its assumptions and reasoning to the curious developer, all via inline annotations in the buggy code!</p>
+<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/sarif_extension.png" alt="Key Events with warning C26800" /></p>
+<p>These Key Events offer precisely the troublesome code path that the developer was searching for and (eventually) arrived at via manual inspection of the function&#8217;s code. Notably, we see that the check:</p>
+<ul>
+<li>is concerned with the move on line <code>(a)</code>, helpfully noting that its guarding condition <code>some_condition</code> could be <code>true</code></li>
+<li>points out that there is nothing stopping the conditions on line <code>(b)</code> and <code>(d)</code> from being <code>false</code></li>
+</ul>
+<p>The buggy control flow leading to the usage of the moved-from <code>my_string</code> variable is therefore immediately made clear to the satisfied developer, and the investigation time is greatly reduced.</p>
+<h2 id="summary">Summary</h2>
+<p>Prior to the addition of Key Events to MSVC&#8217;s warning C26800, complex code made it hard to debug and get to the root-cause of the warning. Now, with Key Events enabled by default for warning C26800, developers can much more easily identify and resolve instances of use-after-free warnings in their code. This feature was enabled in Visual Studio 17.5 Preview 1, so please <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">download a recent version</a> and try it out. You can share your thoughts and comments with us through <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>, Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/">Using Key Events with warning C26800</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Build Insights Now Available in Visual Studio 2022</title>
 		<link>https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/#respond</comments>
@@ -493,72 +588,6 @@ In the run up to the conference we will be publishing new C++ videos every day.<
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>7</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio 2022 version 17.6 for C++ Developers</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 16 May 2023 17:36:22 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32176</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.6 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/">Visual Studio 2022 version 17.6 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.6 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/visualstudio/install/update-visual-studio?view=vs-2022">Update Visual Studio Learn page</a>.</p>
-<h1 id="cross-platform">Cross-Platform</h1>
-<p>You’re used to debugging your C++ code with a lot of help from the IDE, but what about your build system? You can use the new CMake Debugger to debug your CMake scripts at configure time.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png"><img decoding="async" class="aligncenter size-full wp-image-32179" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png" alt="View of CMake D" width="846" height="667" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1.png 846w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1-300x237.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vs1-1-768x606.png 768w" sizes="(max-width: 846px) 100vw, 846px" /></a></p>
-<p>You can set breakpoints based on filenames, line numbers, and when CMake errors are triggered, and can view call stacks of filenames and watch defined variables. Furthermore, the locals window will track CMake variables, targets, and tests.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png"><img decoding="async" class="aligncenter size-full wp-image-32180" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png" alt="Image vc2" width="935" height="406" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2.png 935w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2-300x130.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc2-768x333.png 768w" sizes="(max-width: 935px) 100vw, 935px" /></a></p>
-<p>We’ve added a new Remote File Explorer feature. With this you can browse, upload, and download files to your remote machine listed in the Connection Manager, directly from Visual Studio.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png"><img decoding="async" class="aligncenter size-full wp-image-32181" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png" alt="Remote file explorer window" width="660" height="466" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc3-300x212.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></a></p>
-<h1 id=""></h1>
-<p>You can now use the Create Member Function feature to quickly add constructors and equality operators to your classes. When you have a class with member data, three dots will appear under the class name, and hovering over them will display a screwdriver icon. The drop-down from the screwdriver icon will display the new member function suggestions. With this, you can add a default constructor, constructor with all fields, equality operator, and equality operator with all fields.  You can learn more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/create-c-member-function-in-visual-studio/">Create C++ Member Function in Visual Studio</a> blog post.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/items.gif"><img decoding="async" class="aligncenter wp-image-32192 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/items.gif" alt="Create member function feature in action" width="1280" height="930" /></a></p>
-<p>We made improvements to the Solution &#8211; Close scenario, which makes closing a solution containing C++ projects faster. The overall perf improvements can make closing a solution in some cases from 20% faster for small codebases, to 50% faster in some cases for large solutions (1000+ projects). We expect the wins to be more noticeable in large projects. For Chromium, the improvements are typically 50% faster, saving 20 seconds of time.</p>
-<p>The Visual Studio Installer now lets you install Incredibuild 10, which comes with a host of new features, including new build cache technology, an improved license management system, and cloud optimization. You can find out more about these features and how you can use them in our <a href="https://devblogs.microsoft.com/cppblog/incredibuild-10-visual-studio-17-6/">Even faster builds with Incredibuild 10 and Visual Studio 17.6 Preview 3</a> blog post.</p>
-<h1 id="conformance">Conformance</h1>
-<p>We have added initial support for C++20 mode in C++/CLI projects. All C++20 headers can be <code>#included</code> in a <code>/clr</code> compilation without restrictions. You can find out more details in our <a href="https://aka.ms/cpp20-cppcli">C++20 Support for C++/CLI blog post</a>.</p>
-<p>We continue to work on C++23 support in our standard library, as well as improving our support for existing standards. Many of these features have been contributed by you folks in the community: thank you! You can find the full changelist on the <a href="https://github.com/microsoft/STL/wiki/Changelog">Microsoft STL GitHub page</a>. Here are some highlights:</p>
-<ul>
-<li><a href="https://wg21.link/P1223R5">P1223R5</a> <code>ranges::find_last</code>, <code>ranges::find_last_if</code>, <code>ranges::find_last_if_not</code></li>
-<li><a href="https://wg21.link/P2321R2">P2321R2</a> <code>views::zip_transform</code></li>
-<li><a href="https://wg21.link/P2474R2">P2474R2</a> <code>views::repeat</code></li>
-<li><a href="https://wg21.link/P2505R5">P2505R5 </a>Monadic Functions for <code>expected</code></li>
-<li>Activated the vectorized implementations of <code>find()</code>, <code>count()</code>, <code>ranges::find()</code>, and <code>ranges::count()</code> for more scenarios involving pointer elements.</li>
-<li>Added visualizers for <code>error_category</code> and <code>error_code</code>.</li>
-<li>Improved the output of <code>source_location::function_name()</code>. It now includes both function parameter types and template arguments.</li>
-</ul>
-<h1 id="game-development">Game Development</h1>
-<p>Visual Studio 2022 version 17.6 comes with built-in support for HLSL and a new tool to view Unreal Engine logs.</p>
-<p>HLSL (High Level Shading Language) is a DirectX-specific programming language used to create shaders in game development and rendering applications. The popular <a href="https://github.com/tgjones/HlslTools">HLSL Tools extension by Tim Jones</a> is now available as part of Visual Studio, providing syntax highlighting, statement completion, go-to-definition, and more! To use HLSL Tools, please enable the component in the &#8220;Game development with C++&#8221; or &#8220;Game development with Unity&#8221; workload in the Visual Studio Installer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6.png"><img decoding="async" class="aligncenter size-large wp-image-32185" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-1024x575.png" alt="HLSL syntax highlighting" width="640" height="359" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-1024x575.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6-768x432.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc6.png 1379w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>The Unreal Engine Log viewer is available at View &gt; Other Windows &gt; Unreal Engine Log. To filter your logs, click on the &#8220;Categories&#8221; or &#8220;Verbosity&#8221; dropdowns.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1.png"><img decoding="async" class="aligncenter size-large wp-image-32187" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-1024x323.png" alt="Unreal Engine Log viewer" width="640" height="202" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-1024x323.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-300x95.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1-768x242.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc7-1.png 1449w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>Note that Unreal Engine integrations will only show up when you are working on an Unreal Engine project. To ensure these features are active, double check that the “IDE support for Unreal Engine” component is enabled in the “Game development for C++” workload in the VS Installer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png"><img decoding="async" class="aligncenter size-large wp-image-32184" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png" alt="Image vc5" width="618" height="629" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png 618w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-295x300.png 295w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-48x48.png 48w" sizes="(max-width: 618px) 100vw, 618px" /></a></p>
-<h1 id="embedded">Embedded</h1>
-<p>If you use <a href="https://www.st.com/en/development-tools/stm32cubeide.html">STM32CubeIDE</a> projects, you can now import these directly into Visual Studio! Selecting File &gt; Open &gt; Import STM32CubeIDE project will generate a CMake project with device flashing and debugging settings for STLink.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png"><img decoding="async" class="aligncenter size-full wp-image-32188" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png" alt="Image vc8" width="444" height="183" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8.png 444w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc8-300x124.png 300w" sizes="(max-width: 444px) 100vw, 444px" /></a></p>
-<p>To use this feature you must have the STM32CubeIDE installed with the board support package for your device.</p>
-<p>If your project has an .ioc file you can open the context menu and open STM32CubeMX for your project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png"><img decoding="async" class="aligncenter size-full wp-image-32189" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png" alt="Image vc9" width="522" height="288" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9.png 522w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc9-300x166.png 300w" sizes="(max-width: 522px) 100vw, 522px" /></a></p>
-<p>You can find out more about this feature in our <a href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/">Importing ST projects into Visual Studio</a> blog post.</p>
-<h1 id="vcpkg">vcpkg</h1>
-<p>As of Visual Studio 2022 version 17.6, vcpkg is now added by default for IDE installations that include C++ workloads. You can run vcpkg commands from a Developer Command Prompt for Visual Studio targeting a new version of the IDE—both the ones embedded in the IDE as well as external terminals. Both the Developer Command Prompt and Developer PowerShell consoles are supported. You must run to configure the built-in copy of vcpkg as the one for use by the IDE and in order to enable MSBuild and CMake integration.</p>
-<p>vcpkg now supports targeting Xbox out of the box with four new community triplets. The appropriate triplet is automatically chosen when using the Gaming.Xbox.*.x64 custom platforms in the Microsoft GDK with Xbox Extensions via the vcpkg integrate functionality. This makes it easy for developers to build open-source dependencies for this platform. Thank you to Chuck Walbourn from the Xbox organization for preparing these triplets. You can read more about them in his blog post on <a href="https://walbourn.github.io/vcpkg-now-supports-targeting-xbox/">Xbox support for vcpkg</a>.</p>
-<p>Find out more in our <a href="https://aka.ms/vcpkg-VS-17.6">vcpkg Package Manager is Now Included with Visual Studio</a> blog post!</p>
-<h1 id="send-us-your-feedback">Send us your feedback!</h1>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/">Visual Studio 2022 version 17.6 for C++ Developers</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-17-6-for-cpp-devs/feed/</wfw:commentRss>
-			<slash:comments>8</slash:comments>
 		
 		
 			</item>
