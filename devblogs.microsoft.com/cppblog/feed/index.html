@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Mon, 26 Jun 2023 16:19:51 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 27 Jun 2023 19:08:22 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,183 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>vcpkg integration with the GitHub dependency graph</title>
+		<link>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/#respond</comments>
+		
+		<dc:creator><![CDATA[Michael Price]]></dc:creator>
+		<pubDate>Tue, 27 Jun 2023 19:07:11 +0000</pubDate>
+				<category><![CDATA[GitHub]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32491</guid>
+
+					<description><![CDATA[<p>Introducing vcpkg's integration with the GitHub dependency graph</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/">vcpkg integration with the GitHub dependency graph</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are excited to share that starting with the <code>2023-06-22</code> release of vcpkg-tool (vcpkg <a href="https://github.com/microsoft/vcpkg/commit/8f3e8d6e95c7f91edea60c47a7d1414ab5ca9492">commit SHA 8f3e8d6</a>), vcpkg has an experimental feature to provide data to the GitHub dependency graph. We are actively developing this feature and would like to hear your feedback. Let us know if you have any thoughts about the current functionality or would like to see further improvements. If you have feedback on any of the GitHub features that a vcpkg-powered dependency graph enables, let us know that too and we&#8217;ll make sure that it reaches the right folks at GitHub.</p>
+<h2 id="about-the-github-dependency-graph">About the GitHub dependency graph</h2>
+<p>The GitHub <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/about-the-dependency-graph">dependency graph</a> stores the set of dependencies for a repository. Beyond just being able to visualize what a repository&#8217;s dependencies are, GitHub builds several useful features on top of this data, including <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review">dependency review</a> and <a href="https://docs.github.com/code-security/dependabot/dependabot-alerts/about-dependabot-alerts">Dependabot alerts</a>.</p>
+<h3 id="enabling-the-github-dependency-graph">Enabling the GitHub dependency graph</h3>
+<p>Enabling the dependency graph for your repository is a requirement for vcpkg to be able to populate the dependencies for your repository. The dependency graph is enabled by default for public repositories on GitHub. If you want the dependency graph enabled for a private repository, you should follow the <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-the-dependency-graph#enabling-and-disabling-the-dependency-graph-for-a-private-repository">GitHub documentation to enable the dependency graph</a>.</p>
+<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/github-enable-dependencygraph.png" alt="Screenshot showing the button to enable the dependency graph" /></p>
+<p>If you are already using reusable actions in your GitHub Actions workflows and the dependency graph is enabled, there&#8217;s a good chance your repository&#8217;s dependency graph already has some dependencies listed. Check it out by selecting <strong>Insights</strong> for your repository and then selecting <strong>Dependency graph</strong>.</p>
+<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/github-insights-dependencygraph.png" alt="Screenshot of a sample repository's dependency graph" /></p>
+<h3 id="techniques-for-populating-the-dependency-graph">Techniques for populating the dependency graph</h3>
+<p>There are two ways that the dependency graph may get populated. For some package management systems that have a static list of dependencies that can be fully described in a manifest file, GitHub will automatically scan those manifests once they are pushed into your repository and will begin showing up in the dependency graph.</p>
+<p>For package management systems that are more dynamic, the tools used to process the list of dependencies must be involved in determining the complete set of dependencies. The complete set of dependencies for C and C++ are usually highly dependent upon build configuration and target platform. For these ecosystems, GitHub has a <a href="https://docs.github.com/rest/dependency-graph/dependency-submission">dependency submission API</a> that tools can use to provide the dependency information, usually as a part of a GitHub Actions workflow job.</p>
+<h2 id="reporting-dependencies-with-vcpkg">Reporting dependencies with vcpkg</h2>
+<p>vcpkg integration with the GitHub dependency graph can be enabled by adding the value <code>dependencygraph</code> to the <code>VCPKG_FEATURE_FLAGS</code> environment variable within your GitHub Actions workflow file that runs vcpkg (either directly or indirectly via CMake). You must also modify your workflow file to set the <code>GITHUB_TOKEN</code> environment variable with the value <code>${{ secrets.GITHUB_TOKEN }}</code> and request permission for the workflow job to write the dependency information into your repository&#8217;s metadata by including the following YAML snippet near the top of your workflow file.</p>
+<pre><code class="language-YAML">permissions:
+  contents: write</code></pre>
+<p>Once those changes have been made, and your workflow runs again, you should begin to see the dependencies in your vcpkg.json manifest listed in the <strong>Dependency graph</strong> section on GitHub.</p>
+<p>See our documentation at <a href="https://aka.ms/vcpkg-dependency-graph">GitHub integration &#8211; The GitHub dependency graph</a> for more information.</p>
+<h3 id="examples">Examples</h3>
+<p>A <a href="https://aka.ms/vcpkg-dependency-graph-example">live example template repository</a> is on GitHub if you want to try it out in a clean project. If you want to try it out on an existing project, see the workflow files defined below that shows the changes you need to make to enable the feature.</p>
+<p>Both workflow examples below work with the <code>vcpkg.json</code> and <code>main.cpp</code> files listed here.</p>
+<p><strong>vcpkg.json</strong></p>
+<pre><code class="language-json">{
+  "name": "your-project",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "fmt"
+  ]
+}</code></pre>
+<p><strong>main.cpp</strong></p>
+<pre><code class="language-cpp">#define FMT_HEADER_ONLY
+#include "fmt/color.h"
+
+int main(int argc, char** argv)
+{
+    fmt::print(
+        fg(fmt::color::light_salmon),
+        "¡Hola, Mundo!\n"
+    );
+}</code></pre>
+<p><br/></p>
+<h4 id="indirectly-through-cmake-integration">Indirectly through CMake integration</h4>
+<p>Add the following files to test the vcpkg dependency graph integration when using CMake.</p>
+<p><strong>CMakeLists.txt</strong></p>
+<pre><code class="language-cmake">cmake_minimum_required(VERSION 3.15)
+
+project(your-project CXX)
+find_package(fmt REQUIRED)
+set(CMAKE_CXX_STANDARD 20)
+
+add_executable(hola main.cpp)
+
+target_link_libraries(hola
+  PRIVATE
+    fmt::fmt)</code></pre>
+<p><strong>.github/workflows/cmake.yml</strong></p>
+<pre><code class="language-yaml">name: Example that uses CMake integration
+
+on:
+  workflow_dispatch:
+
+###############################################################################
+# Add this section to your workflow file does not already have it to enable
+# the job to write the dependency metadata.
+###############################################################################
+permissions:
+  contents: write
+
+###############################################################################
+# Add these environment variables to your workflow to enable the vcpkg
+# dependency graph integration.
+###############################################################################
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VCPKG_FEATURE_FLAGS: dependencygraph
+
+jobs:
+  cmake:
+    runs-on: ubuntu-latest
+
+    # These steps assume an appropriate version of vcpkg is listed as a
+    # submodule in your git repo. If it is not, you must update this workflow
+    # to obtain it.
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'  
+
+      - name: Bootstrap vcpkg
+        run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
+
+      - name: Configure with CMake
+        run: |
+          cmake -B build -S ${{ github.workspace }} \
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build with CMake
+        run: cmake --build build
+
+      - name: Hola, amigos
+        run: ${{ github.workspace }}/build/hola</code></pre>
+<p><br/></p>
+<h4 id="directly-calling-vcpkg-install">Directly calling <code>vcpkg install</code></h4>
+<p>Add the following file to test the vcpkg dependency graph integration with workflows that call <code>vcpkg install</code> directly.</p>
+<p><strong>.github/workflows/build.yml</strong></p>
+<pre><code class="language-yaml">name: Example that directly invokes `vcpkg install`
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+###############################################################################
+# Add this section to your workflow file does not already have it to enable
+# the job to write the dependency metadata.
+###############################################################################
+permissions:
+  contents: write
+
+###############################################################################
+# Add these environment variables to your workflow to enable the vcpkg
+# dependency graph integration.
+###############################################################################
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VCPKG_FEATURE_FLAGS: dependencygraph
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # These steps assume an appropriate version of vcpkg is listed as a
+    # submodule in your git repo. If it is not, you must update this workflow
+    # to obtain it.
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'  
+
+      - name: Bootstrap vcpkg
+        run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
+
+      - name: Directly invoke `vcpkg install`
+        run: ${{ github.workspace }}/vcpkg/vcpkg install
+
+      - name: Build with G++
+        run: g++ -I${{ github.workspace }}/vcpkg_installed/x64-linux/include -o hola main.cpp
+
+      - name: Hola, amigos
+        run: ${{ github.workspace }}/hola</code></pre>
+<h2 id="call-to-action">Call to action</h2>
+<p>We are gathering feedback from users to determine the improvements we need to make to consider this integration fully supported. This is the foundation for opening up really powerful, Enterprise-grade dependency management for our users, and we are excited to have you all try it out.</p>
+<p>As usual, if you have feedback, leave us a comment below or contact us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>) or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/">vcpkg integration with the GitHub dependency graph</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Using Key Events with warning C26800</title>
 		<link>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/#respond</comments>
@@ -527,67 +704,6 @@ In the run up to the conference we will be publishing new C++ videos every day.<
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2023-pre-conference-videos/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>vcpkg is Now Included with Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Thu, 18 May 2023 20:20:50 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32242</guid>
-
-					<description><![CDATA[<p>As of Visual Studio 2022 version 17.6, the vcpkg C/C++ package manager is included as an installable component for the C++ Desktop and C++ Gaming workloads. You can also find it in the installer by searching for vcpkg package manager under the Individual components tab.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/">vcpkg is Now Included with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>As of Visual Studio 2022 version 17.6, the vcpkg C/C++ package manager is included as an installable component for the C++ Desktop and C++ Gaming workloads. You can also find it in the installer by searching for <em>vcpkg package manager</em> under the <em>Individual components</em> tab.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png"><img decoding="async" class="alignnone size-full wp-image-32244" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png" alt="Image VS Installer with vcpkg checkbox" width="2438" height="1260" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox.png 2438w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-300x155.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-1024x529.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-768x397.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-1536x794.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/VS-Installer-with-vcpkg-checkbox-2048x1058.png 2048w" sizes="(max-width: 2438px) 100vw, 2438px" /></a></p>
-<p>&nbsp;</p>
-<h3 id="using-the-visual-studio-copy-of-vcpkg">Using the Visual Studio Copy of vcpkg</h3>
-<p>After you install or update Visual Studio with the vcpkg component checked, the package manager will be installed in your Visual Studio installation directory.</p>
-<p>You can run vcpkg commands directly from the <em>Developer Command Prompt for Visual Studio</em> or <em>Developer PowerShell for Visual Studio</em>. This also works for the equivalent consoles embedded in the IDE. vcpkg output is localized according to your Visual Studio language. Both ports and artifacts are supported.</p>
-<p>As with all copies of vcpkg, to initialize it with the IDE, you will first need to run <code>vcpkg integrate install</code> before running other commands. This will enable MSBuild and CMake IDE integration with this copy of vcpkg. You will need to run this command with administrator privileges.</p>
-<p>Importantly, the copy of vcpkg that ships with the IDE supports manifests but <strong>does not support classic mode</strong>. The reason for this is that classic mode requires write access to the vcpkg installation directory, but in this case it is in Program Files and the Visual Studio installer requires ownership of it. You can still use classic mode by running integrate install to an external copy of vcpkg instead.</p>
-<p>&nbsp;</p>
-<h3 id="recap-existing-vcpkg-ide-integration">Recap: Existing vcpkg IDE Integration</h3>
-<p>vcpkg was already supported by Visual Studio even before this update. Below is a recap of what you can do with the package manager in the IDE. In order to enable this functionality, you must have run vcpkg integrate install once in the past. Once that is done, you do not need to re-run this command.</p>
-<p>&nbsp;</p>
-<h4 id="intellisense-support">IntelliSense Support</h4>
-<p>Code calling an external library installed with vcpkg will have working IntelliSense, including autocompletion, semantic colorization, code navigation, and refactoring features.</p>
-<p>&nbsp;</p>
-<h4 id="msbuild-integration">MSBuild Integration</h4>
-<p>There are several MSBuild properties for configuring vcpkg for your project. These are available under <em>Configuration Properties &gt; vcpkg</em>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png"><img decoding="async" class="alignnone size-full wp-image-32246" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png" alt="Image vcpkg MSBuild properties" width="774" height="530" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties.png 774w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties-300x205.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vcpkg-MSBuild-properties-768x526.png 768w" sizes="(max-width: 774px) 100vw, 774px" /></a></p>
-<p>Importantly, you will want to set “<em>Use Vcpkg Manifest</em>” to “<em>Yes</em>” if you intend to use vcpkg in manifest mode with your MSBuild project. Once this is turned on, if you have a <em>vcpkg.json</em> file in your project, vcpkg will automatically be called every time you do a build to check if any dependencies need to be installed or updated. The package manager will then restore missing dependencies, allowing the build to proceed.</p>
-<p>&nbsp;</p>
-<h4 id="cmake-integration">CMake Integration</h4>
-<p>The IDE automatically picks up the <em>vcpkg.cmake</em> toolchain file and passes it to the CMake command line behind the scenes, allowing you to use the CMake IDE experience seamlessly. Furthermore, if you have a <em>vcpkg.json</em> manifest file in your project, vcpkg will automatically run when CMake configures itself on project load or when the CMake cache is manually generated. The package manager will automatically install or update any missing dependencies, in accordance with the manifest file, allowing you to build your project successfully.</p>
-<p>Furthermore, CMake find_package() calls also have IntelliSense autocompletion for various libraries available via vcpkg.</p>
-<p>&nbsp;</p>
-<h4 id="environment-activation-with-vcpkg-artifacts">Environment Activation with vcpkg Artifacts</h4>
-<p>If you have the <em>Desktop development with C++</em> or <em>Linux and embedded development</em> workload installed in Visual Studio, you can automatically install and activate tools required for your development environment if they are configured as <a href="https://devblogs.microsoft.com/cppblog/vcpkg-artifacts/">vcpkg artifacts</a> and they are defined in a manifest file. For more details, see <a href="https://devblogs.microsoft.com/cppblog/vcpkg-environment-activation-in-visual-studio/">vcpkg Environment Activation in Visual Studio</a>.</p>
-<p>&nbsp;</p>
-<h3 id="known-issues">Known Issues</h3>
-<p>The following features do not work yet with the built-in copy of vcpkg but are planned to be fixed in future updates to Visual Studio:</p>
-<ul>
-<li>The <em>Tools &gt; Options &gt; vcpkg package manager</em> setting that lets you point to a custom copy of vcpkg for managing vcpkg artifacts still exists and works for its intended purpose but does not replace the built-in copy of vcpkg in other contexts like running commands in the terminal. In the future, we plan to use this setting as a way for users to globally set their preferred copy of vcpkg within VS rather than having to run <code>vcpkg integrate install</code> from that copy of vcpkg.</li>
-<li>Being able to use the built-in copy without having to run <code>vcpkg integrate install</code></li>
-<li>The quick action lightbulb that appears when an IntelliSense error detects a code reference to a library that cannot be found and offers to install it with vcpkg will not work with the built-in copy as this feature uses classic mode.</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="give-us-feedback">Give Us Feedback</h3>
-<p>Try out the latest version of <a href="https://visualstudio.microsoft.com/">Visual Studio 2022</a> and give us feedback! To learn more about vcpkg, <a href="https://vcpkg.io/">visit the website</a>.</p>
-<p>If you have feedback about Visual Studio features and how vcpkg integrates with Visual Studio, please visit the <em>Help &gt; Send Feedback</em> menu in Visual Studio or visit the <a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a> feedback website.</p>
-<p>If you have feedback about the vcpkg package manager itself, please file issues or start discussion threads in the <a href="https://github.com/microsoft/vcpkg">vcpkg GitHub repository</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/">vcpkg is Now Included with Visual Studio</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-is-now-included-with-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>7</slash:comments>
 		
 		
 			</item>
