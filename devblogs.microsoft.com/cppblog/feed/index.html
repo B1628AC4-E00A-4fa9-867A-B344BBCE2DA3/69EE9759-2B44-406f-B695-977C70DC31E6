@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 28 Jun 2023 16:40:16 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 29 Jun 2023 15:06:12 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,214 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>AddressSanitizer continue_on_error</title>
+		<link>https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/#respond</comments>
+		
+		<dc:creator><![CDATA[Jim Radigan]]></dc:creator>
+		<pubDate>Thu, 29 Jun 2023 15:06:12 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[New User]]></category>
+		<category><![CDATA[Pure Virtual C++]]></category>
+		<category><![CDATA[Writing Code]]></category>
+		<category><![CDATA[address sanitizer]]></category>
+		<category><![CDATA[ASan]]></category>
+		<category><![CDATA[C++ CI/CD]]></category>
+		<category><![CDATA[C++ memory safety]]></category>
+		<category><![CDATA[checked]]></category>
+		<category><![CDATA[checked builds]]></category>
+		<category><![CDATA[continue]]></category>
+		<category><![CDATA[continue on error]]></category>
+		<category><![CDATA[continue_on_error]]></category>
+		<category><![CDATA[memory safety]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32499</guid>
+
+					<description><![CDATA[<p>Visual Studio 17.6 comes with new functionality in the Address Sanitizer runtime which provides a new “checked build” for C and C++. This new runtime mode diagnoses and reports hidden memory safety errors, with zero false positives, as your app runs.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/">AddressSanitizer continue_on_error</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 17.6 comes with new functionality in the Address Sanitizer runtime which provides a new “checked build” for C and C++. This new runtime mode diagnoses and reports hidden memory safety errors, with zero false positives, as your app runs.</p>
+<h1 id="introduction"><span style="font-size: 18pt;">Introduction</span></h1>
+<p>C++ <a href="https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170#error-types">memory safety errors</a> are a <a href="#post-32499-_Top_Concern_–">top concern</a> for the industry. In Visual Studio 17.6, we deliver a new experimental Address Sanitizer feature: continue_on_error (COE). We’ll remove the experimental label in 17.8. You compile as before, by simply adding the compiler flag <code>-fsanitizer=address</code>. With 17.6 you can enable the COE functionality by setting environment variables from the command line.</p>
+<p>To stream unique memory safety errors to stdout(1) or stderr(2):</p>
+<ul>
+<li>set ASAN_OPTIONS=continue_on_error=1</li>
+<li>set ASAN_OPTIONS=continue_on_error=2</li>
+</ul>
+<p>To stream to a log file of your choice:</p>
+<ul>
+<li>set COE_LOG_FILE=your.file.log</li>
+</ul>
+<p>When you opt into the new continue on error (COE) feature, your application automatically diagnoses and reports unique memory safety errors as it runs. At program exit, the runtime produces a <a href="#post-32499-_Example">final summary</a> that follows the unique detailed reports normally produced by the Address Sanitizer.</p>
+<p>The compiler instruments your binaries to work with the address sanitizer runtime to diagnose hidden memory safety errors. You can add the <code>-fsanitize=address -Zi</code> compiler flags and set the <code>ASAN_OPTIONS</code> or <code>COE_LOG_FILE</code> environment variable with values shown previously. You can then build and run your existing tests to exercise your code to find hidden memory-safety errors.</p>
+<p>This new COE functionality provides a “checked build” for C and C++ that finds hidden memory safety errors with zero false positives.</p>
+<p><span style="font-size: 18pt;">Hidden memory safety errors</span></p>
+<p>The source code in Figure 1 which follows creates a buffer overflow due to the off-by-one error in the loop exit test. The code should check for <code>ii &lt; sz</code>, but instead checks for <code>ii &lt;= sz</code>. When the example runs, it is <strong>secure by coincidence</strong>. That’s because of the over-allocation and alignment done by most C++ runtime implementations. When<code> sz % 16 == 0</code>, the final write to <code>local</code> corrupts data. In other cases only read/write to the “malloc slop” which is due to the C Runtime (CRT), padding allocations out to a <code>0 mod 16</code> aggregate boundary.</p>
+<p>Errors will only be observable if the following page is unmapped, or upon some subsequent use of corrupted data. All other cases are silent in the Figure 1 example that follows.</p>
+<pre class="prettyprint language-default"><code class="language-default">#include &lt;stdlib.h&gt; 
+char* func(char* buf, size_t sz) { 
+    char* local = (char*)malloc(sz); 
+    for (auto ii = 0; ii &lt;= sz; ii++) { // bad loop exit test 
+        local[ii] = ~buf[ii]; // Two memory safety errors 
+    } 
+    return local; 
+} 
+
+char original[10] = { 0,1,2,3,4,5,6,7,8,9 }; 
+
+void main() {   
+    char* inverted_buf= func(original,10); 
+}</code></pre>
+<p style="padding-left: 400px; text-align: left;"><span style="font-size: 10pt;"><strong>Figure 1</strong></span></p>
+<p>In this example, where the parameter <code>sz</code> is 10 and the original buffer is 10-bytes, there are two memory safety errors: one is an out-of-bounds load from <code>buf</code> and the other is an out-of-bounds store to <code>local</code>. With <code>continue_on_error</code>, you will see both errors in the summary, and the program will run to completion. Here’s the summary:</p>
+<p><img decoding="async" class="alignnone wp-image-32503" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-program-description-au-4.png" alt="Terminal showing two memory safety issues being found" width="1430" height="397" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-program-description-au-4.png 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-program-description-au-4-300x83.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-program-description-au-4-1024x284.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-program-description-au-4-768x213.png 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></p>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 2</strong></span></p>
+<p>Note that <code>continue_on_error</code> reports two distinct errors that occur on the same source line. The first error reads memory at a global address in the <code>.data</code> section, and the other writes to memory allocated from the heap.</p>
+<p><span style="font-size: 18pt;">Description</span></p>
+<p>The default Address Sanitizer runtime behavior terminates your application after reporting the first error encountered while running your program. It does not allow the “bad” machine instruction to execute. COE is a customer-requested change significantly different compared to the “one-n-done” behavior of the existing Address Sanitizer runtime. The new Address Sanitizer runtime diagnoses and reports errors, but then executes subsequent instructions.</p>
+<p>The new COE functionality allows an application to <strong>continue running while reporting</strong> unique memory safety errors to a log file or to the command line. When enabled, COE tries to automatically return control back to the application after reporting each memory safety error, except for an access violation (AV) or failed memory allocation. With COE, you can compile and deploy an existing application into limited production to find memory safety issues while running for days (albeit slower).</p>
+<p>By adding compiler flags and setting an environment variable, you can immediately improve correctness and security. Your existing tests will still pass but will <strong><em>also</em></strong> uncover hidden memory safety errors. The compiler option (<code>-fsanitizer=address</code>) and runtime environment flag can be used to introduce a new “shipping gate.” Subsequently COE can then be used with all your existing tests. The developer gets a simple, well-defined, pass/fail for shipping any C or C++ app on Windows.</p>
+<p>Internally we have found that using this technology significantly reduces memory safety errors. If all your existing tests pass, <strong><em>but</em></strong> this new feature reports a memory safety error or a leak, don’t ship your new code or integrate it into a parent branch.</p>
+<p><span style="font-size: 18pt;"><strong>Example</strong></span></p>
+<pre style="padding-left: 160px;">#include &lt;cstdio&gt;
+#include &lt;string&gt;
+
+struct Base {
+    //virtual ~Base() = default;
+};
+
+struct Derived : public Base {
+    std::wstring Value = L"Leaked if Base destructor is not virtual!";
+};
+
+constexpr size_t PointDims = 3;
+double pointsInGlobalData[PointDims] = { 1.0, 2.0, 3.0 };
+
+int main() {
+
+  pointsInGlobalData[3] = 3.0;
+
+  for (int i = 0; i &lt; 2; i++) {
+    double pointOnStack[PointDims] = { 1.0, 2.0, 3.0 };
+    pointOnStack[-1] = 3.0;
+    pointOnStack[PointDims] = 0.0;
+
+    double* pointOnHeap = new double[PointDims + 100000];
+    pointOnHeap[-1] = 4.0;
+    delete[] pointOnHeap;
+
+    double* pointDouble = new double[PointDims] { 1.0, 2.0, 3.0 };
+    pointDouble[PointDims] = 4.0; // overflow
+    delete[] pointDouble;         // we continue
+    Base* base = new Derived();
+    delete base; // missing virtual destructor
+
+    constexpr size_t buff_size = 128;
+    char* buffer = new char[buff_size];
+    std::memset(buffer, '\0', buff_size);
+    std::memset(&amp;buffer[buff_size - 28], '=', 30);
+  }
+  wprintf_s(L"Loop completed! \r\n");
+}</pre>
+<p style="padding-left: 440px;"><span style="font-size: 10pt;"><strong>Figure 3</strong></span></p>
+<p>With <code>continue_on_error</code>, the program in Figure 3 above, produces the summary in Figure 4. That summary is printed<strong><em> after</em></strong> streaming all unique detailed error reports which are produced using the existing default mode of the Address Sanitizer. The existing default mode is “one-n-done”. The previous Address Sanitizer only prints one detailed error report, and then exits your process. With <code>continue_on_error</code>, we continue to execute after various memory safety errors. This summary illustrates continuing after many memory safety errors:</p>
+<p><img decoding="async" class="alignnone wp-image-32504" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica.png" alt="Console showing 7 unique memory safety issues being found" width="1685" height="1072" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica.png 1685w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica-300x191.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica-1024x651.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica-768x489.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/a-screenshot-of-a-computer-description-automatica-1536x977.png 1536w" sizes="(max-width: 1685px) 100vw, 1685px" /></p>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 4</strong></span></p>
+<p>Beneath the first red box at the top of Figure 4, there are three files sorted by error. This is followed by the file, function, and line displayed beneath the second box. The third box calls out eight unique errors, where &#8220;unique&#8221; is defined in terms of a hash function which uses call stacks and error descriptions. Use of the term <a href="#post-32499-_Unique">unique</a> is discussed in the next section.</p>
+<p>The detailed error reports (omitted in the screen capture in Figure 4) are printed before this summary and contain shadow bytes with all the details for each error in the summary.</p>
+<p><span style="font-size: 18pt;">Unique</span></p>
+<p>The uniqueness of an error (to limit streaming duplicates) is determined by an internal <strong>hash function</strong> that uses the type of error and the call stack(s) at the time of error. A detailed individual error report includes stack trace(s). Here are the two detailed errors in the “secure by coincidence” example in Figure 1. The call stacks and types of errors are used to internally create an internal C++ error object, which is then hashed to a unique integer. The global-buffer-overflow in Figure 5 only has one call stack and is a different type of error object from the heap-buffer-overflow in Figure 6, which has two call stacks.</p>
+<p><img decoding="async" width="2415" height="500" class="wp-image-32505" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3.png 2415w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3-300x62.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3-1024x212.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3-768x159.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3-1536x318.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-3-2048x424.png 2048w" sizes="(max-width: 2415px) 100vw, 2415px" /></p>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 5</strong></span></p>
+<p><img decoding="async" width="2450" height="770" class="wp-image-32506" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4.png 2450w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4-300x94.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4-1024x322.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4-768x241.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4-1536x483.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-4-2048x644.png 2048w" sizes="(max-width: 2450px) 100vw, 2450px" /></p>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 6</strong></span></p>
+<p>The runtime will hash each occurrence of an error at runtime in order to prevent duplication. Consider a <a href="https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170#error-types">memory-safety</a> error that’s executed 10000 times in a loop. The detailed error will be reported once, but its “hit count” of 1000 will be reported in the summary.</p>
+<p><span style="font-size: 18pt;">Not continuing.</span></p>
+<p>Two examples where the continue on error feature <strong><em>cannot continue</em></strong> are:</p>
+<ul>
+<li>Malloc is given an undefined argument, such as a negative number.</li>
+<li>There’s an access violation while trying to read or write to memory that hasn’t been allocated, or to which it doesn’t have access.</li>
+</ul>
+<p>Consider the following program which has an access violation because it tries to <strong>read from location <code>0x13</code></strong>:</p>
+<pre style="padding-left: 160px;">#include &lt;stdio.h&gt;
+
+void main()
+{
+    unsigned int* local_ptr = (unsigned int*) 0x13;
+    printf("use of undefined address %p [%x]\n", local_ptr, *local_ptr);
+}</pre>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 7</strong></span></p>
+<p>On Windows 11, when the example in Figure 7 above, is compiled with <code>-fsanitize=address -Zi</code>, you’ll see the following error message in Figure 8, below.</p>
+<p><img decoding="async" class="alignnone wp-image-32507" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-5.png" alt="CONTINUE CANCELLED - Deadly Signal. Shutting down." width="1531" height="451" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-5.png 1531w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-5-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-5-1024x302.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/word-image-32499-5-768x226.png 768w" sizes="(max-width: 1531px) 100vw, 1531px" /></p>
+<p style="text-align: center;"><span style="font-size: 10pt;"><strong>Figure 8</strong></span></p>
+<p>We choose to “gracefully cancel” the attempt to continue from access violations that are <strong>not</strong> caught with a user’s structured exception handling.</p>
+<h1 id="matching-undefined-behavior"><span style="font-size: 18pt;">Matching undefined behavior</span></h1>
+<p>We haven’t been able to do a complete audit that would allow us to “match” undefined behaviors for C and C++. The following example in Figure 9, makes this tangible. At the commented line in the following code example, code generation from the compiler and the runtime implementation are both different for <code>_alloca </code>when compiling with <code>-fsanitize=address -Zi</code>:</p>
+<pre style="padding-left: 280px;">#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;malloc.h&gt;
+#include &lt;excpt.h&gt;
+#include &lt;windows.h&gt;
+
+#define RET_FINISH 0
+#define RET_STACK_EXCEPTION 1
+#define RET_OTHER_EXCEPTION 2
+
+int foo_redundant(unsigned long arg_var) {
+
+  char *a;
+  int ret = -1;
+
+  __try
+  {
+    if ((arg_var+3) &gt; arg_var) {
+<strong>      // Call to alloca using parameter from main</strong>
+<strong>      a = (char *) _alloca(arg_var); </strong>
+      memset(a, 0, 10);
+    }
+    ret = RET_FINISH;
+  }
+  __except(1)
+  {
+    ret = RET_OTHER_EXCEPTION;
+    int i = GetExceptionCode();
+    if (i == EXCEPTION_STACK_OVERFLOW) {
+      ret = RET_STACK_EXCEPTION;
+  }  
+  return ret;
+}
+
+void main(){ 
+  int cnt = 0;
+  if (foo_redundant(0xfffffff0) == RET_STACK_EXCEPTION)
+<b>    cnt++; //increment count of </b><span style="font-size: 14.4px;"><b>exceptions</b></span><b> handled.</b>
+
+  if (cnt == 1)
+    printf("pass\n");
+  else
+    printf("fail\n");
+}</pre>
+<p style="padding-left: 400px;"><span style="font-size: 10pt;"><strong>Figure 9</strong></span></p>
+<p>The previous example, in Figure 9, prints <strong>pass</strong> without <code>-fsanitize=address</code>. That’s because<code> cnt==1 </code>due to an exception. It will fail when compiled with that flag and run with the Address Sanitizer runtime. In <code>main()</code> we pass a large number to <code>foo_redundant</code>, which is passed to <code>_alloca()</code>.</p>
+<p>With the Address Sanitizer in <code>continue_on_error</code> (COE) mode, this program runs to completion, but prints <strong>fail</strong>. The code generation from the compiler must match the ABI for the Address Sanitizer runtime. For the Address Sanitizer runtime, the compiler grows the allocation size and aligns it 0 mod 32 (a cache line). That math will cause an integer overflow (i.e., wrap around) creating a reasonable, small positive number as the parameter to <code>_alloca</code>.</p>
+<p><strong>There will be no stack overflow exception to process the <code>__except</code> handler.` </strong></p>
+<p>We have not had time to document or clearly define the subtle differences when a program has undefined behavior. This was a reason for releasing <code>continue_on_error</code> as experimental at first.</p>
+<p><strong>NOTE: The frequency with which this concern has become visible, has been rare with our testing infrastructure.</strong></p>
+<h1><a id="post-32499-_Top_Concern_–"></a><span style="font-size: 18pt;">Top Concern – don’t ship without it.</span></h1>
+<p>There were six categories of C++ <a href="https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170#error-types">memory safety</a> errors in the 2021 Common Weakness Enumeration (CWE) <a href="https://nam06.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcwe.mitre.org%2Ftop25%2Farchive%2F2021%2F2021_cwe_top25.html&amp;data=05%7C01%7Cjradigan%40microsoft.com%7C9962b611c58546f2df3308db4add742b%7C72f988bf86f141af91ab2d7cd011db47%7C1%7C0%7C638186087241566753%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&amp;sdata=ZWphesh6v9f2PKasnd2qxKrq26EebWpv8Tb6JK1RFXg%3D&amp;reserved=0">Top 25 Most Dangerous Software Weaknesses</a>. The best <a href="https://nam06.safelinks.protection.outlook.com/?url=https%3A%2F%2Fpwnies.com%2Fwinners%2F&amp;data=05%7C01%7Cjradigan%40microsoft.com%7C9962b611c58546f2df3308db4add742b%7C72f988bf86f141af91ab2d7cd011db47%7C1%7C0%7C638186087241566753%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&amp;sdata=%2BbYI%2FqxTAHAPZzkmdmnFgpaQ%2Bb4%2B1a953XrBDUVZ9OI%3D&amp;reserved=0">Remote Code Execution Bug</a> was a 20 year old heap-buffer-overflow. This award in 2022 went to BugHunter010 at Cyber KunLun Lab. This engineer discovered a heap-buffer-overflow vulnerability in the RPC protocol with CVSS score 9.8. This bug has existed in the Windows system for more than 20 years. There are new C++ memory safety bugs introduced daily because traditional testing can’t expose these types of bugs without compiler and runtime support.</p>
+<p>This new feature is designed to enable developers to implement a simple new gate for shipping C++ on Windows. Using this technology will significantly reduce memory safety errors. If your tests pass but continue_on_error reports any hidden memory safety errors, you should not ship or integrate new code into the development branch.<a id="post-32499-_Hidden_memory_safety"></a></p>
+<p><strong>We intend that continue_on_error be used as pass/fail gate, for all CI/CD pipelines using C and C++.</strong></p>
+<h1 id="call-to-action"><span style="font-size: 18pt;">Call To Action</span></h1>
+<p>We invite you to install the 17.6 version of <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio</a> or later, try out the continue on error feature, and give us <a href="https://developercommunity.visualstudio.com/home">feedback</a><a id="post-32499-_Dynamic_vs._Static"></a>.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/">AddressSanitizer continue_on_error</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++ Extension in VS Code 1.16 Release: Call Hierarchy &#038; more</title>
 		<link>https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-16-release-call-hierarchy-more/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-16-release-call-hierarchy-more/#respond</comments>
@@ -571,152 +779,6 @@ In the run up to the conference we will be publishing new C++ videos every day.<
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-c-cmake-debugger-build-insights-in-visual-studio-and-more/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC ARM64 optimizations in Visual Studio 2022 17.6 </title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/#comments</comments>
-		
-		<dc:creator><![CDATA[Jiong Wang (ARM Ltd)]]></dc:creator>
-		<pubDate>Mon, 29 May 2023 14:42:26 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32267</guid>
-
-					<description><![CDATA[<p>In the last couple of months, the Microsoft C++ team has been working on improving MSVC ARM64 backend performance and we are excited to have a couple of optimizations available in the Visual Studio 2022 version 17.6. These optimizations improved code-generation for both scalar ISA and SIMD ISA (NEON).</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">MSVC ARM64 optimizations in Visual Studio 2022 17.6 </a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">In the last couple of months, the Microsoft C++ team has been working on improving MSVC ARM64 backend performance and we are excited to have a couple of optimizations available in the </span><a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-6-now-available/"><span data-contrast="none">Visual Studio 2022 version 1</span><span data-contrast="none">7.6</span></a><span data-contrast="auto">. These optimizations improved code-generation for both scalar ISA and SIMD ISA (NEON). Let’s review some interesting optimizations in this blog.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-contrast="auto">Before diving into technical details, we&#8217;d encourage you to create feedback here at </span><a href="https://developercommunity.visualstudio.com/cpp"><span data-contrast="none">Developer Community</span></a><span data-contrast="auto"> if you have found performance issues. The feedback helps us prioritize work items in our backlog. This, </span><a href="https://developercommunity.visualstudio.com/t/arm64-backend-neon-optimize-neon-rig/10146259?q=backend+neon"><span data-contrast="none">optimize neon right shift into cmp</span></a><span data-contrast="auto">, is an example of good feedback. Including a tagged subject title, detailed description of the issue, and a simple repro simplifies our analysis work and helps us deliver a fix more quickly.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-contrast="auto">Now, let&#8217;s see the optimizations.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<h2 id="auto-vectorizer-supports-more-neon-instructions-with-asymmetric-operands">Auto-Vectorizer supports more NEON instructions with asymmetric operands</h2>
-<p><span data-contrast="auto">The ARM64 backend already supports some NEON instructions with asymmetric typed operands, like Add/Subtract Long operations (SADDL/UADDL/SSUBL/USUBL). These instructions add each vector element in the lower or upper half of the first source SIMD register to the corresponding vector element of the second source SIMD register and write the vector result to the destination SIMD register. The destination vector elements are twice as long as the source vector elements. Now, we have extended such support to Multiply-Add Long and Multiply-Subtract Long (<code>SMLAL</code>/<code>UMLAL</code>/<code>SMLSL</code>/<code>UMLSL</code>).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-contrast="auto">For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">void smlal(int * __restrict dst, int * __restrict a, 
-           short * __restrict b, short * __restrict c) 
-{ 
-    for (int i = 0; i &lt; 4; i++) 
-        dst[i] = a[i] + b[i] * c[i]; 
-} </code></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">sxtl        v19.4s,v16.4h 
-sxtl        v18.4s,v17.4h 
-mla         v20.4s,v18.4s,v19.4s </code><span data-contrast="auto"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559685&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></pre>
-<p><span data-contrast="auto">Extra signed extensions are performed on both source operands to match the type of destination. Now it has been optimized into a single </span><code>smlal v16.4s,v17.4h,v18.4h</code><span data-contrast="auto">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-contrast="auto">The ARM64 ISA further supports another variant for these operations, which is called Add/Subtract Wide. For them, the </span><span data-contrast="none">asymmetry happens between source operands, not between source and destination.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<p><span data-contrast="auto">For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">void saddw(int *__restrict dst, int *__restrict a, short *__restrict b) 
-{ 
-    for (int i = 0; i &lt; 4; i++) 
-        dst[i] = a[i] + b[i]; 
-}</code></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:240}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">sxtl        v17.4s,v16.4h 
-add         v18.4s,v17.4s,v18.4s  </code></pre>
-<p><span data-contrast="auto">The narrow source gets extra signed extension to match the other wide source. In the 17.6 release, this has been optimized into a single </span><code>saddw v16.4s,v16.4s,v17.4h</code><span data-contrast="auto">. The same applies to <code>UADDW</code>/<code>SSUBW</code>/<code>USUBW</code>.</span><span data-ccp-props="{&quot;134233117&quot;:true,&quot;134233118&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
-<h2 id="auto-vectorizer-now-supports-small-types-on-abs-min-max">Auto-vectorizer now supports small types on <code>ABS</code>/<code>MIN</code>/<code>MAX</code><code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></code></h2>
-<p><span data-contrast="auto"><code>ABS</code>/<code>MIN</code>/<code>MAX</code> have slightly complex semantics. Normally, the compiler middle-end or back-end will have a pattern matcher to recognize IR sequences with if-then-else semantics and see if they could be converted into <code>ABS</code>/<code>MIN</code>/<code>MAX</code>. There is an issue when the operands are in small types (int8 or int16) though.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-contrast="auto">As specified by the C++ standard, small types are promoted to <code>int</code>, which is 32-bit on ARM64. This is perfect for scalar operations because they really can only operate on scalar register width. For ARM64, the smallest width is 32-bit utilizing the sub-register. However, this is not true for SIMD ISA whose minimum operation width is the width of vector lane (element). For example, ARM64 NEON supports operating on int8, int16 for a couple of operations including <code>ABS</code>/<code>MIN</code>/<code>MAX</code>. So, to generate SIMD instructions operating on small element sizes and deliver higher computing throughput, the auto-vectorizer needs to do analysis and narrow the type back to the original small type when it is safe to do so.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">On top of this, <code>ABS</code>/<code>MIN</code>/<code>MAX</code> bring further challenges because their source operands are scattered in different basic blocks due to their built-in if-then-else semantics. We found the MSVC auto-vectorizer may only narrow the type of the operand in one basic block making it inconsistent with operands in other basic blocks. Such inconsistency will cause the auto-vectorizer to fail matching the pattern and cancel vectorization.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-contrast="auto"> For example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">void test(signed char * __restrict a, signed char * __restrict b) 
-{ 
-    for (int i = 0; i &lt; 16; i++) 
-        a[i] = b[i] &gt; 0 ? b[i] : -b[i]; 
-}</code></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, there was no vectorization, and the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">ldrsb       w8,[x1,#1] 
-cmp         w8,#0 
-bgt         |$LN16@test_abs_v| 
-neg         w8,w8 
-sxtb        w8,w8 </code><span data-contrast="auto"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">In the 17.6 release, the code-generation has been improved into a single </span><code>abs v16.8h,v16.8h</code><i><span data-contrast="auto">.</span></i><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<h2 id="scalar-code-generation-improved-based-on-value-range-analysis">Scalar code-generation improved based on value range analysis</h2>
-<p><span data-contrast="auto">When one register is compared with an immediate value, the compiler can deduce the value range of the register, and this information is useful for later optimizations, for example evaluating comparison results statically.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">MSVC already has an infrastructure for doing value range deduction, the backend just needs to teach the middle-end about the semantics of its supported comparison instructions.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">The ARM64 backend previously missed this support for <code>CBZ</code> and <code>CMP</code>. For </span><code>cbz reg, label</code><i><span data-contrast="auto">, </span></i><span data-contrast="auto">the </span><code>reg</code> <span data-contrast="auto">must equal to zero in true path, and the same applies for <code>CBNZ</code> on false path. While for </span><code>cmp reg, #imm</code><i><span data-contrast="auto">, </span></i><span data-contrast="auto">the </span><code>reg</code> <span data-contrast="auto">must equal</span> <code>imm</code> <span data-contrast="auto">in true path. Knowing such equivalence, the compiler could simplify code-generation. Let’s see a simple example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">int cal(int a) 
-{ 
-    if (!a) 
-        return a; 
-    else 
-        return a * 2; 
-}</code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, MSVC was generating the following instruction sequence:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int cal(int)| PROC 
-        cbnz        w0,|$LN2@cal| 
-        mov         w0,#0         &lt;- redundant mov 
-        ret 
-|$LN2@cal| 
-        lsl         w0,w0,#1 
-        ret </code></pre>
-<p><span data-contrast="auto">The </span><code>mov w0, #0</code> <span data-contrast="auto">is redundant because when the execution reaches there, </span><code>w0</code> <span data-contrast="auto">must be zero. After our recent optimization, the code-generation is optimal in release 17.6:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int cal(int)| PROC 
-        lsl         w8,w0,#1 
-        cmp         w0,#0 
-        cseleq      w0,wzr,w8 
-        ret </code></pre>
-<h2 id="scalar-code-generation-improved-to-catch-more-if-conversion-opportunities">Scalar code-generation improved to catch more if-conversion opportunities</h2>
-<p><span data-contrast="auto">You may have noticed there is another difference in the code-generation for the above test case. <code>CSELEQ</code> is used instead of branch. The ARM64 ISA supports the <code>CSEL</code> instruction to do if-conversion which saves both execution cycles and code size. Previously, MSVC couldn’t generate <code>CSEL</code> when the selected value came from a return statement. We fixed this in the 17.6 release, so for the above example <code>CSELEQ</code> is used instead of <code>CBNZ</code>. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<p><span data-contrast="auto">In summary, for the if-return-else-return pattern, the ARM64 backend has been taught to generate a <code>CSEL</code> instruction if the return statement is in any of the following operations:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Wingdings" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Wingdings&quot;,&quot;469769242&quot;:[9642],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Unary: NOT and type conversion</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></li>
-<li data-leveltext="" data-font="Wingdings" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Wingdings&quot;,&quot;469769242&quot;:[9642],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">Binary: Add, Subtract, And/Or/Xor, Logical Shift Left/Right</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></li>
-</ul>
-<p><span data-contrast="auto">Let’s see another example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">int test (int a) {  
-    if (a &gt; 0xFFFF)  
-        return ~a;  
-    else 
-        return a;  
-} </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int test(int)| PROC 
-        mov         w8,#0xFFFF 
-        cmp         w0,w8 
-        ble         |$LN3@test| 
-        mvn         w0,w0 
-|$LN3@test| 
-        ret </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">It employs a branch and contains multiple basic blocks. In the 17.6 release, the code-generation is improved by if-conversion: it is lean and mean:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int test(int)| PROC 
-        mov         w8,#0xFFFF 
-        cmp         w0,w8 
-        cinvgt      w0,w0 
-        ret 
-</code></pre>
-<h2 id="arm64-instruction-combiner-now-supports-instructions-with-multiple-definitions">ARM64 instruction combiner now supports instructions with multiple definitions</h2>
-<p><span data-contrast="auto">As a modern compiler, MSVC is carrying out various instruction combinations across compilation stages. While a bunch of combine rules have already been implemented, we recently found one interesting case was missing. Take the following case for example:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">int test(int a, int b) 
-{ 
-    if (a &lt; b) 
-        return b - a; 
-    else 
-        return 7; 
-} </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">In Visual Studio 2022 17.5, the code-generation was:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int test(int,int)| PROC 
-        cmp         w0,w1 
-        sub         w0,w1,w0 
-        blt         |$LN3@test| 
-        mov         w0,#7 
-|$LN3@test| 
-        ret </code></pre>
-<p><span data-contrast="auto">The </span><code>cmp w0, w1</code><span data-contrast="auto"> and the following </span><code>sub w0, w1, w0</code> <span data-contrast="auto">can be combined into a single <code>SUBS</code>. We missed it because the later stage combiner had glitches when supporting combining into instructions with multiple definitions. Now we have fixed this, so the code-generation in the 17.6 release has been improved into:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></p>
-<pre class="prettyprint language-default"><code class="language-default">|int test(int,int)| PROC 
-        subs        w9,w1,w0 
-        mov         w8,#7 
-        cselgt      w0,w9,w8 
-        ret </code><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:0,&quot;335559740&quot;:259}"> </span></pre>
-<p><span data-contrast="auto">The code-generation is utilizing <code>SUBS</code> to set the conditional code and doing subtraction at the same period, it also benefited from the above mentioned if-conversion optimization on return statement, so <code>CSEL</code> is used instead of branch</span></p>
-<h2 id="in-closing">In closing</h2>
-<p><span data-contrast="auto">That is all for this blog and we will keep you updated on our progress. Your feedback is very valuable for us. Please share your thoughts and comments with us through </span><span data-contrast="none">Virtual C++ Developer Community</span><span data-contrast="auto">. You can also reach us on Twitter (</span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="auto">), or via email at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;134233117&quot;:true,&quot;134233118&quot;:true,&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:240}"> </span></p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">MSVC ARM64 optimizations in Visual Studio 2022 17.6 </a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/feed/</wfw:commentRss>
-			<slash:comments>7</slash:comments>
 		
 		
 			</item>
