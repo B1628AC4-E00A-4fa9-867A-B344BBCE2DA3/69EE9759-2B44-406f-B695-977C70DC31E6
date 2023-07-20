@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 20 Jul 2023 13:32:38 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 20 Jul 2023 19:44:08 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,102 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Help users resume your app seamlessly after a Windows update</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2023/07/20/help-users-resume-your-app-seamlessly-after-a-windows-update/</link>
+		
+		<dc:creator><![CDATA[Yutong Liao]]></dc:creator>
+		<pubDate>Thu, 20 Jul 2023 19:44:08 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56831</guid>
+
+					<description><![CDATA[<p>Windows PCs require a restart to apply each month’s security updates. Today we’re offering tips and best practices that can help you make sure your applications seamlessly resume after a restart and keep your app users happy.</p>
+<p>Some users manage W</p>
+<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2023/07/20/help-users-resume-your-app-seamlessly-after-a-windows-update/">Help users resume your app seamlessly after a Windows update</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Windows PCs require a restart to apply each month’s security updates. Today we’re offering tips and best practices that can help you make sure your applications seamlessly resume after a restart and keep your app users happy.
+
+Some users manage Windows updates (and restarts) for themselves. Others prefer that their PCs automatically restart when not in use. In either case, users typically prefer to find their applications exactly as they left them after an update. Their flow on Windows is more productive and fun when apps restore their state, position and pending operations following an update.
+
+What does this mean for you as an application developer? If your app is documentation-focused, you might want to help people remember where in the document they were editing most recently. If your app helps people modify images, consider saving their “undo” stack and/or creating a temporary copy of their workspace. For game developers, it might be helpful to implement a quick “save” and ask players where they would like to resume. Ultimately, your apps can offer seamless continuity following a restart – for updates or otherwise – by following a few best practices:
+<ul>
+ 	<li>Save the user’s state.</li>
+ 	<li>Remember how their previous views were positioned.</li>
+ 	<li>Relaunch the app following the update.</li>
+</ul>
+In this post, we will explore native APIs you can use to help you save an app user’s work and resume an app state following a restart.
+<h2>Universal Windows Platform (UWP) apps</h2>
+Universal Windows Platform (UWP) provides <a href="https://learn.microsoft.com/windows/uwp/launch-resume/app-lifecycle">lifecycle management capabilities</a> to applications. While a UWP app doesn’t need anything special to be restarted and resumed after a system update, it is recommended to <a href="https://learn.microsoft.com/windows/uwp/launch-resume/app-lifecycle#save-your-state">save the app state<span style="text-decoration: line-through;">s</span></a> periodically.
+<h2>Win32 apps</h2>
+If you are developing a Windows desktop app, you can use the Application Recovery and Restart (ARR) APIs to register your app for restart. Specifically, <a href="https://learn.microsoft.com/windows/win32/recovery/registering-for-application-restart">registering for restart</a> helps applications cleanly close upon system restart and relaunch after restart with pre-defined arguments.
+
+Whether you are building Win32 apps or you’re using Windows app SDK, you can find <a href="https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/RestartRegistration/cpp-winui-packaged">ARR API usage samples on GitHub</a>.
+
+In addition to registering apps for restart, you should consider how an app can best resume its previous workload and recover the previous state. Common strategies include saving often to disk and providing context to resume state in the arguments used when registering via ARR API. Here is a code example:
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">// Register for restart with the current value of app text box
+
+RegisterApplicationRestart(counterTextBlock().Text().c_str(), RESTART_NO_PATCH | RESTART_NO_REBOOT);
+
+// Update registration before crash with the new value of the app counter text box
+
+RegisterApplicationRecoveryCallback(APPLICATION_RECOVERY_CALLBACK([](PVOID recoveryData){
+
+
+     BOOL canceled;
+
+     if (SUCCEEDED(ApplicationRecoveryInProgress(&amp;canceled)) &amp;&amp; !canceled)
+
+     {
+
+          const auto counter = static_cast&lt;uint32_t*&gt;(recoveryData);
+
+          RegisterApplicationRestart(to_hstring(*counter).c_str(), RESTART_NO_PATCH | RESTART_NO_REBOOT);
+
+     }
+
+     ApplicationRecoveryFinished(true);
+
+     return (DWORD)0;
+
+     }), &amp;_counter, RECOVERY_DEFAULT_PING_INTERVAL, 0);</pre>
+<h2>.NET apps</h2>
+Similar to Win32 apps, .NET apps can <a href="https://learn.microsoft.com/windows/win32/recovery/registering-for-application-restart">register</a> for restart by using the ARR APIs. The only difference is using <a href="https://github.com/microsoft/CsWin32">p/Invoke</a> to wrap the native API calls. You can find .NET sample code using ARR APIs <a href="https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/RestartRegistration/cs-winui-packaged">on GitHub</a>.
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">// Best effort to register for crash and hang restart.
+
+RegisterApplicationRestart(_counter.ToString(), REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_PATCH | REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT);
+
+// Best effort to register recovery callback to update restart arguments with the latest seconds counter value.
+
+RegisterApplicationRecoveryCallback(new APPLICATION_RECOVERY_CALLBACK(p =&gt;
+
+{
+
+     ApplicationRecoveryInProgress(out BOOL canceled);
+
+     if (!canceled)
+
+     {
+
+          RegisterApplicationRestart(_counter.ToString(), 
+REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_PATCH | 
+REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT);
+
+     }
+
+     ApplicationRecoveryFinished(true);
+
+     return 0;
+
+}), null, 5000, 0);</pre>
+Apps with critical workloads can use <a href="https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate">power APIs</a> to keep the system running and prevent a restart, but this isn’t permanent. Both users and administrators need devices to stay secure and a system will eventually be forced to restart after an update. Further, keeping the system powered on can drain battery or use excess power.
+
+We encourage you to read more about <a href="https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate#remarks">how to effectively use Power APIs</a> for system services and long-running critical applications.
+<h2>Share your feedback</h2>
+Have suggestions or ideas for API improvement? Still have questions about how your app and Windows Update can work together? Please share your thoughts by submitting them via Feedback Hub (Windows key + F)!]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Dev Home Preview 0.3 Release</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2023/07/19/dev-home-preview-0-3-release/</link>
 		
@@ -825,76 +921,6 @@ We want to empower you to focus your time on creating and building – writing c
 To learn more about these incredible new features, explore our new <a href="https://developer.microsoft.com/windows">Windows Developer Center</a> bringing our news and resources all into one location for you. For our Windows Insiders, you’ll be able to start accessing a set of these new features later this week in an Insider Preview Build. And be sure to check out our various sessions throughout Microsoft Build to learn more about everything we announced.
 
 <em>Update, May 24, 2023: This blog post was updated to add additional detail on the AI library</em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Welcoming AI to the Microsoft Store on Windows</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2023/05/23/welcoming-ai-to-the-microsoft-store-on-windows/</link>
-		
-		<dc:creator><![CDATA[Zahara Kondo]]></dc:creator>
-		<pubDate>Tue, 23 May 2023 15:00:05 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<category><![CDATA[News]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56689</guid>
-
-					<description><![CDATA[<p>We wouldn’t be where we are today without the developer community. Together, we’ve been on a <a href="https://blogs.windows.com/windowsexperience/2022/09/20/more-content-and-new-developer-opportunities-in-the-microsoft-store/">journey</a> to reim</p>
-<p>The post <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper/2023/05/23/welcoming-ai-to-the-microsoft-store-on-windows/">Welcoming AI to the Microsoft Store on Windows</a> appeared first on <a rel="nofollow" href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[We wouldn’t be where we are today without the developer community. Together, we’ve been on a <a href="https://blogs.windows.com/windowsexperience/2022/09/20/more-content-and-new-developer-opportunities-in-the-microsoft-store/">journey</a> to reimagine an <a href="https://blogs.windows.com/windowsdeveloper/2021/09/28/microsoft-store-more-apps-more-open/">open app store</a> and provide a better experience for Windows customers. It’s because of this partnership that the Microsoft Store on Windows is now used by over one billion customers with more than 50% of new Windows 11 customers engaging with the Microsoft Store in the first 30 days.
-
-The momentum of Windows customers is a testament to the growth in quality content from our passionate community of developers, who have more than doubled the number of Win32 and PWA apps since last year. Engaging PWAs like <a href="https://apps.microsoft.com/store/detail/snapchat/9PF9RTKMMQ69">Snapchat</a> and <a href="https://apps.microsoft.com/store/detail/espn/9NWD3S85MTFB">ESPN</a>, sophisticated native apps like <a href="https://apps.microsoft.com/store/detail/spark-mail-%E2%80%93-email-app-by-readdle/XPFCS9QJBKTHVZ">Spark Mail</a>, Adobe Photoshop and Lightroom, <a href="https://apps.microsoft.com/store/detail/capture-one/XPDC1MTSBZZ97K">Capture One</a>, <a href="https://apps.microsoft.com/store/detail/%E5%93%94%E5%93%A9%E5%93%94%E5%93%A9/XPDDVC6XTQQKMM">Bilibili</a> and <a href="https://www.microsoft.com/store/productId/9NKSQGP7F2NH">WhatsApp</a>, along with Android apps like <a href="https://apps.microsoft.com/store/detail/epic-seven/XP9MK6MFVQBW1X">Epic Seven</a>, <a href="https://apps.microsoft.com/store/detail/best-fiends/XPDCF98W6GPBCD">Best Fiends</a>, and <a href="https://apps.microsoft.com/store/detail/blink/XP99WSCF81Z8JB">Blink</a>, are truly what makes the Microsoft Store the best place to find the right content, whether for productivity, entertainment or creativity. There are many more apps to recognize, including the winners of the Microsoft Store Awards 2023 which can be found <a href="https://blogs.windows.com/windowsdeveloper/?p=56717">here</a>.
-
-<strong>Today, we are proud to share the next phase of our journey for the Microsoft Store on Windows and announce new experiences, features and tools.</strong> We are focused on building an open store that is ready for the new AI era, and to provide developers with new tools like Microsoft Store Ads to reach even more customers.
-<h4><strong>Microsoft Store opens the doors to AI </strong></h4>
-The world around us is changing every day. As AI disrupts existing workflows and creates exciting new opportunities for customers, we see an opportunity to evolve and think differently about the role of the Microsoft Store on Windows. It’s not just a place to download an app or a game, but rather, it should serve as a resource to educate customers about how they can be more productive, achieve their tasks, and discover new content.
-
-<strong>Introducing</strong> <strong>the</strong> <strong>AI Hub,</strong> a new curated section in the Microsoft Store where we will promote the best AI experiences built by the developer community and Microsoft. This is a space where we will educate customers on how to start and expand their AI journey, inspiring them to use AI in everyday ways to boost productivity, spark creativity and so much more. For example, you will be able to use AI to express your creativity through <a href="https://apps.microsoft.com/store/detail/luminar-neo-photo-editor/9P7JQGL6GC8P">Luminar Neo</a> and Lensa, master your video and audio with <a href="https://apps.microsoft.com/store/detail/descript/XP8BSML4BXT27N">Descript</a>, Krisp and Podcastle, present your ideas with <a href="https://apps.microsoft.com/store/detail/gamma/9MV4LSCDRFLT">Gamma</a> and Copy.ai, build your resume with <a href="https://apps.microsoft.com/store/detail/kickresume/9NBLGGH4RN56">Kickresume</a>, generate your voice with <a href="https://apps.microsoft.com/store/detail/playht/9MSVX1XLWJGM">Play.ht</a>, or even plan your trip with Tripnotes. All the content will be tested for security, family safety, and device compatibility – so you are always in control. This feature will soon be available in the Microsoft Store. If you are an AI developer and interested in being featured in the AI Hub, let us know <a href="https://aka.ms/MicrosoftStoreAIHub">here</a>.
-
-[embed]https://youtu.be/E-AAigo0BFk[/embed]
-
-<strong>Customers can take advantage of AI-Generated review summary. </strong>This new feature summarizes customer reviews and provides a concise summary highlighting the topline details. We know customers use the Microsoft Store to view and gather community feedback when considering and choosing new apps and games. However, especially with popular apps that have thousands of reviews, sifting through each one can take time. Supported by AI, this feature is designed to make the customer experience even more seamless. AI-Generated review summaries will soon be available in the Microsoft Store.
-
-[embed]https://youtu.be/xtoRys9mEjA[/embed]
-
-<strong>Microsoft Store AI-Generated keywords:</strong> Coming soon to preview, we will introduce a new developer tool in Partner Center that leverages AI to generate and suggest Search Tags for apps. We are using AI to consume your metadata, as well as other signals, and help you improve the discoverability of your app in the Microsoft Store search results. Based on popular demand, we are also introducing the ability to select multiple categories per app, which will further improve discoverability and help you reach more customers. <a href="https://aka.ms/aikeywordrecommendations">Learn more here</a>.
-
-[embed]https://youtu.be/JTWdfDu8P1w[/embed]
-<h4><strong>Reach more customers with new developer tools and expanded services</strong></h4>
-Earlier this year, we announced the availability of Microsoft Store Ads in search results and shared plans to expand the experience to premium ad placements in search. In just two months, we have seen more developers adopt this new channel and receive positive results. Miracle Games experienced a 25% increase in app installs compared to before at a CPI that is 90% lower than on other advertising channels. <a href="https://about.ads.microsoft.com/en-us/insights/stories/miracle-games-increased-app-downloads?s_cid=en-us-acq-onemsft-src_msstore-sub_msstoreemail-flx_storeadsgtm">Learn more about Miracle Games story here</a>.
-
-<img class="alignnone wp-image-56763 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/Picture1.jpg" alt="" width="806" height="346" />
-
-Today, we are excited to release new services that will help developers connect to more customers and address some of the most popular developer feedback:
-
-<strong>Microsoft Store Ads is expanding in more ways than one</strong>
-
-Starting next month, Microsoft Store Ads will be <strong>discoverable in Bing.com search results</strong>, along with Microsoft Store search results. To take advantage of these capabilities, create a Store Ads Campaign in Microsoft Advertising. We are also making available a new Attribution SDK for MSIX apps and coming soon for Win32 and PWAs. Learn more <a href="https://aka.ms/MicrosoftStoreAds">here</a>.
-
-<img class="alignnone wp-image-56764 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2023/05/bing-search-results-contoso-1024x534.png" alt="" width="1024" height="534" />
-
-Developers now have the option to <strong>display rich advertising in the spotlight section</strong> in the Microsoft Store. This provides a new large and high-traffic surface for advertisers and supports video ad formats. If you are interested in participating in the pilot program, please submit a request <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR0qhf-gSatdCgmqCvPskx_NUMkdSMjJXSDlTN1BDMjBTOE5XN1FLWExTRC4u&fswReload=1&fswNavStart=1683832285647">here</a>.
-
-[embed]https://youtu.be/QlJ5ROpTe6M[/embed]
-
-Starting in June, <strong>Microsoft Store Ads will expand beyond the U.S. market</strong>, supported by Microsoft Advertising, to more than 150 regions worldwide. Advertisers with a presence in other countries will soon be able to leverage this channel to achieve their acquisition goals.
-
-<strong>Keeping customers engaged across devices has just gotten easier </strong>
-
-Retention is another key challenge for developers. Last year, we announced a feature that allows customers to easily transition apps from one device to another.
-
-Today, we are <strong>introducing a new backup and restore capability on Windows </strong>that helps keep customers engaged across devices. When customers transition from a Windows 10 or 11 device to their new Windows 11 device, the icons for Store apps will automatically get restored right where they had them – on the Start menu and Taskbar. This new feature is in preview and available to Windows Insiders today. To learn more about how to ensure the best experience when restoring apps, <a href="https://aka.ms/AppRestore">learn more here.</a>
-
-[embed]https://youtu.be/wVo1A9kfABs[/embed]
-
-Over the last two years, we continue to see a growth of developers publishing PWAs or Win32 apps. We are excited to bring new capabilities for PWAs, faster certification for Win32 apps and opening Android app submissions to all developers:
-<ul>
- 	<li>PWAs remain a top priority in the Microsoft Store, and we continue to invest in open-source tools to help developers. <strong>New capabilities are available to help expand </strong><strong>your audience through Windows Widgets and Edge Sidebar PWAs</strong>. In addition, the Digital Goods API will soon be available enabling PWAs published to the Microsoft Store to accept in-app purchases and streamline the checkout process. To learn more and leverage the new capabilities, visit <a href="http://www.pwabuilder.com">pwabuilder.com</a>.</li>
- 	<li>Due to popular demand, <strong>today we are making available a suite of certification tests for Win32 app developers</strong> that can be run offline and will provide guidance on how to address potential certification issues. This will create more predictability in your submission and reduce the certification turnaround time by up to 50%. <a href="https://aka.ms/storecertificationtools">Learn more here</a>.</li>
- 	<li><strong>Any developer with an </strong><a href="https://developer.amazon.com/apps-and-games/appstore-on-windows-11?cmp=US_2023_05_3P_MSFTBuild&ch=prtnr&chlast=prtnr&pub=ref&publast=ref&type=org&typelast=org"><strong>Amazon Appstore</strong></a><strong> Developer account can now submit their apps</strong> for distribution on Windows 11 devices. To best prepare your app for a smooth testing and publishing experience, review the<a href="https://developer.amazon.com/docs/appstore-on-windows/overview.html?cmp=US_2023_05_3P_MSFTBuild&ch=prtnr&chlast=prtnr&pub=ref&publast=ref&type=org&typelast=org">developer resources</a> for <a href="https://developer.amazon.com/apps-and-games/blogs/2023/02/resizing-apps-in-wsa?cmp=US_2023_05_3P_MSFTBuild&ch=prtnr&chlast=prtnr&pub=ref&publast=ref&type=org&typelast=org">handling window resizing</a> and <a href="https://developer.amazon.com/apps-and-games/blogs/2023/03/mapping-app-input-with-wsa?cmp=US_2023_05_3P_MSFTBuild&ch=prtnr&chlast=prtnr&pub=ref&publast=ref&type=org&typelast=org">implementing native mapping</a> in the new form factor. The Windows Subsystem for Android continue to get better, with support for Android 13, launch and runtime performance improvements, and new features like Picture in Picture and memory management. Learn more <a href="https://github.com/microsoft/WSA/">here</a>.</li>
-</ul>
-Today's AI announcements ventured the Microsoft Store on Windows into a new and unexplored era. Developers and customers continue to be at the core of everything we do. We look forward to listening to your feedback in the months ahead, so we can continue to build a better experience for all.]]></content:encoded>
 					
 		
 		
