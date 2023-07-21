@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 20 Jul 2023 19:44:08 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 20 Jul 2023 23:10:52 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -61,7 +61,7 @@ Whether you are building Win32 apps or you’re using Windows app SDK, you can f
 In addition to registering apps for restart, you should consider how an app can best resume its previous workload and recover the previous state. Common strategies include saving often to disk and providing context to resume state in the arguments used when registering via ARR API. Here is a code example:
 <pre class="EnlighterJSRAW" data-enlighter-language="generic">// Register for restart with the current value of app text box
 
-RegisterApplicationRestart(counterTextBlock().Text().c_str(), RESTART_NO_PATCH | RESTART_NO_REBOOT);
+RegisterApplicationRestart(counterTextBlock().Text().c_str(), 0);
 
 // Update registration before crash with the new value of the app counter text box
 
@@ -76,8 +76,7 @@ RegisterApplicationRecoveryCallback(APPLICATION_RECOVERY_CALLBACK([](PVOID recov
 
           const auto counter = static_cast&lt;uint32_t*&gt;(recoveryData);
 
-          RegisterApplicationRestart(to_hstring(*counter).c_str(), RESTART_NO_PATCH | RESTART_NO_REBOOT);
-
+          RegisterApplicationRestart(to_hstring(*counter).c_str(), 0);
      }
 
      ApplicationRecoveryFinished(true);
@@ -87,9 +86,7 @@ RegisterApplicationRecoveryCallback(APPLICATION_RECOVERY_CALLBACK([](PVOID recov
      }), &amp;_counter, RECOVERY_DEFAULT_PING_INTERVAL, 0);</pre>
 <h2>.NET apps</h2>
 Similar to Win32 apps, .NET apps can <a href="https://learn.microsoft.com/windows/win32/recovery/registering-for-application-restart">register</a> for restart by using the ARR APIs. The only difference is using <a href="https://github.com/microsoft/CsWin32">p/Invoke</a> to wrap the native API calls. You can find .NET sample code using ARR APIs <a href="https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/RestartRegistration/cs-winui-packaged">on GitHub</a>.
-<pre class="EnlighterJSRAW" data-enlighter-language="generic">// Best effort to register for crash and hang restart.
-
-RegisterApplicationRestart(_counter.ToString(), REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_PATCH | REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT);
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">RegisterApplicationRestart(_counter.ToString(), 0);
 
 // Best effort to register recovery callback to update restart arguments with the latest seconds counter value.
 
@@ -103,9 +100,7 @@ RegisterApplicationRecoveryCallback(new APPLICATION_RECOVERY_CALLBACK(p =&gt;
 
      {
 
-          RegisterApplicationRestart(_counter.ToString(), 
-REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_PATCH | 
-REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT);
+          RegisterApplicationRestart(_counter.ToString(), 0);
 
      }
 
@@ -118,7 +113,9 @@ Apps with critical workloads can use <a href="https://learn.microsoft.com/window
 
 We encourage you to read more about <a href="https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate#remarks">how to effectively use Power APIs</a> for system services and long-running critical applications.
 <h2>Share your feedback</h2>
-Have suggestions or ideas for API improvement? Still have questions about how your app and Windows Update can work together? Please share your thoughts by submitting them via Feedback Hub (Windows key + F)!]]></content:encoded>
+Have suggestions or ideas for API improvement? Still have questions about how your app and Windows Update can work together? Please share your thoughts by submitting them via Feedback Hub (Windows key + F)!
+
+<em><strong>Editor's note -- July 20, 2023 --</strong> <span class="ui-provider en bep beq ber bes bet beu bev bew bex bey bez bfa bfb bfc bfd bfe bff bfg bfh bfi bfj bfk bfl bfm bfn bfo bfp bfq bfr bfs bft bfu bfv bfw" dir="ltr">The code samples above were updated following initial publication.</span></em>]]></content:encoded>
 					
 		
 		
