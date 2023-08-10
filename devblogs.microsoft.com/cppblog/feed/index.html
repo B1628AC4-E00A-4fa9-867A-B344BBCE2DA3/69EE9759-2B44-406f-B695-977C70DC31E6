@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 09 Aug 2023 18:37:46 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 10 Aug 2023 17:14:44 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,116 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Address Sanitizer &#8211; One DLL for all Runtime Configurations</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/#respond</comments>
+		
+		<dc:creator><![CDATA[Amy Wishnousky]]></dc:creator>
+		<pubDate>Thu, 10 Aug 2023 17:14:44 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32709</guid>
+
+					<description><![CDATA[<p>With Visual Studio 2022 version 17.7 Preview 3, we have refactored the MSVC Address Sanitizer (ASan) to depend on one runtime DLL regardless of the runtime configuration. This simplifies project onboarding and supports more scenarios, particularly for projects statically linked (/MT,</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/">MSVC Address Sanitizer &#8211; One DLL for all Runtime Configurations</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>With Visual Studio 2022 version 17.7 Preview 3, we have refactored the MSVC Address Sanitizer (ASan) to depend on one runtime DLL regardless of the runtime configuration. This simplifies project onboarding and supports more scenarios, particularly for projects statically linked (<code>/MT</code>, <code>/MTd</code>) to the C Runtimes. However, static configurations have a new dependency on the ASan runtime DLL.</p>
+<p>Summary of the changes:</p>
+<ul>
+<li>ASan now works with <code>/MT</code> or <code>/MTd</code> built DLLs when the host EXE was not compiled with ASan. This includes Windows services, COM components, and plugins.</li>
+<li>Configuring your project with ASan is now simpler, since your project doesn’t need to uniformly specify the same <a href="https://learn.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library?view=msvc-170">runtime configuration</a> (<code>/MT</code>, <code>/MTd</code>, <code>/MD</code>, <code>/MDd</code>).</li>
+<li>ASan workflows and pipelines for <code>/MT</code> or <code>/MTd</code> built projects will need to ensure the ASan DLL (clang_rt.asan_dynamic-&lt;arch&gt;.dll) is available on PATH.</li>
+<li>The names of the ASan .lib files needed by the linker have changed (the linker normally takes care of this if not manually specifying lib names via <code>/INFERASANLIBS</code>)</li>
+<li>You cannot mix ASan-compiled binaries from previous versions of the MSVC Address Sanitizer (this is always true, but especially true in this case).</li>
+</ul>
+<h2 id="motivation-and-effects">Motivation and Effects</h2>
+<p>When building a project, you must specify how you want to link to the C and C++ Runtime Libraries. Using the <code>/MD</code> option will link dynamically to the runtimes and have DLL dependencies provided by the Windows operating system (ex: ucrtbase.dll) and the VC++ Redistributable (ex: vcruntime140.dll, msvcp140.dll). This is a great default option to choose, as it allows you to take advantage of the latest available on the system and minimizes memory usage. The /MT option specifies that the runtime libraries will be statically linked (via libucrt.lib, libvcruntime.lib, libcpmt.lib, etc) in your program such that you have no VC++ DLL dependencies. This option is useful when dynamically linking complicates deployment and is most frequently used with projects like plugins or drivers.</p>
+<p>Prior to Visual Studio 2022 v17.7 Preview 3, MSVC Address Sanitizer followed the same methodology and treated itself as one of the runtime libraries. If <code>/MD</code> was specified, ASan would be available as a DLL (clang_rt.asan_dynamic-&lt;arch&gt;.dll). If <code>/MT</code> was specified, ASan would be linked into the EXE. ASan can only have one instance at a time, so DLLs that were statically linked would assume the EXE of the process was also built with ASan and would call into that EXE for support. This caused problems for any software that could not recompile the host EXE with ASan enabled: plugins, COM components, Windows services, etc. Here is <a href="https://developercommunity.visualstudio.com/t/C-Address-Sanitizer:-statically-linked/1403680">an example reported on Developer Community</a>. Additionally, since each runtime configuration had its own version of ASan, you could not mix components with different runtime configurations.</p>
+<p>As of Visual Studio v17.7 Preview 3, runtime configuration is no longer considered and there is one Address Sanitizer DLL per architecture. In addition to supporting more scenarios, this can also significantly simplify onboarding a complex project with ASan. A side effect is that projects statically linked with <code>/MT</code> or <code>/MTd</code> now have a dependency on the ASan runtime DLL.</p>
+<h2 id="link-time-changes-inferasanlibs">Link Time Changes (/INFERASANLIBS)</h2>
+<p>When <code>/fsanitize=address</code> is passed to the compiler, <code>/INFERASANLIBS</code> will automatically be passed to the linker, which will take care of the link time requirements for Address Sanitizer.</p>
+<p>If you use <code>/INFERASANLIBS:NO</code> in your build and manually specify which ASan libraries you link with, you will also need to change which .lib files are passed to the linker.</p>
+<table>
+<tbody>
+<tr>
+<td></td>
+<td colspan="2"><code>/INFERASANLIBS</code> prior to VS 2022 v17.7 Preview 3</td>
+</tr>
+<tr>
+<td rowspan="2"><code>/MT</code></td>
+<td rowspan="2">clang_rt.asan_cxx-&lt;arch&gt;.lib</td>
+<td>EXE: <code>/wholearchive:clang_rt.asan-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td>DLL: <code>/wholearchive:clang_rt.asan_dll_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td rowspan="2"><code>/MTd</code></td>
+<td rowspan="2">clang_rt.asan_cxx_dbg-&lt;arch&gt;.lib</td>
+<td>EXE: <code>/wholearchive:clang_rt.asan_dbg-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td>DLL: <code>/wholearchive:clang_rt.asan_dbg_dll_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td><code>/MD</code></td>
+<td>clang_rt.asan_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_dynamic_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td><code>/MDd</code></td>
+<td>clang_rt.asan_dbg_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_dbg_dynamic_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td></td>
+<td colspan="2">/INFERASANLIBS as of VS 2022 v17.7 Preview 3</td>
+</tr>
+<tr>
+<td><code>/MT</code></td>
+<td>clang_rt.asan_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_static_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td><code>/MTd</code></td>
+<td>clang_rt.asan_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_static_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td><code>/MD</code></td>
+<td>clang_rt.asan_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_dynamic_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+<tr>
+<td><code>/MDd</code></td>
+<td>clang_rt.asan_dynamic-&lt;arch&gt;.lib</td>
+<td><code>/wholearchive:clang_rt.asan_dynamic_runtime_thunk-&lt;arch&gt;.lib</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>The MSVC AddressSanitizer does not attempt to maintain compatibility with older versions, unlike other MSVC libraries. You should deploy a version of the AddressSanitizer DLL that matches the version of the toolset used when compiling your ASan-instrumented code. Here are some common issues you may see if you are mixing ASan-enabled projects built before and after Visual Studio 2022 17.7 Preview 3:</p>
+<p><strong>“The code execution cannot proceed because clang_rt.asan_dynamic-x86_64.dll was not found.”</strong></p>
+<p><strong>“The code execution cannot proceed because clang_rt.asan_dynamic-i386.dll was not found.”</strong></p>
+<p>These messages are displayed when an ASan binary was deployed in an environment without the AddressSanitizer DLL. If you are seeing this immediately after updating to Visual Studio 2022 17.7 Preview 3 and you are statically linking to the C Runtime (<code>/MT</code>, <code>/MTd</code>), that binary has a new dependency on the ASan DLL named and must be included in the environment. Please update the PATH to include clang_rt.asan_dynamic-x86_64.dll (x64) or clang_rt.asan_dynamic-i386.dll (x86).</p>
+<p><strong>“The procedure entry point __sanitizer_override_function could not be located in the dynamic link library.”</strong></p>
+<p><strong>“The procedure entry point __sanitizer_register_weak_function could not be located in the dynamic link library.”</strong></p>
+<p>These messages are displayed when a binary built with 17.7 Preview 3 is deployed in an environment with an AddressSanitizer DLL from a toolset prior to 17.7 Preview 3. Please update clang_rt.asan_dynamic-x86_64.dll (x64) or clang_rt.asan_dynamic-i386.dll (x86) to the latest version included with your current version of Visual Studio.</p>
+<h2 id="let-us-know-what-you-think">Let us know what you think!</h2>
+<p>Please check out the new MSVC AddressSanitizer improvements in Visual Studio 2022 v17.7 Preview 3 and let us know if you have any comments, questions, or other feedback in the comments below or on <a href="https://developercommunity.visualstudio.com/cpp/report">Developer Community</a>!</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/">MSVC Address Sanitizer &#8211; One DLL for all Runtime Configurations</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Introducing CMake Debugger in VS Code: Debug your CMake Scripts using Open-Source CMake Debugger</title>
 		<link>https://devblogs.microsoft.com/cppblog/introducing-cmake-debugger-in-vs-code-debug-your-cmake-scripts-using-open-source-cmake-debugger/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/introducing-cmake-debugger-in-vs-code-debug-your-cmake-scripts-using-open-source-cmake-debugger/#respond</comments>
@@ -992,101 +1102,6 @@ jobs:
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Using Key Events with warning C26800</title>
-		<link>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/#respond</comments>
-		
-		<dc:creator><![CDATA[Dmitry Kobets]]></dc:creator>
-		<pubDate>Mon, 26 Jun 2023 16:19:51 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Documentation]]></category>
-		<category><![CDATA[Experimental]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32325</guid>
-
-					<description><![CDATA[<p>Here's how you can use Key Events to fix warning C26800</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/">Using Key Events with warning C26800</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/">MSVC&#8217;s Code Analysis Key Events</a> are a useful tool for quickly getting to the root-cause of your static analysis warnings. This blog post highlights how Key Events may be used with warning <a href="https://learn.microsoft.com/cpp/code-quality/c26800?view=msvc-170"><code>C26800</code></a> <code>Use of a moved from object</code> to quickly narrow down the problematic code.</p>
-<h2 id="c26800-warning-recap">C26800 warning recap</h2>
-<p>Warning C26800 catches code that attempts to use an object that is in a moved-from state:</p>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-int main()
-{
-    std::string string_owner = "this string will be moved!";
-    std::string new_string_owner = std::move(string_owner);
-    std::cout &lt;&lt; string_owner &lt;&lt; std::endl; // Warning C26800 Use of a moved from object: ''string_owner'' (lifetime.1).
-}</code></pre>
-<p>Instead of <code>this string will be moved!</code>, the print statement in the above example will produce an empty output line when run.</p>
-<p>The move from <code>string_owner</code> into <code>new_string_owner</code> happens on the line <em>immediately</em> preceding its use in the print statement, so it&#8217;s instantly clear why the output is incorrect. But this is a trivial example. Real world code is rarely this straightforward.</p>
-<h2 id="a-more-complex-example-sans-key-events">A more complex example, sans Key Events</h2>
-<p>Consider a more convoluted example. The following code defines a function that is not only significantly longer than in the first code snippet, but is also littered with all sorts of intervening business logic (represented by <code>// ...</code>).</p>
-<pre><code class="language-cpp">#include &lt;string&gt;
-void take_ownership(std::string&amp;&amp;) { /* ... */ }
-void use_string(std::string) { /* ... */ }
-void my_buggy_function(bool some_condition, bool some_other_condition)
-{
-    std::string my_string{ "this is a string!" };
-    bool my_flag{ false };
-
-    // ...
-
-    if (some_condition)
-    {
-        take_ownership(std::move(my_string)); // (a)
-    }
-
-    // ...
-
-    if (some_other_condition) // (b)
-    {
-        my_flag = true;
-
-        // ...
-
-        my_string = "the string is reset"; // (c)
-
-        // ...
-    }
-
-    // ...
-
-    if (my_flag &amp;&amp; !some_other_condition) // (d)
-    {
-        take_ownership(std::move(my_string)); // (e)
-    }
-
-    // ...
-
-    use_string(my_string); // Use of a moved from object: ''my_string'' (lifetime.1). (f)
-}</code></pre>
-<p>As in the simple example, a developer tasked with solving this bug will be looking to answer the question: where is <code>my_string</code> moved? A natural approach would likely be to start on line <code>(f)</code>, and to scan backwards through the code. This process would look something like:</p>
-<ul>
-<li>Starting at the warning location and looking a few lines up, the <code>take_ownership(std::move(my_string));</code> on line <code>(e)</code> immediately offers itself up as the culprit. To realize that this is a red-herring requires evaluating the condition on line <code>(d)</code>, which requires tracing even higher up into the function&#8217;s depths, delving further into the confusing business logic.</li>
-<li>Eventually, once satisfied that the move on line <code>(e)</code> is actually unreachable (oops!), the developer recommences the upwards traversal, eventually landing on the <code>move</code> on line <code>(a)</code>. But not before noticing the write to <code>my_string</code> on line <code>(c)</code>.</li>
-<li>The developer must now solve the puzzle of why this re-assignment (on line <code>(c)</code>) is not preventing the warning all the way down on line <code>(f)</code>.</li>
-<li>After spending far too long running back and forth through the code, the developer finally convinces themselves that it might be possible for the condition on line <code>(b)</code> to be false, thus skipping the reset on line <code>(c)</code>. The mystery is finally solved.</li>
-</ul>
-<p>There must be an easier way. Enter Key Events.</p>
-<h2 id="solution-made-simple-with-key-events">Solution made simple with Key Events</h2>
-<p>As of Visual Studio 17.5 Preview 1, Key Events have been enabled for the warning C26800. Using the <a href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/#presentation-of-key-events-through-sarif-viewer-extension">Microsoft SARIF Viewer extension</a>, this check can now precisely explain its assumptions and reasoning to the curious developer, all via inline annotations in the buggy code!</p>
-<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/sarif_extension.png" alt="Key Events with warning C26800" /></p>
-<p>These Key Events offer precisely the troublesome code path that the developer was searching for and (eventually) arrived at via manual inspection of the function&#8217;s code. Notably, we see that the check:</p>
-<ul>
-<li>is concerned with the move on line <code>(a)</code>, helpfully noting that its guarding condition <code>some_condition</code> could be <code>true</code></li>
-<li>points out that there is nothing stopping the conditions on line <code>(b)</code> and <code>(d)</code> from being <code>false</code></li>
-</ul>
-<p>The buggy control flow leading to the usage of the moved-from <code>my_string</code> variable is therefore immediately made clear to the satisfied developer, and the investigation time is greatly reduced.</p>
-<h2 id="summary">Summary</h2>
-<p>Prior to the addition of Key Events to MSVC&#8217;s warning C26800, complex code made it hard to debug and get to the root-cause of the warning. Now, with Key Events enabled by default for warning C26800, developers can much more easily identify and resolve instances of use-after-free warnings in their code. This feature was enabled in Visual Studio 17.5 Preview 1, so please <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">download a recent version</a> and try it out. You can share your thoughts and comments with us through <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>, Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/">Using Key Events with warning C26800</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
