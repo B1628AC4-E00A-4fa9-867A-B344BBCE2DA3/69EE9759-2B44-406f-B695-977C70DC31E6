@@ -1,4 +1,367 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Jul 2023 04:01:16 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[フロントエンドパフォーマンスのチェックリスト2021年版（PDF、Apple Pages、MS Word）-後編]]></title><description><![CDATA[目次＃ 前編 準備段階：計画と指標
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Wed, 30 Aug 2023 02:34:36 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[ReactにおけるRef：DOMへのアクセスから命令的APIまで]]></title><description><![CDATA[この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという…]]></description><link>https://postd.cc/refs-from-dom-to-api/</link><guid isPermaLink="false">https://postd.cc/refs-from-dom-to-api/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 30 Aug 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという3つのフックについて説明し、これらを適切に使用する方法を紹介したいと思います。
+この記事と同じ内容を扱ったYouTube動画も公開していますので、活字媒体よりも動画視聴を好まれる方はそちらをご覧ください。文字ではなく、アニメーションと音声で同じ概念を解説しています。
+<a href="https://youtu.be/H9KhRiO1UeU">この記事は動画形式でも公開しています。</a></p>
+<h2>目次</h2>
+<ul>
+<li><a href="#01">useRefを使用してReactでDOMにアクセスする</a></li>
+<li><a href="#02">親から子にRefをpropとして渡す</a></li>
+<li><a href="#03">forwardRefを使用して親から子にRefを渡す</a></li>
+<li><a href="#04">useImperativeHandleを使用した命令型API</a></li>
+<li><a href="#05">useImperativeHandleを使用しない命令型API</a></li>
+</ul>
+<p>Reactには素晴らしい点が多数ありますが、その1つは実際のDOMを抽象化することでその複雑性を取り除いてくれることです。手動でクエリを実行して要素を取得したり、取得した要素にどのようにしてクラスを追加するか頭を悩ませたり、ブラウザの不整合に手を焼いたりすることがなく、コンポーネントを記述するだけでよいので、ユーザーエクスペリエンスにフォーカスすることができます。しかし、極めてまれではありますが、実際のDOMにアクセスしなくてはならないケースもあります。
+実際のDOMに関しては、RefとRefに関連するあらゆることを理解し、その適切な使用方法を学ぶことが何よりも重要です。したがって、今日はそもそもなぜDOMにアクセスする必要があるのか、その際にRefがどう役立つのかを説明し、<code class="language-text">useRef</code>、<code class="language-text">forwardRef</code>、<code class="language-text">useImperativeHandle</code>の特徴とその適切な使用方法について見ていきたいと思います。また、<code class="language-text">forwardRef</code>と<code class="language-text">useImperativeHandle</code>の使用を避けつつ、その恩恵を受ける方法についても詳しく話します。これらのフックの仕組みについて調べてみたことのある人なら、なぜそうすることが望ましいのかお分かりいただけるでしょう。
+さらに、Reactで命令的APIを実装する方法についても紹介します。</p>
+<h2>useRefを使用してReactでDOMにアクセスする <a name="01"></a></h2>
+<p>自分が主催する会議の登録フォームを実装するとします。参加者に詳細を送れるように、氏名とメールアドレス、Twitter（現在は「X」に名称変更）ハンドルネームを知らせてもらう必要があり、「氏名」と「メールアドレス」の入力欄は必須項目にしたいと思っています。ただし、空欄のまま送信ボタンが押されても、ただ赤枠を表示するだけでは面白くないので、空欄にフォーカスし、入力欄が揺れるようにすることで入力を促します。
+Reactには多くの機能が備わっていますが、必要なものが全てそろっているわけではありません。例えば、「手動で要素にフォーカスする」といった機能は提供されていません。したがって、この機能を実装するにはJavaScriptのネイティブAPIを利用しなくてはならず、そのためには実際のDOM要素にアクセスする必要があります。
+Reactが存在しない世界では、まず次のような処理を実行します。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> element <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">"bla"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>次に、要素にフォーカスします。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript">element<span class="token punctuation">.</span><span class="token function">focus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>もしくは、その要素までスクロールします。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript">element<span class="token punctuation">.</span><span class="token function">scrollIntoView</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>他にもやり方はあるでしょう。Reactの世界でネイティブのDOM APIを使用する場合、以下のようなユースケースが一般的です。</p>
+<ul>
+<li>フォームの入力欄のように、要素をレンダリングした後、手動で<strong>要素にフォーカスする</strong></li>
+<li>ポップアップのような要素を表示する際、<strong>コンポーネントの外のクリック</strong>を検知する</li>
+<li>画面上に要素が表示された後、手動で<strong>要素までスクロールする</strong></li>
+<li>ツールチップのようなものを正しい位置に表示するために、コンポーネントの<strong>サイズと境界を計算する</strong></li>
+</ul>
+<p>厳密には、今でも<code class="language-text">getElementById</code>メソッドを使おうと思えば使えますが、Reactではより強力な方法で指定要素にアクセスすることができます。その方法を使えば、至るところにIDを設定する必要がなく、DOMの基本構造を意識する必要もありません。その方法というのが<a href="https://react.dev/reference/react/useRef#manipulating-the-dom-with-a-ref">Ref</a>です。
+Refは単なるミュータブルなオブジェクトであり、Refへの参照は再レンダリングをまたいでReactが保持します。Refは再レンダリングをトリガーしないため、ステートの代わりにはなりません。したがって、ステートをRefで代用しようとするのは避けてください。両者の違いに関する詳細は、<a href="https://react.dev/learn/referencing-values-with-refs#differences-between-refs-and-state">ドキュメントをご覧ください</a>。
+Refは、<code class="language-text">useRef</code>フックを使用して作成します。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// create a ref with default value null</span>
+  <span class="token keyword">const</span> ref <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Refに格納された値は、currentという（唯一の）プロパティの中にあります。この中には何でも格納できます。例えば、ステートから取得した値をオブジェクトに格納することもできます。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> ref <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// re-write ref's default value with new object</span>
+    ref<span class="token punctuation">.</span>current <span class="token operator">=</span> <span class="token punctuation">{</span>
+      <span class="token function-variable function">someFunc</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token operator">...</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+      someValue<span class="token operator">:</span> stateValue<span class="token punctuation">,</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>stateValue<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>あるいは、ここでお話しするユースケースにとってより重要な例を挙げると、Refは任意のDOM要素と一部のReactコンポーネントに代入できます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> ref <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// assign ref to an input element</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">useEffect</code>（コンポーネントがレンダリングされた後のみ利用可能）の中で<code class="language-text">ref.current</code>をログ出力すると、その入力に対して<code class="language-text">getElementById</code>を実行した場合と全く同じ要素が得られます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> ref <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// this will be a reference to input DOM element!</span>
+    <span class="token comment">// exactly the same as if I did getElementById for it</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>ref<span class="token punctuation">.</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>そして、登録フォームを1つの巨大なコンポーネントとして実装するならば、次のような処理を実行できます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>name<span class="token punctuation">,</span> setName<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">const</span> <span class="token function-variable function">onSubmitClick</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>name<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// focus the input field if someone tries to submit empty name</span>
+      ref<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">focus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+      <span class="token comment">// submit the data here!</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    ...
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">onChange</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setName</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span>target<span class="token punctuation">.</span>value<span class="token punctuation">)</span><span class="token punctuation">}</span></span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>onSubmitClick<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">Submit the form!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>入力された値をステートに保存し、全ての入力に対してRefを作成し、「送信」ボタンがクリックされたら値が空ではないか確認し、空であれば必要な入力欄にフォーカスします。
+このフォームの実装をCodeSandboxで公開していますのでご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/giant-form-ref-example-23z9vf?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="giant-form-ref-example"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<h2>親から子にRefをpropとして渡す <a name="02"></a></h2>
+<p>もちろん、実際に全てを1つの巨大なコンポーネントとして実装することはありません。どちらかといえば、入力は複数のフォームで再利用し、独自のスタイルをカプセル化して制御できるよう、固有のコンポーネントに抽出したいと思います。そうすることで、上部にラベルを表示したり、右側にアイコンを表示したりといった機能を追加することもできます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> onChange<span class="token punctuation">,</span> label <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token punctuation">{</span>label<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>br</span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">onChange</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">onChange</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span>target<span class="token punctuation">.</span>value<span class="token punctuation">)</span><span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span>
+しかし、エラーハンドリングと送信機能はinputではなく、依然としてFormの中にあります。
+<span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>name<span class="token punctuation">,</span> setName<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">const</span> <span class="token function-variable function">onSubmitClick</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>name<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// deal with empty name</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+      <span class="token comment">// submit the data here!</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    ...
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">InputField</span></span> <span class="token attr-name">label</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>name<span class="token punctuation">"</span></span> <span class="token attr-name">onChange</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>setName<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>onSubmitClick<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">Submit the form!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>入力に対し、<code class="language-text">Form</code>のコンポーネントから「自らにフォーカスする」ように指示するにはどうすればよいでしょうか。通常、Reactにおいてデータと挙動を制御するには、コンポーネントにpropを渡し、コールバックを監視します。「focusItself」というpropを<code class="language-text">InputField</code>に渡し、これを<code class="language-text">false</code>から<code class="language-text">true</code>に切り替えることもできますが、これがうまくいくのは1回だけです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// don't do this! just to demonstate how it could work in theory</span>
+<span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> onChange<span class="token punctuation">,</span> focusItself <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>focusItself<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// focus input if the focusItself prop changes</span>
+      <span class="token comment">// will work only once, when false changes to true</span>
+      ref<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">focus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>focusItself<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+  <span class="token comment">// the rest is the same here</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>「onBlur」というコールバックを追加して、入力がフォーカスを失ったら<code class="language-text">focusItself</code>propをリセットして<code class="language-text">false</code>に戻したり、ブール値の代わりに乱数値に変更したりすることもできます。あるいは、その他の工夫を考案することもできるかもしれません。</p>
+<p>おそらく、他にもやり方はあるでしょう。propをいじるのではなく、単にあるコンポーネント（<code class="language-text">Form</code>）の中にRefを作成し、これを別のコンポーネント（<code class="language-text">InputField</code>）に渡して、そこで基本構造のDOM要素に接続することもできるでしょう。結局のところ、Refはただのミュータブルなオブジェクトなので。</p>
+<p>次に、<code class="language-text">Form</code>が今までと同じくRefを作成します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// create the Ref in Form component</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">InputField</code>コンポーネントには、今までと同じくRefを受け取るためのpropと<code class="language-text">input</code>フィールドがあります。違うのは、Refが<code class="language-text">InputField</code>の中で作成されるのではなく、propから渡されるということです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> inputRef <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// the rest of the code is the same</span>
+
+
+  <span class="token comment">// pass ref from prop to the internal input component</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token attr-name">...</span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Refはミュータブルなオブジェクトであり、そのように設計されています。Refを要素に渡すと、その下にあるReactがRefに変更を加えます。そして、変更されるオブジェクトは<code class="language-text">Form</code>コンポーネントの中で宣言されます。したがって、<code class="language-text">InputField</code>がレンダリングされると、Refオブジェクトはすぐに変更され、<code class="language-text">Form</code>は<code class="language-text">inputRef.current</code>内の<code class="language-text">input</code> DOM要素にアクセスすることができます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// create the Ref in Form component</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// the "input" element, that is rendered inside InputField, will be here</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>inputRef<span class="token punctuation">.</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span><span class="token comment">/* Pass ref as prop to the input field component */</span><span class="token punctuation">}</span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">InputField</span></span> <span class="token attr-name">inputRef</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>あるいは、submitコールバックの中で、前と全く同じコードであるinputRef.current.focus()を呼び出すことができます。
+こちらの例をご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/example2-pass-ref-as-prop-5i03u9?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="example2: pass ref as prop"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<h2>forwardRefを使用して親から子にRefを渡す <a name="03"></a></h2>
+<p>propの名前を単に<code class="language-text">ref</code>ではなく、<code class="language-text">inputRef</code>としたのはなぜだろうと不思議に思う人もいるかもしれませんが、実際はそれほど単純なことではありません。<code class="language-text">ref</code>は実際にはpropではなく、予約語のようなものです。昔、まだクラスコンポーネントを記述していた頃は、Refをクラスコンポーネントに渡すと、このコンポーネントのインスタンスはそのRefの<code class="language-text">.current</code>値になっていました。
+しかし、関数コンポーネントにインスタンスはないため、コンソール上に次のような警告が表示されます。「Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?」</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// if we just do this, we'll get a warning in console</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">InputField</span></span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これが機能するためには、Reactにこの<code class="language-text">ref</code>が実際に意図したものであり、これを使ってやりたいことがあると伝える必要があります。それには、<code class="language-text">forwardRef</code>関数の助けを借ります。この関数は、コンポーネントを受け入れ、コンポーネントの関数の第2引数として<code class="language-text">ref</code>属性からRefを挿入します。挿入位置はpropのすぐ後ろです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// normally, we'd have only props there</span>
+<span class="token comment">// but we wrapped the component's function with forwardRef</span>
+<span class="token comment">// which injects the second argument - ref</span>
+<span class="token comment">// if it's passed to this component by its consumer</span>
+<span class="token keyword">const</span> InputField <span class="token operator">=</span> <span class="token function">forwardRef</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> ref</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// the rest of the code is the same</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>上のコードを2つの変数に分けることで、可読性を向上させることもできます。</p>
+<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">const</span> <span class="token function-variable function">InputFieldWithRef</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> ref</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// the rest is the same</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// this one will be used by the form</span>
+<span class="token keyword">export</span> <span class="token keyword">const</span> InputField <span class="token operator">=</span> <span class="token function">forwardRef</span><span class="token punctuation">(</span>InputFieldWithRef<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これで、<code class="language-text">Form</code>は通常のDOM要素と同様にRefをInputFieldコンポーネントに渡すことができます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">InputField</span></span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><code class="language-text">forwardRef</code>を使用するか、Refをpropとして渡すかは、単なる好みの問題であり、最終結果は同じです。
+こちらの実例をご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/example3-pass-ref-with-forwardref-eg30h5?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="example3: pass ref with forwardRef"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<h2>useImperativeHandleを使用した命令的API <a name="04"></a></h2>
+<p><code class="language-text">Form</code>コンポーネントから入力欄にフォーカスする方法については大体お分かりいただけたかと思いますが、目指しているフォームはまだ完成ではありません。エラーが発生した場合、フォーカスするだけでなく入力欄が揺れるようにしたいとお話ししたと思います。JavaScriptのネイティブAPIに<code class="language-text">element.shake()</code>のようなものはありませんので、ここではDOM要素にアクセスしても役に立ちません。
+しかし、CSSアニメーションとして簡単にこの機能を実装できます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// store whether we should shake or not in state</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>shouldShake<span class="token punctuation">,</span> setShouldShake<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// just add the classname when it's time to shake it - css will handle it</span>
+  <span class="token keyword">const</span> className <span class="token operator">=</span> shouldShake <span class="token operator">?</span> <span class="token string">"shake-animation"</span> <span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// when animation is done - transition state back to false, so we can start again if needed</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">className</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>className<span class="token punctuation">}</span></span> <span class="token attr-name">onAnimationEnd</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setShouldShake</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>では、アニメーションをトリガーするにはどうすればよいでしょうか。この場合も、フォーカスのときと要領は同じです。propを使って何かしら工夫を考案することはできるかもしれませんが、見た目が不自然であるだけでなく、かなり複雑なフォームになってしまいます。特に、Refを使用してフォーカスを実現していることを考えると、全く同じ問題に対して2つのソリューションを用いることになります。<code class="language-text">InputField.shake()</code>と<code class="language-text">InputField.focus()</code>のようなことができたら良いのですが。
+フォーカスについて言うと、これをトリガーするために<code class="language-text">Form</code>コンポーネントがいまだにネイティブのDOM APIに頼る必要があるのはなぜでしょうか。こうした複雑性を抽象化によって取り除くのが、<code class="language-text">InputField</code>のそもそもの目的であり、担うべき役割ではないのでしょうか。フォームが基本構造のDOM要素にアクセスできるのもおかしな話です。これによって、実装に関する内部の詳細が漏れてしまいます。どのDOM要素を使用しているのか、そもそもDOM要素を使用しているのか、あるいは別のものを使用しているのかは、<code class="language-text">Form</code>コンポーネントの関心事であるべきではないのです。関心の分離の原則があるので。
+<code class="language-text">InputField</code>コンポーネントに適切な命令的APIを実装するべきときが来たようです。現状、Reactは宣言的であり、それに従ってコードを記述することが求められています。しかし、命令によって何かをトリガーする方法が必要なこともあります。Reactには、そのようなときのためのescape hatchが用意されています。それが<a href="https://react.dev/reference/react/useImperativeHandle">useImperativeHandle</a>フックです。
+このフックは理解するのが少し難しく、筆者もドキュメントを2回読み、何度か自分で試し、実際のReactコードに実装してみてようやくその仕組みを理解できました。しかし必要なものは、基本的に命令的APIの形を決めることと、それを接続するRefの2つだけです。入力はシンプルです。<code class="language-text">.focus()</code>と<code class="language-text">.shake()</code>の関数がAPIとして必要なだけであり、Refについてはすでに分かっています。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// this is how our API could look like</span>
+<span class="token keyword">const</span> InputFieldAPI <span class="token operator">=</span> <span class="token punctuation">{</span>
+  <span class="token function-variable function">focus</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// do the focus here magic</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token function-variable function">shake</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// trigger shake here</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この<code class="language-text">useImperativeHandle</code>フックは、このオブジェクトをRefオブジェクトのcurrentプロパティに接続するだけです。その方法は以下の通りです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+
+
+  <span class="token function">useImperativeHandle</span><span class="token punctuation">(</span>someRef<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
+    <span class="token function-variable function">focus</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">shake</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>第1引数はRefであり、コンポーネント自体の中で作成されるか、propから、もしくはforwardRefを通して渡されます。第2引数はオブジェクトを返す関数であり、このオブジェクトは<code class="language-text">inputRef.current</code>として利用できます。第3引数は依存配列であり、他のReactフックと同様です。
+ここでのコンポーネントには、Refを<code class="language-text">apiRef</code> propとして明示的に渡します。後は、実際のAPIを実装するだけです。そのためには別のRefが必要になります。こちらは<code class="language-text">InputField</code>内のRefであり、通常通り<code class="language-text">input</code> DOM要素に接続してフォーカスをトリガーできます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// pass the Ref that we'll use as our imperative API as a prop</span>
+<span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> apiRef <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// create another ref - internal to Input component</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// "merge" our API into the apiRef</span>
+  <span class="token comment">// the returned object will be available for use as apiRef.current</span>
+  <span class="token function">useImperativeHandle</span><span class="token punctuation">(</span>apiRef<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
+    <span class="token function-variable function">focus</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+      <span class="token comment">// just trigger focus on internal ref that is attached to the DOM object</span>
+      inputRef<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">focus</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">shake</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>「揺れる」動きについては、ステートの更新をトリガーします。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// pass the Ref that we'll use as our imperative API as a prop</span>
+<span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> apiRef <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// remember our state for shaking?</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>shouldShake<span class="token punctuation">,</span> setShouldShake<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useImperativeHandle</span><span class="token punctuation">(</span>apiRef<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
+    <span class="token function-variable function">focus</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">shake</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+      <span class="token comment">// trigger state update here</span>
+      <span class="token function">setShouldShake</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これで、Formはrefを作成し、InputFieldに渡し、内部の実装について心配することなく、簡単なinputRef.current.focus()とinputRef.current.shake()を実行できます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Form</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> inputRef <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>name<span class="token punctuation">,</span> setName<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">const</span> <span class="token function-variable function">onSubmitClick</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>name<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// focus the input if the name is empty</span>
+      inputRef<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">focus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// and shake it off!</span>
+      inputRef<span class="token punctuation">.</span>current<span class="token punctuation">.</span><span class="token function">shake</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+      <span class="token comment">// submit the data here!</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    ...
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">InputField</span></span> <span class="token attr-name">label</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>name<span class="token punctuation">"</span></span> <span class="token attr-name">onChange</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>setName<span class="token punctuation">}</span></span> <span class="token attr-name">apiRef</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>inputRef<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>onSubmitClick<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">Submit the form!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>完全に機能するフォームのサンプルを実際に使ってみてください。</p>
+<h2>useImperativeHandleを使用しない命令的API <a name="05"></a></h2>
+<p><code class="language-text">useImperativeHandle</code>フックは目がけいれんを起こしそうだという人もいるかもしれません。実は、私もその1人です。今お話しした機能は、このフックを実際に使わなくても実装できます。Refの仕組みと、Refが変更可能であることはすでに分かっています。したがって、必要なRefの<code class="language-text">ref.current</code>にAPIオブジェクトを代入するだけでいいのです。以下に例を挙げます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">InputField</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> apiRef <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    apiRef<span class="token punctuation">.</span>current <span class="token operator">=</span> <span class="token punctuation">{</span>
+      <span class="token function-variable function">focus</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token function-variable function">shake</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>apiRef<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これは、<code class="language-text">useImperativeHandle</code>がバックグラウンドで実行する処理とほぼ同じです。実際の動作は以前と全く同じです。
+実際には、<code class="language-text">useLayoutEffect</code>の方がもっと良いかもしれませんが、これについてはまた別の記事でお話ししたいと思います。今回は、従来通り<code class="language-text">useEffect</code>を使用します。
+最後の例をご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/example5-imperative-api-without-useimperativehandle-yjyxd0?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="example5: imperative api without useImperativeHandle"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<p>揺れる動作が実装されたすてきなフォームの完成です。ReactにおけるRefの謎は解明され、命令的APIも使えるようになりました。実に素晴らしい。
+次の点を覚えておいてください。Refはいわば「escape hatch」のようなもので、propやコールバックを使用したReactの通常のデータフローやステートの代わりになるものではありません。「通常の」代替策がない場合のみ使用してください。命令的に何かをトリガーするのも同様です。どちらかといえば、propやコールバックを使用した通常のフローの方が望ましいので。
+さらに理解を深めていただくために、YouTube動画もぜひご覧ください。概念によっては、2段落分の文章よりも3秒のアニメーションの方が伝わりやすい場合もあります。</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/H9KhRiO1UeU?si=o5H0wzWfvB2Riyy3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>]]></content:encoded></item><item><title><![CDATA[フロントエンドパフォーマンスのチェックリスト2021年版（PDF、Apple Pages、MS Word）-後編]]></title><description><![CDATA[目次＃ 前編 準備段階：計画と指標
 パフォーマンスを重視する文化、Core Web Vitals、パフォーマンスのプロファイル、CrUX、Lighthouse、FID、TTI、CLS、端末。 現実的…]]></description><link>https://postd.cc/front-end-performance-2021-checklist-3/</link><guid isPermaLink="false">https://postd.cc/front-end-performance-2021-checklist-3/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><pubDate>Mon, 24 Jul 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>目次<a href="#00">＃</a></h2>
 <p><strong>前編</strong></p>
 <ul>
@@ -3604,178 +3967,5 @@ Qwikは、開発者がアプリケーションを可能な限り小さいチャ�
 <li><a href="https://discord.gg/JHVpZmqSs4">Discord</a>でチャット</li>
 <li><a href="https://builder-io.rippling-ats.com/">builder.io</a>の採用情報</li>
 </ul>
-<h2>シリーズ記事一覧</h2>
-<div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧</a>はこちらから参照できます。</p></div></div>]]></content:encoded></item><item><title><![CDATA[モバイルサイトのGoogle PageSpeed Insightsスコアを100点にするには]]></title><description><![CDATA[Google PageSpeed InsightsはWebサイトの知覚的な待機時間を測定できるツールです。
-Googleはこのスコアを検索ランキングのアルゴリズムに活用すると公表しているため、良いス…]]></description><link>https://postd.cc/how-to-score-100-on-google-pagespeed-insights-on-mobile/</link><guid isPermaLink="false">https://postd.cc/how-to-score-100-on-google-pagespeed-insights-on-mobile/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><pubDate>Tue, 31 Jan 2023 00:00:00 GMT</pubDate><content:encoded><![CDATA[<p><a href="https://developers.google.com/speed/pagespeed/">Google PageSpeed Insights</a>はWebサイトの知覚的な待機時間を測定できるツールです。
-Googleはこのスコアを検索ランキングのアルゴリズムに活用すると公表しているため、良いスコアが必要不可欠です。</p>
-<p>私たちは、モバイルサイトのPageSpeed Insightsスコアを100点にするために何が必要かを探ってきました。
-この取り組みを始めたとき、デスクトップサイトのスコアはすでに100点でした。
-しかし、現代のeコマースの主流はモバイルコマースであり、モバイルサイトでは60点台半ばのスコアしか獲得できていませんでした。
-このブログ記事では、モバイルサイトでも100点を取るための方法を共有します。
-多くの企業がデスクトップサイトで100点を獲得していますが、モバイルサイトで100点を取れることは滅多にありません。
-それでは始めましょう。</p>
-<p>Builder.ioは標準的なNext.jsサイトです。
-サイト自体がBuilderコンテンツプラットフォームで実行されているため、画像サイズや事前読み込みなど、コンテンツに関するあらゆるベストプラクティスはすでに守られているはずです。
-それでもスコアはわずか60点台にとどまっていました。なぜでしょうか？</p>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--0DMRzttv--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/iy8vyp90ed82l4kmhshx.png"></p>
-<p>その理由を探るために、スコアの内訳を見てみましょう。</p>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--eTUcudeP--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/aeaoni0mhgjyttr3utm5.png"></p>
-<p>問題は以下の2つに分解できます。</p>
-<ul>
-<li>Total Blocking Time（TBT）とTime to Interactive（TTI）：JavaScriptによるページ上のブロッキング時間が長すぎる。</li>
-<li>First Contentful Paint（FCP）とLargest Contentful Paint（LCP）：モバイルブラウザにとって、レンダリングが必要なページ上のコンテンツが多すぎる。</li>
-</ul>
-<p>そのため、以下を目指す必要があります。</p>
-<ol>
-<li>JavaScriptの量を減らす。</li>
-<li>初回のレンダリング時のコンテンツ量を減らす。</li>
-</ol>
-<h2>なぜJavaScriptの量が増えるのか？</h2>
-<p>私たちのホームページはほとんど静的なページです。
-なぜJavaScriptが必要なのでしょうか？それはホームページがNext.jsサイトであり、つまりReactアプリケーションであるからです（ドラッグ&#x26;ドロップエディタによる出力をReactに変換するために<a href="https://github.com/BuilderIO/mitosis">Mitosis</a>を使用しています）。
-サイトの大部分は静的ですが、JavaScriptが必要な要素が3つあります。</p>
-<ol>
-<li>ナビゲーションシステム：メニューにはインタラクティブ性が必要であり、したがってJavaScriptも必要。また、デスクトップとモバイル端末では異なるメニューが使用されている。</li>
-<li>チャット用のウィジェットを読み込む必要がある。</li>
-<li>Google Analyticsが必要。</li>
-</ol>
-<p>それぞれ詳しく見ていきましょう。</p>
-<h2>アプリケーションのブートストラップ</h2>
-<p>サイトはほとんど静的であるとはいえ、それでもアプリケーションです。
-メニューを有効にするにはアプリケーションをブートストラップする必要があります。
-具体的には、フレームワークは再ハイドレーションを実行する中でテンプレートをDOMと比較し、すべてのDOMリスナーをインストールする必要があります。
-このプロセスによって、既存のフレームワークは<a href="/a-first-look-at-qwik-the-html-first-framework/">replayable（再生型）</a>になります。
-つまり、たとえページの95％が静的であっても、フレームワークはすべてのテンプレートをダウンロードし、リスナーが存在するかを判断するためにテンプレートを再実行しなければなりません。
-これが意味するのは、最初にHTMLとして、次にJavaScriptのJSXとして、サイトが合計2回ダウンロードされるということです。</p>
-<p>さらに悪いことに、再ハイドレーションのプロセスは低速です。
-フレームワークはDOMの各ノードにアクセスし、仮想DOMとの差分を検出しなければならず、それに時間がかかります。
-また、再ハイドレーションのプロセスはDOMリスナーのインストールと同じプロセスなので、遅延させることができません。
-再ハイドレーションが遅延すると、メニューは動作しません。</p>
-<p>上記は既存のあらゆるフレームワークの根本的な限界を説明したものです。
-お分かりのとおり、こうしたフレームワークはすべて<a href="/a-first-look-at-qwik-the-html-first-framework/">replayable</a>です。
-これは、既存のどんなフレームワークも、現実のモバイルサイトで100点を取れないという意味でもあります。
-PageSpeed Insightsが想定しているモバイルサイトのHTMLとJavaScriptのコード量はごくわずかであり、それに対して現実のコードがあまりに多すぎるのです。</p>
-<p>私たちは問題を根本的に考え直す必要があります。
-サイトの大部分は静的なので、その部分のJavaScriptを再ダウンロードしたり、不要な部分の再ハイドレーションに時間をかけたりすべきではありません。
-このような場面でこそ、<a href="https://github.com/builderio/qwik">Qwik</a>が真の意味で輝きます。
-Qwikは<a href="https://github.com/builderio/qwik">replayableではなくresumable（再開型）</a>で、それがあらゆる違いを生み出します。
-結果として、Qwikでは以下が不要になります。</p>
-<ol>
-<li>ページを読み込むときのブートストラップ</li>
-<li>リスナーをどこに入れるべきか判断するためにDOMを探索すること</li>
-<li>メニューを動かすためにJavaScriptをダウンロード・実行すること</li>
-</ol>
-<p>これらはすべて、サイトの読み込みを実行するためのJavaScriptをほとんど必要とせず、それでもサイトのインタラクティブ性を完全に維持できることを意味します。</p>
-<h2>Intercom</h2>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--On4okiXm--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/v8v1uurp49y7nlkh7fr3.png"></p>
-<p>Intercomは、私たちのサイトで実行されているサードパーティウィジェットで、私たちとお客様のインタラクションを可能にします。
-このウィジェットをインストールする標準的な方法は、例えば以下のように、JavaScriptをHTMLに少しだけ追記することです。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text/javascript<span class="token punctuation">"</span></span> <span class="token attr-name">async</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>https://widget.intercom.io/widget/abcd1234<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">async</span> <span class="token attr-name">defer</span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript">
-<span class="token function">Intercom</span><span class="token punctuation">(</span><span class="token string">'boot'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>app_id<span class="token operator">:</span> <span class="token string">'abcd1234'</span><span class="token punctuation">}</span>
-</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
-<p>しかし、上記のコードには2つの問題があります。</p>
-<ol>
-<li>ダウンロードと実行が必要なJavaScriptが増え、TBTとTTIに悪影響を及ぼす。</li>
-<li>レイアウトシフトが発生し、CLSに悪影響を及ぼす可能性がある。その原因は、最初にウィジェット以外のUIがレンダリングされ、その後にJavaScriptのダウンロードと実行によってUIがウィジェットとともに再びレンダリングされるためである。
-Qwikはそれら両方の問題を同時に解決します。</li>
-</ol>
-<p>まず、QwikはIntercomがウィジェットのレンダリングに使用するDOMを取得します。
-次に、そのDOMが以下のように実際のページに挿入されます。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>intercom-lightweight-app<span class="token punctuation">"</span></span> <span class="token attr-name">aria-live</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>polite<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span>
-    <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>intercom-lightweight-app-launcher intercom-launcher<span class="token punctuation">"</span></span>
-    <span class="token attr-name">role</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>button<span class="token punctuation">"</span></span>
-    <span class="token attr-name">tabIndex</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span>{0}</span>
-    <span class="token attr-name">arial-abel</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Open Intercom Messenger<span class="token punctuation">"</span></span>
-    <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>ui:boot_intercom<span class="token punctuation">'</span></span>
-  <span class="token punctuation">></span></span>
-    ...
- <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
- <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>style</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>intercom-lightweight-app-style<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text/css<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token style"><span class="token language-css">...</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>style</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>この方法のメリットは、ウィジェットがアプリケーションの残りの部分と同時に即座にレンダリングされることです。
-ブラウザがIntercomのJavaScriptをダウンロードし、ウィジェットの作成を実行している間、遅延や画面のちらつきは発生しません。
-その結果、ユーザ体験が改善され、Webサイトのブートストラップが高速化されます（モバイル端末の通信量も節約できます）。</p>
-<p>ただし、ウィジェットがクリックされたことを検知する方法や、ユーザのインタラクションに応じてウィジェットのモックアップを実際のIntercomウィジェットに置き換える何らかのコードは依然として必要です。
-これは<code class="language-text">on:click=&quot;ui:boot_intercom&quot;</code>属性によって実現できます。
-この属性は、ユーザがウィジェットのモックアップをクリックした場合に、Qwikに<code class="language-text">boot_intercom.js</code>をダウンロードさせるものです。</p>
-<p><code class="language-text">boot_intercom.js</code>の内容</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">async</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">element</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
- <span class="token keyword">await</span> <span class="token keyword">import</span><span class="token punctuation">(</span><span class="token string">'https://widget.intercom.io/widget/abcd1234'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
- <span class="token keyword">const</span> container <span class="token operator">=</span> element<span class="token punctuation">.</span>parentElement<span class="token punctuation">;</span>
- <span class="token keyword">const</span> body <span class="token operator">=</span> container<span class="token punctuation">.</span>parentElement<span class="token punctuation">;</span>
- body<span class="token punctuation">.</span><span class="token function">removeChild</span><span class="token punctuation">(</span>container<span class="token punctuation">)</span><span class="token punctuation">;</span>
- <span class="token function">Intercom</span><span class="token punctuation">(</span><span class="token string">'boot'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> app_id<span class="token operator">:</span> <span class="token string">'abcd1234'</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
- <span class="token function">Intercom</span><span class="token punctuation">(</span><span class="token string">'show'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>このファイルは、実際のIntercomウィジェットをダウンロードし、モックアップを削除し、Intercomをブートストラップします。
-こうした作業はすべて勝手に行われ、ユーザはウィジェットが入れ替わったことにまったく気づきません。</p>
-<h2>Google Analytics</h2>
-<p>これまで私たちはJavaScriptの遅延読み込みに取り組み、Webサイトのパフォーマンスを順調に改善してきました。
-しかし、アナリティクスは別物です。
-なぜなら、アナリティクスを遅延させることはできず、ただちにブートストラップが必要だからです。
-アナリティクスをブートストラップするだけで、モバイルサイトのPageSpeed Insightsスコアで100点を取るのは難しくなります。
-この問題を解決するために、<a href="https://github.com/adamdbradley/partytown">PartyTown</a>を利用して、Web WorkerでGoogle Analyticsを実行します。
-詳しくは今後の記事で説明します。</p>
-<h2>JavaScriptの遅延</h2>
-<p>上記の処理は、Webサイトがダウンロード・実行しなければならないJavaScriptの量を約1KBに減らします。
-実行にかかる時間はわずか1ミリ秒で、ほとんどゼロと言ってよいでしょう。
-このようにJavaScriptを最小限にすることで、TBTとTTIのスコアが完璧になります。</p>
-<h2>HTMLの遅延</h2>
-<p>しかし、JavaScriptがほとんど存在しなくても、画面上の領域をレンダリングするためにクライアントに送信するHTMLの量を修正しない限り、依然としてモバイルサイトで100点は取れません。
-FCPとLCPを改善するには、とにかくHTMLを最小限に減らさなければなりません。
-それを実現する方法は、画面上の領域のHTMLのみを送信することです。</p>
-<p>これは目新しいアイデアではありませんが、実行するのは骨が折れます。
-アプリケーションを画面上の領域と画面外の領域に簡単に分割する方法がないため、既存のフレームワークでは困難です。
-ここでは仮想DOMも役に立ちません。
-たとえ表示されるのがほんの一部だとしても、アプリケーションは仮想DOM全体を生成するからです。
-フレームワークは、サイトの一部が欠けていると再ハイドレーション時にサイト全体を再生成するため、初回のブートストラップ時の作業がさらに増えます。</p>
-<p>理想的には、画面外の領域のHTMLは送信せず、画面上の領域のメニューシステムは完全にインタラクティブな状態に維持したいところです。
-しかし実際には、現実のサイトでそのようなベストプラクティスが見られないことから分かるように、実現するのは困難です。難しすぎるので誰もやらないのです。</p>
-<p>QwikはDOM主体であり、それがすべての違いを生み出しています。
-まずページ全体がサーバでレンダリングされます。
-その後、ページの中で送信する必要がない部分が特定され、削除されます。
-ユーザのスクロールに応じて、残りの部分が遅れてダウンロードされ、ページに挿入されます。
-QwikはステートレスでDOM主体のフレームワークであるため、この種のDOMの操作による影響を受けません。</p>
-<p>これは私たちのサーバで、サイトの画面外の領域で遅延読み込みを実現している実際のコードです。</p>
-<div class="gatsby-highlight" data-language="ts"><pre style="counter-reset: linenumber NaN" class="language-ts line-numbers"><code class="language-ts"><span class="token keyword">async</span> <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token builtin">Promise</span><span class="token operator">&lt;</span><span class="token keyword">void</span><span class="token operator">></span> <span class="token punctuation">{</span>
-    <span class="token keyword">await</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>vmSandbox<span class="token punctuation">.</span><span class="token keyword">require</span><span class="token punctuation">(</span><span class="token string">'./server-index'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> ServerIndexModule<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">serverIndex</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">const</span> lazyNode <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">'section[lazyload=true]'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">if</span> <span class="token punctuation">(</span>lazyNode<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-      <span class="token keyword">const</span> lazyHTML <span class="token operator">=</span> lazyNode<span class="token punctuation">.</span>innerHTML<span class="token punctuation">;</span>
-      lazyNode<span class="token punctuation">.</span>innerHTML <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
-      <span class="token punctuation">(</span>lazyNode <span class="token keyword">as</span> HTMLElement<span class="token punctuation">)</span><span class="token punctuation">.</span>style<span class="token punctuation">.</span>height <span class="token operator">=</span> <span class="token string">'999em'</span><span class="token punctuation">;</span>
-      lazyNode<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">'on:document:scroll'</span><span class="token punctuation">,</span> <span class="token string">'ui:/lazy'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      <span class="token keyword">this</span><span class="token punctuation">.</span>transpiledEsmFiles<span class="token punctuation">[</span><span class="token string">'lazy.js'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
-        export default (element) => {
-          element.removeAttribute('on:document:scroll');
-          element.style.height = null;
-          element.innerHTML = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>lazyHTML<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">;
-        };</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
-    <span class="token punctuation">}</span>
-  <span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>コードは簡潔で的確ですが、既存のどのフレームワークでも実現するのは困難でしょう。</p>
-<p>以下は、画面外の領域を遅延読み込みするようにした実際のサイトです。</p>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--o48jE9q6--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_66%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/565yei3n8jydkkvs81yr.gif"></p>
-<p>当初、ページは画面外のコンテンツを読み込んでいません。
-ユーザがスクロールすると、すぐにコンテンツが追加されます。
-ほとんど一瞬でコンテンツが追加されるのは、複雑なコードを実行する必要がなく、高速で単純な<code class="language-text">innerHTML</code>だけで済むためです。</p>
-<h2>実際に試す</h2>
-<p>こちらのページを実際に体験してみてください：<a href="https://www.builder.io/?render=qwik">https://www.builder.io/?render=qwik</a> （<a href="https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fwww.builder.io%2F%3Frender%3Dqwik">PageSpeed Insights</a>のスコアもご覧ください）。
-アナリティクスについてはまだ説明していませんが、近いうちに記事を投稿する予定です。</p>
-<p>サイトは気に入っていただけましたか？
-私たちは、お客様のサイトが超高速に利用できるものとなるように、Builder.ioのすべてのお客様にQwikを提供したいと考えています。
-これは今まで見たことがないほど高速なプラットフォームになるはずです。</p>
-<p><img src="https://res.cloudinary.com/practicaldev/image/fetch/s--Ii5M-zIi--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/2rgulo7ew94yp06dyevs.png"></p>
-<p>この記事は面白かったでしょうか？もしそうならば、<a href="https://builder-io.rippling-ats.com/">私たちのチームに参加</a>して、一緒にWebの高速化を目指しませんか。</p>
-<ul>
-<li><a href="https://stackblitz.com/edit/qwik-todo-demo">StackBlitz</a>で試す</li>
-<li><a href="https://github.com/builderio/qwik">github.com/builderio/qwik</a>でスターを送る</li>
-<li><a href="https://twitter.com/QwikDev">@QwikDev</a> と<a href="https://twitter.com/builderio">@builderio</a>をフォロー</li>
-<li><a href="https://discord.gg/JHVpZmqSs4">Discord</a>でチャット</li>
-<li><a href="https://builder-io.rippling-ats.com/">builder.io</a>の採用情報</li>
-</ul>
-<p>この記事はこれで終わりですが、私たちは今後数週間にわたって、Qwikとフロントエンドフレームワークの未来について記事を公開する予定です。お楽しみに。</p>
 <h2>シリーズ記事一覧</h2>
 <div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧</a>はこちらから参照できます。</p></div></div>]]></content:encoded></item></channel></rss>
