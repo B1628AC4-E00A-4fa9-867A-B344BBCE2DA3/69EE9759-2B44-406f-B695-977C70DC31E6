@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 22 Aug 2023 22:50:10 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 08 Sep 2023 20:32:30 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,293 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Integrating C++ header units into Office using MSVC (2/n)</title>
+		<link>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Mon, 11 Sep 2023 16:00:01 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[modernization]]></category>
+		<category><![CDATA[modules]]></category>
+		<category><![CDATA[Office]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32767</guid>
+
+					<description><![CDATA[<p>In this follow-up blog, we will explore progress made towards getting header units working in the Office codebase.<br />
+Overview</p>
+<p>Overview: Where we were, where we&#8217;re going.<br />
+Old Code, Old Problems: &#8216;fun&#8217; code issues found while scaling out.<br />
+Rethinking Compiler Tooling: How can the compiler rise to the scaling problems?</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/">Integrating C++ header units into Office using MSVC (2/n)</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In this follow-up blog, we will explore progress made towards getting header units working in the Office codebase.</p>
+<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#overview">Overview: Where we were, where we&#8217;re going.</a></li>
+<li><a href="#old-code">Old Code, Old Problems: &#8216;fun&#8217; code issues found while scaling out.</a></li>
+<li><a href="#rethink">Rethinking Compiler Tooling: How can the compiler rise to the scaling problems?</a></li>
+<li><a href="#ifc-ref">A New Approach to Referencing an IFC.</a></li>
+<li><a href="#pch">Playing Nice With Precompiled Headers (PCH).</a></li>
+<li><a href="#selection">Selecting a Launch Project: REDACTED.</a></li>
+<li><a href="#looking-ahead">Looking Ahead: Throughput.</a></li>
+</ul>
+<h2><span id="overview">Overview</span></h2>
+<p><a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/">Last time</a> we talked about how and why header units can be integrated into a large cross-platform codebase like Office. We discussed
+how header units helped surface conformance issues (good) and expose and fix compiler bugs (good-ish).</p>
+<p>We talked about how we went about taking &#8220;baby steps&#8221; to integrate header units into smaller liblets—we&#8217;re talking
+something on the order of 100s of header units. This blog entry is all about scale and how we move from 100s of header
+units to 1000s of header units, including playing nicely with precompiled headers!</p>
+<p>Office&#8217;s header unit experiments continued by following the charge that we left you with in the last blog post: &#8220;Header
+Unit All the Things!&#8221;. From that perspective we were wildly successful! By the last count we were able to successfully
+create over 5000 header units from liblet public headers. The road to reach that milestone wasn&#8217;t always smooth, and
+we&#8217;ll cover some of the challenges.</p>
+<p>We&#8217;d like to highlight that the recent release of <a href="https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.6#17.6.6">MSVC 17.6.6</a> makes
+this one of the best times to get started with header units! The release contains the full set of fixes that were
+discovered in cooperation with Office. The full set of fixes will also be available in 17.7.5 and 17.8 preview 2.</p>
+<h2><span id="old-code">Old Code, Old Problems</span></h2>
+<p>While scaling out we encountered quite a number of complications. Some fixes involved updating Office code, while
+others needed to be solved on the compiler side. We&#8217;ll present just a few examples from each bucket.</p>
+<h3><span id="symlinks">Symbolic Links</span></h3>
+<p>The way Office sources coalesce is a mix between sources populated by git and libraries populated by NuGet
+packages which are then linked into a build source tree via symbolic links. From a build perspective, this is extremely
+convenient because you can decouple library updates from the sources and you can have one copy of library code shared
+across multiple copies of the git sources.</p>
+<p>Symbolic links are interesting from a compiler perspective for two reasons: diagnostics and <a href="https://learn.microsoft.com/en-us/cpp/preprocessor/once?view=msvc-170"><code>#pragma once</code></a>. For source
+locations, there are two options: use the symbolic link as the file name or use the physical file the link resolves to.
+When issuing diagnostics, the compiler tries to use the symbolic link location because that is what was provided on the
+<a href="https://learn.microsoft.com/en-us/cpp/build/reference/i-additional-include-directories?view=msvc-170"><code>/I</code></a>
+line, but there are cases where you might want the physical file location.</p>
+<p><code>#pragma once</code> is a whole other beast with respect to symbolic links. In the beginning, C-style include guards
+were created as a method of preventing repeated file <em>content</em>. <code>#pragma once</code> came about as a method of
+preventing inclusion of the <em>same file</em>. The distinction between file and content is part of the reason why <code>#pragma
+once</code> is difficult to standardize due to its reliance on filesystem vagaries to identify what it means to point to the
+&#8220;same file&#8221;.</p>
+<p>Consider a small example:</p>
+<ul>
+<li>Real file: <code>C:\inc\a.h</code> which contains a single <code>#pragma once</code></li>
+<li>Symlink 1: <code>C:\syms\inc\lib1\a.h -&gt; C:\inc\a.h</code></li>
+<li>Symlink 2: <code>C:\syms\inc\lib2\a.h -&gt; C:\inc\a.h</code></li>
+</ul>
+<p>Further consider a header in <code>C:\syms\inc\lib2\b.h</code>:</p>
+<pre>#pragma once
+#include "a.h"</pre>
+<p>Then in our sources we have:</p>
+<pre>#include "lib1/a.h"
+#include "lib2/b.h"</pre>
+<p>Let&#8217;s dive into what should happen here:</p>
+<ul>
+<li>The compiler sees symlink #1 through <code>"lib1/a.h"</code>, sees <code>#pragma once</code> in the file content and records that file <code>C:\syms\inc\lib1\a.h</code> is associated with a pragma once.</li>
+<li>The compiler reads <code>"lib2/b.h"</code> and sees an inclusion of <code>"lib2/a.h"</code>.</li>
+<li>Symlink #2 is then read and the compiler observes that <code>#pragma once</code> is in the file content and records that file <code>C:\syms\inc\lib2\a.h</code> is associated with a pragma once.</li>
+</ul>
+<p>See a problem?</p>
+<p>The fact that the compiler read the file content from symlink #2 is where things start to go wrong. What should
+have happened is that the compiler unwraps the symbolic link to discover what the underlying file is and records the
+real file as the owner of the pragma once, which is exactly what we did to solve the problem in normal compilation
+scenarios.</p>
+<p>How does the situation above play into header units? Header units need to work like a PCH where they record
+macros and pragma state, which includes <code>#pramga once</code>. This means that the IFC needs to record symbolic
+links and their &#8220;unwrapped&#8221; files so that the compiler can properly enforce <code>#pragma once</code>. After this work
+was done, many more scenarios were unblocked in the Office build.</p>
+<p><em>As a side note: it is always better to rely on standard C++ features to prevent repeated file content
+inclusion and doing so side-steps the symbolic link problem entirely.</em></p>
+<h3><span id="conditional-compilation">Inconsistent Conditional Compilation</span></h3>
+<p>We called out the most critical source of issues in the first blog post: inconsistent conditional compilation. As
+the experiment added projects we ran into an increasing number of conflicts. Individual projects, or sometimes
+isolated build nodes, couldn&#8217;t agree if the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/j-default-char-type-is-unsigned?view=msvc-170">default char
+type is unsigned</a>, <a href="https://learn.microsoft.com/en-us/cpp/build/reference/gr-enable-run-time-type-information?view=msvc-170">if RTTI
+should be enabled</a>, or if <a href="https://devblogs.microsoft.com/oldnewthing/20040212-00/?p=40643">UNICODE support
+should be set</a>, and that&#8217;s only in command line options!</p>
+<p>Across liblet headers there were also code level macros to detangle: conditional selection of a memory allocator,
+masks for disallowed Windows SDK functions, plus the <code>ASSUME</code> macro example still hadn&#8217;t been resolved! Solving such
+problems could require touching nearly every project in Office.</p>
+<h3><span id="internal-linkage">Internal Linkage</span></h3>
+<p>Declarations at namespace, including global, scope marked <code>static</code> have internal linkage. With textual includes
+this isn&#8217;t an issue for declarations such as <code>static const float pi = 3.14</code> because the contents of the header file become
+part of the translation unit. The source used to compile a header unit is a translation unit unto itself and thus the
+definition of <code>pi</code> will not be visible when it is imported. Fortunately, the fix is simple. Such data declarations
+should be marked as <code>inline constexpr</code>. However, after converting the constant declarations to be <code>inline constexpr</code> we
+were still seeing many unresolved symbols during linking. These issues ultimately required a compiler change so that
+IFC could contain the full initialization information for the data.</p>
+<p>Naturally, the compiler had to account for the common case where global variables marked as <code>inline constexpr</code>
+should have their values encoded into the actual IFC. In general, the compiler already does this for simpler values
+such as integral types, but more complex user-defined types or arrays of objects had to be accounted for. As a compiler optimization, the variable is only instantiated when it is referenced.
+More specifically, the compiler will only materialize the initializer if the variable is odr-used.</p>
+<h3><span id="internal-linkage">Mismatched Include Paths</span></h3>
+<p>Office has continued to utilize the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/translateinclude?view=msvc-170"><code>/translateInclude</code></a>
+flag to consume header units without rewriting source code. For this to operate as expected the <code>#include</code>
+directives in source must match what is specified by a <a href="https://learn.microsoft.com/en-us/cpp/build/reference/headerunit?view=msvc-170"><code>/headerUnit</code></a>
+switch. In Office the most common issue was a reference that used the internal path to a header instead of the external
+one.</p>
+<table style="border-collapse: collapse; width: 100%; height: 84px;">
+<tbody>
+<tr style="height: 28px;">
+<td style="width: 7.59961%; height: 28px;">Example switch:</td>
+<td style="width: 92.4004%; height: 28px;"><code>/headerUnit:quote componentA/publicheader.h=ifcdir/publicheader.h.ifc</code></td>
+</tr>
+<tr style="height: 28px;">
+<td style="width: 7.59961%; height: 28px;">Incorrect path:</td>
+<td style="width: 92.4004%; height: 28px;"><code>#include &lt;src/public/publicheader.h&gt;</code></td>
+</tr>
+<tr style="height: 28px;">
+<td style="width: 7.59961%; height: 28px;">Correct path:</td>
+<td style="width: 92.4004%; height: 28px;"><code>#include &lt;componentA/publicheader.h&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>In the above example the incorrect path will not match the <em>header-filename</em> portion of the
+<code>/headerUnit</code> switch and thus will be textually included. Finding incorrect include paths is tricky because
+the code will compile correctly. The best way to discover any issues is to examine the output provided by <a href="https://learn.microsoft.com/en-us/cpp/build/reference/sourcedependencies?view=msvc-170"><code>/sourceDependencies</code></a>
+for unexpected textual includes.</p>
+<h3><span id="ifc-updates">Updating the IFC Specification</span></h3>
+<p>There&#8217;s been a perennial feedback bug since the original modules implementation in the compiler: <a href="https://developercommunity.visualstudio.com/t/using-namespace-declaration-ignored-wh/10211461">`using namespace`
+declaration ignored when compiling as a header unit module</a>. The problem was that the IFC had no representation for
+using-directives at namespace scope (e.g. <code>using namespace std;</code>). It turns out that Office also ran into this issue so to continue the experiment,
+we had to fix it. After some thinking through the problem, we came up with <a href="https://github.com/microsoft/ifc-spec/pull/76">IFC-76</a> which describes an encoding method
+for persisting directives in a translation unit.</p>
+<h3><span id="assumptions">Breaking Historical Assumptions</span></h3>
+<p>Before modules existed, the compiler had been around for nearly 25 years. This was enough time for the toolchain
+to develop several assumptions about how the front-end conveys data to the back-end. One such coupling was
+encoding type information directly into compiled functions. Handles to the compiler-generated type information are 0-index-based and the underlying data is generated along with each handle. There was one case where this type index was
+emitted directly into a tree for the purposes of annotating type information with <code>new</code> expressions for the
+debugger:</p>
+<pre>int* make_int() {
+  return new int{}; // &lt;- generated a direct encoding of the type index for 'new'
+}</pre>
+<p>Why does this encoding cause a problem for modules? Since the compiler is now persisting compiled inline
+functions into the IFC the compiler also persists this type index from one compilation to the next and would, sometimes,
+cause a linker crash as it goes to lookup the type index from the PDB but crashes because the index for that particular
+translation unit is based on an array generated in a completely different translation unit. Office was able to reveal
+this issue very quickly as many of the link steps involved lots of translation units from which this bug would
+surface.</p>
+<h3><span id="windows-sdk">Windows SDK Woes</span></h3>
+<p>There is a, quite an old now, bug out: <a href="https://developercommunity.visualstudio.com/t/Visual-Studio-cant-find-time-function/1126857">Visual Studio can&#8217;t find time() function using modules and std.core</a>. The
+root cause here is that the UCRT contains a definition of the <code>time()</code> function from C where it is defined as a <code>static
+inline</code> function within the SDK header. These <code>static inline</code> functions stem from C not having the C++ meaning of
+<code>inline</code> but <code>static inline</code> on a function declaration allows the function to behave as if it had C++ <code>inline</code>-like
+semantics. Note that defining the C standard function <code>time()</code> as <code>static inline</code> is in direct violation of the C
+standard which explicitly says that C standard library functions have external linkage. The Windows SDK team is hard at
+work fixing the issue above along with some other SDK issues that have plagued C++ modules interactions in the past, so
+stay tuned for fixes soon!</p>
+<h2><span id="rethink">Rethinking Compiler Tooling</span></h2>
+<p>As we scaled the number of projects being built by the compiler using the header unit technology it became
+immediately evident that we quickly needed to rethink how to debug compiler problems. The traditional loop involved
+either reducing the failure to a simple two or three file repro or attaching to a remote debugging instance where the
+compiler was running on the build machine. It&#8217;s easy to see how and why these approaches do not scale. Here are the
+concrete problems we needed to solve:</p>
+<ul>
+<li>Reproduction data collection should be asynchronous. We did not want the process of capturing a repro to be a blocking task.</li>
+<li>The data emitted by the compiler should be rich enough to reproduce the failure without debugging a remote compiler.</li>
+<li>The process of emitting data should be completely opt-in and not have a performance impact if you did not request it.</li>
+<li>The tool should offer a powerful visualization of the data such that we can easily navigate it and identify the underlying problem quickly.</li>
+</ul>
+<p>With the requirements outlined we designed a system inside the compiler which would act as a trace logging system
+for any modules-related functionality. If you would find value in using these types of tools, please let us
+know!</p>
+<h2><span id="ifc-ref">A New Approach to Referencing an IFC</span></h2>
+<p>Before the Office header unit experiments, the compiler relied on a pair of command line switches to specify
+individual IFC files: <a href="https://learn.microsoft.com/en-us/cpp/build/reference/module-reference?view=msvc-170"><code>/reference</code></a>
+for named modules, and <a href="https://learn.microsoft.com/en-us/cpp/build/reference/headerunit?view=msvc-170"><code>/headerUnit</code></a> for
+header units. It turns out that when thousands of header units or named modules are involved the command line grows
+quite long and unwieldy! An enormous list of flags is difficult to work with if there are compiler bugs to investigate,
+as you cannot &#8216;comment&#8217; out a header unit reference easily. We solved this problem by implementing a new
+way of conveying IFC dependencies to the compiler: <code>/ifcMap</code>. The <code>/ifcMap</code> allows the user to provide an IFC reference map
+file, which is a subset of the <a href="https://toml.io/en/">TOML</a> file format, to the compiler which details a mapping from named module name or
+header-name to its respective IFC which should be loaded. Here&#8217;s a quick example of a valid .toml file for the switch:</p>
+<pre># Header Units
+[[header-unit]]
+name = ['quote', 'm1.h']
+ifc = 'm1.h.ifc'
+
+[[header-unit]]
+name = ['quote', 'm2.h']
+ifc = 'm2.h.ifc'
+
+# Modules
+[[module]]
+name = 'm1'
+ifc = 'm1-renamed.ifc'
+
+[[module]]
+name = 'm2'
+ifc = 'm2-renamed.ifc'</pre>
+<p><code>/ifcMap</code> allowed office to scale the number of header units painlessly and offer a solution to easily manage lots
+of header unit references beyond having them splat on one giant command line. The IFC map also enables a tight
+iterative approach when considering factors like debugging needs, both for the developer and the compiler team.</p>
+<h2><span id="pch">Playing Nice with Precompiled Headers (PCH)</span></h2>
+<p>Part of scaling out for the compiler is that large projects often use <a href="https://learn.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-170">PCH</a> as a way of
+achieving build speed. PCH is a reliable technology and has had the benefit of over 30 years of hardening and
+optimization. Header units as the standardized replacement for PCH still need to integrate seamlessly into these older
+build environments still using tried and true PCH technology. Furthermore, Office needs to maintain compatibility with
+the non-Windows platforms that aren&#8217;t ready to adopt header units yet.</p>
+<p>The approach mentioned last time to force include the Office shared precompiled header file into each header unit
+resulted in a lot of duplicated parsing in the compiler. To that end we added support to consume the binary PCH
+directly when creating a header unit. This resulted in a nice performance win when compiling header units!
+Unfortunately, this resulted in a large build throughput degradation when consuming header units. As much as possible
+we would need to get precompiled headers out of the picture.</p>
+<p>The first, naïve, tactic was to ensure that each public header was truly self-contained. Eliminating invisible
+dependencies felt like a virtuous task, even without considering the benefits to the header unit experiment! Thousands
+of <code>#include &lt;windows.h&gt;</code> and <code>#include &lt;stl.h&gt;</code> additions later, we were ready to
+test performance again… and it was barely any better. The issue is that precompiled headers and IFC are fundamentally
+different technologies. Requiring the compiler to reconcile data from both sources is incredibly wasteful. The headers
+being compiled into header units were free of binary PCH dependencies but a majority of cpp files were still using both
+technologies.</p>
+<p>At this point it&#8217;s worth noting that we measured a significant build throughput improvement in projects that
+consumed header units but did not utilize a precompiled header. Individual compilands that switched from traditional
+PCH consumption to PCH-as-header unit import, saw build time improvements well above 50%. This is one of the key
+benefits that modules promised!</p>
+<p>The idea to <em>create a header unit out of the existing PCH</em> was the flash of insight we needed to keep the experiment
+moving forward! Although the compiler allows mixing PCH and header units it&#8217;s much more efficient to &#8220;pick a lane&#8221; in
+your build system. By not presenting duplicate information to the compiler, it&#8217;s easier to create build throughput
+wins.</p>
+<h2><span id="selection">Selecting a Launch Project: Microsoft Word</span></h2>
+<p>Although we were able to scale the experiment up and generate over 5000 header units from our liblet public
+headers, some low-level blocks needed to be cleared before we could utilize header units in our production build
+environment. We looked for a sizable project that could avoid the inconsistent conditional compilation issues that
+needed more time to clean up. Luckily, we found a great candidate in Microsoft Word.</p>
+<p>Word has utilized MSVC&#8217;s <a href="https://learn.microsoft.com/en-us/cpp/build-insights/get-started-with-cpp-build-insights?view=msvc-170">C++ Build
+Insights</a> to craft optimal precompiled headers. Specifically, the techniques presented in <a href="https://devblogs.microsoft.com/cppblog/faster-builds-with-pch-suggestions-from-c-build-insights/">Faster builds with PCH
+suggestions from C++ Build Insights &#8211; C++ Team Blog</a> were used to measure the performance benefit for
+each individual file included in their main PCH. Word was to be our first test converting existing precompiled headers
+directly to header units. At a high level the steps required were:</p>
+<ol>
+<li>Create a header unit instead of a pch.  Switch<code>/Yc</code> to <code>/exportHeader</code></li>
+<li>Replace the use PCH flag with a standard header unit reference: <code>/Yu</code> to <code>/headerUnit:quote word_shared.h=path/to/word_shared.ifc</code></li>
+<li>Profit?</li>
+</ol>
+<p>The code changes required in Word after adjusting the build flags were similar to what was described above. Constants needed to be made <code>inline
+constexpr</code>, missing includes or forward declarations added, and a handful of function definitions moved out-of-line. In
+total only 2 dozen C++ files in Word required code changes to compile successfully after the switch! The most unexpected of
+these changes were to standardize on quotes instead of angle brackets when writing the PCH&#8217;s <code>#include</code> for the sake of consistency with
+the <code>/headerUnit</code> switch.</p>
+<p>Along with the conversion from Word&#8217;s PCH to header units we created a header unit from the standard library.
+In the C++23 world, C++ projects can utilize the standard library module that ships alongside the compiler via <code>import std;</code> or <code>import
+std.compat;</code>. Unfortunately, Office makes edits to the standard library and thus must create its own header unit or
+named module.</p>
+<p>With this set of changes, we proved it possible to compile, link and launch Microsoft Word with header units!</p>
+<p><img decoding="async" style="display: block; margin-left: auto; margin-right: auto;" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/09/word-with-header-units.png" alt="Image of Microsoft Word running after being built using header units" /></p>
+<h2><span id="looking-ahead">Looking Ahead: Throughput</span></h2>
+<p>The next step was to demonstrate the advantages that header units would bring to the Word engineering team.
+Fortunately, we were able to show a build performance improvement great enough that the team agreed to adopt header
+units into the Office production build system alongside msvc 17.6.6! In our next installment we&#8217;ll go over our performance findings in
+depth.</p>
+<h4 id="closing">Closing</h4>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report
+a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us
+know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/">Integrating C++ header units into Office using MSVC (2/n)</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>MSVC Address Sanitizer &#8211; One DLL for all Runtime Configurations</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/#comments</comments>
@@ -925,183 +1212,6 @@ void main(){
 <p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-16-release-call-hierarchy-more/">C++ Extension in VS Code 1.16 Release: Call Hierarchy &#038; more</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>vcpkg integration with the GitHub dependency graph</title>
-		<link>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/#comments</comments>
-		
-		<dc:creator><![CDATA[Michael Price]]></dc:creator>
-		<pubDate>Tue, 27 Jun 2023 19:07:11 +0000</pubDate>
-				<category><![CDATA[GitHub]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32491</guid>
-
-					<description><![CDATA[<p>Introducing vcpkg's integration with the GitHub dependency graph</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/">vcpkg integration with the GitHub dependency graph</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are excited to share that vcpkg has an experimental feature to provide data to the GitHub dependency graph. We are actively developing this feature and would like to hear your feedback. Let us know if you have any thoughts about the current functionality or would like to see further improvements. If you have feedback on any of the GitHub features that a vcpkg-powered dependency graph enables, let us know that too and we&#8217;ll make sure that it reaches the right folks at GitHub.</p>
-<h2 id="about-the-github-dependency-graph">About the GitHub dependency graph</h2>
-<p>The GitHub <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/about-the-dependency-graph">dependency graph</a> stores the set of dependencies for a repository. Beyond just being able to visualize what a repository&#8217;s dependencies are, GitHub builds several useful features on top of this data, including <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review">dependency review</a> and <a href="https://docs.github.com/code-security/dependabot/dependabot-alerts/about-dependabot-alerts">Dependabot alerts</a>.</p>
-<h3 id="enabling-the-github-dependency-graph">Enabling the GitHub dependency graph</h3>
-<p>Enabling the dependency graph for your repository is a requirement for vcpkg to be able to populate the dependencies for your repository. The dependency graph is enabled by default for public repositories on GitHub. If you want the dependency graph enabled for a private repository, you should follow the <a href="https://docs.github.com/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-the-dependency-graph#enabling-and-disabling-the-dependency-graph-for-a-private-repository">GitHub documentation to enable the dependency graph</a>.</p>
-<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/github-enable-dependencygraph.png" alt="Screenshot showing the button to enable the dependency graph" /></p>
-<p>If you are already using reusable actions in your GitHub Actions workflows and the dependency graph is enabled, there&#8217;s a good chance your repository&#8217;s dependency graph already has some dependencies listed. Check it out by selecting <strong>Insights</strong> for your repository and then selecting <strong>Dependency graph</strong>.</p>
-<p><img decoding="async" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/06/github-insights-dependencygraph.png" alt="Screenshot of a sample repository's dependency graph" /></p>
-<h3 id="techniques-for-populating-the-dependency-graph">Techniques for populating the dependency graph</h3>
-<p>There are two ways that the dependency graph may get populated. For some package management systems that have a static list of dependencies that can be fully described in a manifest file, GitHub will automatically scan those manifests once they are pushed into your repository and will begin showing up in the dependency graph.</p>
-<p>For package management systems that are more dynamic, the tools used to process the list of dependencies must be involved in determining the complete set of dependencies. The complete set of dependencies for C and C++ are usually highly dependent upon build configuration and target platform. For these ecosystems, GitHub has a <a href="https://docs.github.com/rest/dependency-graph/dependency-submission">dependency submission API</a> that tools can use to provide the dependency information, usually as a part of a GitHub Actions workflow job.</p>
-<h2 id="reporting-dependencies-with-vcpkg">Reporting dependencies with vcpkg</h2>
-<p>vcpkg integration with the GitHub dependency graph can be enabled by adding the value <code>dependencygraph</code> to the <code>VCPKG_FEATURE_FLAGS</code> environment variable within your GitHub Actions workflow file that runs vcpkg (either directly or indirectly via CMake). You must also modify your workflow file to set the <code>GITHUB_TOKEN</code> environment variable with the value <code>${{ secrets.GITHUB_TOKEN }}</code> and request permission for the workflow job to write the dependency information into your repository&#8217;s metadata by including the following YAML snippet near the top of your workflow file.</p>
-<pre><code class="language-YAML">permissions:
-  contents: write</code></pre>
-<p>Once those changes have been made, and your workflow runs again, you should begin to see the dependencies in your vcpkg.json manifest listed in the <strong>Dependency graph</strong> section on GitHub.</p>
-<p>See our documentation at <a href="https://aka.ms/vcpkg-dependency-graph">GitHub integration &#8211; The GitHub dependency graph</a> for more information.</p>
-<h3 id="examples">Examples</h3>
-<p>A <a href="https://aka.ms/vcpkg-dependency-graph-example">live example template repository</a> is on GitHub if you want to try it out in a clean project. If you want to try it out on an existing project, see the workflow files defined below that shows the changes you need to make to enable the feature.</p>
-<p>Both workflow examples below work with the <code>vcpkg.json</code> and <code>main.cpp</code> files listed here.</p>
-<p><strong>vcpkg.json</strong></p>
-<pre><code class="language-json">{
-  "name": "your-project",
-  "version-string": "0.0.1",
-  "dependencies": [
-    "fmt"
-  ]
-}</code></pre>
-<p><strong>main.cpp</strong></p>
-<pre><code class="language-cpp">#define FMT_HEADER_ONLY
-#include "fmt/color.h"
-
-int main(int argc, char** argv)
-{
-    fmt::print(
-        fg(fmt::color::light_salmon),
-        "¡Hola, Mundo!\n"
-    );
-}</code></pre>
-<p><br/></p>
-<h4 id="indirectly-through-cmake-integration">Indirectly through CMake integration</h4>
-<p>Add the following files to test the vcpkg dependency graph integration when using CMake.</p>
-<p><strong>CMakeLists.txt</strong></p>
-<pre><code class="language-cmake">cmake_minimum_required(VERSION 3.15)
-
-project(your-project CXX)
-find_package(fmt REQUIRED)
-set(CMAKE_CXX_STANDARD 20)
-
-add_executable(hola main.cpp)
-
-target_link_libraries(hola
-  PRIVATE
-    fmt::fmt)</code></pre>
-<p><strong>.github/workflows/cmake.yml</strong></p>
-<pre><code class="language-yaml">name: Example that uses CMake integration
-
-on:
-  workflow_dispatch:
-
-###############################################################################
-# Add this section to your workflow file does not already have it to enable
-# the job to write the dependency metadata.
-###############################################################################
-permissions:
-  contents: write
-
-###############################################################################
-# Add these environment variables to your workflow to enable the vcpkg
-# dependency graph integration.
-###############################################################################
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  VCPKG_FEATURE_FLAGS: dependencygraph
-
-jobs:
-  cmake:
-    runs-on: ubuntu-latest
-
-    # These steps assume an appropriate version of vcpkg is listed as a
-    # submodule in your git repo. If it is not, you must update this workflow
-    # to obtain it.
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'  
-
-      - name: Bootstrap vcpkg
-        run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
-
-      - name: Configure with CMake
-        run: |
-          cmake -B build -S ${{ github.workspace }} \
-          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-      - name: Build with CMake
-        run: cmake --build build
-
-      - name: Hola, amigos
-        run: ${{ github.workspace }}/build/hola</code></pre>
-<p><br/></p>
-<h4 id="directly-calling-vcpkg-install">Directly calling <code>vcpkg install</code></h4>
-<p>Add the following file to test the vcpkg dependency graph integration with workflows that call <code>vcpkg install</code> directly.</p>
-<p><strong>.github/workflows/build.yml</strong></p>
-<pre><code class="language-yaml">name: Example that directly invokes `vcpkg install`
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-###############################################################################
-# Add this section to your workflow file does not already have it to enable
-# the job to write the dependency metadata.
-###############################################################################
-permissions:
-  contents: write
-
-###############################################################################
-# Add these environment variables to your workflow to enable the vcpkg
-# dependency graph integration.
-###############################################################################
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  VCPKG_FEATURE_FLAGS: dependencygraph
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    # These steps assume an appropriate version of vcpkg is listed as a
-    # submodule in your git repo. If it is not, you must update this workflow
-    # to obtain it.
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'  
-
-      - name: Bootstrap vcpkg
-        run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
-
-      - name: Directly invoke `vcpkg install`
-        run: ${{ github.workspace }}/vcpkg/vcpkg install
-
-      - name: Build with G++
-        run: g++ -I${{ github.workspace }}/vcpkg_installed/x64-linux/include -o hola main.cpp
-
-      - name: Hola, amigos
-        run: ${{ github.workspace }}/hola</code></pre>
-<h2 id="call-to-action">Call to action</h2>
-<p>We are gathering feedback from users to determine the improvements we need to make to consider this integration fully supported. This is the foundation for opening up really powerful, Enterprise-grade dependency management for our users, and we are excited to have you all try it out. You can find the feature and the latest bug fixes in the most recent commit to the <a href="https://github.com/microsoft/vcpkg" rel="noopener" target="_blank">vcpkg</a> default branch.</p>
-<p>As usual, if you have feedback, leave us a comment below or contact us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>) or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/">vcpkg integration with the GitHub dependency graph</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
