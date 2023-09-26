@@ -28,6 +28,125 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C11 Threads in Visual Studio 2022 version 17.8 Preview 2</title>
+		<link>https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/#respond</comments>
+		
+		<dc:creator><![CDATA[Charlie Barto]]></dc:creator>
+		<pubDate>Tue, 26 Sep 2023 16:00:25 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32848</guid>
+
+					<description><![CDATA[<p>Back in Visual Studio 2022 version 17.5 Microsoft Visual C gained preliminary support for C11 atomics. We are happy to announce that support for the other major concurrency feature of C11, threads, is available in Visual Studio version 17.8 Preview 2.</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/">C11 Threads in Visual Studio 2022 version 17.8 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Back in <a href="https://devblogs.microsoft.com/cppblog/c11-atomics-in-visual-studio-2022-version-17-5-preview-2/">Visual Studio 2022 version 17.5</a> Microsoft Visual C gained preliminary support for C11 atomics. We are happy to announce that support for the other major concurrency feature of C11, threads, is available in Visual Studio version 17.8 Preview 2. This should make it easier to port cross-platform C applications to Windows, without having to drag along a threading compatibility layer.</p>
+<p>Unlike C11 atomics, C11 threads do not share an ABI with C++’s <code>&lt;thread&gt;</code> facilities, but C++ programs can include the C11 threads header and call the functions just like any C program. Both are implemented in terms of the primitives provided by Windows, so their usage can be mixed in the same program and on the same thread. The implementations are distinct, however, for example you can’t use the C11 mutexes with C++ condition variables.</p>
+<p>C11 contains support for threads and a variety of related concurrency primitives including mutexes, condition variables, and thread specific storage. All of these are implemented in Visual Studio version 17.8 Preview 2.</p>
+<h2><a id="post-32848-threads"></a>Threads</h2>
+<p>Threads are created with <code>thrd_create</code>, to which you pass a pointer to the desired entry point and a user data pointer (which may be null), along with a pointer to a <code>thrd_t</code> structure to fill in. Once you have a <code>thrd_t</code> created with <code>thrd_create</code> you can call functions to compare it to another <code>thrd_t</code>, join it, or detach it. Functions are also provided to sleep or yield the current thread.</p>
+<pre class="prettyprint language-default"><code class="language-default">int thread_entry(void* data) {
+    return 0;
+}
+
+int main(void) {
+    thrd_t thread;
+    int result = thrd_create(&amp;thread, thread_entry, NULL);
+    if(result != thrd_success) {
+        // handle error
+    }
+    result = thrd_join(thread, NULL);
+    if(result != thrd_success) {
+        // handle error
+    }
+    return 0;
+}</code></pre>
+<p>&nbsp;</p>
+<p>A key difference between our implementation and C11 threads implementations based on pthreads is that threads can not detach <em>themselves</em> using <code>thrd_current()</code> and <code>thrd_detach()</code>. This is because of a fundamental difference in how threads work on Windows vs Unix descendants and we would require a shared datastructure that tracks thread handles to implement the typical behavior.</p>
+<p>On Unix derivatives the integer thread ID <em>is</em> the handle to the thread and detaching just sets a flag causing the thread to be cleaned up immediately when it finishes. This makes detached threads somewhat dangerous to use on Unix derivatives, since after a detached thread exits any other references to that thread ID will be dangling and could later refer to a different thread altogether. On Windows the handle to a thread is a win32 <code>HANDLE</code> and is reference counted. The thread is cleaned up when the last handle is closed. There is no way to close all handles to a thread except by keeping track of them and closing each one.</p>
+<p>We could implement the Unix/pthreads behavior by keeping a shared mapping of thread-id to handle, populated by <code>thrd_create</code>. If you need this functionality then you can implement something like this yourself, but we don’t provide it by default because it would incur a cost even if it’s not used. Better workarounds may also be available, such as passing a pointer to the <code>thrd_t</code> populated by <code>thrd_create</code> via the user data pointer to the created thread.</p>
+<h2><a id="post-32848-mutexes"></a>Mutexes</h2>
+<p>Mutexes are provided through the <code>mtx_t</code> structure and associated functions. Mutexes can be either plain, recursive, timed, or a combination of these properties. All kinds of mutexes are manipulated with the same functions (the type is dynamic).</p>
+<pre class="prettyprint language-default"><code class="language-default">#include &lt;threads.h&gt; 
+ 
+static mtx_t mtx; // see below 
+ 
+int main(void) { 
+    if(mtx_lock(&amp;mtx) != thrd_success) { 
+        return 1; 
+    } 
+    // do some stuff protected by the mutex 
+ 
+    // no need to check the result of a valid unlock call 
+    mtx_unlock(&amp;mtx); 
+ 
+    // no need to call mtx_destroy 
+} </code></pre>
+<p>&nbsp;</p>
+<p>Our mutexes are always implemented on top of <a href="https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks">Slim Reader Writer Locks</a> and are 32 bytes each on x64 (our C++ <code>std::mutex</code> is 80 bytes). They consist of an 8 byte tag (this is much more than needed, but provides some room for future expansion), an <code>SRWLock</code>, a win32 <code>CONDITION_VARIABLE</code>, and a 32-bit owner and lock count. The owner and lock count are always maintained, even when mutex is not recursive. If you attempt to recursively lock a non-recursive mutex, or unlock a mutex you do not own then <code>abort()</code> is called. Structurally valid calls to <code>mtx_unlock</code> always succeed, and it is safe to ignore the return value of <code>mtx_unlock</code> in our implementation.</p>
+<p>In our implementation you need not call <code>mtx_init</code>; a zeroed <code>mtx_t</code> is a valid plain mutex. Mutexes also don’t require any cleanup and calls to <code>mtx_destroy</code> are optional. This means you can safely use mutexes as static variables and similar.</p>
+<h2><a id="post-32848-condition-variables"></a>Condition Variables</h2>
+<p>Condition variables are provided through the <code>cnd_t</code> structure and associated functions. This structure is 8 bytes and stores just a win32 <code>CONDITION_VARIABLE</code>. You can wait on the condition variable with <code>cnd_wait</code>, or <code>cnd_timedwait</code>, and you can wake one waiting thread with <code>cnd_signal</code> or all waiting threads with <code>cnd_broadcast</code>. Spurious wakeups are allowed.</p>
+<pre class="prettyprint language-default"><code class="language-default">#include &lt;threads.h&gt; 
+ 
+static mtx_t mtx; 
+static cnd_t cnd; 
+static int condition; 
+ 
+int main(void) { 
+    if(mtx_lock(&amp;mtx) != thrd_success) { 
+        return 1; 
+    } 
+    while(condition == 0) { 
+        if(cnd_wait(&amp;cnd, &amp;mtx) != thrd_success) { 
+            return 1; 
+        } 
+    } 
+    mtx_unlock(&amp;mtx); 
+    return 0; 
+} </code></pre>
+<p>Similarly to mutexes, zeroed condition variables are valid and you can omit calls to <code>cnd_init</code> and <code>cnd_destroy</code>.</p>
+<h2><a id="post-32848-thread-specific-storage"></a>Thread Specific Storage</h2>
+<p>Thread specific storage is provided via the <code>_Thread_local</code> (<code>thread_local</code> in C23) keyword, or via the <code>tss_</code> family of functions. <code>_Thread_local</code> works just like <code>__declspec(thread)</code> (see <a href="https://learn.microsoft.com/en-us/cpp/cpp/thread?view=msvc-170">docs</a>) and the <code>tss_</code> functions work similarly, but not identically, to the <code>Fls*</code> or <code>Tls*</code> family of functions.</p>
+<pre class="prettyprint language-default"><code class="language-default">#include &lt;threads.h&gt; 
+#include &lt;stdlib.h&gt; 
+void dtor(void* dat) { 
+    // not called in this program 
+    abort(); 
+} 
+ 
+static tss_t t; 
+ 
+int main(void) { 
+    if(tss_create(&amp;t, dtor) != thrd_success) { 
+        return 1; 
+    } 
+    if(tss_set(t, (void*)42) != thrd_success) { 
+        return 1; 
+    } 
+    if(tss_get(t) != (void*)42) { 
+        return 1; 
+    } 
+    return 0; 
+} </code></pre>
+<p>The C11 TSS facilities support <em>destructors</em> which are run when threads exit and are passed the value of the associated TSS key, if it is non-null. The macro <code>TSS_DTOR_ITERATIONS</code> specifies how many times we’ll check for more destructors to run in the case that a destructor calls <code>tss_set</code>. Currently it’s set to 1, however, if this is a problem for you let us know. Destructors are run from either <code>DllMain</code>, or from a TLS callback (if you use the static runtime), and are not run on process teardown. This is an important difference from FLS destructors which are run on process teardown and get run before any <code>DllMain</code> routines or TLS callbacks.</p>
+<h3><a id="post-32848-Xfd8bf69ca5cd09bc517393a90eb8a3dbe850e6d"></a>TSS limits and performance characteristics</h3>
+<p>When using the explicit <code>tss_</code> functions there is a limit of 1024 TSS indices per process, these are <em>not</em> the same indices used for the <code>Fls*</code> functions, the <code>Tls*</code> functions, or <code>_Thread_local</code> “implicit” TLS variables. If you use any <code>&lt;threads.h&gt;</code> functions (not just the TSS functions) <em>and</em> you use the static runtime then you will use at least one implicit TLS index (the ones used for <code>_Thread_local</code>), even if you don’t otherwise use implicit TLS. This is because we need to enable TLS callbacks, which causes the loader to allocate such an index. If this is a problem (for example because of the loader gymnastics that are required to dynamically load such modules) let us know, or just use the dynamic runtime. If you use the <code>tss_</code> functions then additionally you will use one dynamic TLS index (the same ones used by <code>TlsAlloc</code>), you will only use <em>one</em>, no matter how many <code>tss_t</code>s you create. Threads will only spend time processing TSS destructors at thread exit if a TSS index with an associated destructor was ever set on that thread. When you create the first <code>tss_t</code> a table of destructors is allocated and when you use <code>tss_set</code> for the first time on a particular thread a per-thread table is allocated. Memory usage scales with the number of threads that use the C11 TSS functionality, not the total number of threads in the process. The destructor table is 8KiB (4KiB on 32-bit platforms) and each per thread table is 8209 bytes (4105 bytes on 32-bit platforms). These performance and memory characteristics may change in the future.</p>
+<h2><a id="post-32848-new-runtime-components"></a>New Runtime Components</h2>
+<p>Because <code>&lt;threads.h&gt;</code> is a new feature and we want the implementation to be able to change and improve over time, it’s shipped as a new satellite DLL of vcruntime: <code>vcruntime140_threads.dll</code> and <code>vcruntime140_threadsd.dll</code>. If you use the dynamic version of the Visual C++ runtime (<code>/MD</code> or <code>/MDd</code>), and you use the new threads facilities, then you need to either redistribute this file with your app, or redistribute a Visual C++ runtime redist that is new enough to contain these files. If you don’t touch the C11 threads functionality then your app won’t depend on anything in this DLL and it will not be loaded at all.</p>
+<h1><a id="post-32848-send-us-your-feedback"></a>Send us your feedback!</h1>
+<p>Try out C11 threads in the <a href="https://visualstudio.microsoft.com/vs/preview/">latest Visual Studio preview</a> and share your thoughts with us in the comments below, on <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>, on twitter (<a href="https://twitter.com/visualc">@VisualC</a>) or via email at visualcpp@microsoft.com.</p>
+<p>&nbsp;</p>
+<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/">C11 Threads in Visual Studio 2022 version 17.8 Preview 2</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>MSVC Machine-Independent Optimizations in Visual Studio 2022 17.7</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-machine-independent-optimizations-in-visual-studio-2022-17-7/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/msvc-machine-independent-optimizations-in-visual-studio-2022-17-7/#comments</comments>
@@ -1551,99 +1670,6 @@ vcpkg remove zlib:my-custom-triplet</code></pre>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vcpkg-2023-06-20-and-2023-07-21-releases-github-dependency-graph-support-android-tested-triplets-xbox-triplet-improvements-and-more/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Partnering with The Coalition to Bring Unreal Engine Find All Blueprint References to Visual Studio 2022</title>
-		<link>https://devblogs.microsoft.com/cppblog/partnering-with-the-coalition/</link>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Thu, 20 Jul 2023 16:00:43 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Game Development]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32535</guid>
-
-					<description><![CDATA[<p>Introduction</p>
-<p>We are thrilled to bring you the 3rd batch of exciting Unreal Engine integrations in Visual Studio 2022! Since our initial announcements, our team has been hard at work building additional integrations based on your invaluable feedback. Recently, we have been working closely with our partners at The Coalition.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/partnering-with-the-coalition/">Partnering with The Coalition to Bring Unreal Engine Find All Blueprint References to Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-scaled.jpg"><img decoding="async" class="aligncenter size-full wp-image-32611" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-scaled.jpg" alt="screenshot of gears 5 with unreal engine and visual studio logos" width="2500" height="1406" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-scaled.jpg 2500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-768x432.jpg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-1536x864.jpg 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ueannouncementp3_s-2048x1152.jpg 2048w" sizes="(max-width: 2500px) 100vw, 2500px" /></a></p>
-<p>We are thrilled to bring you the 3rd batch of exciting Unreal Engine integrations in Visual Studio 2022! Since our initial announcements, our team has been hard at work building additional integrations based on your invaluable feedback. Recently, we have been working closely with our partners at <strong>The Coalition</strong>. Their work on the popular <strong>Gears of War</strong> franchise inspired us to ship a new feature that allows you to search for Blueprint UFUNCTION references. Today, we are excited to unveil additional performance improvements and a host of new features that will take your game development productivity to new heights.</p>
-<p>In this article, we will explore how you can check whether your code follows UE Naming Convention, apply special indentation rules for UE Macros, and see how Find All Blueprint References works! In addition, we will share a list of valuable productivity features that will benefit all C++ developers. All these powerful features and performance improvements are available in the latest Visual Studio 2022 17.7 Preview 2.</p>
-<blockquote><p>“It’s awesome to be able to partner and collaborate with the Visual Studio team on features such as ‘Find All Blueprint References’ as it brings great value not only to our development team but anyone using the Unreal Engine. Additions like this show that the Visual Studio team not only listen to the gaming community but are also actively working to make iteration in engines like Unreal better than ever.”</p>
-<p>&#8211; Phil Cousins, Tech Director, The Coalition</p></blockquote>
-<p><div style="text-align:center"><a class="cta_button_link" href="https://visualstudio.microsoft.com/vs/preview" style="text-transform: titlecase; display: inline-block; background-color: #5C2D91; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Download Visual Studio 2022 17.7 Preview 2</a></div></p>
-<h2 id="visual-studio-toolbox">Visual Studio Toolbox</h2>
-<p>See Unreal Integrations in action on the latest episode of Visual Studio Toolbox Live</p>
-<p><iframe title="YouTube video player" src="//www.youtube.com/embed/GGz5BGPUgZw?start=159" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<h2 id="using-unreal-engine-integrations">Using Unreal Engine Integrations</h2>
-<p>Unreal Engine integrations will only show up when you are working on an Unreal Engine project. To ensure these features are active, double check that “IDE support for Unreal Engine” component is enabled in the “Game development for C++” workload in the VS Installer.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png"><img decoding="async" class="aligncenter size-full wp-image-32184" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png" alt="A list of components in the VS installer. Ensure IDE support for Unreal Engine is selected" width="618" height="629" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5.png 618w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-295x300.png 295w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/05/vc5-48x48.png 48w" sizes="(max-width: 618px) 100vw, 618px" /></a></p>
-<p>&nbsp;</p>
-<h2 id="unreal-engine-blueprint-find-all-references">Unreal Engine Blueprint Find All References</h2>
-<p>Get ready to level up your Blueprints workflow! Available now, you can easily search for UFUNCTION references from within Visual Studio. Start by right clicking on the symbol and click “Find All Blueprint References”.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1.png"><img decoding="async" class="aligncenter size-full wp-image-32625" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1.png" alt="Image uebpfar entry" width="1980" height="663" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1.png 1980w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1-300x100.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1-1024x343.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1-768x257.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-entry-1-1536x514.png 1536w" sizes="(max-width: 1980px) 100vw, 1980px" /></a></p>
-<p>After the search is completed, you will be able to view the references of UFUNCTIONs and perform filtering or grouping actions.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example.png"><img decoding="async" class="aligncenter size-full wp-image-32540" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example.png" alt="An example output of the UE blueprint find all refereces." width="1176" height="662" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example.png 1176w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example-1024x576.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebpfar-example-768x432.png 768w" sizes="(max-width: 1176px) 100vw, 1176px" /></a></p>
-<p>The <strong>latest</strong> version of our Unreal Engine plugin &#8220;Visual Studio Integration Tool&#8221; from the Unreal Engine <a href="https://aka.ms/vsuemarketplace" target="_blank" rel="noopener noreferrer">Marketplace</a> or <a href="https://aka.ms/vsuegithub" target="_blank" rel="noopener noreferrer">GitHub</a> is required.</p>
-<p>&nbsp;</p>
-<h2 id="code-analysis-for-unreal-engine-naming-convention-checker">Code Analysis for Unreal Engine: Naming Convention Checker</h2>
-<p>Visual Studio will now help you keep your code conformant to the Unreal Engine Naming Convention. By adding a <a href="https://aka.ms/uenamingconvention">.editorconfig file</a> to your project at the solution root level, you will receive real-time hints in the Error List window when your symbols do not match the UE naming convention. In addition, Quick Fixes are available at your fingertips for an easy resolution.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example.png"><img decoding="async" class="aligncenter size-full wp-image-32541" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example.png" alt="A quick fix showing ue naming convention suggestion" width="1861" height="1047" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example.png 1861w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example-1024x576.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example-768x432.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-example-1536x864.png 1536w" sizes="(max-width: 1861px) 100vw, 1861px" /></a></p>
-<p>While this results from Unreal Engine developer feedback, the feature is not specific to Unreal Engine. You can <a href="https://learn.microsoft.com/en-us/visualstudio/ide/cpp-editorconfig-properties">customize your own .editorconfig</a> file for Visual Studio for your general C++ project. More information is coming at a later date, please use the UE .editorconfig as a template for now.</p>
-<p>This feature is on-by-default. To change whether Visual Studio should treat the checks as Warnings or Suggestions, go to Tools &gt; Options &gt; Text Editor &gt; C/C++ &gt; Code Style &gt; Linter and change &#8220;Naming Convention (experimental)&#8221;.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings.png"><img decoding="async" class="aligncenter size-full wp-image-32542" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings.png" alt="A Options page allowing to change the severity level of UE naming convention" width="1372" height="909" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings.png 1372w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings-300x199.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings-1024x678.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-naming-settings-768x509.png 768w" sizes="(max-width: 1372px) 100vw, 1372px" /></a></p>
-<p>&nbsp;</p>
-<h2 id="special-macro-indentation-rules-for-unreal-engine">Special Macro Indentation Rules for Unreal Engine</h2>
-<p>We’ve listened to your <a href="https://developercommunity.visualstudio.com/t/Auto-indentation-with-Unreal-Engine---C/10155238">feedback</a> and added special indentation rules for UE Macros and Slate Declarative syntax. Visual Studio will now apply formatting rules in your Unreal Engine Projects.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example.png"><img decoding="async" class="aligncenter size-full wp-image-32543" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example.png" alt="An example of proper UE style indentation in VS" width="1061" height="596" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example.png 1061w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example-1024x575.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/ue-macro-format-example-768x431.png 768w" sizes="(max-width: 1061px) 100vw, 1061px" /></a></p>
-<p>This feature is on-by-default. To verify Unreal Engine specific formatting is enabled, search &#8220;Unreal Engine&#8221; in Options or go to Tools -&gt; Options -&gt; Text Editor -&gt; C/C++ -&gt; Code Style -&gt; Formatting -&gt; Unreal Engine and check &#8220;Apply special formatting for Slate declarative syntax and Unreal Engine reflection macros.&#8221;</p>
-<p>Visual Studio will properly indent code on lines after reflection macros and use special rules for the Slate declarative syntax.</p>
-<p>&nbsp;</p>
-<h2 id="improved-doxygen-comments-support-for-unreal-engine">Improved Doxygen Comments Support for Unreal Engine</h2>
-<p>We have added additional support for Doxygen Comments that exposes descriptions that are shared for all overloads of a function. When hovering over an overloaded function, you will now see Quick Info display descriptions written in the Doxygen Comment. This feature is especially helpful for you in Unreal Engine development where you may encounter many of these overloaded functions. To learn more, please visit this <a href="https://devblogs.microsoft.com/cppblog/improved-doxygen-overload-resolution/">blog</a>.</p>
-<p><figure id="attachment_32544" aria-describedby="caption-attachment-32544" style="width: 1579px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen.png"><img decoding="async" class="size-full wp-image-32544" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen.png" alt="A snippet of UE code with doxygen comments" width="1579" height="366" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen.png 1579w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen-300x70.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen-1024x237.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen-768x178.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygen-1536x356.png 1536w" sizes="(max-width: 1579px) 100vw, 1579px" /></a><figcaption id="caption-attachment-32544" class="wp-caption-text">The cope snippet above shows an overloaded function with Doxygen comments.</figcaption></figure></p>
-<p>&nbsp;</p>
-<p><figure id="attachment_32545" aria-describedby="caption-attachment-32545" style="width: 875px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenbefore.png"><img decoding="async" class="size-full wp-image-32545" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenbefore.png" alt="A quick info tooltip in VS prior to the new feature. It does not show shared descriptions" width="875" height="179" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenbefore.png 875w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenbefore-300x61.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenbefore-768x157.png 768w" sizes="(max-width: 875px) 100vw, 875px" /></a><figcaption id="caption-attachment-32545" class="wp-caption-text"><strong><span style="text-decoration: underline;">[</span>Before<span style="text-decoration: underline;">]</span></strong> Prior to this feature, Visual Studio does not show shared descriptions for overloaded functions.</figcaption></figure>&nbsp;</p>
-<p><figure id="attachment_32546" aria-describedby="caption-attachment-32546" style="width: 853px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenafter.png"><img decoding="async" class="size-full wp-image-32546" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenafter.png" alt="A quick info tooltip in VS that shows shared descriptions in overloaded functions" width="853" height="322" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenafter.png 853w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenafter-300x113.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uedoxygenafter-768x290.png 768w" sizes="(max-width: 853px) 100vw, 853px" /></a><figcaption id="caption-attachment-32546" class="wp-caption-text"><strong>[After]</strong> With the new Doxygen improvements, Visual Studio will now show shared descriptions on all overloaded functions.</figcaption></figure>&nbsp;</p>
-<h2 id="build-insights-integration">Build Insights Integration</h2>
-<p>We are thrilled to announce that Build Insights is now seamlessly integrated. Build Insights provides you with valuable information needed when optimizing your C++ build times. Try it today with your Unreal Engine project!</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1.jpg"><img decoding="async" class="aligncenter size-full wp-image-32634" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1.jpg" alt="screen shot showing to how run build insights on UE projects" width="1110" height="575" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1.jpg 1110w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1-300x155.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1-1024x530.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1-768x398.jpg 768w" sizes="(max-width: 1110px) 100vw, 1110px" /></a></p>
-<p>Start your Build Insights trace capture with the click of a button for your UE project, or selected projects.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights.jpg"><img decoding="async" class="aligncenter size-full wp-image-32623" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights.jpg" alt="Screenshot of Build Insights integration window" width="1208" height="508" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights.jpg 1208w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-300x126.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-1024x431.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsights-768x323.jpg 768w" sizes="(max-width: 1208px) 100vw, 1208px" /></a></p>
-<p>After compilation, Build Insights will both generate a diagnostic report that enables you to identify costly includes and provide you with an option to navigate directly to header files.</p>
-<p>&nbsp;</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsightswpa.jpg"><img decoding="async" class="aligncenter size-full wp-image-32624" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsightswpa.jpg" alt="Screenshot of the build insights integration window" width="932" height="716" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsightswpa.jpg 932w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsightswpa-300x230.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/uebuildinsightswpa-768x590.jpg 768w" sizes="(max-width: 932px) 100vw, 932px" /></a></p>
-<p>For power users, you can open Windows Performance Analyzer (WPA) from within the report.</p>
-<p>We are working hard to continually improve Build Insights Integration. What you see today is only the beginning! For more information, please see this <a href="https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/">blog</a>.</p>
-<p>&nbsp;</p>
-<h2 id="performance-boosts-for-c-game-development">Performance Boosts for C++ Game Development</h2>
-<p>Since our <a href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">blog</a> last year, the team has continued to work on additional performance improvements for large C++ projects. We have significantly sped-up Solution Load and Solution Close scenarios. In addition, the time it takes to parse C++ solutions for the first time is also greatly reduced. Lastly, we made further improvements for the time it takes to get to your code. While these improvements are significant for large projects, you should still notice a speedup if your project is smaller in nature. For more information, please visit this <a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-6-performance-enhancements/">Visual Studio blog</a>.</p>
-<p>&nbsp;</p>
-<h3 id="testing-methodology">Testing Methodology</h3>
-<p>We used a real-world AAA Unreal Engine 5 game to benchmark the performance improvements in Visual Studio 2022. We measured the scenarios by capturing internal logs. The graphs below illustrate the improvements over the course of one year, from version 17.2 in May 2022 to version 17.6 in May 2023. To replicate real-world game developer workflow, we used a gaming PC with high RAM and core count.</p>
-<p>&nbsp;</p>
-<h3 id="results">Results</h3>
-<p><figure id="attachment_32538" aria-describedby="caption-attachment-32538" style="width: 2585px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload.png"><img decoding="async" class="size-full wp-image-32538" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload.png" alt="A bar chart showing VS performing faster in C++ Solution parse, and solution load" width="2585" height="1264" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload.png 2585w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload-300x147.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload-1024x501.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload-768x376.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload-1536x751.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnload-2048x1001.png 2048w" sizes="(max-width: 2585px) 100vw, 2585px" /></a><figcaption id="caption-attachment-32538" class="wp-caption-text">When Parsing C++ solutions for the first time, you will see the task complete 3.2x faster. There are also improvements when loading a solution for the first (cold) time, and subsequent times (warm).</figcaption></figure></p>
-<p><figure id="attachment_32537" aria-describedby="caption-attachment-32537" style="width: 2595px" class="wp-caption aligncenter"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose.png"><img decoding="async" class="size-full wp-image-32537" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose.png" alt="A bar graph showing VS performing faster for solution close, colorization and search" width="2595" height="1213" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose.png 2595w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose-300x140.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose-1024x479.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose-768x359.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose-1536x718.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/07/slnclose-2048x957.png 2048w" sizes="(max-width: 2595px) 100vw, 2595px" /></a><figcaption id="caption-attachment-32537" class="wp-caption-text">For both closing the solution for the first (cold) time, and subsequent times (warm), you will see Visual Studio complete the task 1.9X and 2.2X faster, respectively.</figcaption></figure></p>
-<p>&nbsp;</p>
-<h3 id="impact-analysis">Impact Analysis</h3>
-<p>Our biggest performance improvement is a 3.2x speed-up in Visual Studio&#8217;s parsing of C++ projects during the first run. We received valuable feedback from game developers on how to enhance this area, and we&#8217;re eager to hear how much more productive you&#8217;ll be when opening projects for the first time.</p>
-<p>Next, thanks to community and game developer feedback, we allocated additional resources to focus on the Solution Load and Close scenarios. We heard that these are important workflow scenarios, especially from those who may open and close solutions multiple times a day. While the numerical reduction is a few seconds, we hope that this improvement will further improve productivity and reduce mental task switching throughout the day.</p>
-<p>Lastly, we have made additional performance improvements to colorization and search on top of previous improvements. Please stay tuned as we continue to make investments in the performance of Visual Studio in these areas.</p>
-<p>&nbsp;</p>
-<h1 id="feedback-wanted">Feedback Wanted!</h1>
-<p>With the latest Unreal Engine Integrations in Visual Studio 2022 17.7 Preview 2, we aim to empower game developers and enhance their productivity through innovative and powerful tools. Our dedication to this goal is ongoing and this release is just one step towards our vision of a streamlined game development process. Your feedback has been instrumental in shaping our development path.  Whether or not you use Unreal Engine to develop your games, we encourage you to continue to share your thoughts and ideas with us by reaching out through Developer Community, surveys, Twitter (@VisualC), or email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. Thank you for your continued support. Together, we can drive game development to new heights with Visual Studio 2022.</p>
-<p>The post <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog/partnering-with-the-coalition/">Partnering with The Coalition to Bring Unreal Engine Find All Blueprint References to Visual Studio 2022</a> appeared first on <a rel="nofollow" href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
