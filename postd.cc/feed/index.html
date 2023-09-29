@@ -1,4 +1,287 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 28 Sep 2023 11:48:36 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[ReactにおけるRef：DOMへのアクセスから命令的APIまで]]></title><description><![CDATA[この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという…]]></description><link>https://postd.cc/refs-from-dom-to-api/</link><guid isPermaLink="false">https://postd.cc/refs-from-dom-to-api/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 30 Aug 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという3つのフックについて説明し、これらを適切に使用する方法を紹介したいと思います。
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Fri, 29 Sep 2023 01:31:52 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[UIのチラつきを撲滅する：useLayoutEffect、ペインティング、ブラウザについて]]></title><description><![CDATA[この記事では、DOMの測定結果に基づいて要素を変更する方法、useEffectの問題点とuseLayoutEffectによる解決法、ブラウザペインティングとは何か、SSRの役割について説明します。
+…]]></description><link>https://postd.cc/no-more-flickering-ui/</link><guid isPermaLink="false">https://postd.cc/no-more-flickering-ui/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Fri, 29 Sep 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、DOMの測定結果に基づいて要素を変更する方法、useEffectの問題点とuseLayoutEffectによる解決法、ブラウザペインティングとは何か、SSRの役割について説明します。
+この記事と同じ内容を扱ったYouTube動画も公開していますので、活字媒体よりも動画視聴を好まれる方はそちらをご覧ください。文字ではなく、アニメーションと音声で同じ概念を解説しています。
+<a href="https://www.youtube.com/watch?v=__tm1dyMi4A">この記事は動画形式でも公開しています。</a></p>
+<h2>目次</h2>
+<ul>
+<li><a href="#01">useEffectの問題点とは？</a></li>
+<li><a href="#02">useLayoutEffectでチラつきを解決する</a></li>
+<li><a href="#03">解決策が有効な理由：レンダリング、ペインティング、ブラウザ</a></li>
+<li><a href="#04">Next.jsやその他のSSRフレームワークでuseLayoutEffectを実行する</a></li>
+</ul>
+<p>ReactにおけるDOMアクセスについてもう少しお話ししましょう。<a href="/refs-from-dom-to-api/">"前回の記事 ReactにおけるRef：DOMへのアクセスから命令型APIまで"</a>では、Refを使用してDOMにアクセスする方法について説明し、Refに関することは全て網羅しました。しかし、DOMの使用方法については、あまり語られることはないものの非常に重要なトピックがもう1つあります。それは、要素のサイズや位置といったDOMの実際の測定結果に基づいた要素の変更です。
+では、具体的な問題点は何であり、「通常」の方法では不十分な理由は何でしょうか。実際に少しコーディングを行いながら解明していきましょう。このプロセスを通じて、<code class="language-text">useLayoutEffect</code>について知るべきあらゆること、<code class="language-text">useEffect</code>ではなく<code class="language-text">useLayoutEffect</code>を使用すべきときとその理由、Reactコードがブラウザによってどのようにレンダリングされるのか、ペインティングとは何か、これらがなぜ重要で、SSRがどのような役割を果たすのかが分かると思います。</p>
+<h2>useEffectの問題点とは？ <a name="01"></a></h2>
+<p>では実際にコーディングしてみましょう。今日は少し凝ったことがしたいので、レスポンシブ対応のナビゲーションコンポーネントを作ってみます。このコンポーネントは、1列に並んだリンクをレンダリングし、コンテナのサイズに応じてリンクの数を調整することができます。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/menu-full-screen.png"></p>
+<p>コンテナに収まりきらないリンクがある場合は「もっと見る」ボタンを表示し、これをクリックするとドロップダウンメニューに残りのリンクが表示されるようにします。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/menu-collapsed.png"></p>
+<p>次はコンポーネント本体です。作るのは、データ配列を受け取り、適切なリンクをレンダリングするコンポーネントのみです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>navigation<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>items<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">item</span> <span class="token operator">=></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>href<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>では、これをレスポンシブ化するにはどうすればよいでしょうか。問題は、与えられたスペースに入るアイテムの数を計算しなくてはならないことです。そのためには、レンダリングが行われるコンテナの幅と、各アイテムのサイズが分からなくてはなりません。文字数を数えるなどして、事前に仮定することはできません。ブラウザ上でのテキストのレンダリングは、使用するフォントや言語、ブラウザによって異なります。ひょっとすると、月の満ち欠けの影響も受けるかもしれません。
+実際のサイズを取得する唯一の方法は、ブラウザにそれらのアイテムをレンダリングさせた上で、<code class="language-text">getBoundingClientRect</code>というJavaScriptのネイティブAPI経由でサイズを抽出するやり方です。
+これを行うにはいくつかの手順を踏む必要があります。まず、要素にアクセスします。Refを作成し、対象となるアイテムをラップするdivに代入することができます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> ref <span class="token operator">=</span> <span class="token function">useRef</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>navigation<span class="token punctuation">"</span></span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      ...
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Refの使い方や、Refを使ったDOMの操作に自信がない方は、<a href="/refs-from-dom-to-api/">"ReactにおけるRef：DOMへのアクセスから命令型APIまで"</a>をお読みください。
+次に、useEffectでdiv要素を取得し、そのサイズを確認します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> div <span class="token operator">=</span> ref<span class="token punctuation">.</span>current<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span> width <span class="token punctuation">}</span> <span class="token operator">=</span> div<span class="token punctuation">.</span><span class="token function">getBoundingClientRect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>それからdivの子要素を反復処理し、幅を配列の中に抽出します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// same code as before</span>
+
+
+    <span class="token comment">// convert div's children into an array</span>
+    <span class="token keyword">const</span> children <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">...</span>div<span class="token punctuation">.</span>childNodes<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// all the widths</span>
+    <span class="token keyword">const</span> childrenWidths <span class="token operator">=</span> children<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">child</span> <span class="token operator">=></span> child<span class="token punctuation">.</span><span class="token function">getBoundingClientRect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>width<span class="token punctuation">)</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>後はこの配列を反復処理し、子要素の幅を合計し、その合計を親要素のdivと比較すれば、最終的に表示されるアイテムが分かります。
+ただ、1つ忘れているものがあります。「もっと見る」ボタンです。このボタンの幅も考慮に入れなくてはいけません。そうしなければ、いくつかのアイテムは表示されるものの、「もっと見る」ボタンが入りきらないという状況になりかねません。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/more-button-should-fit.png"></p>
+<p>「もっと見る」ボタンの場合も同様に、ブラウザ上でレンダリングしなければ幅は分かりません。したがって、最初のレンダリング時に明示的にボタンを追加する必要があります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>navigation<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>items<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">item</span> <span class="token operator">=></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>href<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+      &lt;!-- add the "more" button after the links explicitly -->
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>more<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>抽象化によって幅計算のロジックを全て関数にまとめるならば、useEffectの中は次のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> itemIndex <span class="token operator">=</span> <span class="token function">getLastVisibleItem</span><span class="token punctuation">(</span>ref<span class="token punctuation">.</span>current<span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>ここでは、<code class="language-text">getLastVisibleItem</code>関数が、全ての計算を行い、1つの数字を返してくれます。この数字が、与えられたスペースに入る最後のリンクのインデックスです。今回はロジック自体については詳しく説明しません。やり方は無数にあり、後で紹介する最終コードの中で例をお見せします。
+ここで重要なのは、この数字を得たことです。Reactの観点から次に行うべきことは何でしょうか。このままだと、全てのリンクと「もっと見る」ボタンが表示されてしまいます。解決策は1つしかありません。コンポーネントの更新をトリガーし、表示されるべきでないアイテムを取り除く必要があります。
+これがほぼ唯一の方法です。数字は取得したときのステートで保存する必要があります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// set the initial value to -1, to indicate that we haven't run the calculations yet</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>lastVisibleMenuItem<span class="token punctuation">,</span> setLastVisibleMenuItem<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+    <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+      <span class="token keyword">const</span> itemIndex <span class="token operator">=</span> <span class="token function">getLastVisibleItem</span><span class="token punctuation">(</span>ref<span class="token punctuation">.</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// update state with the actual number</span>
+      <span class="token function">setLastVisibleMenuItem</span><span class="token punctuation">(</span>itemIndex<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ <span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>そして、メニューをレンダリングする際に、それを考慮に入れます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+
+
+  <span class="token comment">// render everything if it's the first pass and the value is still the default</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>lastVisibleMenuItem <span class="token operator">===</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// render all of them here, same as before</span>
+    <span class="token keyword">return</span> <span class="token operator">...</span>
+  <span class="token punctuation">}</span>
+
+
+  <span class="token comment">// show "more" button if the last visible item is not the last one in the array</span>
+  <span class="token keyword">const</span> isMoreVisible <span class="token operator">=</span> lastVisibleMenuItem <span class="token operator">&lt;</span> items<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+
+  <span class="token comment">// filter out those items which index is more than the last visible</span>
+  <span class="token keyword">const</span> filteredItems <span class="token operator">=</span> items<span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item<span class="token punctuation">,</span> index</span><span class="token punctuation">)</span> <span class="token operator">=></span> index <span class="token operator">&lt;=</span> lastVisibleMenuItem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>navigation<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      &lt;!-- render only visible items -->
+      </span><span class="token punctuation">{</span>filteredItems<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">item</span> <span class="token operator">=></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>href<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+      &lt;!-- render "more" conditionally -->
+      </span><span class="token punctuation">{</span>isMoreVisible <span class="token operator">&amp;&amp;</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>more<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これだけです。実際の数字でステートを更新すると、ナビゲーションのリレンダリングがトリガーされ、Reactがアイテムを再びレンダリングし、表示されないものを取り除きます。「適切」なレスポンシブ体験を作り出すためには、リサイズイベントを拾い、数字を再計算する必要もありますが、その実装については読者に委ねたいと思います。
+完全に機能する例を下のCodeSandboxで公開しているのでご覧ください。リサイズにも対応しています😊。でも喜ぶのはまだ早いです。ユーザーエクスペリエンスに重大な欠陥が1つあります。</p>
+<iframe src="https://codesandbox.io/embed/simple-responsive-menu-example-ltdx5r?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="simple-responsive-menu-example"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<p>何度かリフレッシュしてみてください。特に、CPUがスローダウンしている状態で試してみてください。残念なことに、コンテンツのチラつきがかなりひどいことが分かると思います。メニューの全てのアイテムと「もっと見る」ボタンが表示される最初のレンダリング結果は、はっきりと見えなくてはいけません。本番公開までに確実に修正する必要があります。</p>
+<h2>useLayoutEffectでチラつきを解決する <a name="02"></a></h2>
+<p>画面のチラつきの原因は明らかです。不要なアイテムを除外する前にアイテムをレンダリングして表示させてしまうので、チラつきが発生します。また、レスポンシブデザインが機能するためには最初にレンダリングを行う必要があります。したがって、この問題を解決する方法としては、最初のレンダリングはそのまま実行しますが、opacityを0に設定して行うか、表示領域外のdivの中で見えないように行う方法が考えられます。そして、サイズとマジックナンバーを抽出してから表示させるのです。以前は、このようなケースにはこの方法で対応していました。
+しかし、フックが導入されたReact 16.8以降は、<code class="language-text">useEffect</code>フックを<code class="language-text">useLayoutEffect</code>に置き換えるだけで解決できます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> items <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// everything is exactly the same, only the hook name is different</span>
+    <span class="token function">useLayoutEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+      <span class="token comment">// the code is still the same</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ <span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これだけで、まるで魔法のように最初のチラつきがなくなります。実際にご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/simple-responsive-menu-example-fixed-hx1dxc?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="simple-responsive-menu-example-fixed"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+<p>しかし、これは安全な方法なのでしょうか。もしそうであるならば、<code class="language-text">useEffect</code>を全てこれに置き換えればよいのではないでしょうか。ドキュメントには、<code class="language-text">useLayoutEffect</code>は<a href="https://react.dev/reference/react/useLayoutEffect">パフォーマンスに悪影響を及ぼす可能性がある</a>ため、使用を避けるべきであるとはっきりと記載されています。なぜでしょうか。ドキュメントには、<code class="language-text">useLayoutEffect</code>は「ブラウザが画面をリペイントする前」に発火するとも書かれています。これはつまり、<code class="language-text">useEffect</code>は画面がリペイントされた後で発火することを暗に示しています。しかし、これは実用面では具体的にどのような意味を持つのでしょうか。単純なドロップダウンを記述する際にブラウザペインティングのような低レイヤーの概念について考える必要があるのでしょうか🤯。
+これらの問いに答えるためには、少しReactから離れてブラウザとJavaScriptについて話す必要があります。</p>
+<h2>解決策が有効な理由：レンダリング、ペインティング、ブラウザ <a name="03"></a></h2>
+<p>ここでまず必要なのは、「ブラウザレンダリング」です。Reactの世界では、Reactにおけるレンダリングと区別するために「ペインティング」とも呼ばれています。Reactにおけるレンダリングとペインティングは全くの別物です。考え方としては比較的単純です。ブラウザは、画面上にリアルタイムで表示する必要があるものを全て継続的に更新するわけではありません。例えば、ホワイトボードに線を描き、線を消し、文字を書き、あるいはフクロウのスケッチを描いたりするのとは違います。
+それよりも、スライドを切り替えながら表示するのに似ています。あるスライドを表示して、見ている人がその内容を理解したら次のスライドに移るという要領です。
+非常に遅いブラウザにフクロウの描き方を聞いたならば、おそらく以下の絵のようなひどい指示が返ってくるでしょう。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/owl.png"></p>
+<p>ただし、ブラウザが描くスピードは非常に速いです。通常、モダンなブラウザは60fps（毎秒60フレーム）のフレームレートを維持しようとします。約13ミリ秒ごとにスライドが切り替わるイメージです。Reactで「ペインティング」と呼ぶのはこの処理のことです。
+スライドを更新する情報は複数の「タスク」に分割されます。タスクはキューに入れられます。ブラウザはキューからタスクを取得して実行します。時間に余裕があれば、約13ミリ秒の中で時間がなくなるまで次のタスクを実行していき、最後に画面をリフレッシュします。これを休むことなく続けます。私たちがこうした処理を意識せずにTwitter（X）でドゥームスクローリングを行ったりできるのはそのおかげです。
+「タスク」とは何でしょうか。通常のJavaScriptの場合、scriptタグに入れて同時に実行するもの全てをタスクと呼びます。次のコードをご覧ください。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> app <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">"app"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> child <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">createElement</span><span class="token punctuation">(</span><span class="token string">"div"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+child<span class="token punctuation">.</span>innerHTML <span class="token operator">=</span> <span class="token string">"&lt;h1>Heyo!&lt;/h1>"</span><span class="token punctuation">;</span>
+app<span class="token punctuation">.</span><span class="token function">appendChild</span><span class="token punctuation">(</span>child<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 10px solid red"</span><span class="token punctuation">;</span>
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 20px solid green"</span><span class="token punctuation">;</span>
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 30px solid black"</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>IDを使用して要素を取得し、<code class="language-text">app</code>変数に入れ、<code class="language-text">div</code>を作成します。次に、HTMLを更新してdivをappに付加し、divのborderを3回変更します。ブラウザにとっては、この一連の処理が全て1つのタスクとして認識されます。したがって、全ての行を実行してから、最終結果である黒いborderのdivを描画します。
+画面上では、赤→緑→黒の遷移は見えません。
+1つの「タスク」に13ミリ秒以上かかる場合はどうなるでしょうか。まあ、残念だと言うしかありません 🤷🏻‍♀️。ブラウザは、タスクを停止することも分割することもできません。完了するまで処理を続けてから、最終結果をペイントします。borderの更新間に1秒間のブロッキング（原文では synchronous delays）を追加した場合、次のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">waitSync</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">ms</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">let</span> start <span class="token operator">=</span> Date<span class="token punctuation">.</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    now <span class="token operator">=</span> start<span class="token punctuation">;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>now <span class="token operator">-</span> start <span class="token operator">&lt;</span> ms<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    now <span class="token operator">=</span> Date<span class="token punctuation">.</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 10px solid red"</span><span class="token punctuation">;</span>
+<span class="token function">waitSync</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 20px solid green"</span><span class="token punctuation">;</span>
+<span class="token function">waitSync</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 30px solid black"</span><span class="token punctuation">;</span>
+<span class="token function">waitSync</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>その場合でも、「中間」の結果は見えません。ブラウザが処理を行う間は何もない画面が表示されるだけで、最後に黒いborderが表示されます。これを「ブロッキングレンダー」あるいは「ブロッキングペインティング」コードと呼びます。
+<a href="https://codesandbox.io/s/understanding-painting-sync-example-m76lzh">CodesSandboxで例をご覧ください</a>。
+Reactは単なるJavaScriptですが、もちろん単一のタスクとして実行されるわけではありません。もしそうであるならば、インターネットは耐えがたいものになるでしょう。そうなれば私たちは皆外に出て遊び、直接人と関わることを余儀なくされるでしょう。そんなことを誰が望むでしょうか。アプリ全体をレンダリングするような巨大なタスクを小さなタスクに「分割」するには、コールバック、イベントハンドラー、プロミスなどさまざまな「非同期」メソッドを使用する必要があります。
+これらのスタイル調整を、遅延0で<code class="language-text">setTimeout</code>にラップしたとします。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 10px solid red"</span><span class="token punctuation">;</span>
+  <span class="token function">wait</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 20px solid green"</span><span class="token punctuation">;</span>
+    <span class="token function">wait</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+      child<span class="token punctuation">.</span>style <span class="token operator">=</span> <span class="token string">"border: 30px solid black"</span><span class="token punctuation">;</span>
+      <span class="token function">wait</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>その場合、全てのタイムアウトが新しい「タスク」と見なされます。したがって、ブラウザは1つのタスクを終え、次のタスクを開始する前に、画面をリペイントできます。そして、何もない白い画面を3秒間ぼーっと眺める代わりに、赤から緑へ、そして黒へと、ゆっくりとではあるものの美しく移り変わる様子を見ることができます。
+<a href="https://codesandbox.io/embed/understanding-painting-sync-example-m76lzh?fontsize=14&#x26;hidenavigation=1&#x26;theme=dark">コード付きのCodeSandboxはこちらをご覧ください</a>。
+Reactはこのようなことを行ってくれます。一言で言えば、Reactはコーディングによって作られた何百ものnpmの依存関係で構成される巨大な塊を、ブラウザが（理想的には）13ミリ秒以内で処理できる最小限の塊に分割してくれる、極めて複雑で効率的なエンジンです。
+これは非常にかいつまんだ短い紹介です。きちんと説明しようと思えば1冊の本になってしまいます。<a href="https://blog.xnim.me/event-loop-and-render-queue">"Browser Event loop: micro and macro tasks, call stack, render queue: layout, paint, composite"</a>は、ブラウザのイベントループとクエリに関する極めて秀逸な総合ガイドです。</p>
+<h3>useEffectとuseLayoutEffectの比較に戻る <a name="031"></a></h3>
+<p>では、<code class="language-text">useEffect</code>と<code class="language-text">useLayoutEffect</code>の比較に戻り、最初に挙げたいくつかの問いについて検討したいと思います。
+<code class="language-text">useLayoutEffect</code>は、コンポーネントの更新時にReactが同時に実行するものです。次のコードをご覧ください。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token function">useLayoutEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token comment">// do something</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+
+  <span class="token keyword">return</span> <span class="token operator">...</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>コンポーネントの中で何かをレンダリングすると、必ず<code class="language-text">useLayoutEffect</code>が同じ「タスク」として実行されます。Reactがそれを保証します。たとえ<code class="language-text">useLayoutEffect</code>の中でステートを更新しても、通常ステートは非同期タスクと見なされますが、Reactはそれでも全体のフローが同時に実行されるようにします。
+最初に実装した「ナビゲーション」の例に戻りましょう。ブラウザの観点から言うと、これは1つの「タスク」に過ぎません。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/use-layout-flow.png"></p>
+<p>この状況は、見ることができなかった赤→緑→黒のborder線の遷移と全く同じです。
+一方、<code class="language-text">useEffect</code>の場合、フローが2つのタスクに分割されます。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/use-effect-flow.png"></p>
+<p>1つ目のタスクでは、全てのボタンを含むナビゲーションの「最初」のレンダリングをし、2つ目のタスクでは、不要な子要素を除外します。そして、2つのタスクの間に画面のリペインティングが行われます。タイムアウト間のborderと全く同じ状況です。
+では、最初の問いに答えましょう。<code class="language-text">useLayoutEffect</code>を使うのは安全でしょうか。はい、安全です。パフォーマンスに悪影響を及ぼす可能性はあるでしょうか。もちろんです。Reactのアプリ全体が同時に実行される1つの巨大な「タスク」になってしまうのは望ましくありません。
+<code class="language-text">useLayoutEffect</code> の使用は、要素の実際のサイズに従ってUIを調整する必要があり、それによって引き起こされる視覚的な「乱れ」を取り除く必要がある場合のみにしてください。それ以外は<code class="language-text">useEffect</code>を使うのが正解です。<a href="https://react.dev/learn/you-might-not-need-an-effect">"You Might Not Need an Effect – React"</a>によると、それさえも必要ないかもしれません。</p>
+<h3>useEffectについてもう少し <a name="032"></a></h3>
+<p><code class="language-text">setTimeout</code>の中で<code class="language-text">useEffect</code>を実行するメンタルモデルは違いを理解するのには便利ですが、厳密には正確ではありません。まず、実装の詳細を明確にすると、Reactはこのモデルではなく、<code class="language-text">postMessage</code>を<code class="language-text">requestAnimationFrame</code>のトリックと組み合わせて使用します。このトリックについては私も知りませんでした。詳しく知りたい方は、<a href="https://stackoverflow.com/questions/56727477/react-how-does-react-make-sure-that-useeffect-is-called-after-the-browser-has-h/56727837#56727837">"React: How does React make sure that useEffect is called after the browser has had a chance to paint?"</a>で説明されているのでぜひご覧ください。
+また、非同期に実行されることは実際には保証されていません。Reactは可能な限り最適化しようとしますが、ブラウザペイントの前に実行され、結果的にブロックされるケースもあります。そのようなケースの1つが、一連の更新のどこかに<code class="language-text">useLayoutEffect</code>がすでに存在する場合です。理屈と仕組みを理解したい場合は、<a href="https://blog.thoughtspile.tech/2021/11/15/unintentional-layout-effect/">"useEffect sometimes fires before paint"</a>をご覧ください。こちらの記事にとても優れた調査結果が詳しくまとめられています。</p>
+<h2>Next.jsやその他のSSRフレームワークでuseLayoutEffectを実行する <a name="04"></a></h2>
+<p>低レイヤーJavaScriptやブラウザについてはこれくらいにして、本番コードに戻りたいと思います。というのも、「現実世界」では、これらはさほど頻繁に考える必要のないことだからです。「現実世界」では、Next.js（Next.jsの宣伝記事ではないので、もちろん他のフレームワークでも構いません😅​​​​）のようなフレームワーク上で、美しいレスポンシブナビゲーションをコーディングし、優れたユーザーエクスペリエンスを構築できればよいのです。
+実際にやってみると、全くうまくいかないことにまず気づきます。チラつきはなくなっておらず、魔法はもう消えています。<a href="https://codesandbox.io/p/sandbox/simple-nextjs-uselayout-example-6sflsg?file=%2FREADME.md">こちらの例を開いて</a>何度かページをリフレッシュしてみてください。もしくは、Next.jsアプリをお持ちでしたら、前に修正したナビゲーションをコピペしてみてください。
+何が起きているのでしょうか？🤨
+SSR、つまりサーバーサイドレンダリングです。一部のフレームワークがデフォルトでサポートしている素晴らしい機能ですが、このようなケースでは極めて厄介な代物です。
+SSRが有効になっていると、Reactコンポーネントの最初のレンダリングと全てのライフサイクルイベントの呼び出しは、コードがブラウザに届く前にサーバー上で行われます。SSRの仕組みに詳しくない人のために説明すると、これは単にバックエンドのどこかで何らかのメソッドが<code class="language-text">React.renderToString(&lt;App /&gt;)</code>のようなものを呼び出すということを意味します。そうすると、Reactは次にアプリ内の全てのコンポーネントを処理して「レンダリング」（単に関数を呼び出すということです。コンポーネントはただの関数なので）し、各コンポーネントが表すHTMLを生成します。</p>
+<p><img src="https://www.developerway.com/assets/no-more-flickering-ui/react-to-html-ssr.png"></p>
+<p>次に、このHTMLがブラウザに送られるページ内に注入され、ページが送信されます。これは、全てがサーバー上で生成され、メニューを開くためだけにJavaScriptを使用していた昔と同じやり方です。その後、ブラウザがページをダウンロードして表示し、（Reactを含む）全てのスクリプトをダウンロードして（Reactも含めて）実行します。Reactはあらかじめ生成されたHTMLを処理し、多少のインタラクティブ要素を組み込みます。これで再びページが使える状態になります。
+問題は、最初のHTMLを生成した時点では、まだブラウザがないということです。したがって、要素の実際のサイズ計算（<code class="language-text">useLayoutEffect</code>で行うような）を必要とする処理は、サーバー上では単純にうまくいきません。サイズのある要素はまだ存在せず、あるのは文字列だけなので。<code class="language-text">useLayoutEffect</code>の目的そのものが要素のサイズを取得することなので、サーバー上で実行してもあまり意味はありません。Reactはサーバー上で実行しません。
+その結果、ブラウザが最初に読み込む、まだインタラクティブ要素のないページに表示されるのは、コンポーネントの「最初」のステージでレンダリングされた内容です。すなわち、「もっと見る」ボタンを含む全てのボタンの列です。ブラウザが全ての処理を実行し、Reactが機能する状態になったら、ようやく<code class="language-text">useLayoutEffect</code>を実行できるようになり、ボタンが隠れます。しかし、画面のチラつきはあります。
+これをどう修正するかはユーザーエクスペリエンスの問題であり、ユーザーに「デフォルトで」何を表示したいかによります。メニューの代わりに「読み込み中」の状態を表示したり、最も重要なメニュー項目を1つか2つ表示したり、項目を完全に非表示にしてクライアント上でのみレンダリングすることもできるでしょう。どうするかはあなた次第です。
+1つの方法としては、shouldRenderというステート変数を導入し、<code class="language-text">useEffect</code>の中でtrueに切り替えます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>shouldRender<span class="token punctuation">,</span> setShouldRender<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token function">setShouldRender</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>shouldRender<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SomeNavigationSubstitude</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Navigation</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">useEffect</code>はクライアント上でのみ実行されるため、初回のSSRでは代替コンポーネントが表示されます。次に、クライアントコードが作動し、<code class="language-text">useEffect</code>が実行され、ステートが変わり、Reactがそれを通常のレスポンシブナビゲーションに置き換えます。
+ここでステートを導入することを恐れる必要はありません。また、次のような条件付きのレンダリングを実行しようとしないでください。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token function-variable function">Component</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token comment">// Detecting SSR by checking whether window is there</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">typeof</span> window <span class="token operator">===</span> ‘<span class="token keyword">undefined</span>’<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SomeNavigationSubstitude</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">;</span>
+
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Navigation</span></span> <span class="token punctuation">/></span></span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>厳密には、typeof window === ‘undefined’はSSR環境を示しますが（サーバー上にウィンドウはありません）、私たちのユースケースでは役に立ちません。Reactでは、SSRから受け取ったHTMLと、クライアント上で初回にレンダリングされたHTMLが完全に一致する必要があります。これらが一致しない場合、アプリは正常に機能しません。さらに詳しく知りたい人は、<a href="https://www.joshwcomeau.com/react/the-perils-of-rehydration/">The Perils of Rehydration</a>という記事がこのテーマについて優れた考察を行っていますので、そちらをご覧ください。</p>
+<hr>
+<p>手軽で便利なトリックについて簡単に説明するだけのつもりが、レンダリングについてかなり突っ込んだ議論になってしまいました。途中で脱落された方がいないことを願います​​😅
+この調査で参考にしたリソースを以下にご紹介します。さらに詳しく学びたい方は、ぜひご覧ください。</p>
+<ul>
+<li><a href="https://overreacted.io/react-as-a-ui-runtime/">React as a UI Runtime</a>　Dan Abramov氏によるこちらの記事は読み応えがあるので、一晩かけて読むことをお勧めします。</li>
+<li><a href="https://github.com/acdlite/react-fiber-architecture">GitHub - acdlite/react-fiber-architecture</a>　Reactの新しいコアアルゴリズムであるReact Fiberについて説明した記事です。</li>
+<li><a href="https://blog.xnim.me/event-loop-and-render-queue">Browser Event loop: micro and macro tasks, call stack, render queue: layout, paint, composite</a></li>
+<li><a href="https://web.dev/rendering-performance/">Rendering Performance</a></li>
+<li><a href="https://www.joshwcomeau.com/react/the-perils-of-rehydration/">The Perils of Rehydration</a></li>
+<li><a href="https://blog.thoughtspile.tech/2021/11/15/unintentional-layout-effect/">useEffect sometimes fires before paint</a></li>
+<li><a href="https://react.dev/learn/you-might-not-need-an-effect">You Might Not Need an Effect – React</a></li>
+<li><a href="https://react.dev/learn/render-and-commit">Render and Commit – React</a></li>
+</ul>
+<p>さらに理解を深めていただくために、YouTube動画もぜひご覧ください。概念によっては、2パラグラフ分の文章よりも3秒のアニメーションの方が伝わりやすい場合もあります。</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/__tm1dyMi4A?si=5OyDZC2bnkehUXLR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<p>ではまた次回お会いしましょう。</p>]]></content:encoded></item><item><title><![CDATA[ReactにおけるRef：DOMへのアクセスから命令的APIまで]]></title><description><![CDATA[この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという…]]></description><link>https://postd.cc/refs-from-dom-to-api/</link><guid isPermaLink="false">https://postd.cc/refs-from-dom-to-api/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Wed, 30 Aug 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、ReactにおいてDOMへのアクセスが必要な理由と、その際にRefがどう役立つのかを見ていきます。また、useRef、forwardRef、useImperativeHandleという3つのフックについて説明し、これらを適切に使用する方法を紹介したいと思います。
 この記事と同じ内容を扱ったYouTube動画も公開していますので、活字媒体よりも動画視聴を好まれる方はそちらをご覧ください。文字ではなく、アニメーションと音声で同じ概念を解説しています。
 <a href="https://youtu.be/H9KhRiO1UeU">この記事は動画形式でも公開しています。</a></p>
 <h2>目次</h2>
@@ -3712,260 +3995,5 @@ Qwikはサーバーでコンポーネントを作成し、それをクライア�
 <h2>次はどうなる？</h2>
 <p>私たちは、Qwikを皆さんに早く届けるために尽力しています。
 Qwikによってどんなに素晴らしいサイトを開発できるか、皆さん自身の目で確かめてください。</p>
-<h2>シリーズ記事一覧</h2>
-<div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧</a>はこちらから参照できます。</p></div></div>]]></content:encoded></item><item><title><![CDATA[既存のバンドラの手法は間違っている]]></title><description><![CDATA[最近のバンドラは、アプリケーションコードのどの部分をいつ遅延読み込みするかを開発者が決めなければなりません。
-開発者は以下のように、コードベースにdynamic importを挿入することによって、…]]></description><link>https://postd.cc/your-bundler-is-doing-it-wrong/</link><guid isPermaLink="false">https://postd.cc/your-bundler-is-doing-it-wrong/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><pubDate>Tue, 31 Jan 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>最近のバンドラは、アプリケーションコードのどの部分をいつ遅延読み込みするかを開発者が決めなければなりません。
-開発者は以下のように、コードベースにdynamic importを挿入することによって、遅延読み込みをする場所とタイミングを決定します。</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">doSomething</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> chunk <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token keyword">import</span><span class="token punctuation">(</span><span class="token string">'./my-chunk'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>chunk<span class="token punctuation">.</span>someSymbol<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
-<p>開発者は以下を行う必要があります。</p>
-<ul>
-<li>コードのどの部分が遅延読み込みに適しているかを判断します。</li>
-<li>既存のアプリケーションワークフローとの互換性がある方法で遅延読み込みを実行します（遅延読み込みは本質的に非同期ですが、遅延読み込みを実行するための理想的な関数は同期型の可能性があるため、遅延読み込みコードを設置できる場所は限られます）。</li>
-<li><code class="language-text">./my-chunk</code>にチャンク名を割り当てます。バンドラがチャンクに割り当てる名前や、チャンクを1つのアプリケーションにまとめる方法に影響を及ぼします。</li>
-<li>何をチャンクに含めるかを判断します（例えば、<code class="language-text">symbolA</code>と<code class="language-text">symbolB</code>は同じチャンクに含めるべきか、別のチャンクに分けるべきか？）。</li>
-</ul>
-<p>ここで問題なのは、開発者はソースコードを書いている時点では、遅延読み込みするコードの選択が適切であるか、チャンクに適切なシンボルが存在するかが分からないということです。
-この点は、アプリケーションを実際にデプロイし、現実に利用状況を観察してみないとはっきりしません。
-例えば、設定ページはほとんどアクセスされないので、メインバンドルから除くべきかもしれません。
-あるいは、通知セクションを遅延読み込みにしたところ、実際はユーザが最もよくアクセスするページだったため、ユーザ体験がかえって悪化している可能性もあります。</p>
-<p>さらに悪いことに、ひとたび開発者が選択をすると、バンドラがそれを補うためにできることはほんの少しです。
-バンドラは、まさに開発者が求めることをしなければなりません。
-バンドラにもっと自由を与えるには、まったく新しい方法で問題を見る必要があります。</p>
-<p>ポイントは、コードを書いている時点では最終的なバンドルがどうなるかが分からないため、どこにdynamic importを挿入すべきかを判断するための十分な情報がないことです。
-一方、チャンクの理想的な姿を判断するための十分なデータが集まったときには、ソースコードはすでに書き上がっています。
-さかのぼってdynamic importを挿入するのは、大きな手間になるかもしれません（あるいは、過剰な遅延読み込みによって、アプリを細かく分割しすぎる恐れもあります）。</p>
-<p>私たちが求めているのは、チャンクの理想的な数を判断し、現実のユーザによるアプリケーションの利用状況に基づいてチャンク間でコードを移動できることです。
-これを実行する際に、さかのぼってソースコードをリファクタリングする必要がないことが望ましいでしょう。
-チャンクのレイアウトは、コードとしてコードベースに組み込むのではなく、設定情報としてバンドラに移すべきです。</p>
-<p>さらに複雑なことに、最近のフレームワークはすべて同期方式のレンダリングパイプラインを採用しています。
-そのため、非同期方式のdynamic importをアプリケーションに挿入するのがとても難しくなります。</p>
-<p>最適な遅延読み込み戦略を追求するなら、上記の問題を解決する必要があります。</p>
-<h2>Qwikの登場</h2>
-<p>コンポーネントはQwikアプリケーションの基本的な構成要素です。
-Qwikはコンポーネントを3つの部分に分割することを求めます。</p>
-<ol>
-<li><strong>ビュー</strong>：コンポーネントのビジュアル部分をレンダリングするJSXコードが含まれます。</li>
-<li><strong>ステート</strong>ファクトリー：コンポーネントの新たなステートを作成するコードが含まれます。</li>
-<li>イベント<strong>ハンドラ</strong>：コンポーネントの挙動やユーザとのインタラクションに利用されるコードが含まれます。</li>
-</ol>
-<h2>なぜコンポーネントを3つの部分に分割するのか？</h2>
-<p>ほとんどのフレームワークは、ビュー、ステート、ハンドラのコードを1つにまとめています。
-以下は、この働きを解説するために用意した擬似フレームワークのコードです。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">export</span> <span class="token keyword">function</span> <span class="token function">Counter</span><span class="token punctuation">(</span><span class="token parameter">props<span class="token operator">:</span> <span class="token punctuation">{</span>step<span class="token operator">?</span><span class="token operator">:</span>number<span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
- <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token punctuation">{</span>count<span class="token operator">:</span> <span class="token number">50</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
- <span class="token keyword">const</span> step <span class="token operator">=</span> props<span class="token punctuation">.</span>step <span class="token operator">||</span> <span class="token number">1</span><span class="token punctuation">;</span>
- <span class="token keyword">return</span> <span class="token punctuation">(</span>
-   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onclick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">-</span> step<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">-</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>botton</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onclick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>botton</span><span class="token punctuation">></span></span><span class="token plain-text">
-   </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
- )
-}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>コンポーネントのビュー、ステート、ハンドラがすべて一緒になっているのに注目してください。
-これはそれらのすべて（ビュー、ステート、ハンドラ）を同時にダウンロード、パース、実行しなければならないことを意味します。
-そのため、遅延読み込みはかなり制限されます。</p>
-<p>ここで挙げた程度の例では大きな問題にならないかもしれませんが、上記のコードがもっと複雑になって、何KBものコードを一度にダウンロード、パース、実行する必要がある場合を想像してみてください。
-その場合、ビュー、ステート、ハンドラを何としても一緒に読み込ませようとするのは良くないかもしれません。
-それがなぜ問題なのかを、ユーザのよくある利用パターンを通して見ていきましょう。</p>
-<p><strong>ユーザがコンポーネントをクリックしてインタラクトする：</strong></p>
-<ul>
-<li>一部の<code class="language-text">handler</code>だけが必要：ダウンロードしなければならないのは、トリガーされた特定のハンドラのみです。その他のハンドラはすべて不要です。</li>
-<li><code class="language-text">view</code>は<strong>不要</strong>：ハンドラによる再レンダリングが行われない可能性や、異なるコンポーネントの再レンダリングが行われる可能性があるので、ビューは不要かもしれません。</li>
-<li><code class="language-text">state factory</code>は<strong>不要</strong>：コンポーネントが再ハイドレートされるため、ステートを初期化するためのコードは不要です。</li>
-</ul>
-<p><strong>コンポーネントのステートが変更される：</strong></p>
-<ul>
-<li><code class="language-text">handler</code>は<strong>不要</strong>：ハンドラを実行する必要はありません。</li>
-<li><code class="language-text">view</code>は必要：コンポーネントを再レンダリングする必要があるため、ビューは必要です。</li>
-<li><code class="language-text">state factory</code>は不要：コンポーネントが再ハイドレートされるため、ステートを初期化するためのコードは不要です。</li>
-</ul>
-<p><strong>親が新たなコンポーネントを作成する：</strong></p>
-<ul>
-<li><code class="language-text">handler</code>は<strong>不要</strong>：ハンドラを実行する必要はありません。</li>
-<li><code class="language-text">view</code>は必要：コンポーネントを再レンダリングする必要があるため、ビューは必要です。</li>
-<li><code class="language-text">state factory</code>は必要：コンポーネントが作成されるため、ステートを初期化するためのコードは必要です。</li>
-</ul>
-<p>上記の例は、それぞれのケースで必要なのがビュー、ステート、ハンドラ情報の一部のみであることを示しています。
-問題は、3つの異なる情報がすべて一緒に埋め込まれているのに対し、それらがコンポーネントのライフサイクルにおいて異なるタイミングでしか利用されないことです。
-最適なパフォーマンスを達成するには、コンポーネントに求められる役割に基づき、コンポーネントを部分ごとにダウンロード・実行する方法が必要です。
-上記のコードでは、ご覧のとおり、コンポーネントを永久に分離できません。</p>
-<h2>分割は簡単</h2>
-<p>Qwikは、当面のタスクに必要なコードだけをダウンロード・実行することでこの問題を解決します。
-上記の例のコードはシンプルですが、現実のコードはずっと複雑であることを忘れないでください。
-さらに、コードが複雑になるとimportが増えることが多く（import自身もimportを必要とします）、コンポーネントのコードは一段と増加します。
-この状況を「ツール」で解決することはできません。
-コンポーネントをパーツ単位に分割し、必要に応じて遅延読み込みできるようにするための静的解析ツールを作成するのは不可能です。
-開発者は、対応する部分ごとにコンポーネントを分割し、きめ細かい遅延読み込みを可能にしなければなりません。</p>
-<p>そのために、Qwikはマーカー関数の<code class="language-text">qrlView</code>、<code class="language-text">qrlState</code>、<code class="language-text">qrlHandler</code>を導入しています。</p>
-<p>ファイル：<code class="language-text">my-counter.tsx</code></p>
-<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span>
- QComponent<span class="token punctuation">,</span>
- qComponent<span class="token punctuation">,</span>
- qrlView<span class="token punctuation">,</span>
- qrlHandler<span class="token punctuation">,</span>
- qrlState
-<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@builder.io/qwik'</span><span class="token punctuation">;</span>
-
-<span class="token comment">//コンポーネントの型を宣言し、プロパティとステートの形態を定義します。</span>
-<span class="token keyword">export</span> <span class="token keyword">type</span> <span class="token class-name">Counter</span> <span class="token operator">=</span> QComponent<span class="token operator">&lt;</span><span class="token punctuation">{</span> step<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">number</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> 
-                                   <span class="token punctuation">{</span> count<span class="token operator">:</span> <span class="token builtin">number</span> <span class="token punctuation">}</span><span class="token operator">></span><span class="token punctuation">;</span>
-
-<span class="token comment">//コンポーネントのステートファクトリーを宣言します。</span>
-<span class="token comment">//これはステートを初期化するために新たなコンポーネントが作成される際に利用されます。</span>
-<span class="token comment">//（再ハイドレーションでは利用されません。）</span>
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterState <span class="token operator">=</span> <span class="token generic-function"><span class="token function">qrlState</span><span class="token generic class-name"><span class="token operator">&lt;</span>Counter<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">{</span> count<span class="token operator">:</span> <span class="token number">0</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//コンポーネントのレンダリングに利用されるコンポーネントのビューを定義します。</span>
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterView <span class="token operator">=</span> <span class="token generic-function"><span class="token function">qrlView</span><span class="token generic class-name"><span class="token operator">&lt;</span>Counter<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> state</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
- <span class="token keyword">return</span> <span class="token punctuation">(</span>
-   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>Counter_update<span class="token punctuation">.</span><span class="token keyword">with</span><span class="token punctuation">(</span><span class="token punctuation">{</span> direction<span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       -
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>state<span class="token punctuation">.</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>Counter_update<span class="token punctuation">.</span><span class="token keyword">with</span><span class="token punctuation">(</span><span class="token punctuation">{</span> direction<span class="token operator">:</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       +
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-   </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
- <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//コンポーネントのビューは、挙動を記述するハンドラを必要とする場合があります。</span>
-<span class="token keyword">export</span> <span class="token keyword">const</span> Counter_update
-   <span class="token operator">=</span> <span class="token generic-function"><span class="token function">qrlHandler</span><span class="token generic class-name"><span class="token operator">&lt;</span>Counter<span class="token punctuation">,</span> <span class="token punctuation">{</span>direction<span class="token operator">:</span> <span class="token builtin">number</span> <span class="token punctuation">}</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>
-       <span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> state<span class="token punctuation">,</span> params</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-         state<span class="token punctuation">.</span>count <span class="token operator">+=</span> params<span class="token punctuation">.</span>direction <span class="token operator">*</span> <span class="token punctuation">(</span>props<span class="token punctuation">.</span>step <span class="token operator">||</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-       <span class="token punctuation">}</span>
-     <span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//最後にすべてを1つのコンポーネントにまとめます。</span>
-<span class="token keyword">export</span> <span class="token keyword">const</span> Counter <span class="token operator">=</span> <span class="token generic-function"><span class="token function">qComponent</span><span class="token generic class-name"><span class="token operator">&lt;</span>Counter<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">{</span>
- state<span class="token operator">:</span> CounterState<span class="token punctuation">,</span>
- view<span class="token operator">:</span> CounterView<span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>上記のコードは他のフレームワークに比べて冗長です。
-しかし、コンポーネントを部分ごとに明確に分割するという手間をかけることで、きめ細かい遅延読み込みが可能になるというメリットが生まれます。</p>
-<ul>
-<li>開発者体験の観点から見て、コンポーネント当たりのオーバーヘッドはあまり変わらないことを忘れないでください。コンポーネントの複雑性が高まるにつれて、オーバーヘッドの増加は大きな問題ではなくなります。</li>
-<li>この方式のメリットは、ツールによってコンポーネントを自由に複数のチャンクにパッケージ化し、必要に応じて遅延読み込みできる点です。</li>
-</ul>
-<h2>裏側で何が起きているのか</h2>
-<p><code class="language-text">qrlState</code>、<code class="language-text">qrlHandler</code>、<code class="language-text">qrlView</code>はいずれもQwik Optimizerのマーカーであり、自身への参照をQRLに変換する必要があることをツールに伝達します。
-その結果、ファイルは次のようになります。</p>
-<p><strong>ファイル</strong>：<code class="language-text">my-counter.js</code></p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> <span class="token punctuation">{</span>qComponent<span class="token punctuation">,</span> qrlView<span class="token punctuation">,</span> qrlHandler<span class="token punctuation">,</span> qrlState<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@builder.io/qwik'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterState <span class="token operator">=</span> <span class="token function">qrlState</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
- count<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterView <span class="token operator">=</span> <span class="token function">qrlView</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">props</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
- <span class="token keyword">const</span> state <span class="token operator">=</span> <span class="token function">getState</span><span class="token punctuation">(</span>props<span class="token punctuation">)</span><span class="token punctuation">;</span>
- <span class="token keyword">return</span> <span class="token punctuation">(</span>
-   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/chunk-pqr#Counter_update?direction=-1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       //              ^^^^^^^^^^^^^^^^^注目^^^^^^^^^^^^^^^^
-       -
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>state<span class="token punctuation">.</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/chunk-pqr#Counter_update?direction=1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       //              ^^^^^^^^^^^^^^^^^注目^^^^^^^^^^^^^^^^
-       +
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-   </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
- <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Counter_update <span class="token operator">=</span> <span class="token function">qrlHandler</span><span class="token punctuation">(</span>
-  <span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> state<span class="token punctuation">,</span> params</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-         state<span class="token punctuation">.</span>count <span class="token operator">+=</span> params<span class="token punctuation">.</span>direction <span class="token operator">*</span> <span class="token punctuation">(</span>props<span class="token punctuation">.</span>step <span class="token operator">||</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Counter <span class="token operator">=</span> <span class="token function">qComponent</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
- state<span class="token operator">:</span> <span class="token string">'/chunk-abc#CounterState'</span><span class="token punctuation">,</span> <span class="token comment">// &lt;&lt;===注目</span>
- view<span class="token operator">:</span> <span class="token string">'/chunk-cde#CounterView'</span><span class="token punctuation">,</span>   <span class="token comment">// &lt;&lt;===注目</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>ソースファイルの変換に加え、Optimizerはビュー、ステート、ハンドラ間の静的参照をすべて削除します。
-QwikはRollupのためのエントリーポイントファイルも作成します。
-これらのエントリーポイントは上記のQRLに対応します。</p>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-abc.js</code></p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">export</span> <span class="token punctuation">{</span> CounterState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./my-counter'</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-pqr.js</code></p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">export</span> <span class="token punctuation">{</span> Counter_update <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./my-counter'</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-cde.js</code></p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">export</span> <span class="token punctuation">{</span> CounterView <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./my-counter'</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p>重要なのは、いくつのエントリーファイルを作成するか、どのエクスポートをどのエントリーファイルと結びつけるかに関して、Qwikに大きな自由がある点です。
-これは開発者が遅延読み込みする部分とそうでない部分の境界をまったく指定しないことによります。
-その代わり、Qwikは、コードベースにたくさんの遅延読み込み境界（原文: lazy load boundaries）を導入するようにコードを書くよう開発者を導きます。
-これによりQwikは、実際のアプリケーションの利用状況に基づき、最適なファイル配分を実現できます。
-例えば、小規模なアプリケーションの場合はファイルを1つ作成し、アプリケーションの規模が大きくなるにつれて、エントリーファイルを増やすことができます。
-また、特定の機能がめったに利用されない場合、その機能だけを単独のバンドルにすることもできます。</p>
-<p>Rollupがエントリーファイルを処理すると、ファイルは次のようになります。</p>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-abc.js</code></p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> qrlState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@builder.io/qwik'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterState <span class="token operator">=</span> <span class="token function">qrlState</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
- count<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-pqr.js</code></p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> qrlHandler<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@builder.io/qwik'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Counter_update <span class="token operator">=</span> <span class="token function">qrlHandler</span><span class="token punctuation">(</span>
-  <span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> state<span class="token punctuation">,</span> params</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-         state<span class="token punctuation">.</span>count <span class="token operator">+=</span> params<span class="token punctuation">.</span>direction <span class="token operator">*</span> <span class="token punctuation">(</span>props<span class="token punctuation">.</span>step <span class="token operator">||</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><strong>ファイル</strong>：<code class="language-text">chunk-cde.js</code></p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> qrlView<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@builder.io/qwik'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> CounterView <span class="token operator">=</span> <span class="token function">qrlView</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">props<span class="token punctuation">,</span> state</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
- <span class="token keyword">return</span> <span class="token punctuation">(</span>
-   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/chunk-pqr#Counter_update?direction=-1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       -
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>state<span class="token punctuation">.</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name"><span class="token namespace">on:</span>click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/chunk-pqr#Counter_update?direction=1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-       +
-     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-   </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
- <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>注目してほしいのは、Rollupがファイルの内容を展開してエントリーファイルにまとめ、不要なコードを削除し、理想的なサイズのバンドルを作成している点です。</p>
-<h2>制約</h2>
-<p>ツールが<code class="language-text">qComponent</code>、<code class="language-text">qrlState</code>、<code class="language-text">qrlHandler</code>を移動できるようにするため、これらのメソッドの利用は制約されています（すべての有効なJavaScriptプログラムが有効なQwikプログラムとは限りません）。
-その制約とは、すべてのマーカー関数が<code class="language-text">export</code>の対象となるトップレベル関数でなければならないというものです。</p>
-<p>無効なコードの例は次のとおりです。</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> someFn <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./some-place'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">function</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
- <span class="token keyword">const</span> MyStateFactory <span class="token operator">=</span> <span class="token function">qrlState</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//トップレベルではないので無効</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">const</span> MyStateFactory <span class="token operator">=</span> <span class="token function">qrlState</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">someFn</span><span class="token punctuation">(</span><span class="token punctuation">{</span> data<span class="token operator">:</span> <span class="token number">123</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//有効なimportなので問題なし</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>ツールにとっての選択肢</h2>
-<p>アプリケーションを小さいファイルに分割しすぎて、ダウンロードのパフォーマンスに悪影響を与えてしまうのは、あり得ないことではありません（むしろ、とてもよくあることです）。
-そのため、ツールではファイルをマージしてバンドルにすることを選択できます。
-これは理想的な挙動と言えます。
-アプリケーション全体の規模が比較的小さい（50KB未満の）場合、数百個ものファイルに分割するのは生産的ではないでしょう。</p>
-<p>コード構造がきめ細かければ、ツールは常に、バンドルを大きくする（そして少なくする）ことを選択できます。
-しかし、その逆は正しくありません。
-コード構造が粗ければ、ツールがコードを分割するためにできることは何もありません。
-Qwikは、開発者がアプリケーションを可能な限り小さいチャンクに分割し、ツールを利用して最適なバンドルのチャンクを発見する助けになります。
-このように、Qwikはあらゆるサイズのアプリケーションに最適なパフォーマンスを提供できます。</p>
-<p>この記事は面白かったでしょうか？もしそうならば、<a href="https://builder-io.rippling-ats.com/">私たちのチームに参加</a>して、一緒にWebの高速化を目指しませんか。</p>
-<ul>
-<li><a href="https://stackblitz.com/edit/qwik-todo-demo">StackBlitz</a>で試す</li>
-<li><a href="https://github.com/builderio/qwik">github.com/builderio/qwik</a>でスターを送る</li>
-<li><a href="https://twitter.com/QwikDev">@QwikDev</a> と<a href="https://twitter.com/builderio">@builderio</a>をフォロー</li>
-<li><a href="https://discord.gg/JHVpZmqSs4">Discord</a>でチャット</li>
-<li><a href="https://builder-io.rippling-ats.com/">builder.io</a>の採用情報</li>
-</ul>
 <h2>シリーズ記事一覧</h2>
 <div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><a href="/series-qwik/">シリーズ記事一覧</a>はこちらから参照できます。</p></div></div>]]></content:encoded></item></channel></rss>
