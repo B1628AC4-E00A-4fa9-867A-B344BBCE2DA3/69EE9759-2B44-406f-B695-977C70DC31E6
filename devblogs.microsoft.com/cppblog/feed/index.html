@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 16 Nov 2023 18:55:07 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 17 Nov 2023 17:06:32 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,231 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Functions View for Build Insights in Visual Studio 2022 17.8</title>
+		<link>https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/#respond</comments>
+		
+		<dc:creator><![CDATA[Eve Silfanus]]></dc:creator>
+		<pubDate>Fri, 17 Nov 2023 17:06:32 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32720</guid>
+
+					<description><![CDATA[<p>Introduction<br />
+We are excited to unveil a new feature in Build Insights for Visual Studio: Functions View! This feature is available in Visual Studio 2022 version 17.8. Functions View offers essential insights into functions and forceinlines within your codebases.<br />
+Download Visual Studio 2022 17.8<br />
+We extend our sincere thanks thanks to the developer community,</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/">Functions View for Build Insights in Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h3 id="introduction"><strong>Introduction</strong></h3>
+<p>We are excited to unveil a new feature in Build Insights for Visual Studio: Functions View! This feature is available in Visual Studio 2022 version 17.8. Functions View offers essential insights into functions and forceinlines within your codebases.</p>
+<p><a href="https://visualstudio.microsoft.com/downloads/">Download Visual Studio 2022 17.8</a></p>
+<p>We extend our sincere thanks thanks to the developer community, especially our game studio partners, for actively providing feedback. Your contributions are invaluable in shaping this new feature.</p>
+<p>For more details about Build Insights and to explore other features like Included Files and Include Tree Views, please visit our <a href="https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/#getting-started">initial announcement blogpost</a>.</p>
+<h3 id="code-generation-insights-with-functions-view"><strong>Code Generation Insights with Functions View</strong></h3>
+<p>Functions View is a powerful tool that displays the impact of each function on the total build time by analyzing code generation times and forceinlines. Forceinlines, commonly used to boost runtime efficiency, can also influence build times.</p>
+<p><span style="font-size: 12pt;">The following sample code is based on a public code sample by <a href="https://aras-p.info/blog/2017/10/09/Forced-Inlining-Might-Be-Slow/">Aras Pranckevičius</a>. We will use it to show you how you can optimize your builds with </span><span style="font-size: 12pt;">Functions View. To setup your project, create a C++ Console application and copy the following sample code:</span></p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;emmintrin.h&gt;
+
+
+struct float4
+{
+    __m128 val;
+    float4() { val = _mm_setzero_ps(); }
+    float4(float x) { val = _mm_set1_ps(x); }
+    float4(float x, float y) { val = _mm_set_ps(y, x, y, x); }
+    float4(float x, float y, float z) { val = _mm_set_ps(0.f, z, y, x); }
+    float4(float x, float y, float z, float w) { val = _mm_set_ps(w, z, y, x); }
+    float4(__m128 v) { val = v; }
+};
+
+
+static __forceinline float4 operator+(const float4&amp; a, const float4&amp; b) { return float4(_mm_add_ps(a.val, b.val)); }
+static __forceinline float4 operator-(const float4&amp; a, const float4&amp; b) { return float4(_mm_sub_ps(a.val, b.val)); }
+static __forceinline float4 operator*(const float4&amp; a, const float4&amp; b) { return float4(_mm_mul_ps(a.val, b.val)); }
+static __forceinline float4 operator/(const float4&amp; a, const float4&amp; b) { return float4(_mm_div_ps(a.val, b.val)); }
+static __forceinline float4 csum(const float4&amp; p)
+{
+    __m128 r = _mm_add_ps(p.val, _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(p.val), _MM_SHUFFLE(0, 3, 2, 1))));
+    return _mm_add_ps(r, _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(r), _MM_SHUFFLE(1, 0, 3, 2))));
+}
+static __forceinline float4 dot(const float4&amp; p0, const float4&amp; p1) { return csum(p0 * p1); }
+static __forceinline float4 dot(const float4&amp; p) { return dot(p, p); }
+static __forceinline float4 rsqrt(const float4&amp; x)
+{
+#define C0  9.999998e-01f
+#define C1  3.0000002e+00f
+#define C2  .5f
+#define C3  340282346638528859811704183484516925440.f
+    __m128 e = _mm_mul_ps(_mm_rsqrt_ps((__m128) x.val), _mm_set_ps(C0, C0, C0, C0));
+    e = _mm_min_ps(e, _mm_set_ps(C3, C3, C3, C3));
+    return _mm_mul_ps(_mm_mul_ps(e, _mm_set_ps(C2, C2, C2, C2)), _mm_sub_ps(_mm_set_ps(C1, C1, C1, C1), _mm_mul_ps(_mm_mul_ps(x.val, e), e)));
+}
+static __forceinline float4 normalize(const float4&amp; v)
+{
+    return v * rsqrt(dot(v));
+}
+
+static __forceinline float4 ident() { return float4(0.f, 0.f, 0.f, 1.f); }
+static __forceinline float4 sampleFun1(const float4&amp; x, const float4&amp; y)
+{
+    return csum(x) / x + y;
+}
+static __forceinline float4 sampleFun2(const float4&amp; q1, const float4&amp; q2)
+{
+    return sampleFun1(q1 * q2, q2 - q1) * (q1 + q2);
+}
+static float4 sampleFun3(const float4&amp; pq, const float4&amp; mask)
+{
+    const float c8 = 0.923879532511287f;
+    const float s8 = 0.38268343236509f;
+    const float g = 5.82842712474619f;
+
+
+    float4 ch = float4(2) * (normalize(pq) - normalize(mask));
+    float4 sh = pq * normalize(ch);
+    float4 r = ((g * sh * sh - ch * ch) + sh / float4(s8, s8, s8, c8)) * mask;
+    return normalize(r);
+}
+struct matrix
+{
+    float4 m0, m1, m2;
+};
+static __forceinline float4 sampleFunIteration(matrix&amp; s, int count = 5)
+{
+    matrix qm;
+    float4 q, v = ident();
+    for (int iter = 0; iter &lt; count; iter++)
+    {
+        q = sampleFun3(s.m0, float4(0, 0, 1, 1));
+        v = sampleFun2(v, q);
+        v = normalize(v);
+        q = sampleFun3(s.m1, float4(1, 0, 0, 1));
+        v = sampleFun2(v, q);
+        v = normalize(v);
+        q = sampleFun3(s.m2, float4(0, 1, 0, 1));
+        v = sampleFun2(v, q);
+        v = normalize(v);
+    }
+    return v;
+}
+
+
+static __forceinline float4 sampleFunDecomposition(const matrix&amp; a, const float4&amp; u, const float4&amp; v)
+{
+    float4 r;
+    matrix s = a;
+    s.m0 = normalize(s.m0) + u;
+    s.m1 = normalize(s.m1) * v;
+    s.m2 = normalize(s.m2);
+    r = sampleFunIteration(s);
+    r = normalize(v) * u + (normalize(u) / v);
+    s.m0 = s.m0 + r;
+    s.m1 = s.m1 + r;
+    s.m2 = s.m2 + r;
+    r = sampleFunIteration(s);
+    s.m0 = s.m0 / normalize(r);
+    s.m1 = s.m1 / normalize(v + r);
+    s.m2 = s.m2 / normalize(v * r);
+    r = sampleFunIteration(s);
+    s.m0 = s.m0 * s.m1;
+    s.m1 = s.m1 * s.m2 - r;
+    s.m2 = s.m2 * s.m0 + r;
+    r = sampleFunIteration(s);
+
+
+    return r;
+}
+
+
+int main(int argc, const char** argv)
+{
+    matrix a;
+    a.m0 = (float)argv[0][0];
+    a.m1 = (float)argc;
+    a.m2 = (float)(argv[0][0] - argc);
+
+
+    float4 u = a.m0;
+    float4 v = a.m1;
+    float4 e = sampleFunDecomposition(a, a.m0, a.m1);
+    e = e + sampleFunDecomposition(a, a.m2, normalize(a.m1));
+    e = e + sampleFunDecomposition(a, normalize(a.m2), e);
+    e = e + sampleFunDecomposition(a, e, e);
+    e = e + sampleFunDecomposition(a, normalize(e), normalize(e));
+    e = e * sampleFunDecomposition(a, e, e);
+    e = e - sampleFunDecomposition(a, e, e);
+    e = e * sampleFunDecomposition(a, e, e);
+    e = e + sampleFunDecomposition(a, e, e);
+    float4 r = normalize(e);
+
+
+    return (int)_mm_cvtss_f32(r.val);
+}</code></pre>
+<h3 id=""><code class="language-cpp"></code></h3>
+<p>&nbsp;</p>
+<p>Before running the sample code, ensure the functions will be forceinlined:</p>
+<ol>
+<li>Right-click on the project in the solution explorer to open the context menu.</li>
+<li>Select project properties.</li>
+<li>In the Project Property Pages, navigate to C/C++ &gt; Optimization.</li>
+<li>Under Optimization, select &#8220;Maximum Optimization (Favor Speed) (/Ox)&#8221;</li>
+<li>Click OK, then choose Release as the configuration.</li>
+</ol>
+<p>Finally, under the Build Menu, select <strong>Run Build Insights on Solution &gt; Build</strong>. The following is the report generated by Build Insights:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1.png"><img decoding="async" class="aligncenter size-large wp-image-33263" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-1024x527.png" alt="Functions View Report" width="640" height="329" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-1024x527.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-300x154.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-768x395.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-1536x790.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/FunctionsView-1-2048x1054.png 2048w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<p>&nbsp;</p>
+<p>The total build time is 7.342 seconds. The main function includes 8 instances of the forceinlined<code>sampleFunDecomposition()</code> function, significantly contributing to the main function&#8217;s size.</p>
+<p>To mitigate the build time impact, remove the <code>__forceinline</code> from the <code>sampleFunDecomposition()</code> function and observe the effect on build time.</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">static float4 sampleFunDecomposition(const matrix&amp; a, const float4&amp; u, const float4&amp; v)
+{
+    float4 r;
+    matrix s = a;
+    s.m0 = normalize(s.m0) + u;
+    s.m1 = normalize(s.m1) * v;
+    s.m2 = normalize(s.m2);
+    r = sampleFunIteration(s);
+    r = normalize(v) * u + (normalize(u) / v);
+    s.m0 = s.m0 + r;
+    s.m1 = s.m1 + r;
+    s.m2 = s.m2 + r;
+    r = sampleFunIteration(s);
+    s.m0 = s.m0 / normalize(r);
+    s.m1 = s.m1 / normalize(v + r);
+    s.m2 = s.m2 / normalize(v * r);
+    r = sampleFunIteration(s);
+    s.m0 = s.m0 * s.m1;
+    s.m1 = s.m1 * s.m2 - r;
+    s.m2 = s.m2 * s.m0 + r;
+    r = sampleFunIteration(s);
+
+
+    return r;
+}</code></pre>
+<p>Then, run Build Insights again. The following are the results we got:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/Optimized.png"><img decoding="async" class="aligncenter wp-image-33264 size-medium" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/Optimized-300x58.png" alt="Build Insights with Optimized Code Statistics" width="300" height="58" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/Optimized-300x58.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/Optimized-768x149.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/Optimized.png 784w" sizes="(max-width: 300px) 100vw, 300px" /></a></p>
+<p>By merely removing the <code>__forceinline</code> from <code class="language-cpp">sampleFunDecomposition()</code>, the build time went from 7.342 seconds to 0.251 seconds, which is a 97% reduction from the original!</p>
+<h3 id="upcoming-updates"><strong>Upcoming Updates</strong></h3>
+<p>We are rapidly iterating to deliver more value to you. Anticipate the following in our next release:</p>
+<ul>
+<li>The Time Column will be renamed to Contribution for clarity.</li>
+<li>Addition of a Forceinline Count Column.</li>
+<li>Aggregation of forceinline metrics: forceinlines will be grouped when expanding a function.</li>
+<li>Introduction of Tool origin, indicating where the code generation occurred.</li>
+<li>Addition of Filepath column and navigation: It will show the file location of each forceinlined function, allowing for easy navigation, with the option to go to the source file.</li>
+<li>New Duration Column, reflecting time without considering parallel operations.</li>
+</ul>
+<h3 id="send-us-your-feedback"><strong>Send us your feedback!</strong></h3>
+<p>We hope Build Insights helps you by providing the critical information needed to optimize your build times and speed up your build iteration time. <a href="https://visualstudio.microsoft.com/vs/preview/">Download the latest preview version of Visual Studio</a> and give it a try.</p>
+<p>Please let us know your thoughts and what additional capabilities you’d like to see from this feature next! We are actively developing this feature set and would love to hear what would improve your workflow even more. The comments below are open for us to track any requests. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>) or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. To open a bug, please see <a href="https://developercommunity.visualstudio.com/report?space=8&amp;entry=problem">Visual Studio Feedback</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/">Functions View for Build Insights in Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Debug vcpkg portfiles in CMake script mode with Visual Studio Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/debug-vcpkg-portfiles-in-cmake-script-mode-with-visual-studio-code/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/debug-vcpkg-portfiles-in-cmake-script-mode-with-visual-studio-code/#respond</comments>
@@ -1065,36 +1290,6 @@ void oh_no(bool should_eat, bool should_reset) {
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/open-sourcing-ifc-sdk-for-cpp-modules/feed/</wfw:commentRss>
 			<slash:comments>6</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Build Reliable and Secure C++ programs — Microsoft Learn</title>
-		<link>https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/#respond</comments>
-		
-		<dc:creator><![CDATA[Herb Sutter]]></dc:creator>
-		<pubDate>Mon, 02 Oct 2023 07:50:59 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=32938</guid>
-
-					<description><![CDATA[<p>“The world is built on C and C++” is no overstatement — C and C++ are foundational languages for our global society and are always in the world’s top 10 most heavily used languages now and for the foreseeable future. Visual Studio has always supported many programming languages and we encourage new languages and experiments;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/">Build Reliable and Secure C++ programs — Microsoft Learn</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>“The world is built on C and C++” is no overstatement — C and C++ are foundational languages for our global society and are always in the world’s top 10 most heavily used languages now and for the foreseeable future. Visual Studio has always supported many programming languages and we encourage new languages and experiments; diversity and innovation are healthy and help progress the state of the art in software engineering. In Visual Studio we also remain heavily invested long-term in providing the best C and C++ tools and continuing to actively participate in ISO C++ standardization, because we know that our internal and external customers are relying on these languages for their success, now and for many years to come.</p>
-<p>As cyberattacks and cybercrimes increase, we have to defend our software that is under attack. Malicious actors target many attack vectors, one of which is memory safety vulnerabilities. C and C++ do not guarantee memory safety by default, but you can build reliable and secure software in C++ using additional libraries and tools. And regardless of the programming languages your project uses, you need to know how to defend against the many other attack vectors besides memory safety that bad actors are using daily to attack software written in all languages.</p>
-<p>To that end, we’ve just published a new document on Microsoft Learn to help our customers know and use the tools we provide in Visual Studio, Azure DevOps, and GitHub to ship reliable and secure software. Most of the advice applies to all languages, but this document has a specific focus on C and C++. It was coauthored by many subject-matter experts in programming languages and software security from across Microsoft:</p>
-<ul>
-<li><a href="https://aka.ms/cpp/security"><span style="font-size: 14pt;"><strong>Build reliable and secure C++ programs</strong> | Microsoft Learn</span></a></li>
-</ul>
-<p>This is a section-by-section companion to the United States government publication <a href="https://nvlpubs.nist.gov/nistpubs/ir/2021/NIST.IR.8397.pdf">NISTIR 8397: Guidelines on Minimum Standards for Developer Verification of Software</a>. NISTIR 8397 contains excellent guidance on how to build reliable and secure software in any programming language, arranged in 11 sections or topics. For each NISTIR 8397 section, this Learn document summarizes how to use Microsoft developer products for C++ and other languages to meet that section&#8217;s security needs, and provides guidance to get the most value in each area.</p>
-<p>Most of NISTIR 8397’s guidance applies to all software; for example, all software should protect its secrets, use the latest versions of tools, do automated testing, use CI/CD, verify its bill of materials, and so on. <strong>But for C++ memory safety specifically, see our Learn document’s information in sections 2.3, 2.5, and 2.9</strong> for a detailed list of analyses (e.g., CodeQL, Binskim, <code>/analyze</code>), safe libraries (e.g., GSL, SafeInt), hardening compiler switches (e.g., <code>/sdl</code>, <code>/GS</code>, <code>/guard</code>, <code>/W4</code>, <code>/WX</code>, <code>/Qspectre</code>), and tools (e.g., Address Sanitizer, LibFuzzer) that your project can and should use regularly to harden your C++ programs. If your project uses C++ and you find items listed that you’re not using yet, don’t wait — start adding them to your project today!</p>
-<p>Safety and security are essential. We want to help all of our customers to know about and use the state-of-the-art tools we provide in Visual Studio, Azure DevOps, and GitHub for writing reliable and secure software in our device-and-cloud connected world. Please take some time to review the new Learn document today, and use it as a checklist to ensure that your project is taking full advantage of the best practices and tools available to write robust software in modern C++.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/">Build Reliable and Secure C++ programs — Microsoft Learn</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
