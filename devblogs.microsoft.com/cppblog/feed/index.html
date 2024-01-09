@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Mon, 08 Jan 2024 16:21:52 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 09 Jan 2024 09:33:21 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,319 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC ARM64 optimizations in Visual Studio 2022 17.8 </title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/#respond</comments>
+		
+		<dc:creator><![CDATA[Jiong Wang (ARM Ltd)]]></dc:creator>
+		<pubDate>Tue, 09 Jan 2024 17:00:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33353</guid>
+
+					<description><![CDATA[<p>Visual Studio 2022 17.8 has been released recently (download it here). While there is already a blog “Visual Studio 17.8 now available!” covering new features and improvements, we would like to share more information with you about what is new for the MSVC ARM64 backend in this blog.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/">MSVC ARM64 optimizations in Visual Studio 2022 17.8 </a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 2022 17.8 has been released recently (download it <a href="https://visualstudio.microsoft.com/downloads/">here</a>). While there is already a blog “<a href="https://devblogs.microsoft.com/visualstudio/visual-studio-17-8-now-available/">Visual Studio 17.8 now available!</a>” covering new features and improvements, we would like to share more information with you about what is new for the MSVC ARM64 backend in this blog. In the last couple of months, we have been improving code-generation for the auto-vectorizer so that it can generate Neon instructions for more cases. Also, we have optimized instruction selection for a few scalar code-generation scenarios, for example short circuit evaluation, comparison against immediate, and smarter immediate split for logic instruction.</p>
+<h2 id="auto-vectorizer-supports-conversions-between-floating-point-and-integer"><span style="font-size: 14pt;">Auto-Vec</span><span style="font-size: 14pt;">torizer</span><span style="font-size: 14pt;"> supports conversions between floating-point and integer</span></h2>
+<p>The following conversions between floating-point and integer types are common in real-world code. Now, they are all enabled in the ARM64 backend and hooked up with the auto-vectorizer.</p>
+<table>
+<tbody>
+<tr>
+<td>From</td>
+<td>To</td>
+<td>Instruction</td>
+</tr>
+<tr>
+<td><em>double</em></td>
+<td><em>float</em></td>
+<td><em>fcvtn</em></td>
+</tr>
+<tr>
+<td><em>double</em></td>
+<td><em>int64</em>_t</td>
+<td><em>fcvtzs</em></td>
+</tr>
+<tr>
+<td><em>double</em></td>
+<td><em>uint64_t</em></td>
+<td><em>fcvtzu</em></td>
+</tr>
+<tr>
+<td><em>float</em></td>
+<td><em>double</em></td>
+<td><em>fcvtl</em></td>
+</tr>
+<tr>
+<td><em>float</em></td>
+<td><em>int32_t</em></td>
+<td><em>fcvtzs</em></td>
+</tr>
+<tr>
+<td><em>float</em></td>
+<td><em>uint32_t</em></td>
+<td><em>fcvtzu</em></td>
+</tr>
+<tr>
+<td><em>int64_t</em></td>
+<td><em>double</em></td>
+<td><em>scvtf</em></td>
+</tr>
+<tr>
+<td><em>uint64_t</em></td>
+<td><em>double</em></td>
+<td><em>ucvtf</em></td>
+</tr>
+<tr>
+<td><em>int32_t</em></td>
+<td><em>float</em></td>
+<td><em>scvtf</em></td>
+</tr>
+<tr>
+<td><em>uint32_t</em></td>
+<td><em>float</em></td>
+<td><em>ucvtf</em></td>
+</tr>
+</tbody>
+</table>
+<p>For example:</p>
+<pre class="prettyprint language-c"><code class="language-c">void test (double * __restrict a, unsigned long long * __restrict b) 
+{ 
+    for (int i = 0; i &lt; 2; i++)
+    { 
+        a[i] = (double)b[i]; 
+    } 
+} </code></pre>
+<p>In Visual Studio 2022 17.7, the code-generation was the following in which both the computing throughput and load/store bandwidth utilization were suboptimal due to scalar instructions being used.</p>
+<pre class="prettyprint language-default"><code class="language-default">ldp    x9, x8, [x1]
+ucvtf  d17, x9
+ucvtf  d16, x8
+stp    d17, d16, [x0]</code></pre>
+<p>In Visual Studio 2022 17.8.2, the code-generation has been optimized into:</p>
+<pre class="prettyprint language-default"><code class="language-default">ldr    q16,[x1]
+ucvtf  v16.2d,v16.2d
+str    q16,[x0]</code></pre>
+<p>A single pair of Q register load &amp; store plus SIMD instructions are used now.</p>
+<p>The above example is a conversion between double and 64-bit integer, so both types are the same size. There was another issue in the ARM64 backend preventing auto-vectorization on conversion between different sized types and it has been fixed as well. MSVC also auto-vectorizes the following example now:</p>
+<pre class="prettyprint language-c"><code class="language-c">void test_df_to_sf (float * __restrict a, double * __restrict b, int * __restrict c)
+{
+    for (int i = 0; i &lt; 4; i++)
+    {
+        a[i] = (float) b[i];
+        c[i] = ((int)a[i]) &lt;&lt; 5;
+    }
+}</code></pre>
+<p>The code-generation in Visual Studio 2022 17.7 was:</p>
+<pre class="prettyprint language-default"><code class="language-default">ldp     d17, d16, [x1]
+ldp     d17, d16, [x1]
+fcvt    s17, d17
+fcvt    s16, d16
+fcvtzs  w8, s17
+stp     s17, s16, [x0]
+lsl     w9, w8, #5
+fcvtzs  w8, s16
+lsl     w8, w8, #5
+stp     w9, w8, [x2]</code></pre>
+<p>Scalar instructions plus loop unrolling were employed. In Visual Studio 2022 17.8.2, the loop is vectorized:</p>
+<pre class="prettyprint language-default"><code class="language-default">ldr     q16, [x1]
+fcvtn   v16.2s, v16.2d
+str     d16, [x0]
+fcvtzs  v16.2s, v16.2s
+shl     v16.2s, v16.2s, #5
+str     d16, [x2]</code></pre>
+<h2 id="auto-vectorizer-now-supports-extended-left-shifts"><span style="font-size: 14pt;">Auto-vectorizer now supports extended left shifts</span></h2>
+<p>Extended left shifts are also common in real world code, therefore the ARM64 ISA has native instructions to support it. Neon has <code>SSHLL </code>and <code>USHLL </code>to support signed and unsigned extended left shift. They extend the shift source first, then perform shift on the extended value. Let&#8217;s have a look at the following example:</p>
+<pre class="prettyprint language-c"><code class="language-c">void test_signed (signed short * __restrict a, signed char * __restrict b)
+{
+    for (int i = 0; i &lt; 8; i++)
+        a[i] = b[i] &lt;&lt; 7;
+}
+
+void test_unsigned (unsigned short * __restrict a, unsigned char * __restrict b)
+{
+    for (int i = 0; i &lt; 8; i++)
+        a[i] = b[i] &lt;&lt; 7;
+}</code></pre>
+<p>The code-generation in Visual Studio 2022 17.7 was:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
+    ldr    d16, [x1]
+    sxtl   v16.8h, v16.8b
+    shl    v16.8h, v16.8h, #7
+    str    q16, [x0]
+|test_unsigned| PROC
+    ldr    d16, [x1]
+    ushll  v16.8h, v16.8b, #0
+    shl    v16.8h, v16.8h, #7
+    str    q16, [x0]</code></pre>
+<p>There is vectorization, an independent type promotion is done first and followed by a normal shift. They can be optimized into a single extended shift. We have taught the ARM64 backend about this, and Visual Studio 2022 17.8.2 now generates:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
+    ldr    d16, [x1]
+    sshll  v16.8h, v16.8b, #7
+    str    q16, [x0]
+|test_unsigned| PROC
+    ldr    d16, [x1]
+    ushll  v16.8h, v16.8b, #7
+    str    q16, [x0]</code></pre>
+<p>A single <code>SSHLL</code> or <code>USHLL</code> is used. But <code>SSHLL</code> and <code>USHLL</code> only encode shift amounts within <code>[0, bit_size_of_shift_source - 1]</code>. For example, the shift amount can only be <code>[0, 15]</code> for the above testcases. Therefore, we cannot use both instructions if we want to move the element to the upper half of the wider destination, because the shift amount then will be 16, which is out of the encoding range. For this case, signedness does not matter and ARM64 Neon has <code>SHLL</code><em> (Shift Left Long &#8211; by element size) </em>to support it.</p>
+<p>Let us increase the shift amount to the element size of the shift source, which is 8:</p>
+<pre class="prettyprint language-c"><code class="language-c">void test_signed(signed short * __restrict a, signed char * __restrict b)
+{
+    for (int i = 0; i &lt; 8; i++)
+        a[i] = b[i] &lt;&lt; 8;
+}
+
+void test_unsigned(unsigned short * __restrict a, unsigned char * __restrict b)
+{
+    for (int i = 0; i &lt; 8; i++)
+        a[i] = b[i] &lt;&lt; 8;
+}</code></pre>
+<p>The code-generation in Visual Studio 2022 17.7 was:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
+    ldr    d16, [x1]
+    sxtl   v16.8h, v16.8b
+    shl    v16.8h, v16.8h, #7
+    str    q16, [x0]
+|test_unsigned| PROC
+    ldr    d16, [x1]
+    ushll  v16.8h, v16.8b, #0
+    shl    v16.8h, v16.8h, #7
+    str    q16, [x0]</code></pre>
+<p>And in Visual Studio 2022 17.8.2, it becomes:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
+    ldr   d16, [x1]
+    shll  v16.8h, v16.8b, #8
+    str   q16, [x0]
+|test_unsigned| PROC
+    ldr   d16, [x1]
+    shll  v16.8h, v16.8b, #8
+    str   q16, [x0]</code></pre>
+<h2 id="scalar-code-generation-improved-on-immediate-materialization-for-cmp-cmn"><span style="font-size: 14pt;">Scalar code-generation improved on immediate materialization for CMP/CMN</span></h2>
+<p>On the blog introducing <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">ARM64 optimizations for Visual Studio 2022 17.6</a>, there was one piece of feedback on unnecessary immediate materialization for integer comparison. In the 17.8 development cycle, we have improved a couple of relevant places inside the ARM64 backend.</p>
+<p>For integer comparison, the ARM64 backend is now smarter and knows an <em>immediate</em> could be adjusted to <em>immediate</em> <em>+ 1</em> or <em>immediate &#8211; 1</em> then fits into adjusted comparison. Here are some examples:</p>
+<pre class="prettyprint language-c"><code class="language-c">int test_ge2gt (int a)
+{
+    if (a &gt;= 0x10001)
+        return 1;
+    else
+        return 0;
+}
+
+int test_lt2le (int a)
+{
+    if (a &lt; -0x1fff)
+        return 1;
+    else
+        return 0;
+}</code></pre>
+<p><code>0x10001</code> inside <code>test_ge2gt</code> does not fit into the immediate encoding for the ARM64 <a id="post-33353-_Int_I4YP8m5X"></a><code>CMP</code> instruction, either verbatim or shifted. However, if we subtract it by 1 and turn greater equal (ge) into greater (gt) accordingly, then <code>0x10000</code> will fit into the shifted encoding.</p>
+<p>For <em>test_lt2le</em>, the negative immediate, <em>-0x1fff</em>, does not fit into immediate encoding for ARM64 <em>CMN</em> instruction, but if we subtract it by 1 and turn less (lt) into less equal (le) accordingly, then <em>-0x2000</em> will fit into shifted encoding.</p>
+<p>So, the code-generation is the following by Visual Studio 2022 17.7:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_ge2gt| PROC
+    mov     w8, #0x10001
+    cmp     w0, w8
+    csetge  w0
+|test_lt2le| PROC
+    mov     w8, #-0x1FFF
+    cmp     w0, w8
+    csetlt  w0</code></pre>
+<p>There is an extra <code>MOV</code> instruction to materialize the immediate into the register because it does not fit into encoding verbatim. After the above-mentioned improvements, Visual Studio 2022 17.8.2 generates:</p>
+<pre class="prettyprint language-default"><code class="language-default">|test_ge2gt| PROC
+    cmp     w0, #0x10, lsl #0xC
+    csetgt  w0
+|test_lt2le| PROC
+    cmn     w0, #2, lsl #0xC
+    csetle  w0</code></pre>
+<p>The sequence is more efficient.</p>
+<h2 id="scalar-code-generation-improved-on-logic-immediate-loading"><span style="font-size: 14pt;">Scalar code-generation improved on logic immediate loading</span></h2>
+<p>We have also taken steps further to improve immediate handling of other instructions. One improvement is: ARM64 has a rotated encoding for logic immediate (please refer to description of <code>DecodeBitMasks</code> in the <em>Arm Architecture Reference Manual</em> for details<em>)</em>, this immediate encoding is used by <code>AND</code>/<code>ORR</code>. If one immediate does not fit into rotated encoding verbatim, it could after a split.</p>
+<p>For example, programmers frequently write code patterns like the following:</p>
+<pre class="prettyprint language-c"><code class="language-c">#define FLAG1_MASK 0x80000000
+#define FLAG2_MASK 0x00004000
+
+int cal (int a)
+{
+    return a &amp; (FLAG1_MASK | FLAG2_MASK);
+}</code></pre>
+<p>The compiler middle-end usually logically combines all the <code>AND</code>ed immediates with the return expression then returns <code>a &amp; 0x80004000</code> which does not fit into the rotated encoding, hence a <code>MOV</code>/<code>MOVK</code> sequence will be generated to load the immediate, the cost will be three instructions. The code generation in Visual Studio 2022 17.7 was:</p>
+<pre class="prettyprint language-default"><code class="language-default">mov   w8, #0x4000
+movk  w8, #0x8000, lsl #0x10
+and   w0, w0, w8</code></pre>
+<p>If we split <code>0x80004000</code> into <code>0xffffc000</code> and <code>0x80007fff</code>, <code>AND</code>ing them sequentially will have the same effect as <code>AND</code>ing <code>0x80004000</code>, but both <code>0xffffc000</code> and <code>0x80007fff</code> fit into the rotated encoding, so we save one instruction. The code generation in Visual Studio 2022 17.8.2 is:</p>
+<pre class="prettyprint language-default"><code class="language-default">and  w8, w0, #0xFFFFC000
+and  w0, w8, #0x80007FFF</code></pre>
+<p>The immediate gets split in a way that the split parts fit into two <code>AND</code> instructions. We only want to split the immediate when it has sole use site, otherwise we will end up with duplicated sequences. Therefore, the split is guided with use count.</p>
+<h2 id="scalar-code-generation-now-catches-more-ccmp-opportunities"><span style="font-size: 14pt;">Scalar code-generation now catches more CCMP opportunities</span></h2>
+<p>The <code>CCMP</code> (conditional compare) instruction is useful for accelerating short circuit evaluation, for example:</p>
+<pre class="prettyprint language-c"><code class="language-c">int test (int a)
+{
+    return a == 17 || a == 31;
+}</code></pre>
+<p>For this testcase, Visual Studio 2022 17.7 was smart enough to employ <code>CCMP</code> and generated:</p>
+<pre class="prettyprint language-default"><code class="language-default">cmp     w0, #0x11
+ccmpne  w0, #0x1F, #4
+cseteq  w0</code></pre>
+<p>However, <code>CCMP</code> only takes a 5-bit immediate, so if we change the testcase to:</p>
+<pre class="prettyprint language-c"><code class="language-c">int test (int a)
+{
+    return a == 17 || a == 32;
+}</code></pre>
+<p>The immediate <code>#32 </code>does not fit into <code>CCMP</code>’s encoding, so the compiler will stop generating it, hence the code generation in Visual Studio 2022 17.7 was:</p>
+<pre class="prettyprint language-default"><code class="language-default">    cmp  w0, #0x11
+    beq  |$LN3@test|
+    cmp  w0, #0x20
+    mov  w0, #0
+    bne  |$LN4@test|
+|$LN3@test|
+    mov  w0, #1
+|$LN4@test|
+    ret</code></pre>
+<p>It employs an if-then-else structure and is verbose. Here, the compiler should have a better cost model and knows it will still be beneficial if it moves <code>#32</code> into a register and employ <code>CCMP</code>’s register form. We have fixed this in Visual Studio 2022 17.8.2, and the code generation becomes:</p>
+<pre class="prettyprint language-default"><code class="language-default">cmp     w0, #0x11
+mov     w8, #0x20
+ccmpne  w0, w8, #4
+cseteq  w0
+ret</code></pre>
+<h2 id="using-movi-mvni-for-immediate-move-in-smaller-loops"><span style="font-size: 14pt;">Using MOVI/MVNI for immediate move in smaller loops</span></h2>
+<p>We missed an opportunity to use shifted <code>MOVI</code>/<code>MVNI</code> for combining immediate move</p>
+<p>In small loops. For example,</p>
+<pre class="prettyprint language-c"><code class="language-c">void vect_movi_msl (int *__restrict a, int *__restrict b, int *__restrict c) {
+    for (int i = 0; i &lt; 8; i++)
+        a[i] = 0x1200;
+
+    for (int i = 0; i &lt; 8; i++)
+        c[i] = 0x12ffffff;
+}</code></pre>
+<p>In 17.7 release, MSVC generated:</p>
+<pre class="prettyprint language-default"><code class="language-default">|movi_msl| PROC
+    mov x9, #0x1200
+    movk x9, #0x1200, lsl #0x20
+    ldr x8, |$LN29@movi_msl|
+    stp x9, x9, [x0]
+    stp x8, x8, [x2]
+    stp x9, x9, [x0, #0x10]
+    stp x8, x8, [x2, #0x10]</code></pre>
+<p>Scalar <code>MOV</code>/<code>MOVK</code> instructions are employed, and 8 iterations are needed to initialize each array. Both immediates can be loaded into vector registers using <code>MOVI</code>/<code>MVNI</code>, therefore increasing the storage bandwidth and reducing the iteration number.</p>
+<p>Shifted <code>MOVI</code> shifts the immediate to the left and fills with 0s, so <code>0x1200</code> can be loaded as the following:</p>
+<pre class="prettyprint language-c"><code class="language-c">0x12 &lt;&lt; 8 = 0x1200</code></pre>
+<p>Shifted <code>MVNI</code> shifts the immediate first, then inverts the result:</p>
+<pre class="prettyprint language-c"><code class="language-c">~((0xED) &lt;&lt; 0x18) = 0x12ffffff</code></pre>
+<p>In 17.8, MSVC generates:</p>
+<pre class="prettyprint language-default"><code class="language-default">|movi_msl| PROC
+    movi v17.4s, #0x12, lsl #8
+    mvni v16.4s, #0xED, lsl #0x18
+    stp q17, q17, [x0]
+    stp q16, q16, [x2]</code></pre>
+<p>Benefiting from vector register’s width and the employment of paired store, only one iteration is needed.</p>
+<p><strong><span style="font-size: 14pt;"><em>In closing</em></span></strong></p>
+<p>That is all for this blog, your feedback is valuable for us. Please share your thoughts and comments with us through <a href="https://developercommunity.visualstudio.com/cpp">Visual C++ Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/">MSVC ARM64 optimizations in Visual Studio 2022 17.8 </a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>#include Diagnostics in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/include-diagnostics-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/include-diagnostics-in-visual-studio/#comments</comments>
@@ -980,79 +1293,6 @@ Assistance acquiring a compiler </p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-18-release-quick-fixes-for-missing-header-files-extract-to-function-more/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio Code CMake Tools Extension 1.16 Update: New CMake Tools Sidebar and CMake Debugging options</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Wed, 15 Nov 2023 16:54:29 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33113</guid>
-
-					<description><![CDATA[<p>The November release of the CMake Tools extension in VS Code is now available. With this release, we have two major new updates to the extension: </p>
-<p>A new, customizable CMake Tools status bar and side bar for your presets and CMake actions <br />
-Script mode debugging support for the CMake Debugger </p>
-<p>The full list of updates can be seen in our change log.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/">Visual Studio Code CMake Tools Extension 1.16 Update: New CMake Tools Sidebar and CMake Debugging options</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">The </span><a href="https://github.com/microsoft/vscode-cmake-tools/releases"><span data-contrast="none">November release of the CMake Tools extension</span></a><span data-contrast="auto"> in VS Code is now available. With this release, we have two major new updates to the extension:</span><span data-ccp-props="{}"> </span></p>
-<ol>
-<li data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559684&quot;:-1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">A new, customizable CMake Tools status bar and side bar for your presets and CMake actions</span><span data-ccp-props="{}"> </span></li>
-<li data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559684&quot;:-1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Script mode debugging support for the CMake Debugger</span><span data-ccp-props="{}"> </span></li>
-</ol>
-<p><span data-contrast="auto">The full list of updates can be seen in our </span><a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/CHANGELOG.md"><span data-contrast="none">change log</span></a><span data-contrast="auto">. This release features 10 contributions from the open-source community. Thank you all for your continued support!</span><span data-ccp-props="{}"> </span></p>
-<h4 id="release-schedule-updates"><em>Release Schedule Updates</em></h4>
-<p><span class="TextRun SCXW47822392 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW47822392 BCX8">Starting with this </span><span class="NormalTextRun SCXW47822392 BCX8">November </span><span class="NormalTextRun SCXW47822392 BCX8">release, </span><span class="NormalTextRun SCXW47822392 BCX8">CMake</span><span class="NormalTextRun SCXW47822392 BCX8"> Tools will </span><span class="NormalTextRun SCXW47822392 BCX8">now </span><span class="NormalTextRun SCXW47822392 BCX8">release</span> <span class="NormalTextRun SCXW47822392 BCX8">every 3 months. You can learn more about our release schedules on </span><span class="NormalTextRun SCXW47822392 BCX8">our</span> </span><a class="Hyperlink SCXW47822392 BCX8" href="https://github.com/microsoft/vscode-cmake-tools/wiki/Release-schedule" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW47822392 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW47822392 BCX8" data-ccp-charstyle="Hyperlink">r</span><span class="NormalTextRun SCXW47822392 BCX8" data-ccp-charstyle="Hyperlink">elease schedule wiki</span></span></a><span class="TextRun SCXW47822392 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW47822392 BCX8">.</span></span><span class="EOP SCXW47822392 BCX8" data-ccp-props="{}"> </span></p>
-<h3 id="updates-to-the-default-cmake-tools-ui">Updates to the default CMake Tools UI</h3>
-<p><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">Starting </span><span class="NormalTextRun SCXW259293211 BCX8">in</span> <span class="NormalTextRun SCXW259293211 BCX8">this </span><span class="NormalTextRun SCXW259293211 BCX8">1.16</span><span class="NormalTextRun SCXW259293211 BCX8"> re</span><span class="NormalTextRun SCXW259293211 BCX8">l</span><span class="NormalTextRun SCXW259293211 BCX8">ease</span><span class="NormalTextRun CommentStart SCXW259293211 BCX8">, the default </span><span class="NormalTextRun SCXW259293211 BCX8">CMake</span><span class="NormalTextRun SCXW259293211 BCX8"> Tools status bar will only have </span><span class="NormalTextRun SCXW259293211 BCX8">commonly-used</span><span class="NormalTextRun SCXW259293211 BCX8"> actions like </span></span><strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">Build</span></span></strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">, </span></span><strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">Debug</span></span></strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">, and </span></span><strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8">Run</span></span></strong><span class="TextRun SCXW259293211 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW259293211 BCX8"> to de-clutter the status bar by default. All options for configuring your project through </span><span class="NormalTextRun SCXW259293211 BCX8">CMake</span><span class="NormalTextRun SCXW259293211 BCX8"> presets or kits/variants will be found in the </span><span class="NormalTextRun SCXW259293211 BCX8">CMake</span><span class="NormalTextRun SCXW259293211 BCX8"> Tools side bar under their respective node.</span><span class="NormalTextRun SCXW259293211 BCX8"> There are </span><span class="NormalTextRun SCXW259293211 BCX8">new items</span><span class="NormalTextRun SCXW259293211 BCX8"> for </span><span class="NormalTextRun SCXW259293211 BCX8">Deleting Cache and Reconfiguring</span><span class="NormalTextRun SCXW259293211 BCX8"> and accessing </span><span class="NormalTextRun SCXW259293211 BCX8">CMake</span> <span class="NormalTextRun SCXW259293211 BCX8">settings</span><span class="NormalTextRun SCXW259293211 BCX8"> at the top of the Project Status view</span><span class="NormalTextRun SCXW259293211 BCX8">.</span></span><span class="EOP SCXW259293211 BCX8" data-ccp-props="{}"> </span></p>
-<h5 id="new-cmake-tools-sidebar"><em>New CMake Tools Sidebar</em></h5>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-tools-sidebar.png"><img decoding="async" class="size-full wp-image-33114 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-tools-sidebar.png" alt="The CMake Tools sidebar in VS Code has all the CMake specific options hosted" width="612" height="721" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-tools-sidebar.png 612w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-tools-sidebar-255x300.png 255w" sizes="(max-width: 612px) 100vw, 612px" /></a></p>
-<p><span class="TextRun SCXW112995504 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW112995504 BCX8">Under each </span><span class="NormalTextRun SCXW112995504 BCX8">respective </span><span class="NormalTextRun SCXW112995504 BCX8">node, you will be able to </span><span class="NormalTextRun SCXW112995504 BCX8">view and toggle</span><span class="NormalTextRun SCXW112995504 BCX8"> your active </span><span class="NormalTextRun SCXW112995504 BCX8">CMake</span> <span class="NormalTextRun SCXW112995504 BCX8">presets and targets</span><span class="NormalTextRun SCXW112995504 BCX8"> </span><span class="NormalTextRun SCXW112995504 BCX8">and perform Configure, Build, Test, Debug, and Launch actions on </span><span class="NormalTextRun SCXW112995504 BCX8">your project</span><span class="NormalTextRun SCXW112995504 BCX8"> configurations. This will </span><span class="NormalTextRun SCXW112995504 BCX8">provide</span><span class="NormalTextRun SCXW112995504 BCX8"> a one-stop location to view and edit all your </span><span class="NormalTextRun SCXW112995504 BCX8">CMake</span><span class="NormalTextRun SCXW112995504 BCX8"> configurations by default.</span></span><span class="EOP SCXW112995504 BCX8" data-ccp-props="{}"> </span></p>
-<h5 id="new-simplified-cmake-status-bar-items"><em>New Simplified CMake Status Bar Items</em></h5>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar.png"><img decoding="async" class="size-large wp-image-33116 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar-1024x501.png" alt="The new CMake status bar only has Build, Debug, and Run options by default" width="640" height="313" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar-1024x501.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar-300x147.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar-768x376.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/11/cmake-new-statusbar.png 1111w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>The previous status bar displayed a plethora of CMake configuration options, but with the new default, you will have access to only the commonly-used CMake actions in the status bar in order to clean up space in the view by default. Then, you can expand the CMake sidebar for your configuration needs.</p>
-<p>This view can be customized to suit your needs, so you can pull whatever relevant items you want to the status bar and configure the amount of space each command takes up.</p>
-<p>If you have any other feedback on this new experience, please comment on <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3423">our open GitHub issue</a>.</p>
-<h3 id="added-script-mode-for-the-cmake-debugger">Added script mode for the CMake Debugger</h3>
-<p>We have now added support for users to use the CMake debugger to debug externally launched CMake processes or any generic CMake script. To do so, please add <code>cmakeDebugType</code> to your <code>launch.json</code>  configurations to specify whether you are debugging with the three available modes: <code>configure</code>, <code>external</code>, and <code>script</code>.</p>
-<h5 id="example-launch-json-with-cmake-debug-types"><em>Example launch.json with CMake debug types</em></h5>
-<pre>{
-       “configurations”: [
-           {
-                “type”: “cmake”,
-                “request”: “launch”,
-                “name”: “Debug CMake script”,
-                “cmakeDebugType”: “script”,
-                “scriptPath” “${workspaceFolder}/anyScript.cmake
-          },
-          {
-                “type”: “cmake”,
-                “request”: “launch”,
-                “name”: “Debug externally launched CMake processes”,
-                “cmakeDebugType”: “external”
-                “pipeName”: “&lt;insert-pipe-name&gt;”
-          }
-      ]
-}</pre>
-<p>To learn more about the supported CMake debug variables in your launch.json, please see <a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/docs/debug.md">our CMake debug documentation</a>.</p>
-<p>You can also debug vcpkg portfiles using the CMake Debugger in the new script mode. source cross-platform library manager that uses portfiles to know how to acquire, build, and install libraries. Debugging portfiles can be helpful whenever you are adding a new library of your own to the vcpkg catalog. To learn more, please see <a href="https://devblogs.microsoft.com/cppblog/debug-vcpkg-portfiles-in-cmake-script-mode-with-visual-studio-code/">our blog post on debugging vcpkg portfiles</a>.</p>
-<h3 id="whats-next">What&#8217;s next?</h3>
-<p>For our next release of CMake Tools, we are planning to incorporate CMake Tasks into the CMake side bar and overall integrate better with the Cpp Tools extension for actions like . If you would like to add any feedback for this, please comment on <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3291">our open issue</a> for the side bar and <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3380">our open issue for integrating with Run/Debug</a>.</p>
-<p>Additionally, we will be working to <a href="https://github.com/microsoft/vscode-cmake-tools/issues/2871">add CMakePresets v6 support</a> to the extension, so that you can use Kitware’s new Workflow and Package presets.</p>
-<p>Let our team know what else you would like to see from us by <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3291">adding an issue to our repo</a> or upvoting any existing issues with a thumbs up.</p>
-<h3 id="what-do-you-think">What do you think?</h3>
-<p>Download the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools">CMake Tools extension </a>for Visual Studio Code and let us know what you think. We would love to see what you contribute to our<a href="https://github.com/microsoft/vscode-cmake-tools"> repo</a> and we are active on reviews and collaboration. Comment below or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/">Visual Studio Code CMake Tools Extension 1.16 Update: New CMake Tools Sidebar and CMake Debugging options</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
