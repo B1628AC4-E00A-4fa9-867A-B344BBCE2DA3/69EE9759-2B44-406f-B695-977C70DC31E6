@@ -1,4 +1,363 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 25 Dec 2023 02:01:25 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Next.jsを4年間使用してたどりついた、エンタープライズアプリケーションのフロントエンド開発・構築手法]]></title><description><![CDATA[はじめに 目まぐるしく進化するフロントエンド開発の世界では、常に最新の知識や技術をいち早く取り入れることが、エンタープライズアプリケーションの開発を成功させる上で欠かせません。Tailwind CS…]]></description><link>https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</link><guid isPermaLink="false">https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><category><![CDATA[TypeScript]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[React]]></category><pubDate>Mon, 25 Dec 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>はじめに</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 29 Jan 2024 02:52:52 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[React Server Componentsを理解する]]></title><description><![CDATA[私も年を取ったと感じるのは、今年Reactが10年目を迎えたからです。 混乱していた開発コミュニティにReactが初めて紹介されてから10年、以来いくつもの進化を遂げてきました。Reactチームは、…]]></description><link>https://postd.cc/server-components/</link><guid isPermaLink="false">https://postd.cc/server-components/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Mon, 29 Jan 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>私も年を取ったと感じるのは、今年Reactが10年目を迎えたからです。</p>
+<p>混乱していた開発コミュニティにReactが初めて紹介されてから10年、以来いくつもの進化を遂げてきました。Reactチームは、急進的な改革ということに関しては躊躇しませんでした。問題に対して、より良い解決策が見つかれば、それを実行してきました。</p>
+<p>数か月前、Reactチームは最新のパラダイム・シフトであるReact Server Componentsを発表しました。史上初めて、Reactコンポーネントがサーバーでのみ実行できるようになったのです。</p>
+<p>このことに関連してオンライン上では、<em>きわめて大きな混乱</em>が起きています。それが何なのか、どのように機能するのか、利点は何か、そしてSSR（Server Side Rendering）などとどのように連携するのか、多くの人が多くの疑問を抱いています。</p>
+<p>私はReact Server Componentsに関する数多くの実験を行ってきており、私自身が持っていた多くの疑問に対する回答を得てきました。正直に言うと、この技術に関して私は予想していたよりもはるかに興奮しています。<em>本当に素晴らしい技術です！</em></p>
+<p>そこで今日の私の目標は、このことを分かりやすく解説し、React Server Componentsについて皆さんが持っている多くの疑問に答えることです。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>対象読者</h3><p>このチュートリアルは主として、すでにReactを使用していて、React Server Componentsに関心がある開発者の方々を対象として書かれています。Reactの専門家である必要はありませんが、Reactを使い始めたばかりの場合はだいぶ混乱するかもしれません。</p></div></div>
+<h2>Server Side Renderingの簡単解説</h2>
+<p>React Server Componentsを理解するうえで、SSRがどのように機能するかを理解することが役立ちます。すでにSSRについて理解している場合は、次の見出しに進んでください。
+私が2015年にReactを使い始めたとき、ほとんどのReactセットアップでClient Side Rendering（CSR）戦略が用いられていました。ユーザーが受け取るのは次のようなHTMLファイルでした。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token doctype"><span class="token punctuation">&lt;!</span><span class="token doctype-tag">DOCTYPE</span> <span class="token name">html</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>root<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/static/js/bundle.js<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この<code class="language-text">bundle.js</code>スクリプトには、Reactや他のサードパーティの依存関係、自分たちが作成したすべてのコードなど、アプリケーションをマウントして実行するために必要なものがすべて含まれています。</p>
+<p>JSがダウンロードされて解析されると、Reactが動作し始め、アプリケーション全体のすべてのDOMノードを呼び出し、それを空の<code class="language-text">&lt;div id=&quot;root&quot;&gt;</code>に格納します。</p>
+<p>このアプローチの問題点は、すべての作業を実行するのに時間がかかることです。しかもその作業中、ユーザーは何も表示されていない白い画面を見つめ続けることになります。この問題は時間の経過につれて悪化する傾向があります。新しい機能がリリースされるたびに、JavaScriptバンドルに新たに多くのキロバイトが追加され、ユーザーが座って待つ時間が長くなっていきます。<sup id="fnref-1"><a href="#fn-1" class="footnote-ref">1</a></sup></p>
+<p>サーバー・サイド・レンダリングは、こうした状況を改善するために設計されました。空のHTMLファイルを送信する代わりに、サーバーはアプリケーションをレンダリングして実際のHTMLを生成します。ユーザーは完全に形成されたHTMLドキュメントを受け取ることになります。</p>
+<p>双方向性の処理には、引き続きクライアント上でReactが動作することが必要なため、そのHTMLファイルには従来通り<code class="language-text">&lt;script&gt;</code>タグが含まれています。ただし、ブラウザ内で若干異なる動作をするようReactを構成します。最初からすべてのDOMノードを呼び出す代わりに、既存のHTMLを採用するのです。このプロセスは<em>ハイドレーション</em>と呼ばれています。</p>
+<p>このことに関しては、ReactのコアチームメンバーであるDan Abramovによる次の説明が気に入っています。</p>
+<blockquote>
+<p><em>Hydration is like watering the “dry” HTML with the “water” of interactivity and event handlers.（ハイドレーションとは、「乾いた」HTMLに双方向性とイベント・ハンドラーの「水」を注ぐようなものである。）</em></p>
+</blockquote>
+<p>JSバンドルがダウンロードされると、Reactはアプリケーション全体を素早く実行して、UIの仮想スケッチを構築し、それを実際のDOMに「フィット」させ、イベント・ハンドラーをアタッチし、エフェクトを発火させるなどの機能を実行します。</p>
+<p>それが、つまりSSRです。サーバーが最初のHTMLを生成するため、JSバンドルがダウンロードされ解析されている間、ユーザーは真っ白なページを見つめている必要がなくなります。次に、サーバー・サイドのReactが中断したところからクライアントサイドのReactが引き継ぎ、DOMを採用し、双方向性を散りばめます。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>包括的な用語</h3><p>サーバー・サイド・レンダリングについて話しをするとき、私たちは通常、次のようなフローを想像します。</p><ol>
+<li>ユーザーが<em>myWebsite.com</em>にアクセスする。</li>
+<li>Node.jsサーバーがリクエストを受け取り、すぐにReactアプリケーションをレンダリングして、HTMLを生成する。</li>
+<li>その生成されたばかりのHTMLがクライアントに送信される。</li>
+</ol><p>これはサーバー・サイド・レンダリングを実装することを可能にする<em>1つ</em>の方法ですが、これが唯一の方法ではありません。もう1つのオプションとして、<em>アプリケーションの構築時</em>にHTMLを生成する方法があります。</p><p>通常、Reactアプリケーションはコンパイルして、JSXをプレーンでなじみのあるJavaScriptに変換し、すべてのモジュールをバンドルする必要があります。同じプロセス中に、異なるルートのすべてでHTMLを全部「事前レンダリング」した場合はどうなるでしょうか？</p><p>これが一般に、「静的サイト生成（SSG）」として知られているものです。これはサーバー・サイド・レンダリングの派生型です。</p><p>私の考えでは、「サーバー・サイド・レンダリング」は、いくつかの異なるレンダリング戦略を含む包括的な用語です。これらのすべてには、1つの共通点があります。それは、最初のレンダリングが<code class="language-text">ReactDOMServer</code> APIを使用して、Node.jsなどのサーバーランタイムで行われることです。実際には、これが<em>いつ</em>発生するのか、オンデマンドなのかコンパイル時点なのかは問題になりません。いずれにせよ、それはサーバー・サイド・レンダリングなのです。</p></div></div>
+<h2>前後に跳ねる</h2>
+<p>Reactでのデータフェッチについてお話ししましょう。通常、ネットワーク経由で通信するアプリケーションには次の2種類があります。</p>
+<ul>
+<li>クライアント側のReactアプリ</li>
+<li>サーバー側のREST API</li>
+</ul>
+<p>React QueryやSWR、Apolloなどを使用して、クライアントはバックエンドにネットワーク・リクエストを送信し、バックエンドはデータベースからデータを取得し、そのデータをネットワーク経由で送り返します。</p>
+<p>そのフローは、グラフを使って可視化できます。</p>
+<p><img src="/article-assets/server-components/server-components01.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>グラフに関する注記</h3><p>このブログ記事には、こうした「ネットワーク・リクエスト・グラフ」がいくつか含まれています。これらは、いくつかの異なるレンダリング戦略において、クライアント（ブラウザ）とサーバー（バックエンドAPI）の間でデータがどのように移動されるのかを可視化するためのものです。</p><p>下辺の数字は、仮想の時間単位を表しています。分でも秒でもありません。実際には、数値はさまざまな要因により、大きく変化します。このブログで取り上げているグラフは、概念の概要を理解することを目的としたもので、実際のデータをモデル化したものではありません。</p></div></div>
+<p>この最初のグラフは、CSR戦略を使用したフローを表しています。始まりはクライアントによるHTMLファイルの受信です。このファイルにはコンテンツはありませんが、1つ以上の<code class="language-text">&lt;script&gt;</code>タグがあります。</p>
+<p>JSがダウンロードされ、解析されると、Reactアプリが起動し、数多くのDOMノードが作成され、UIが構築されます。ただし、最初は実際のデータがないため、読み込み状態でシェル（ヘッダー、フッター、一般的なレイアウト）をレンダリングすることしかできません。</p>
+<p>このようなパターンは、これまでにたくさん見たことがあるのではないでしょうか。たとえば、UberEatsではシェルのレンダリングから始まり、実際のレストランを表示するために必要なデータをフェッチします。</p>
+<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/images/server-components/ubereats-loading.mp4"></video></p>
+<p>ネットワーク・リクエストが解決され、Reactが再レンダリングを実行し、読み込み中のUIが実際のコンテンツに置き換えられるまで、この読み込み状態が表示され続けます。</p>
+<p><strong>別の構築方法を見てみましょう。</strong>次のグラフは、同じ一般的なデータ・フェッチ・パターンを維持していますが、CSRではなく<em>サーバー</em>・サイド・レンダリングを使用しています。</p>
+<p><img src="/article-assets/server-components/server-components02.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>この新しいフローでは、最初のレンダリングはサーバー上で実行されます。それは、ユーザーが受け取るのは完全には空でないHTMLファイルであることを意味します。</p>
+<p>（白紙のページよりもシェルの方が優れているという意味で）これは進歩ですが、結局のところ、目立って大きな変化を引き起こすものではありません。ユーザーは読み込み画面を見るためにアプリにアクセスしているのではなく、コンテンツ（レストラン、ホテルのリスト、検索結果、メッセージなど）を見るためにアクセスしているのです。</p>
+<p>ユーザー・エクスペリエンスの違いを真に理解するため、いくつかのWeb性能測定基準をグラフに追加してみることにしましょう。この2つのフローを交互に切り替えて、フラグに何が起こるかを注意して見ていてください。</p>
+<p><img src="/article-assets/server-components/server-components03.png">
+<img src="/article-assets/server-components/server-components04.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>これらのフラグはそれぞれが、一般的に使用されているWeb性能測定基準を表します。以下がその説明です。</p>
+<ul>
+<li><strong>ファースト・ペイント</strong>—ユーザーは、何も映っていない真っ白な画面を見つめる必要がなくなります。全体的なレイアウトはレンダリングされましたが、コンテンツはまだ表示されません。FCP（First Contentful Paint）とも呼ばれています。</li>
+<li><strong>ページ・インタラクティブ</strong>— Reactがダウンロードされ、アプリケーションがレンダリングされ、ハイドレーションが行われました。インタラクティブな要素は完全に応答するようになっています。TTI（Time To Interactive）とも呼ばれています。</li>
+<li><strong>コンテンツ・ペイント</strong>—ページに、ユーザーが関心のあるコンテンツが含まれるようになっています。データベースからデータを取得し、UIにレンダリングしました。LCP（Largest Contentful Paint）とも呼ばれています。</li>
+</ul>
+<p>サーバー上で最初のレンダリングを行うことで、最初の「シェル」をより素早く描画することが可能になります。そのため、前に進んでいる感覚が得られ、読み込みエクスペリエンスが多少速く感じられるようになります。</p>
+<p>また状況によっては、これは有意義な改善になります。たとえばユーザーが、ナビゲーション・リンクをクリックできるよう、ヘッダーが読み込まれるのを待っているだけということがあるでしょう。</p>
+<p><strong>しかし、この流れは少々バカげていると思えませんか</strong>？SSRのグラフを見れば、リクエストがサーバー上で始まっていることは一目瞭然です。2つ目のラウンドトリップ・ネットワーク・リクエストを求める代わりに、<em>最初のリクエスト中</em>にデータベース作業を実行してみてはどうでしょうか。</p>
+<p>つまり、<strong>次のようなことをしてみるのはどうでしょう</strong>ということです。</p>
+<p><img src="/article-assets/server-components/server-components05.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>クライアントとサーバーの間を行ったり来たりする代わりに、最初のリクエストの一部としてデータベース・クエリーを実行し、完全に構築されたUIをユーザーに直接送信します。</p>
+<p>しかし、うーん、厳密にはどうすればいいのでしょう？</p>
+<p>これが機能するためには、データベース・クエリーを実行するために、サーバー上で排他的に実行される大量のコードをReactに提供できなければなりません。しかし、Reactではそれを選択することができませんでした。サーバー・サイド・レンダリングの場合でも、コンポーネントのすべてがサーバーとクライアントの両方でレンダリングされることになります。</p>
+<p><strong>エコシステムは、この問題に対する数多くの解決策を考え出しました</strong>。Next.jsやGatsbyなどのメタフレームワーク <sup id="fnref-2"><a href="#fn-2" class="footnote-ref">2</a></sup> では、サーバー上でのみコードを実行する独自の方法を編み出しました。</p>
+<p>たとえば、（従来の「Pages」ルーターを使用する）Next.jsを使用する場合は次のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> db <span class="token keyword">from</span> <span class="token string">'imaginary-db'</span><span class="token punctuation">;</span>
+<span class="token comment">// This code only runs on the server:</span>
+<span class="token keyword">export</span> <span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">getServerSideProps</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> link <span class="token operator">=</span> db<span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'passw0rd'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span><span class="token function">query</span><span class="token punctuation">(</span>link<span class="token punctuation">,</span> <span class="token string">'SELECT * FROM products'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span>
+    props<span class="token operator">:</span> <span class="token punctuation">{</span> data <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// This code runs on the server + on the client</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> data <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Trending Products</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>data<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span> <span class="token attr-name">key</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>id<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>title<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>description<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
+      <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><strong>これを分析してみましょう</strong>。サーバーがリクエストを受け取ると、<code class="language-text">getServerSideProps</code>関数が呼び出されます。それが、propsオブジェクトを返します。これらのpropsはコンポーネントに取り込まれ、そのコンポーネントが最初にサーバー上でレンダリングされ、次にクライアント上でハイドレーションされます。</p>
+<p>ここで、優れている点は、<code class="language-text">getServerSideProps</code>がクライアント上で再実行されないことです。実際、この関数はJavaScriptバンドルにも含まれません。</p>
+<p>このアプローチは時代のはるか先をいくものでした。正直に言って、それは驚くほどすごいことでした。ただし、これにはいくつかの問題点があります。</p>
+<ol>
+<li>この戦略は、ツリーの最上位にあるコンポーネントに関して、ルート・レベルでしか機能しません。どんなコンポーネントでも行うことができるものではないのです。</li>
+<li>各メタフレームワークには独自のアプローチがあります。Next.jsには1つのアプローチがあり、Gatsbyには別のアプローチがあり、Remixにはさらに別のアプローチがあります。これまでのところ、標準化されていません。</li>
+<li>すべてのReactコンポーネントは、たとえ不要な場合でも、クライアント上で<em>常に</em>ハイドレーションを行います。</li>
+</ol>
+<p>何年もの間、Reactチームは正式な解決方法を考案するために、この問題に密かに取り組んできました。その解決策こそ、今<strong>React Server Components</strong>と呼ばれているものです。</p>
+<h2>React Server Componentsの紹介</h2>
+<p>高いレベルでは、<em>React Server Components</em>はまったく新しいパラダイムの名称です。その新しい世界では、<em>サーバー上で排他的に実行される</em>コンポーネントを作成できます。そのため、Reactコンポーネント内でデータベース・クエリーを直接記述することが可能になります！</p>
+<p>次に、「サーバー・コンポーネント」の簡単な例を示します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> db <span class="token keyword">from</span> <span class="token string">'imaginary-db'</span><span class="token punctuation">;</span>
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> link <span class="token operator">=</span> db<span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'passw0rd'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span><span class="token function">query</span><span class="token punctuation">(</span>link<span class="token punctuation">,</span> <span class="token string">'SELECT * FROM products'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Trending Products</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>data<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span> <span class="token attr-name">key</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>id<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>title<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>description<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
+      <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> Homepage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>長年Reactを使用してきた私には、最初このコードは<em>きわめて突飛なもの</em>に思えました。😅</p>
+<p>「ちょっと待て！」と本能が叫びました。「関数コンポーネントは非同期になることはできないぞ！そして、そのようなレンダリングで直接副作用を発生させることは許されない！」</p>
+<p><strong>キーとなるのは、次のことを理解することです</strong>。サーバー・コンポーネントが再レンダリングされることは決してありません。サーバー・コンポーネントはサーバー上で1回だけ実行され、UIを生成します。レンダリングされた値はクライアントに送信され、所定の場所にロックされます。Reactに関しては、この出力は変更不能であり、決して変わりません <sup id="fnref-3"><a href="#fn-3" class="footnote-ref">3</a></sup>。</p>
+<p>つまり、ReactのAPIの<em>大部分</em>は、サーバー・コンポーネントと互換性がないことを意味します。たとえば、stateは変化する可能性がありますが、サーバー・コンポーネントは再レンダリングできないため、stateは使用できません。また、effectはクライアント上でレンダリング後にのみ実行され、サーバー・コンポーネントがクライアントに到達することはないため、effectを使用することはできません。</p>
+<p>これはまた、ルールに関してもう少し柔軟性があることも意味しています。たとえば、従来のReactでは、レンダリングのたびに副作用が繰り返されることがないよう、<code class="language-text">useEffect</code>コールバックやイベント・ハンドラーなどの中に副作用を配置する必要がありました。しかし、コンポーネントが<em>1回</em>しか実行されないのであれば、そのことについて心配する必要はなくなります。</p>
+<p>サーバー・コンポーネント自体は驚くほど単純ですが、「React Server Components」パラダイムは非常に複雑です。その理由は、通常の古いコンポーネントが<em>まだ残っていて</em>、それらを組み合わせる方法が非常に入り組んだものである可能性があるためです。</p>
+<p>この新しいパラダイムでは、私たちがよく知っている「従来の」Reactコンポーネントは<em>クライアント・コンポーネント</em>（Client Component）と呼ばれています。率直に言って、私はこの名称が好きではありません。😅</p>
+<p>「クライアント・コンポーネント」という名称は、これらのコンポーネントがクライアント上でのみレンダリングされるかのような意味に取れますが、実際にはそうではありません。クライアント・コンポーネントは<strong>クライアントとサーバーの<em>両方</em>でレンダリングできます</strong>。</p>
+<p><img src="/article-assets/server-components/server-components06.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>これらの用語は非常に分かりにくいので、次のように要約してみました。</p>
+<ul>
+<li><em>React Server Components</em>とは、この新しいパラダイムの名称です。</li>
+<li>この新しいパラダイムでは、私たちがよく知っていて好んで使用してきた「標準」Reactコンポーネントが、<em>クライアント・コンポーネント</em>へと名称変更されました。古いものに新しい名前が付けられたのです。</li>
+<li>この新しいパラダイムでは、<em>サーバー・コンポーネント</em>という新しいタイプのコンポーネントが導入されました。この新しいコンポーネントはサーバー上でのみレンダリングされます。サーバー・コンポーネントのコードは、JSバンドルに含まれていないため、ハイドレーションや再レンダリングが行われることはありません。</li>
+</ul>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>React Server Components vs.サーバー・サイド・レンダリング</h3><p>もう1つ別の一般的な混乱を解消しましょう。React Server Componentsはサーバー・サイド・レンダリングに代わるものでは<em>ありません</em>。React Server Componentsを「SSRバージョン2.0」とは考えないでください。</p><p>代わりに、私はこれを完全に一致する2つのパズル・ピース、または互いに補完し合う2つのフレーバーだと考えたいのです。</p><p>依然、最初のHTMLの生成にはサーバー・サイド・レンダリングが必要です。React Server Componentsはその上に構築されるため、クライアント側のJavaScriptバンドルから特定のコンポーネントを除外し、それらのコンポーネントがサーバー上でのみ実行されるようにできます。</p><p>確かに、React Server Componentsは、サーバー・サイド・レンダリング<em>なし</em>に使うことは可能ですが、実際は両方を一緒に使用するとより良い結果が得られます。ReactチームがSSRを使用しない<a href="https://github.com/reactjs/server-components-demo">最小限のRSCデモ</a>を作成していますので、こちらでその例を見ることができます。</p></div></div>
+<h2>互換性のある環境</h2>
+<p>したがって通常は、新しいReact機能が出てきた場合、Reactの依存関係を最新バージョンに更新することで、既存のプロジェクトでその機能を使い始めることが可能になります。迅速な<code class="language-text">npm install react@latest</code>によって、すぐに開始できます。</p>
+<p>残念ながら、React Server Componentsはそのようには機能しません。</p>
+<p>私が理解しているところでは、React Server Componentsは、バンドラーやサーバー、ルーターなど、Reactの外部にある多くのものと緊密に統合する必要があります。</p>
+<p>この文を書いている時点で、React Server Componentsの使用を開始する方法は1つだけであり、それはNext.js 13.4以降で、最新の再設計された「App Router」を使用することです。</p>
+<p>願わくは今後、より多くのReactベースのフレームワークに、React Server Componentsが組み込まれることを期待しています。Reactのコア機能が特定の1つのツールでしか利用できないことについては抵抗を感じます。Reactドキュメントには<a href="https://react.dev/learn/start-a-new-react-project#bleeding-edge-react-frameworks">「最先端のフレームワーク」セクション</a>があり、React Server Componentsをサポートするフレームワークがリストされています。新しいオプションが利用可能になったかどうかを確認するため、このページを時々チェックする予定です。</p>
+<h2>クライアント・コンポーネントの指定</h2>
+<p>この新しい「React Server Components」パラダイムでは、<strong>すべてのコンポーネントが、デフォルトで、サーバー・コンポーネントとみなされます</strong>。クライアント・コンポーネントについては、「オプトイン」する必要があります。</p>
+<p>それを行うために、まったく新しい<em>ディレクティブ</em>を指定します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token string">'use client'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
+<span class="token keyword">function</span> <span class="token function">Counter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      Current value: </span><span class="token punctuation">{</span>count<span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> Counter<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>先頭の<code class="language-text">&#39;use client&#39;</code>ディレクティブは、このファイル内のコンポーネントがクライアント・コンポーネントであることや、クライアントで再レンダリングできるようJSバンドルに含める必要があることをReactに知らせます。</p>
+<p>これは、作成しているコンポーネントのタイプを指定する方法として非常に奇妙に<em>見える</em>かもしれませんが、これには前例があります。それは、JavaScriptで「Strict Mode」を選択する<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode">"use strict"</a>ディレクティブです。</p>
+<p>サーバー・コンポーネントでは、<code class="language-text">&#39;use server&#39;</code>ディレクティブを指定しません。React Server Componentsパラダイムでは、コンポーネントは、デフォルトで、サーバー・コンポーネントとして扱われます。事実、<code class="language-text">&#39;use server&#39;</code>はサーバー・アクションに使用されますが、それはまったく異なる機能であり、このブログ記事の範囲を外れています。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>クライアント・コンポーネントにすべきコンポーネントはどれでしょうか？</h3><p>「特定のコンポーネントをサーバー・コンポーネントにするかクライアント・コンポーネントにするかをどのように決定すればよいのか？」と疑問に思われるかもしれません。</p><p>一般則としては、コンポーネントがサーバー・コンポーネントになれるのであれば、サーバー・コンポーネントにするべきです。サーバー・コンポーネントはよりシンプルであり、推測が容易になる傾向があります。パフォーマンス上の利点もあります。サーバー・コンポーネントはクライアント上では実行されないため、そのコードはJavaScriptバンドルに含まれません。React Server Componentsパラダイムの利点の1つは、<em>ページ・インタラクティブ</em>（TTI）メトリックを改善できる可能性があることです。</p><p>とはいえ、できるだけ多くのクライアント・コンポーネントを排除することを目指すべきではありません。最も少ない数のクライアント・コンポーネントに合わせて最適化を試みるべきではありません。これまでは、<em>すべて</em>のReactアプリのすべてのReactコンポーネントがクライアント・コンポーネントであったことは覚えておくべきです。</p><p>React Server Componentsを使い始めれば、それが非常に直感的なものであることが分かるでしょう。一部のコンポーネントはstate変数またはeffectを使用することから、クライアント上で実行する必要があります。そうしたコンポーネントでは、<code class="language-text">&#39;use client&#39;</code>ディレクティブを実行できます。それ以外の場合は、サーバー・コンポーネントのままにしておくことができます。</p></div></div>
+<h2>クライアント・バウンダリ</h2>
+<p>React Server Componentsに慣れ始めた頃、私が最初に抱いた疑問の1つが、<strong><em>propsが変更されるとどうなるのか</em></strong>？というものでした。</p>
+<p>たとえば、次のようなサーバー・コンポーネントがあったとします。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">HitCounter</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> hits <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      Number of hits: </span><span class="token punctuation">{</span>hits<span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>最初のサーバー・サイド・レンダリングで、<code class="language-text">hits</code>が<code class="language-text">0</code>だったと仮定します。このコンポーネントは次に、以下のマークアップを生成します。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span>
+  Number of hits: 0
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>しかし、<code class="language-text">hits</code>の値が変化したらどうなるでしょうか？これがstate変数で、<code class="language-text">0</code>から<code class="language-text">1</code>に変化するとします。<code class="language-text">HitCounter</code>は再レンダリングする必要がありますが、サーバー・コンポーネントであるため再レンダリングは<em>できません</em>。</p>
+<p><strong>問題は、サーバー・コンポーネントは単独では、事実上意味がないということです</strong>。より全体的なビューを取り上げ、アプリケーションの構造を検討するには、ズームアウトする必要があります。</p>
+<p>仮に、次のようなコンポーネント・ツリーを考えてみましょう。</p>
+<p><img src="/article-assets/server-components/server-components07.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>これらのコンポーネントがすべてサーバー・コンポーネントであれば、完全に意味が通じます。いずれのコンポーネントも再レンダリングされないため、どのpropsも変化しません。</p>
+<p>ただし、<code class="language-text">Article</code>コンポーネントが<code class="language-text">hits</code>というstate変数を持っていると仮定します。stateを使用するには、それをクライアント・コンポーネントに変換する必要があります。</p>
+<p><img src="/article-assets/server-components/server-components08.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>ここでの問題が分かりましたか？<code class="language-text">Article</code>が再レンダリングされると、<code class="language-text">HitCounter</code>や<code class="language-text">Discussion</code>など、所有していたコンポーネントも再レンダリングされます。ところが、これがサーバー・コンポーネントの場合には、再レンダリング<em>できません</em>。</p>
+<p>このあり得ない状況を防ぐために、Reactチームは次のルールを追加しました。<strong>クライアント・コンポーネントがインポートできるのは他のクライアント・コンポーネントのみである</strong>。その<code class="language-text">&#39;use client&#39;</code>ディレクティブは、<code class="language-text">HitCounter</code>や<code class="language-text">Discussion</code>のインスタンスがクライアント・コンポーネントにならなければならないことを意味します。</p>
+<p>React Server Componentsに関連して私が経験した最大の「なるほど」の瞬間の1つは、この新しいパラダイムは<em>クライアント・バウンダリ</em>の作成に関するものであると認識したときでした。実際には、次のようになります。</p>
+<p><img src="/article-assets/server-components/server-components09.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p><code class="language-text">&#39;use client&#39;</code>ディレクティブを<code class="language-text">Article</code>コンポーネントに追加すると、「クライアント・バウンダリ」が作成されます。このバウンダリ内のコンポーネントはすべて、<em>暗黙的</em>にクライアント・コンポーネントに変換されます。<code class="language-text">HitCounter</code>などのコンポーネントには<code class="language-text">&#39;use client&#39;</code>ディレクティブがありませんが、この特定の状況ではクライアント上でハイドレーション/レンダリングが行われます <sup id="fnref-4"><a href="#fn-4" class="footnote-ref">4</a></sup>。</p>
+<p>つまり、クライアント上で実行する必要があるすべてのファイルに<code class="language-text">&#39;use client&#39;</code>を追加する必要はないということです。実際に、追加する必要があるのは、新しいクライアント・バウンダリを作成する場合だけです。</p>
+<h2>対処法</h2>
+<p>クライアント・コンポーネントはサーバー・コンポーネントをレンダリングできないということを初めて知ったとき、私はかなり制約がきついなと感じました。アプリケーションの上の方でstateを使用しなければならない場合、どうすればよいのでしょうか？それは、<em>すべて</em>がクライアント・コンポーネントになる必要があるということでしょうか？？</p>
+<p>多くの場合において、アプリケーションを再構築して、レンダリング<em>元</em>となるコンポーネントを工夫することで、この制約を回避できることが分かりました。</p>
+<p>これを説明するのは難しいので、例を使って説明します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token string">'use client'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">,</span> <span class="token constant">LIGHT_COLORS</span> <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/constants.js'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> Header <span class="token keyword">from</span> <span class="token string">'./Header'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> MainContent <span class="token keyword">from</span> <span class="token string">'./MainContent'</span><span class="token punctuation">;</span>
+<span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>colorTheme<span class="token punctuation">,</span> setColorTheme<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">'light'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> colorVariables <span class="token operator">=</span> colorTheme <span class="token operator">===</span> <span class="token string">'light'</span>
+    <span class="token operator">?</span> <span class="token constant">LIGHT_COLORS</span>
+    <span class="token operator">:</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span> <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>colorVariables<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Header</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">MainContent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この設定では、React stateを使用して、ユーザーがダーク・モードとライト・モードを切り替えられるようにする必要があります。このことは、CSS変数トークンを<code class="language-text">&lt;body&gt;</code>タグに適用できるようにするため、アプリケーション・ツリーの上部で行う必要があります。</p>
+<p>stateを使用するには、<code class="language-text">Homepage</code>をクライアント・コンポーネントにする必要があります。これはアプリケーションの最上部にあるため、他のすべてのコンポーネント（<code class="language-text">Header</code>および<code class="language-text">MainContent</code>）も暗黙的にクライアント・コンポーネントになることを意味します。</p>
+<p>これを修正するには、カラー管理要素を独自のコンポーネントに引き込み、独自のファイルに移します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// /components/ColorProvider.js</span>
+<span class="token string">'use client'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">,</span> <span class="token constant">LIGHT_COLORS</span> <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/constants.js'</span><span class="token punctuation">;</span>
+<span class="token keyword">function</span> <span class="token function">ColorProvider</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> children <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>colorTheme<span class="token punctuation">,</span> setColorTheme<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">'light'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> colorVariables <span class="token operator">=</span> colorTheme <span class="token operator">===</span> <span class="token string">'light'</span>
+    <span class="token operator">?</span> <span class="token constant">LIGHT_COLORS</span>
+    <span class="token operator">:</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span> <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>colorVariables<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">Homepage</code>に戻り、この新しいコンポーネントを次のように使用します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// /components/Homepage.js</span>
+<span class="token keyword">import</span> Header <span class="token keyword">from</span> <span class="token string">'./Header'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> MainContent <span class="token keyword">from</span> <span class="token string">'./MainContent'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> ColorProvider <span class="token keyword">from</span> <span class="token string">'./ColorProvider'</span><span class="token punctuation">;</span>
+<span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ColorProvider</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Header</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">MainContent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ColorProvider</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">&#39;use client&#39;</code>ディレクティブは、stateやその他のクライアント側React機能を使用しなくなることから、<code class="language-text">Homepage</code>から削除できます。これは、<code class="language-text">Header</code>と<code class="language-text">MainConten</code>tが暗黙的にクライアント・コンポーネントに変換されなくなることを意味します。</p>
+<p><strong>しかし、ちょっと待ってください</strong>。クライアント・コンポーネントである<code class="language-text">ColorProvider</code>は、HeaderとMainContentの<em>親</em>です。いずれにせよ、まだツリーでは上位にありますね。</p>
+<p>ただし、クライアント・バウンダリに関しては、親子関係は重要ではありません。<code class="language-text">Homepage</code>は、<code class="language-text">Header</code>と<code class="language-text">MainContent</code>をインポートし、レンダリングするものです。これは、<code class="language-text">Homepage</code>が、これらのコンポーネントの<em>propsが何であるか</em>を決定することを意味します。</p>
+<p>覚えておいてください。私たちが解決しようとしている問題は、サーバー・コンポーネントは再レンダリングができないため、どのpropsにも新しい値を与えることができないということです。この新しい設定では、<code class="language-text">Homepage</code>が、<code class="language-text">Header</code>と<code class="language-text">MainContent</code>のpropsを決定し、また<code class="language-text">Homepage</code>はサーバー・コンポーネントであることから、問題はありません。</p>
+<p>これは頭を悩ませる事柄です。何年もReactを経験した後の今でも、このことはきわめて分かりにくいと思っています😅。これに対する直感を養うためには、かなりの練習を必要としました。</p>
+<p>より正確に言えば、<code class="language-text">&#39;use client&#39;</code>ディレクティブはファイル/モジュール・レベルで機能します。クライアント・コンポーネント・ファイルに<em>インポート</em>されたモジュールもクライアント・コンポーネントでなければなりません。結局のところ、バンドラーがコードをバンドルすると、これらのインポートに追随することになります。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>カラー・テーマを変更するか？</h3><p>上記の例には、カラー・テーマを変更する方法がないことに気付いたかもしれません。<code class="language-text">setColorTheme</code>が呼び出されることは決してありません。
+可能な限り最小限度に留めたかったので、いくつか省略したものがあります。完全な形の例では、Reactコンテキストを使用して、任意の子孫がsetter関数を使用できるようにします。コンテキストを使用するコンポーネントがクライアント・コンポーネントである限り、すべてうまくいきます。</p></div></div>
+<h2>内部で何が起きているのか</h2>
+<p>これを、もう少し深く見てみましょう。サーバー・コンポーネントを使用する場合、その出力はどのようなものになるでしょうか？実際に生成されるのは何でしょうか？</p>
+<p>ここで、超シンプルなReactアプリケーションから始めることにしましょう。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+      Hello world!
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>React Server Componentsパラダイムでは、デフォルトですべてのコンポーネントがサーバー・コンポーネントです。このコンポーネントをクライアント・コンポーネントとして明示的にマーク付けしていないため（またはクライアント・バウンダリ内でレンダリングしていないため）、サーバー上でのみレンダリングされます。</p>
+<p>ブラウザでこのアプリにアクセスすると、次のようなHTMLドキュメントを受け取ることになります。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token doctype"><span class="token punctuation">&lt;!</span><span class="token doctype-tag">DOCTYPE</span> <span class="token name">html</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>Hello world!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/static/js/bundle.js<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript">
+      self<span class="token punctuation">.</span>__next<span class="token punctuation">[</span><span class="token string">'$Homepage-1'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
+        type<span class="token operator">:</span> <span class="token string">'p'</span><span class="token punctuation">,</span>
+        props<span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+        children<span class="token operator">:</span> <span class="token string">"Hello world!"</span><span class="token punctuation">,</span>
+      <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    </span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>勝手な変更</h3><p>分かりやすくするため、ここであえて再構成を実施しました。たとえば、RSCコンテキストで生成された真のJSは、このHTMLドキュメントのファイル・サイズを削減するための最適化として、文字列化されたJSON配列を使用します。</p><p>また、HTMLの重要でない部分（<code class="language-text">&lt;head&gt;</code>など）もすべて削除しました。</p></div></div>
+<p>HTMLドキュメントには、Reactアプリケーションによって生成されたUI、「Hello world!」パラグラフが含まれていることが分かります。これはサーバー・サイド・レンダリングのおかげであり、React Server Componentsに直接起因するものではありません。</p>
+<p>その下には、JSバンドルをロードする<code class="language-text">&lt;script&gt;</code>タグがあります。このバンドルには、Reactなどの依存関係と、アプリケーションで使用されるクライアント・コンポーネントが含まれています。また、<code class="language-text">Homepage</code>コンポーネントはサーバー・コンポーネントであるため、そのコンポーネントのコードはこのバンドルには含まれていません。</p>
+<p>最後に、いくつかのインラインJSを含む2番目の<code class="language-text">&lt;script&gt;</code>タグがあります。</p>
+<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js">self<span class="token punctuation">.</span>__next<span class="token punctuation">[</span><span class="token string">'$Homepage-1'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
+  type<span class="token operator">:</span> <span class="token string">'p'</span><span class="token punctuation">,</span>
+  props<span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  children<span class="token operator">:</span> <span class="token string">"Hello world!"</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これは本当に興味深い点です。本質的には、ここで行っているのは、Reactに対して、「<code class="language-text">Homepage</code>コンポーネント・コードが足りないことは分かっていますが、心配しないでください。ここにレンダリングされたものがあります」と伝えることです。</p>
+<p>通常、Reactがクライアント上でハイドレーションを行うと、すべてのコンポーネントが素早くレンダリングされ、アプリケーションの仮想DOMが構築されます。サーバー・コンポーネントの場合、コードがJSバンドルに含まれていないため、これを行うことができません。</p>
+<p>したがって、レンダリングされた値と共に、サーバーによって生成された仮想DOMを送信します。Reactがクライアントにロードされると、そのディスクリプションを再生成する代わりに再利用します。</p>
+<p>これにより、上記の<code class="language-text">ColorProvider</code>の例が機能するようになります。<code class="language-text">Header</code>と<code class="language-text">MainContent</code>からの出力は、<code class="language-text">children</code>というpropsを通じて<code class="language-text">ColorProvider</code>コンポーネントに送られます。<code class="language-text">ColorProvider</code>は必要なだけ再レンダリングを行えますが、このデータは静的であり、サーバーによってロックされています。</p>
+<p>サーバー・コンポーネントがどのようにシリアル化され、ネットワーク経由で送信されるかの現実的表現を見たい場合は、開発者であるAlvar Lagerlöfによる<a href="https://www.alvar.dev/blog/creating-devtools-for-react-server-components">RSC Devtools</a>をチェックしてください。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>サーバー・コンポーネントはサーバーを必要としない</h3><p>この記事の始めで、サーバー・サイド・レンダリングは、次のようなさまざまなレンダリング戦略についての「包括的な用語」であると述べました。</p><ul>
+<li><strong>静的</strong>：HTMLは、展開プロセス中に、アプリケーションのビルド時に生成されます。</li>
+<li><strong>動的</strong>：ユーザーがページをリクエストすると、HTMLは「オンデマンド」で生成されます。</li>
+</ul><p><strong>React Server Componentsは、これらのレンダリング戦略のいずれとも互換性があります</strong>。サーバー・コンポーネントがNode.jsランタイム中にレンダリングされると、それらが返すJavaScriptオブジェクトが作成されます。それは、オンデマンドまたはビルド中のいずれかで発生する可能性があります。</p><p>つまり、React Server Componentsをサーバーなしで使用できるということです。大量の静的HTMLファイルを生成し、必要な場所にホストすることができます。事実、これがNext.jsのApp Routerにおいて、<em>デフォルト</em>で行われることです。本当に「オンデマンド」で行う必要がない場合、この作業はすべて事前に、ビルド中に実行されます。</p></div></div>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>Reactがまったくない場合？</h3><p>アプリケーションにクライアント・コンポーネントを含めない場合、本当にReactをダウンロードすることが必要なのかという疑問を持つかもしれません。React Server Componentsを使用して、<em>真に</em>静的な非JSウェブサイトを構築できるでしょうか？</p><p>問題は、React Server ComponentsはNext.jsフレームワーク内でのみ利用可能であり、そのフレームワークにはルーティングなどを管理するためにクライアント上で実行する必要のあるコードが多数含まれていることです。</p><p>ただし直感とは逆に、このことで実際には<em>より良い</em>ユーザー・エクスペリエンスが実現する傾向があります。たとえば、Nextのルーターは、新しいHTMLドキュメント全体を読み込む必要がないため、典型的な<code class="language-text">&lt;a&gt;</code>タグよりも速くリンク・クリックを処理できます。</p><p>適切に構造化されたNext.jsアプリケーションは、JSのダウンロード中も動作しますが、JSが読み込まれるとさらに速く/良くなります。</p></div></div>
+<h2>利点</h2>
+<p>React Server Componentsは、Reactでサーバー専用コードを実行することを目的とした最初の「公式」ツールです。ただし、すでに述べたように、より広範なReactエコシステムにおいては、これは<em>決して</em>新しいことではありません。2016年から、Next.jsではサーバー専用コードを実行できるようになっていました。</p>
+<p>大きく異なるのは、これまで<em>コンポーネント内</em>でサーバー専用コードを実行する手段がなかった点です。</p>
+<p>最も明白な利点はパフォーマンスです。JSバンドルにはサーバー・コンポーネントが含まれていないため、ダウンロードすべきJavaScriptの量と、ハイドレーションを必要とするコンポーネントの数が減ることになります。</p>
+<p><img src="/article-assets/server-components/server-components10.png">
+<img src="/article-assets/server-components/server-components11.png">
+<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
+<p>ただし、このことは私にとっては最も興味を感じられないものかもしれません。正直なところ、「ページ・インタラクティブ」のタイミングに関しては、ほとんどのNext.jsアプリが<em>すでに</em>十分な高速度を実現しています。</p>
+<p>セマンティックHTMLの原則に従えば、Reactのハイドレーション前でも大半のアプリが動作するはずです。リンクをたどったり、フォームを送信したり、（<code class="language-text">&lt;details&gt;</code>や<code class="language-text">&lt;summary&gt;</code>を使用して）アコーディオンを展開したり折りたたんだりできます。ほとんどのプロジェクトで、Reactのハイドレーションに数秒かかっても、問題はありません。</p>
+<p><strong>ただし、私が本当にすごいと思うのは</strong>、機能とバンドル・サイズという点で、同じ妥協をする必要がなくなったことです。</p>
+<p>たとえば、ほとんどの技術系ブログでは、ある種のシンタックス・ハイライティング・ライブラリが必要となります。このブログでは、Prismを使用します。コード・スニペットは次のようになります。</p>
+<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">function</span> <span class="token function">exampleJavaScriptFunction</span><span class="token punctuation">(</span><span class="token parameter">param</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token string">"Hello world!"</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>一般的なプログラミング言語のすべてをサポートする適切なシンタックス・ハイライティング・ライブラリは数メガバイトになり、JSバンドルに組み込むには大きすぎます。そのため、ミッションクリティカルでない言語や機能を削除するという妥協が必要になります。</p>
+<p>ただし、シンタックス・ハイライティングを行うのは<em>サーバー・コンポーネントにおいて</em>であると仮定しています。その場合、実際にはライブラリ・コードはJSバンドルに含まれません。その結果、妥協する必要が一切なくなり、オプション機能のすべてを利用できるようになります。</p>
+<p>これが、React Server Componentsで動作するよう設計された最新のシンタックス・ハイライティング・パッケージである<a href="https://bright.codehike.org/">Bright</a>の背後にある卓越したアイデアです。</p>
+<p><img src="https://www.joshwcomeau.com/images/server-components/bright.png"></p>
+<p>これこそが、React Server Componentsについて私が興味をそそられる点です。JSバンドルに含めるにはコストがかかりすぎることが、サーバー上で、<em>無料で</em>実行できるようになり、バンドルに追加される容量は0キロバイトで、これまで以上に優れたユーザー・エクスペリエンスを得ることができます。</p>
+<p>単にパフォーマンスの問題でもUXの問題でもありません。RSCをしばらく使ったことで、私はサーバー・コンポーネントがどれほど簡単であるかを真に理解するようになりました。ディペンデンシー・アレイ、古くなったクロージャ、メモ化、<em>状況の変化</em>によって引き起こされるその他の複雑な事柄について心配する必要はありません。</p>
+<p>結局のところ、それはまだきわめて初期の段階にあります。React Server Componentsは数か月前に、ベータ版が完了して正式リリースになったばかりです。コミュニティがこの新しいパラダイムを活用して、Brightなどの新しいソリューションのイノベーションを続けていることから、今後数年間でどのように進化するかを見るのが本当に楽しみです。React開発者にとって今は、エキサイティングな時です。</p>
+<h2>全体像</h2>
+<p>React Server Componentsはエキサイティングな発展ですが、実際には「Modern React」パズルの一部にすぎません。</p>
+<p>事態が<em>真に</em>興味深いものになるのは、React Server ComponentsをSuspenseや新しいStreaming SSRアーキテクチャと組み合わせたときです。その結果、次のような驚くべきことが可能になります。</p>
+<p><img src="/article-assets/server-components/server-components12.png"></p>
+<p>このチュートリアルの対象範囲を超えていますが、このアーキテクチャの詳細については、<a href="https://github.com/reactwg/react-18/discussions/37">Githubで</a>確認することができます。</p>
+<p>また、私の新しいコース<a href="https://joyofreact.com/">The Joy of React</a>でも詳しく取り上げます。よろしければ、もう少し詳しく説明させていただきたいと思います！❤️</p>
+<p>The Joy of Reactは初心者向けのインタラクティブ・コースで、Reactがどのように機能するかについての知識を得られる設定になっています。初歩段階からスタートし（Reactの経験は必要ありません）、Reactの悪名の高いトリッキーな側面を取り上げていきます。</p>
+<p>これは私が約2年間、フルタイムで取り組んできたコースであり、8年以上の経験の中でReactについて学んだ最も重要な事柄のすべてが含まれています。</p>
+<p>お伝えたしたいことが満載のコースです。React本体と、このブログ記事で暗に取り上げた最先端の機能に加えて、Reactエコシステムの中で私が気に入っている部分についても学ぶことができます。たとえば、Framer Motionを使用して、次のレベルのレイアウト・アニメーションを作成する方法を学べます。</p>
+<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/images/server-components/reading-list-blog-demo.mp4"></video></p>
+<p>このコースについてさらに詳しく学び、Reactを使ったビルドの楽しさを発見してください。</p>
+<ul>
+<li><a href="https://joyofreact.com/">The Joy of React</a></li>
+</ul>
+<hr>
+<p>React Server Componentsは重要なパラダイム・シフトです。個人的には、Reactエコシステムにおいて、サーバー・コンポーネントを利用するBrightのようなツールがさらに構築されるにつれて、今後数年間で状況がどのように展開していくかに関してきわめて強い関心があります。</p>
+<p>Reactでの構築がさらにすごいことになると感じています。😄</p>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn-1">
+<p><em>特定のモジュールをレイジーロードしたり、ルートに基づいて分割したりするような最適化もありますが、一般的なルールとして、JSバンドルはどんどん大きくなる傾向があります</em></p>
+<a href="#fnref-1" class="footnote-backref">↩</a>
+</li>
+<li id="fn-2">
+<p><em>メタフレームワークとは、Reactの上に構築し、ルーティングやデータ管理のような機能を追加するフレームワークを意味する</em></p>
+<a href="#fnref-2" class="footnote-backref">↩</a>
+</li>
+<li id="fn-3">
+<p><em>少なくとも、新しいページに移動するなど、ルーター上で何かが起こるまでは</em></p>
+<a href="#fnref-3" class="footnote-backref">↩</a>
+</li>
+<li id="fn-4">
+<p><em>HitCounterコンポーネント自体は、サーバー・コンポーネントにより他の場所にインポートされた場合、サーバー・コンポーネントとしてレンダリングされる可能性があります</em></p>
+<a href="#fnref-4" class="footnote-backref">↩</a>
+</li>
+</ol>
+</div>]]></content:encoded></item><item><title><![CDATA[Next.jsを4年間使用してたどりついた、エンタープライズアプリケーションのフロントエンド開発・構築手法]]></title><description><![CDATA[はじめに 目まぐるしく進化するフロントエンド開発の世界では、常に最新の知識や技術をいち早く取り入れることが、エンタープライズアプリケーションの開発を成功させる上で欠かせません。Tailwind CS…]]></description><link>https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</link><guid isPermaLink="false">https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><category><![CDATA[TypeScript]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[React]]></category><pubDate>Mon, 25 Dec 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>はじめに</h2>
 <p>目まぐるしく進化するフロントエンド開発の世界では、常に最新の知識や技術をいち早く取り入れることが、エンタープライズアプリケーションの開発を成功させる上で欠かせません。Tailwind CSS、TypeScript、Turborepo、ESLint、React Queryなどを含む強力なツールキットとNext.jsを<strong>4</strong>年間使用してきた結果、開発に役立つさまざまな知見やベストプラクティスが得られました。この記事では、大企業向けフロントエンドアプリケーションのパフォーマンス、保守性、拡張性を最大限に高める設計・構築手法を紹介したいと思います。</p>
 <p><strong>注記</strong>：ここに記載する内容はあくまでも個人的な見解であり、筆者が推奨する手法が必ずしも適さない場合もあります。</p>
 <h2>効果的なエンタープライズ向けフロントエンドアーキテクチャの基本原則</h2>
@@ -4358,140 +4717,4 @@ Gecko/Firefoxは、すでに構文解析機能は追加していますが、実�
 <li><em><a href="https://front-end.social/@bramus">Follow @bramus on Mastodon</a></em></li>
 <li><em><a href="https://twitter.com/bramusblog">Follow @bramusblog on Twitter</a></em></li>
 <li><em><a href="https://bram.us/feed">Follow bram.us using RSS</a></em></li>
-</ul></div></div>]]></content:encoded></item><item><title><![CDATA[WebAssemblyに注目]]></title><description><![CDATA[WebAssemblyは今、転換点にあります。今後数年間で、コンテナ化からプラグインシステムやサーバレス・コンピューティング・プラットフォームに至るまで、IT業界全体でWebAssemblyの導入が…]]></description><link>https://postd.cc/pay-attention-to-web-assembly/</link><guid isPermaLink="false">https://postd.cc/pay-attention-to-web-assembly/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[プログラミング言語]]></category><pubDate>Thu, 30 Mar 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>WebAssemblyは今、転換点にあります。今後数年間で、コンテナ化からプラグインシステムやサーバレス・コンピューティング・プラットフォームに至るまで、IT業界全体でWebAssemblyの導入が増えると筆者は予想しています。この記事では、WebAssemblyとは何か、なぜそれが重要なテクノロジーであるのか、現在はどのような分野で利用されているかを説明します。また、WebAssemblyが大きな影響をもたらす可能性がある用途や、WebAssemblyの将来に関する予測も紹介します。</p>
-<h2>WebAssemblyとは何か</h2>
-<p>WebAssembly（Wasm）とは、さまざまなプログラミング言語と多様な実行環境の間に位置する中間層です。30以上の異なるプログラミング言語で書かれたコードを.wasmファイルにコンパイルし、そのファイルをブラウザ、サーバ、あるいは自動車でも実行できます。</p>
-<p>「WebAssembly」という名前は誤解を招きます。WebAssemblyは元々、Webでのコードの実行を高速化するために開発されましたが、今ではブラウザ以外のさまざまな環境でも実行できます。さらに、WebAssemblyはアセンブリではなく、アセンブリより若干高水準なバイトコードです。</p>
-<p>WebAssemblyの解説とその歴史の説明については、数多くの記事が書かれています。ですから、ここでは優れた入門記事をいくつか紹介するにとどめたいと思います。</p>
-<ul>
-<li><a href="https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/">A cartoon intro to WebAssembly - Mozilla Hacks - the Web developer blog</a></li>
-<li><a href="https://nickymeuleman.netlify.app/blog/webassembly">WebAssembly. Scary name, exciting applications. | Nicky blogs</a></li>
-<li><a href="https://desiatov.com/why-webassembly/">How WebAssembly changes software distribution | Max Desiatov</a></li>
-</ul>
-<h2>WebAssemblyの長所</h2>
-<p>WebAssemblyが優れているのは、以下の5つの特徴があるためです。</p>
-<ul>
-<li><strong>ポータブル</strong>：Wasmのバイトコードのバイナリ形式は標準化されています。このことは、Wasmを実行可能なあらゆるランタイムがどんなWasmコードでも実行できることを意味します<a href="#01">1</a>。これはJavaの「write once, run anywhere」（一度書けばどこでも実行できる）というスローガンと似ています。ブラウザに関しては、<a href="https://caniuse.com/wasm">95%のユーザのブラウザ</a>でWebAssemblyを実行でき、残り5%もwasm2jsコンパイラを利用すれば対応できます。サーバに関しては、<a href="https://github.com/bytecodealliance/wasmtime">Wasmtime</a>や<a href="https://github.com/wasmerio/wasmer">Wasmer</a>などのランタイムがあります。リソースが限られているIoT端末でも、<a href="https://github.com/bytecodealliance/wasm-micro-runtime">WAMR</a>を利用すればWasmコードを実行可能です<a href="#02">2</a>。</li>
-<li><strong>普遍性</strong>：多くのプログラミング言語をWasmにコンパイルできます。Wasmがサポートしている言語には、C、C++、Rustなどのシステム言語だけでなく、Go、Python、Rubyなどのガベージコレクション機能を導入している高水準言語も含まれます<a href="#03">3</a>。Wasmにコンパイルできるプログラミング言語の一覧は<a href="https://github.com/appcypher/awesome-wasm-langs">こちら</a>です。</li>
-<li><strong>“ニアネイティブパフォーマンス”</strong>：Wasmは「ニアネイティブパフォーマンス」（ネイティブに近いパフォーマンス）を<a href="https://developer.mozilla.org/en-US/docs/WebAssembly">実現するとよく言われます</a>。実際には、Wasmはほとんどの状況でJavaScriptより高速で、特に演算の負荷が大きいワークロードでその傾向が顕著です。また、Wasmは平均で<a href="https://www.usenix.org/conference/atc19/presentation/jangda">ネイティブコード</a>より1.45～1.55倍遅いものの、<a href="https://00f.net/2021/02/22/webassembly-runtimes-benchmarks/">ランタイムによって</a>結果は異なります。</li>
-<li><strong>高速な起動時間</strong>：Wasmのコールドスタート時間は、それ自体が一つのカテゴリを構成するほど重要です。サーバ上では、WasmはDockerのコンテナと比べて10～100倍<a href="https://repositum.tuwien.at/bitstream/20.500.12708/17598/1/Gackstatter%20Philipp%20-%202021%20-%20A%20WebAssembly%20Container%20Runtime%20for%20Serverless%20Edge...pdf">高速なコールドスタート</a>時間を実現できます。これはWasmがすべてのコンテナについて新たなOSプロセスを作成する必要がないためです。ブラウザでは、Wasmのデコードと機械語への変換はJavaScriptのパース、解釈、最適化よりも高速であるため、WasmコードはJavaScriptよりも速く最大のパフォーマンスで実行を開始できます<a href="#04">4</a>。</li>
-<li><strong>安全性</strong>：WebAssemblyはWebを念頭に置いていたため、セキュリティを重視して設計されました。Wasmランタイムで実行されるコードは、メモリがサンドボックス化され、機能が制約されています。これはコードが明示的に許可されていることしか実行できないことを意味します<a href="#05">5</a>。Wasmコードはサンドボックス化されていますが、システムレベルのインタフェースやハードウェア機能など、下層のシステムへのアクセスも依然として許可されています。</li>
-</ul>
-<h2>WebAssemblyの便利な利用法</h2>
-<h3>JavaScriptの高速化</h3>
-<p>Wasmとその前身であるasm.jsが開発された元々の動機は、Web上でのクライアントサイドのコードを高速化することでした。Wasmがこの分野で優れていることを示す事例は数多く存在します。</p>
-<ul>
-<li>例えば、デザインツールのFigmaの中心的なプログラムはC++で書かれ、WebAssemblyにコンパイルされています。Figmaの開発者は、C++で書かれたプログラムには<a href="https://www.figma.com/blog/building-a-professional-design-tool-on-the-web/">パフォーマンスとユーザビリティの面</a>で大きなメリットがあり、それを<a href="https://www.figma.com/blog/webassembly-cut-figmas-load-time-by-3x/">WebAssemblyにコンパイルする</a>ことによって読み込み時間を3分の1に削減し、ダウンロードするファイルの容量を劇的に縮小できると述べています。</li>
-<li>パスワードマネージャの1Passwordでは、Wasmへの転換によって、フォームが多いサイトでの動作が最大で<a href="https://blog.1password.com/1password-x-may-2019-update/">13～39倍高速化</a>しました。また、WasmがJavaScriptよりもパフォーマンスが<a href="https://developers.google.com/web/updates/2019/02/hotpath-with-wasm">安定している</a>という点は、レイテンシの影響を受けやすいアプリケーションにとって重要です<a href="#06">6</a>。</li>
-</ul>
-<h3>プログラミング言語の相互運用性</h3>
-<p>WebAssemblyはプログラミング言語の境界を簡単に越えることを可能にします。通常、ライブラリとフレームワークは1つの言語のみで書かれているため、完全に書き換えない限り、そのコードを別の言語で利用するのは困難です。WebAssemblyでは、別の言語で書かれたコードの実行を簡単にすることができます。<strong>これにより、コードを一から書き直すのではなく再利用することが可能になります。</strong></p>
-<p>現在、この機能は主にアプリケーションをWebに移植するために利用されています。以下に例を紹介します。</p>
-<ul>
-<li>Figmaは、一部のグラフィックアルゴリズムについて、Skiaという低水準のC++ライブラリを利用しています。自社でアルゴリズムを開発したり、それをJavaScriptに移植したりはしていません<a href="#07">7</a>。</li>
-<li>筆者のお気に入りのチェスサーバであるlichess.orgは、世界クラスのチェスエンジンであるStockfishをユーザのブラウザで実行しており、サーバサイドでStockfishを実行することによる演算負荷を回避しています。</li>
-<li><a href="https://medium.com/google-earth/google-earth-comes-to-more-browsers-thanks-to-webassembly-1877d95810d6">Google Earth</a>と<a href="https://web.dev/ps-on-the-web/">Adobe Photoshop</a>はWasmを利用してC++のコードベースをWebに移植しています。</li>
-</ul>
-<p>アプリケーションのWeb移植はWasmを利用するうえで最も簡単な出発点となっており、<a href="https://paulbutler.org/2020/the-webassembly-app-gap/">その傾向は今後も続く</a>と予想されます。しかし、Wasmの相互運用性はブラウザに限られません。Wasmはプラットフォームや端末を越えてコードを実行するのにも利用されています。</p>
-<ul>
-<li><a href="https://platform.uno/">Uno Platform</a>は、単一のアプリケーションを開発し、それをWindows、macOS、iOS、Android、Linux、ブラウザで実行できるUIプラットフォームです。このプラットフォームは、アプリケーションがC#とXAMLで書かれており、かなりWindows中心に設計されているようです。また、レガシーアプリケーションを新たなプラットフォームに移植するために必要な労力を減らすことを目的とした活用例が非常に多いのも特徴です。</li>
-<li><a href="https://www.amazon.science/blog/how-prime-video-updates-its-app-for-more-than-8-000-device-types">Amazon Prime</a>、<a href="https://medium.com/disney-streaming/introducing-the-disney-application-development-kit-adk-ad85ca139073">Disney+</a>、<a href="https://www.youtube.com/watch?v=28paRXqI-Gk">BBC</a>はいずれも自社の動画配信プラットフォームでWebAssemblyを利用しています。例えば、Amazon Primeでは、新機能を膨大な種類の端末に対応させつつ、問題ないパフォーマンスを維持するためにWebAssemblyが活用されています。</li>
-</ul>
-<p>WebAssemblyは、アプリケーションの移植以外にも、サーバサイドでの言語間の橋渡しとしても役立ちます。残念ながら、この用途の活用例はまだ多くありません。なぜなら、OSとの通信に利用されるインタフェース（<a href="https://hacks.mozilla.org/2019/03/standardizing-wasi-a-webassembly-system-interface/">Web Assembly System Interface</a>、略称WASI）や言語の境界を越えて機能するインタフェース（<a href="https://github.com/WebAssembly/component-model">Wasm Component Model</a>）は依然として開発途上であり、必要な成熟度に達していないためです。</p>
-<h3>プラグインシステム</h3>
-<p>ほとんどのアプリケーションは、ある程度の成熟度に達すると、エンドユーザによる拡張性が必要になります。従来のアプリケーションは、設定項目を大量に増やしたり、複雑なドメイン固有言語（DSL）を開発したりしてきましたが、管理がとても面倒になることや、開発者がよく知らない言語での作業を強いられることが常でした。</p>
-<p>例を考えてみましょう。NGINXなどのシステムでリクエストのフィルタリング規則を設定するとします。そのためには、システム管理者は、なじみのない独自の設定言語で望ましいロジックを宣言型で実装しなければなりません。NGINXの開発者があらかじめ設定したマッチング演算子やフィルタリング演算子は、普段は役立ちますが、システム管理者が望む挙動を実装するうえで大きな妨げとなることがよくあります。また、利用できるツールが少ないので、問題が生じたときのデバッグはストレスがたまるでしょう。</p>
-<p>一部の比較的新しいアプリケーションは異なるアプローチを採用しています。そのアプローチとは、インタフェースの標準的なセットを提供し、Wasmランタイムを組み込んだうえで、必要なカスタムロジックを実装するためのWasmバイナリはエンドユーザに提供させるものです。これにより、エンドユーザにとってはるかに柔軟でなじみのあるインタフェースが実現されます。エンドユーザは、自分が選んだ言語で、複雑なビジネスロジックを自由に実装できます。この機能は、他の言語ではセキュリティ上の懸念により不可能でしたが、Wasmではユーザが提供するコードをランタイムがサンドボックス化することによって実現しています。</p>
-<p>現在の活用例を見てみましょう。</p>
-<ul>
-<li>元々Lyftによって開発され、現在では業界全体で利用されているEnvoyプロキシは、拡張機能をWasmで開発し、ランタイムで動的に<a href="https://github.com/proxy-wasm/spec/blob/master/docs/WebAssembly-in-Envoy.md">読み込む</a>ことを可能にしています。Envoyを基に開発されたサービスメッシュのIstioにも同様の機能があります。</li>
-<li>Kafkaの代わりとして使用されているRedpandaでは、ユーザがWasmを利用して、独自の<a href="https://vectorized.io/blog/wasm-architecture/">ストリーミングデータ変換プログラム</a>を書くことができます。</li>
-<li>Open Policy Agentでは<a href="https://www.openpolicyagent.org/docs/latest/wasm/">Wasmを利用</a>してポリシーを定義できます。</li>
-<li>Minecraftサーバの<a href="https://github.com/feather-rs/feather">Feather</a>は、サンドボックス内でのプラグインの実行にWebAssemblyを利用しています。</li>
-</ul>
-<h3>サンドボックス化機能の組み込み</h3>
-<p>WebAssemblyを他のアプリケーションに組み込むというアイデアは、プラグインシステム以外にとっても有用です。実際、サードパーティライブラリ全体のサンドボックス化や、ファーストパーティコード向けのセキュリティ層の構築に利用できます。</p>
-<p>Firefoxはこの分野で<a href="https://hacks.mozilla.org/2021/12/webassembly-and-back-again-fine-grained-sandboxing-in-firefox-95/">先頭に立っており</a>、スペルチェックや画像のデコードなどに利用するサードパーティライブラリのバグから自らを守っています。Wasmは、「<a href="https://hacks.mozilla.org/2020/02/securing-firefox-with-webassembly/">汚染レイヤ</a>」を提供するRLBoxというツールと組み合わせることで、強引なプロセス隔離に頼ることなく、こうしたライブラリの脆弱性からシステムを保護します。Firefoxの場合、Wasmバイナリを最終リリースに搭載してすらいません。Wasmへのコンパイルと別の言語へのトランスパイルというプロセスによって、RLBoxとともに、必要なセキュリティを確保しているのです。</p>
-<p>このアプローチは一部の重大な脆弱性の悪用を防止できるかもしれません。攻撃者は通常、複数の脆弱性を組み合わせて利用するため、こうした中間的なセキュリティ層は今後の安全性向上にとても役に立つでしょう。</p>
-<h3>コンテナ化</h3>
-<p>Dockerの創業者であるSolomon Hykesは、よく引用されている<a href="https://twitter.com/solomonstre/status/1111004913222324225?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1111004913222324225%7Ctwgr%5E%7Ctwcon%5Es1_&#x26;ref_url=https%3A%2F%2Fnickymeuleman.netlify.app%2Fblog%2Fwebassemblysecurity">ツイート</a>で、WebAssemblyの重要性を次のように強調しています。</p>
-<blockquote>
-<p>WASMとWASIが2008年に存在していたらDockerを開発する必要はなかった。それくらい重要な存在だ。サーバサイドのWebAssemblyはコンピューティングの未来だ。</p>
-</blockquote>
-<p>Wasmがコンテナ化の未来を示していると考えるのには<a href="https://kubesphere.io/blogs/will-cloud-native-webassembly-replace-docker_/">十分な理由</a>があります。<strong>Dockerと比べて、Wasmはコールドスタート時間が10～100倍高速で、メモリの使用量が少なく、機能の制約による優れたセキュリティモデルを採用しています</strong>。コンテナではなくWasmモジュールが演算とデプロイの標準的な単位となれば、拡張性とセキュリティは向上するでしょう。</p>
-<p>こうした変化は突然起きるものではありません。したがって、Wasmベースのコンテナ化は、完全にDockerを代替するのではなく、既存のオーケストレーションシステムに統合される可能性が高いでしょう。</p>
-<p>筆者は今後数年間でこの分野の動きがとても盛んになると予想します。既にいくつかのプロジェクトがいち早く動き始めています。</p>
-<ul>
-<li>Microsoft AzureのDeis Labsは<a href="https://krustlet.dev/">Krustlet</a>を開発しました。これは既存のKubernetesクラスタでWasmワークロードを実行する方法の一つです。</li>
-<li>Deis Labsは、Wasmを中心とするPaaS（platform-as-a-service）の<a href="https://github.com/deislabs/hippo">Hippo</a>もリリースしました。筆者は<a href="https://github.com/fermyon">Fermyon</a>がこのテクノロジーの商用化を目指しているのではないかと推測します。</li>
-<li><a href="https://cosmonic.com/">Cosmonic</a>は、<a href="https://github.com/wasmCloud/wasmCloud">wasmCloud</a>プロジェクトにおいて、分散システム向けにWasmコンテナ化とアクターモデルを結合するプラットフォーム兼オーケストレーション層を構築しています。</li>
-<li><a href="https://github.com/lunatic-solutions/lunatic">Lunatic</a>プラットフォームもアクターモデルを採用しており、単一のWebAssemblyランタイムプロセス上で複数の軽量なコンテナを実行するための最高のサポート機能を搭載しているとみられます。</li>
-<li><a href="https://suborbital.dev/">Suborbital</a>の<a href="https://github.com/suborbital/atmo">Atmo</a>もプラットフォーム兼オーケストレーションシステムですが、サーバレスのワークロードに比較的大きな重点を置いています。
-### FaaS/サーバレスプラットフォーム
-FaaS（function-as-a-service）プラットフォームは、ユーザ提供コードを高速かつ安全に実行する必要があります。サーバレスプラットフォームは、コードを短期間実行するために利用されることが多いため、起動時間が特に重要な指標となります。<strong>Wasmは超高速なコールドスタートと幅広い言語のサポートにより、サーバレスのワークロードにとって優れた選択肢となっています</strong><a href="#08">8</a>。</li>
-</ul>
-<p><a href="https://blog.cloudflare.com/webassembly-on-cloudflare-workers/">Cloudflare Workers</a>とFastly <a href="https://www.fastly.com/blog/how-compute-edge-is-tackling-the-most-frustrating-aspects-of-serverless">Compute@Edge</a>が提供するCDNエッジ・コンピューティング・プラットフォームには既にWebAssemblyの実行機能が搭載されています。Fastlyは、市場の他のサービスよりも起動時間が100倍速いと主張しており、その高速化の理由をWebAssemblyベースのコンパイラとランタイムにあるとしています。NetlifyとVercelもこの分野の製品を開発中です。</p>
-<p>主要なクラウドプロバイダが構築したサーバレスプラットフォームも後れを取ってはいません。AWS Lambdaは数カ月前（※訳注：翻訳元の記事は2022年1月31日公開）にWebAssemblyサーバレス関数をローンチしており、GCPとAzureもこれに続くと予想されます。</p>
-<h3>ブロックチェーン</h3>
-<p>EthereumやSolanaなどのプラットフォームは、ブロックチェーン上で実行できる「スマートコントラクト」と呼ばれるコードをユーザが書くための仕組みを提供します。Ethereumは完全な独自システムを構築しており、コンパイル済みバイトコードのバイナリ表現であるSolidityという言語や、サンドボックスでコードを実行するためのEthereum Virtual Machineを作成しています。Solanaは一部既存のイノベーションを再利用することを選択しており、LLVMコンパイラインフラを利用して、C、C++やRustのコードをバイナリ形式のBerkeley Packet Filterバイトコードの一種にコンパイルします。しかし、Solanaも依然としてSealevelという独自のランタイムを開発しています。</p>
-<p>WebAssemblyはこうしたインフラの大部分を既に提供しています。ユーザは、任意の言語でコードを書き、コンパイラインフラによってWasmバイトコードを作成し、無数の高性能なランタイムを利用できます。</p>
-<p>しかし、EthereumとSolanaが既にこうしたインフラを構築しているならば、WebAssemblyはどんな価値を提供できるのでしょうか？実際には、主な付加価値はエコシステム関連にあります。例えば、Ethereumはスマートコントラクトを書くための独自言語を持っていますが、これは他言語で書かれたライブラリや共通関数をすべて活用することはできないという意味です。SolanaはRustエコシステムを利用できるため、その点ではEthereumをわずかに上回っています。<strong>WebAssemblyの技術的な課題が克服されれば、現在よりはるかに多くの人がスマートコントラクトを開発し、既に使い慣れたライブラリやツールを利用できるようになるでしょう</strong>。</p>
-<p>このように考えているのは決して筆者だけではありません。例えば、Polkadotネットワークはランタイムとして<a href="https://eos.io/news/eos-virtual-machine-a-high-performance-blockchain-webassembly-interpreter/">WebAssemblyベースの仮想マシン</a>を使用しています。EOS仮想マシンも<a href="https://eos.io/news/eos-virtual-machine-a-high-performance-blockchain-webassembly-interpreter/">WebAssemblyがベース</a>です。<a href="https://cosmwasm.com/">CosmWasm</a>は複数のブロックチェーンで機能するスマートコントラクトの構築にWebAssemblyを使用しています。Ethereum Virtual MachineをWebAssemblyの一部のみで代替する「<a href="https://github.com/ewasm/design">eWASM</a>」という案もありましたが、これは立ち消えになったようです。Wasmerランタイムは、明確にブロックチェーン向けに構築された「シングルパス」コンパイラモードを提供します。一方、WasmEdgeは、Ethereumとの互換性があるスマートコントラクト実行エンジンを搭載していると主張しています。</p>
-<h2>予測と展望</h2>
-<h3>新たなアプリケーションアーキテクチャ</h3>
-<p>Dockerが仮想マシンを完全に代替できなかったように、WasmもDockerを完全には代替できません。例えば、仮想マシンがカスタムOSカーネルを実行できるのに対して、Dockerのコンテナでは実行できません。同様に、Wasmのコンテナは、x86の256ビットAVX命令などの一部の特殊なCPU命令を利用できないため<a href="#09">9</a>、アプリケーションによってはDockerと同等のパフォーマンスを発揮することが不可能です。</p>
-<p>筆者の見解では、DockerではサポートされているがWasmではサポートされていないワークロードの差は、現時点ではDockerと仮想マシンの同様の差よりも大きいと考えられます。しかし、Wasmはまだ発展途上のテクノロジーであるため、対応可能なワークロードの種類は増えていくでしょう。Dockerの台頭はマイクロサービスアーキテクチャの台頭と密接に連動していました。これにより、仮想マシンに適したモノリシックなアプリケーションはDockerのコンテナに適したマイクロサービスに置き換えられていきました。<strong>いずれはWebAssembly の独自機能を活用した新たなアプリケーションアーキテクチャが登場するでしょう</strong>。</p>
-<p>コンウェイの法則によれば、アプリケーションのアーキテクチャは、そのアプリケーションを設計した組織のコミュニケーション構造を反映します。コンピューティングの歴史上すべての新しい「リファレンスアーキテクチャ」は、人と人の間で必要な調整の量を減らしてきました。メインフレームから仮想マシンやDockerのコンテナまで、デプロイ可能なユニットを生産するために必要な人間の数は徐々に減少しています。これは、システムをどんどん小さいコンポーネントに分解し、それらのコンポーネントを構築する作業者が、明確に定義されたインタフェースを参照しながら個別に作業できるようにすることによって実現されました。マイクロサービスがモノリシックなアプリケーションを複数の独立したサービスに分解する一方、<strong>WebAssemblyはマイクロサービスをさらに小さいコンポーネントに分解しやすくしています</strong><a href="#10">10</a>。</p>
-<p>これはどのような結果を生むでしょうか？いくつかの可能性を紹介します。</p>
-<ul>
-<li>アプリケーションを中核的なビジネスロジックと他のシステムとの連携に必要なグルーコードに分割した場合、通常はビジネスロジックが他の部分よりかなり小さくなります。グルーコードのインタフェースを、それが提供する機能の実装から分離すれば、ビジネスロジック中心のアプリケーションを構築し、残りを外部の機能プロバイダに任せることが可能になります。これと、長く蚊帳の外に置かれていた<a href="https://www.brianstorti.com/the-actor-model/">アクターモデル</a>を組み合わせたものが<a href="https://github.com/wasmCloud/wasmCloud">wasmCloud</a>のアプローチの本質です。</li>
-<li>もう一つの可能性は、サーバレスアーキテクチャがマイクロサービスを超える次のステップになるというものです。ほとんどのサービスはステートフルな部分とステートレスな部分に分割でき、ステートレスな部分は任意に拡張可能なサーバレス関数として実行できます。この場合、WebAssemblyは、こうしたサーバレス関数にとって便利で簡単に拡張可能なランタイムとして機能します。</li>
-<li>WebAssemblyはサードパーティの依存関係についての見方を変えるかもしれません。モダンなコードはサードパーティのライブラリに大きく依存しており<a href="#11">11</a>、そうした依存関係のほとんどは十分に何度も調査されることがありません。最近の<a href="https://en.wikipedia.org/wiki/Log4Shell">Log4jの脆弱性</a>のようなソフトウェアのサプライチェーンの問題が明らかになるにつれて、人々はサードパーティライブラリのセキュリティを真剣に考えるようになると筆者は予想しています。Firefoxのように、WasmとRLBoxを利用して特定のライブラリを隔離するアプローチはいっそう広まっていくでしょう。パフォーマンス上の制約を克服できれば、同一のWasmランタイム内の機能が制約された別個のコンテナにサードパーティライブラリを隔離することも可能かもしれません<a href="#12">12</a>。</li>
-</ul>
-<h3>ブラウンフィールドへのデプロイ</h3>
-<p>Wasmはいずれ何らかの形でDockerと相互運用できるようになる必要があります。今後2～3年は、Wasmの主な用途は後方互換性の要件が少ないグリーンフィールド（※訳注）へのデプロイとなるため、相互運用性が絶対に必要というわけではありません。しかし、最終的には、Wasmが（特に法人向け環境で）コンテナ化をめぐる競争に完全に勝利するには、ブラウンフィールド（※訳注）へのデプロイが簡単であることが必要です。
-（※訳注：本翻訳は既存の投資用語を参照した表現として解釈します。「グリーンフィールド」既存環境による制約がない、新規開発できる環境。「ブラウンフィールド」既に既存のシステム等が動作している、制約つきの環境。）</p>
-<p>考えられる結末の一つは、DockerがWasmランタイムを統合することです。これはあり得そうな話ですが、Wasmは今後、十分に差別化され、完全に別個のツールとして利用することが妥当になると筆者は予想しています。その代わり、<strong>DockerとWasmのコンテナはオーケストレーション層で統合されるでしょう</strong>。</p>
-<p>KubernetesがWasmベースの実行を効果的に統合できるか、あるいは新たなオーケストレーションシステムが登場するかは、あまりはっきりしません。一方では、Kubernetesは現在、オーケストレーションに関して他の追随を許さない王者です。その勢いは驚異的で、Wasmによるコンテナ化の推進派はそれに乗じるのが賢明でしょう。MicrosoftのエンジニアはKubernetesとWasmが統合されるという未来に投資しており、<a href="https://github.com/krustlet/krustlet">Krustlet</a>を開発しています。これはKubernetesでWasmのワークロードを実行できるようにするものです。他方、WasmのコードはDockerのコンテナとは要件が異なるとみられるため、Kubernetesとは相性が良くない可能性があります。例えば、Wasmによるサードパーティライブラリの隔離を採用している場合、コンテナ間の通信のために共有メモリを設定するのが便利ですが、これはKubernetesでは困難でしょう。いずれはこうしたWasmネイティブのオーケストレータが懸け橋となり、Dockerからの移行やDockerとの統合が簡単になるはずです。</p>
-<p>筆者はこれからWasmオーケストレータの波が来ることを期待していますが、Kubernetesは十分に定着しているため、すぐに廃れはしないでしょう。
-
-### 標準化されたサーバレス/エッジフレームワーク</p>
-<p>ほとんどのサーバレスプロバイダはルートやラムダ関数を定義するための独自のフレームワークを定めています。例えば、Cloudflareは独自の「cf」という型を定め、コードのスキャフォールディングを設定するためにwranglerというCLIツールを提供しています。Fastlyにはキャッシュとのインタラクションとロギングのための一連の独自インタフェースがあり、AWS Lambdaにも同様の設定が存在します。KubernetesのFissionフレームワークは、さまざまな言語を統合するための独自ライブラリを持っています。一部のプラットフォームは、ユーザにDockerのコンテナを提供させ、プラットフォームが実行のみをすれば良いようにすることで、この問題を回避しようとしています。<a href="https://knative.dev/docs/">Knative</a>と<a href="https://fly.io/">Fly.io</a>はどちらもこのアプローチを採用しています。しかし、これらはコールドスタート時間の影響を軽減するために「ワーカープールを温めておく」問題をユーザに転嫁しなければなりません。</p>
-<p>現在は標準化されたサーバレス関数の定義とデプロイ仕様を構築するチャンスがあります。人気の<a href="https://github.com/serverless/serverless">Serverless Framework</a>は、デプロイの抽象化にはそれなりに役立ちますが、依然としてプロバイダ固有の詳細な部分は関数の実装に委ねられています。こうした詳細部分が抽象化されれば、すぐにマルチクラウドのデプロイは大幅に簡単になり、このフレームワークははるかに強力になるでしょう。いずれはサーバレスにおけるTerraformのような存在になるかもしれません<a href="#13">13</a>。</p>
-<h3>パッケージ管理</h3>
-<p>あらゆるプログラミング言語には、その言語を取り巻くエコシステムが存在します。ほとんどのモダンな言語は一元的なパッケージレジストリを利用しており、PythonにはPyPI、Node.jsにはnpm、Rustにはcrates.ioがあります。こうしたレジストリやそれに付属するツールとワークフローは、高品質なエコシステムの開発や開発者の作業の効率化にとって重要です。</p>
-<p>Wasmの場合、<a href="https://wapm.io/">WebAssembly Package Manager</a>（WAPM）がこの需要を満たすはずでした。しかし、実際にはプロジェクトはほとんど休止しているようです。この記事の執筆時点（※訳注：翻訳元の記事は2022年1月31日公開）で、<a href="https://web.archive.org/web/20211229050050/https://wapm.io/">過去2カ月</a>に更新されたパッケージは3つにとどまっています。問題は、パッケージがお互いに依存すると想定されているのに対し、WAPMが相互依存関係のないスタンドアロンのWasmバイナリでしか機能しないことです。開発者にとって他の選択肢はWasmモジュールをnpmに公開することですが、npmは言語をまたぐ相互運用性を促進するものではないため、当然ながらJavaScriptやAssemblyScriptを越えるWasmエコシステムを構築するうえで理想的とは言えません。</p>
-<p>問題の原因は、実際にはWAPMやnpmではなく、WebAssembly自体が粗削りな点にあります。</p>
-<blockquote>
-<p>現在、意味のあるWebAssemblyアプリケーションを書き、それがランタイムや言語の境界を越える相互運用性を持つようにするには、多大な労力が求められます。また、基本的でないデータ型（文字列や構造体など）のやり取りにはポインタの演算と低水準なメモリの操作が必要です。</p>
-<p><a href="https://radu-matei.com/blog/intro-wasm-components/">― Introduction to WebAssembly components | radu’s blog</a></p>
-</blockquote>
-<p>これこそ、まさにWebAssembly Component Modelが解決しようとしている問題です。WasmコンポーネントはWebAssembly Interfaceフォーマットを標準化し、こうしたインタフェースの実装・利用の両方のための<a href="https://github.com/bytecodealliance/wit-bindgen">コードジェネレータ</a>を提供します。つまり、Wasmでランタイムと言語の壁を乗り越えるのが簡単になるのです。</p>
-<p>WebAssemblyには高品質なパッケージマネージャを構築する大きな機会があります。このパッケージマネージャは、Wasmモジュールを他の言語から利用するためのバインディングを生成するのにWasmコンポーネントのcodegenを利用すべきでしょう。このツールが十分に優れていれば、言語をまたぐ開発がとても簡単になり、サーバサイドのWebAssemblyエコシステムの可能性を本当の意味で広げる可能性があります。Wasmパッケージレジストリは、他のパッケージレジストリと連携し、適切に生成されたバインディングとともにパッケージをPyPI、npm、crates.ioに自動的に公開することもできるかもしれません。</p>
-<h2>終わりに</h2>
-<p>ここまで読んできた方は、「WebAssemblyがそんなに優れているなら、なぜ広く使われていないのか？」と考えていることでしょう。その理由をいくつか挙げたいと思います。</p>
-<ul>
-<li>WebAssemblyはマーケティングがうまくありません。WebAssemblyはWeb限定でもアセンブリでもなく、名前が実体とかけ離れています。WebAssemblyは主にWeb開発者向けにマーケティングと宣伝が行われていますが、実際のポテンシャルは<a href="https://blog.bitsrc.io/whats-wrong-with-web-assembly-3b9abb671ec2">ブラウザを越えたところ</a>にあります。本当の力が明らかになるのは、C++とRustの開発者がWasmの持つポテンシャルに一斉に気づき始めたときでしょう。</li>
-<li>WebAssemblyは依然として標準化されていません。例えば、WebAssembly System Interfaceには正式に標準化されていない無数の拡張機能がありますが、さまざまなランタイムがこうした拡張機能の一部を実装しています。ユニバーサルポータビリティという目標も完全には実現されていません。</li>
-<li>言語間のインタラクション機能が不便です。ユーザが実際にさまざまな言語でWasmを使用し始めるには、クリティカルマスに相当する数の言語について、WebAssemblyコンポーネントと優れたコードジェネレータが必要です。</li>
-<li>開発者体験に大きな改善の余地があります。<a href="https://thenewstack.io/the-pain-of-debugging-webassembly/">デバッグをはじめ</a>とするツールや、パッケージマネージャ、ビルドシステム、IDEとの統合性が改善されることが理想です。</li>
-<li>こういうことは言いたくないのですが、WebAssemblyのライブラリ隔離機能が正当に評価されるには、Log4Shellと同様の規模の深刻なソフトウェア・サプライチェーン・インシデントがあと何回か起きる必要があるでしょう。</li>
-</ul>
-<p>WebAssemblyは名だたる数々のサービスで導入されており、さまざまな用途に利用できますが、IT業界全体では一部で散発的に使われているにすぎません。筆者の友人の中でWebAssemblyを知っている数少ない人たちは、基本的にはWebAssemblyをとても面白いと考えているものの、まだ十分に成熟していないため開発には利用していません。しかし、こうした課題の多くに対して積極的な取り組みが行われており、今後1～2年で問題ない状態に達するでしょう。ですから、<strong>私たちは現在、WebAssemblyの利用、エコシステム、コミュニティが爆発的に拡大する瀬戸際にあると思われます</strong>。</p>
-<p><em><a href="https://news.ycombinator.com/item?id=30155295">Hacker News</a>での議論にぜひご参加ください。また、<a href="https://harshal.sheth.io/about">筆者へのご意見も歓迎します</a>。この記事の初期の草案に対するフィードバックをくれたNihar Sheth、Mohak Jain、Andrew Sun、Michelle Fangに感謝します。</em></p>
-<h3>注記</h3>
-<ol>
-<li><a name="01"></a>実際には若干微妙な部分があります。WasmにはWeb APIとWebAssembly System Interface（WASI）APIという2つの<a href="https://v8.dev/blog/emscripten-standalone-wasm">標準的なAPI</a>が存在します。また、WebAssemblyは急速に進化しているため、例えばスレッディングのように、広く実装されているが正式には標準化されていない実験的機能が数多くあります。それ以外にも、Wasmが別のアプリケーションに組み込まれる場合、そのアプリケーションが独自のAPIを提供するかもしれません。したがって、Wasmコードが実行されるのは、そのランタイムが対応しているAPIと機能のみを使用する場合に限られますが、これは十分に妥当な想定と言えます。↩</li>
-<li><a name="02"></a>なぜかは分かりませんが、WebAssemblyのランタイムの名前はすべて「wa」で始まるようです。他にも<a href="https://github.com/WasmEdge/WasmEdge">WasmEdge</a>、<a href="https://github.com/WAVM/WAVM">WAVM</a>、<a href="https://github.com/wasm3/wasm3">wasm3</a>があります。数少ない例外の一つが<a href="https://github.com/wasmx/fizzy">Fizzy</a>ですが、このプロジェクトもwasmxという組織によってホストされています。↩</li>
-<li><a name="03"></a>ただし、PythonやRubyなどのインタプリタ型言語やGoなどのランタイムが複雑な言語は、Wasmで実行しても良いパフォーマンスを生まないでしょう。↩</li>
-<li><a name="04"></a>Firefoxでは、Wasmへのコンパイルはネットワークによるパケットの送信よりも実際に<a href="https://hacks.mozilla.org/2018/01/making-webassembly-even-faster-firefoxs-new-streaming-and-tiering-compiler/">速くなります</a>。<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/instantiateStreaming">WebAssembly.instantiateStreaming</a>メソッドにより、ファイルのダウンロード完了前からコンパイルのプロセスを開始できるため、Wasmコードの実行開始前のレイテンシはごくわずかしか増加しません。↩</li>
-<li><a name="05"></a>ただし、それでも小さな欠点は残っています。機能ベースの許可システムは依然として粒度が非常に高いわけではなく、ほとんどのWasmランタイムはSpectreのようなサイドチャネル攻撃を防止できないため、追加的な戦略が必要になります。CloudflareのKenton Vardaは、自社の脅威モデルと、脅威を軽減するために実装した対策について、<a href="https://blog.cloudflare.com/mitigating-spectre-and-other-security-threats-the-cloudflare-workers-security-model/">詳細な記事</a>を執筆しています。↩</li>
-<li><a name="06"></a>WasmはJavaScriptの「ファストパス」から逸脱した場合に生じる脱最適化の問題を回避できるため、JavaScriptの最高のパフォーマンスと同等以上のパフォーマンスで安定して高速にコードを実行できます。面白いことに、実はJavaScriptをWebAssemblyにコンパイルして元のコードの代わりに実行するだけで、ブラウザでJavaScriptの実行を高速化することが可能です。Lin Clarkはその方法とそれがうまくいく理由について、<a href="https://www.youtube.com/watch?v=CRaMls9oVBw">素晴らしい講演</a>を実施しています。↩</li>
-<li><a name="07"></a>数年前にFigmaの技術リーダーとの個人的な会話で聞いた情報です。Google ChromeやFirefoxなどの多くのブラウザは既に内部でSkiaを利用しています。しかし、こうしたブラウザはSkia APIを直接は公開していないため、アプリケーションは低速なブラウザDOMやSVGインタフェースを利用しなければなりません。Figmaはこうした低速なレイヤを回避し、ブラウザのキャンバス要素に直接描画しますが、依然としてアプリケーションへの<a href="https://skia.org/docs/user/modules/canvaskit/">組み込み</a>を通じてSkiaの一部の機能を利用しています。↩</li>
-<li><a name="08"></a>他にも注目すべき選択肢があります。例えば、AWS Lambdaは軽量な<a href="https://firecracker-microvm.github.io/">Firecracker microVM</a>を利用しています。両者を直接比較すると、<a href="https://arxiv.org/ftp/arxiv/papers/2010/2010.07115.pdf">WebAssemblyのパフォーマンスの方が少し優れています</a>。↩</li>
-<li><a name="09"></a>WebAssemblyによる128ビット型のSIMDのサポートは、現在は実験的な段階にありますが、多くのブラウザとランタイムに実装されています。「ロングSIMD」のサポートは引き続き<a href="https://github.com/WebAssembly/design/blob/5b2c607fe173c813214afde33e0ea82d33dd0983/FutureFeatures.md#long-simd">今後の課題</a>と言えます。↩</li>
-<li><a name="10"></a>この主張に対する反論は、「マイクロサービスを分解できるからといって、実際に分解するとは限らない」というものです。これは確かにもっともな批判であり、実はモノリスとマイクロサービスの関係にも当てはまります。例えば、「マイクロサービスを本番環境で始めるべきではない――モノリスは君の友人だ」という<a href="https://arnoldgalovics.com/microservices-in-production/">最近の記事</a>は<a href="https://news.ycombinator.com/item?id=29576352">大きな議論</a>を呼びました。それでも、マイクロサービスアーキテクチャは、適切な状況で導入すればとてつもなく有効で、生産性を大幅に高めます。筆者はWebAssembly中心のアーキテクチャにも同じことが言えると予想しています。ただし、WebAssemblyに適した状況がどれだけ存在するかはあまりはっきりしません。↩</li>
-<li><a name="11"></a>この問題はとても有名で、<a href="https://www.reddit.com/r/ProgrammerHumor/comments/992u1p/dependencies_101/">これ</a>に<a href="https://xkcd.com/2347/">関する</a><a href="https://www.reddit.com/r/ProgrammerHumor/comments/6s0wov/heaviest_objects_in_the_universe/">ミーム</a>が存在するほどです。↩</li>
-<li><a name="12"></a>誰かがこうしたサービスを提供する企業を設立すべきでしょう。最近Log4jの脆弱性が判明したことで、ソフトウェアのサプライチェーンは現在、最も重要な問題となっています。さらに、ほとんどの既存企業は依存関係の隔離よりも検証に重点を置いているようです。↩</li>
-<li><a name="13"></a>これは最適な比較対象ではないかもしれません。なぜなら、Terraformがデプロイやクラウドプロバイダとのインタラクションのみを抽象化するのに対し、このフレームワークはコード層でも機能するからです。↩</li>
-</ol>]]></content:encoded></item></channel></rss>
+</ul></div></div>]]></content:encoded></item></channel></rss>
