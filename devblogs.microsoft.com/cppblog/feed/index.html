@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 06 Feb 2024 19:42:28 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 07 Feb 2024 08:08:18 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,161 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>OpenMP improvements in Visual Studio C/C++ compiler: loop collapse</title>
+		<link>https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/#respond</comments>
+		
+		<dc:creator><![CDATA[Natalia Glagoleva]]></dc:creator>
+		<pubDate>Wed, 07 Feb 2024 17:00:40 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Experimental]]></category>
+		<category><![CDATA[OpenMP]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33572</guid>
+
+					<description><![CDATA[<p>The MSVC compiler adds support for OpenMP "collapse" feature on for loops.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/">OpenMP improvements in Visual Studio C/C++ compiler: loop collapse</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Our <a href="https://devblogs.microsoft.com/cppblog/msvc-openmp-update/">previous blog post</a> about OpenMP support in Visual Studio was published a while ago. Meanwhile, in Visual Studio 2022 version 17.8, we&#8217;ve added support for the <code>collapse</code> feature, fixed several bugs, and made some code quality improvements. All this work is accessible if you are using the <code>-opemp:llvm</code> switch (see the <a href="https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/">Improved OpenMP Support for C++ in Visual Studio</a> blogpost for details about this switch). In this blog we&#8217;ll talk about loop collapsing, which we&#8217;ve implemented on <code>for</code> loops according to the OpenMP Standard 5.2.</p>
+<h2 id="collapse-clause-in-openmp-standard-3-1"><code>collapse</code> clause in OpenMP Standard 3.1</h2>
+<p>The <code>collapse</code> clause applies to a nest of loops. The whole nest is then considered to be one giant loop over the combined loop space and can be split to run on several threads, similar to a single <code>for</code> loop.
+For example:</p>
+<pre><code class="language-C++">void bar(float *a, int i, int j);
+int jl, ju, il, iu;
+void foo(float *a)
+{
+  int i, j;
+  #pragma omp for collapse(2) private(i, j)
+  for (i=il; i&lt;=iu; ++i){
+    for (j=jl; j&lt;=ju; ++j)
+      bar(a,i,j);
+    }
+}</code></pre>
+<p>Here the overall loop space is all iterations from <code>i=il</code>, <code>j=jl</code> up to <code>iu</code>, <code>ju</code> (inclusive). All iterations will be split between threads more or less evenly.</p>
+<p>In the OpenMP Standard 3.1 the loop space has to be rectangular. This means that the bounds and the increment of the inner loops can&#8217;t depend on the variables which are non-invariant in the outer loops. The example above complies with this definition: <code>jl</code> and <code>ju</code> do not depend on <code>i</code> and do not change between iterations of the outer loop.</p>
+<p>With this restriction, the collapsed loop nest can have any of the schedules applicable to an ordinary <code>for</code> loop.</p>
+<h2 id="implementation-of-collapse-clause-for-rectangular-loop-nests-code-generation">Implementation of <code>collapse</code> clause for rectangular loop nests: code generation</h2>
+<p>For a rectangular loop nest like in example above the compiler generates code similar to this:</p>
+<pre><code class="language-C++">void bar(float *a, int i, int j);
+int jl, ju, il, iu;
+void foo(float *a)
+{
+  int i, j;
+  kmp_uint64 ij, iju;
+
+  bounds_info_t boundsNest[2] = { { loop_type_t::loop_type_int32, 
+                                    loop_type_t::loop_type_int32, 
+                                    comparison_t::comp_less_or_eq, 0, 
+                                    static_cast&lt;kmp_uint64&gt;(il), 0,
+                                    static_cast&lt;kmp_uint64&gt;(iu), 0, 
+                                    static_cast&lt;kmp_int64&gt;(1), 0 },
+                                  { loop_type_t::loop_type_int32, 
+                                    loop_type_t::loop_type_int32, 
+                                    comparison_t::comp_less_or_eq, 0, 
+                                    static_cast&lt;kmp_uint64&gt;(jl), 0,
+                                    static_cast&lt;kmp_uint64&gt;(ju), 0, 
+                                    static_cast&lt;kmp_int64&gt;(1), 0 } };
+  kmp_uint64 originalIVs[2];
+
+  iju = __kmpc_process_loop_nest_rectang(
+        nullptr, omp_get_thread_num(), /*in/out*/ boundsNest, 2);
+
+  #pragma omp for private(i, j, ij)
+  for (ij=0; ij&lt;=iju; ++ij){
+      __kmpc_calc_original_ivs_rectang(nullptr, ij,
+                    boundsNest, /*out*/ originalIVs, 2);
+      i = originalIVs[0];
+      j = originalIVs[1];
+      bar(a,i,j);
+    }
+}</code></pre>
+<p>We generate an additional call to the runtime to calculate the overall number of iterations (<code>__kmpc_process_loop_nest_rectang</code>), and in the loop we call another runtime function (<code>__kmpc_calc_original_ivs_rectang</code>) to get the values of the original induction variables (IVs).</p>
+<h2 id="implementation-of-collapse-clause-for-rectangular-loop-nests-runtime">Implementation of <code>collapse</code> clause for rectangular loop nests: runtime</h2>
+<p>The code generation above is supported by two additional functions in the runtime:</p>
+<p><code>__kmpc_process_loop_nest_rectang</code> &#8211; to calculate bounds for new collapsed loop;</p>
+<p><code>__kmpc_calc_original_ivs_rectang</code> &#8211; to get the original loop induction variables&#8217; values from the value of the new induction variable.</p>
+<p>Information is passed from the generated code to the runtime and back using arrays of structs, which define the type of bounds and increment, type of the loop IV, what operation the loop is using and the loop bounds. This information is filled in for all loops in the nest.</p>
+<p>Both functions and all the needed definitions are included in the Visual Studio version of LLVM OpenMP runtime (libomp140[d] dll, active with the <strong>-openmp:llvm</strong> flag), and also upstreamed into LLVM libomp. It&#8217;s included in LLVM 17.x; live has an additional performance improvement (same as in Visual Studio version).</p>
+<h2 id="collapse-clause-in-openmp-standard-5-2"><code>collapse</code> clause in OpenMP Standard 5.2</h2>
+<p>In the most recent OpenMP Standard 5.2 inner loops&#8217; lower and upper bounds can depend on outer loops&#8217; induction variables, e.g.:</p>
+<pre><code class="language-C++">void bar(float *a, int i, int j);
+
+void foo(float *a)
+{
+  #pragma omp parallel for collapse(2)
+  for (int i = 0; i &lt; M; i++)
+    for (int j = i; j &lt; M; j++){
+      bar(a, i, j);
+    }
+}</code></pre>
+<p>For a complete definition of what is allowed please refer to <a href="https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5-2.pdf">the standard</a>.</p>
+<h2 id="implementation-of-collapse-clause-for-non-rectangular-loop-nests-code-generation">Implementation of <code>collapse</code> clause for non-rectangular loop nests: code generation</h2>
+<p>Non-rectangular loop nests are generated differently from rectangular ones. The runtime gets a description of the loop nest and returns a chunk to execute, with chunk bounds expressed in the terms of the original loop IVs.</p>
+<p>For the non-rectangular nest example above the compiler keeps all loops and generates additional checks for bounds:</p>
+<pre><code class="language-C++">void bar(float *a, int i, int j);
+int jl, ju, il, iu;
+void foo(float *a)
+{
+  int i, j;
+  kmp_uint64 ij, iju;
+
+  bounds_info_t boundsNest[2] = { { loop_type_t::loop_type_int32, 
+                                    loop_type_t::loop_type_int32, 
+                                    comparison_t::comp_less_or_eq, 0, 0, 0,
+                                    static_cast&lt;kmp_uint64&gt;(M), 0, 
+                                    static_cast&lt;kmp_int64&gt;(1), 0 },
+                                  { loop_type_t::loop_type_int32, 
+                                    loop_type_t::loop_type_int32, 
+                                    comparison_t::comp_less_or_eq, 0, 0, 
+                                    static_cast&lt;kmp_uint64&gt;(1),
+                                    static_cast&lt;kmp_uint64&gt;(M), 0, 
+                                    static_cast&lt;kmp_int64&gt;(1), 0 } };
+  bounds_info_t chunkBoundsNest[2];
+  kmp_int32 lastiter = false;
+
+  #pragma omp for private(i, j, ij)
+  auto haveWork = __kmpc_for_collapsed_init(nullptr, omp_get_thread_num(),
+                  /*in/out*/ boundsNest, /*out*/ chunkBoundsNest, 2, /*out*/ &amp;lastiter);
+
+  if (haveWork) {
+            int ilnew = chunkBoundsNest[0].lb0_u64;
+
+            int jA0new = chunkBoundsNest[1].lb0_u64;
+            int jA1new = 0;
+
+            int iunew = chunkBoundsNest[0].ub0_u64;
+            int junew = chunkBoundsNest[1].ub0_u64;
+
+    for (i = ilnew; i &lt;= iunew; ++i) {
+        for (j = i * jA1new + jA0new; j &lt;= i * jB1 + jB0; ++j) {
+            if ((i &gt;= iunew) &amp;&amp; (j &gt; junew)) goto done2;
+            bar(a, i, j);
+        }
+        jA0new = jA0;
+        jA1new = jA1;
+    }
+done2:
+    ;
+
+  }
+}</code></pre>
+<p>This way the runtime can have different strategies for how to split the overall space, and we don&#8217;t need to change the code generation.</p>
+<h2 id="implementation-of-collapse-clause-for-non-rectangular-loop-nests-runtime">Implementation of <code>collapse</code> clause for non-rectangular loop nests: runtime</h2>
+<p>For the non-rectangular case we need only one additional exposed function in the runtime, <code>__kmpc_for_collapsed_init</code>, to calculate the lower and upper bounds of the chunks to execute.</p>
+<p>The overall loop nest space is enlarged to a parallelogram (parallelepiped), taking care to not produce an overflow, then this enlarged space is split into more or less equal chunks, then we figure out how it translates back to the original space (chunks will become less evenly split during this translation).</p>
+<p>Current implementation is generic, and should be functional with all combinations of loop bounds and increments allowed by the standard, for any number of nested loops. Performance is on par with LLVM (which is also doing a similar enlarging of the loop space).</p>
+<p>We think that in practice <code>collapse</code> should be most useful for 2- or 3- level nested loops of specific shapes, e.g. triangular with the upper or lower bound being loop nest invariant. It would be great to recognize such loops and use specialized algorithms in these cases, to split overall space more evenly (not necessarily perfectly). These specializations won&#8217;t need different code generation. A recognition of the special case and branching to a different algorithm can be done in the runtime. Adding specialized cases could greatly improve performance. We believe that implementing such algorithms should be much easier in the runtime (using C and some features of C++) than doing experiments with new code generation.</p>
+<p>Same as for the rectangular case, all runtime support is included in the Visual Studio version of the LLVM OpenMP runtime and also upstreamed into the LLVM libomp runtime.</p>
+<h2 id="feedback">Feedback</h2>
+<p>We encourage you to try out the <code>collapse</code> feature in Visual Studio 2022 version 17.8 or newer. As always, we welcome your feedback. Please share your thoughts and comments with us through <a href="https://developercommunity.visualstudio.com/home">Developer Community</a>. You can also reach us on X (@VisualC), or via email at visualcpp@microsoft.com.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/">OpenMP improvements in Visual Studio C/C++ compiler: loop collapse</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Quick Tips for using Copilot Chat with C++ in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/#respond</comments>
@@ -104,7 +259,7 @@
 		<item>
 		<title>MSVC Toolset Minor Version Number 14.40 in VS 2022 v17.10</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/#respond</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/#comments</comments>
 		
 		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
 		<pubDate>Thu, 01 Feb 2024 18:51:22 +0000</pubDate>
@@ -245,7 +400,7 @@ Where: </p>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
+			<slash:comments>2</slash:comments>
 		
 		
 			</item>
@@ -1061,68 +1216,6 @@ Some stats for this period:</p>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-makefile-tools-in-visual-studio-code-release-0-8-post-configure-scripts-and-more/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Azure Networking Team reaches peak productivity with Visual Studio&#8217;s new remote Linux capabilities and improvements</title>
-		<link>https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Tue, 12 Dec 2023 19:01:05 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Linux]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33307</guid>
-
-					<description><![CDATA[<p>Over the past couple of months, the Microsoft C++ team reached out to a series of customers voting on a suggestion ticket asking for Remote Linux Unit Testing support to better understand their full set of interactions and needs with CMake and Remote Linux scenarios in Visual Studio.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements/">Azure Networking Team reaches peak productivity with Visual Studio&#8217;s new remote Linux capabilities and improvements</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Over the past couple of months, the Microsoft C++ team reached out to a series of customers voting on <a href="https://developercommunity.visualstudio.com/t/ctest-support-for-remote-linux-targets/431771">a suggestion ticket asking for Remote Linux Unit Testing support</a> to better understand their full set of interactions and needs with CMake and Remote Linux scenarios in Visual Studio. After these discussions, we built out a backlog of work items to deliver on any pain points in their experiences.</p>
-<p>One of the customers we interviewed and worked closely with during the process was John Schultz, an Azure Networking software engineer. Our team helped John not only to be able to <strong>F5 run his CTest unit tests for Linux</strong>, improving his productivity on the scale of hours per run, but also <strong>improved his gdb debugger performance</strong> <strong>and</strong> <strong>overall IntelliSense issues with his configurations</strong>. These new improvements can be found in <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 17.9 Preview 2</a>, so feel free to try out using the Test Explorer for your running and debugging your unit tests in remote Linux scenarios and notice the gdb debugger improvements on first breakpoint hit.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25.png"><img decoding="async" class="wp-image-33324 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25-1024x544.png" alt="Test Explorer detecting the unit tests in a WSL instance." width="909" height="483" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25-1024x544.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25-300x159.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25-768x408.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25-1536x816.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2023/12/MicrosoftTeams-image-25.png 1920w" sizes="(max-width: 909px) 100vw, 909px" /></a></p>
-<p>Below is an interview with John about his overall experience. <em>Thank you, John, for working with us!</em></p>
-<hr />
-<h4 id="what-does-your-team-do"><strong>What does your team do?</strong></h4>
-<p>I work on an Azure Networking team that designs, develops, and operates Azure platform services to support Virtual Networking and PrivateLink features. Our application is cross-platform and we use Visual Studio capabilities to develop for both Windows and Linux. For our application that runs on Linux, the target environment has very limited resources.</p>
-<h4 id="what-was-your-development-experience-before-working-with-the-visual-c-team"><strong>What was your development experience before working with the Visual C++ team?</strong></h4>
-<p>Initially, we could not build in the IDE because we were using custom msbuild-targets for cross-compiling, which were slower and didn’t support IntelliSense. We had seen several posts online at the time that CMake was supported in both Visual Studio (VS) and VS Code, which drove us to ensure our CMake builds were properly functional.</p>
-<p>After onboarding to CMakePresets.json and the Ninja generator, we got our CMake projects building in both VS and VS Code. This was awesome for the team as it enabled cross-platform compilation from the IDE integration. At this point, the next friction was running and debugging our unit tests.</p>
-<p>Due to lack of remote Linux unit test support in the IDE, we attempted to attach to binaries running in our remote emulator, but the performance was much worse. Regardless, we would much prefer to stick with using Visual Studio for our remote Linux workflows because our team is familiar with Windows. The target system is built for a custom Linux image which is not designed for development, and VS has a suite of debugging and editing tools that we like to use such as IntelliSense, CMake Project System, GitMerge, CallStack, and Watches.</p>
-<h4 id="what-was-your-development-experience-after-working-with-the-visual-c-team"><strong>What was your development experience after working with the Visual C++ team?</strong></h4>
-<p>The Visual C++ team first organized a call to understand our needs – which included adding remote Linux unit test support for CTests, improving upon gdb debugger performance issues, and getting IntelliSense configured for our remote scenarios.</p>
-<p>The team then got to work on delivering on this set of asks and circling back with me to ensure that our experience was successful.</p>
-<p>After some time, the C++ team notified us that the performance issues were addressed and helped us configure our launch.vs.json so that we could F5 our unit tests. The performance is much more acceptable and <strong>having this feature has already remarkably improved the developer experience in our team</strong>.</p>
-<p>With this new ability to launch and debug using Visual Studio, <strong>we were able to onboard a new unit test in minutes, <em>rather than hours</em> </strong>(as has been the historic case using ssh, scp and gdb).</p>
-<hr />
-<h4 id="conclusion"><strong>Conclusion</strong></h4>
-<p>We hope these new improvements are able to empower remote Linux users from Visual Studio to increase their productivity with the IDE and have a seamless Linux targeting experience. Thank you so much John and the Azure Networking organization for your engagement and collaboration with the Visual Studio team.</p>
-<p>Again, please try out Visual Studio 17.9 Preview 2’s new highly performant gdb debugger and remote Linux unit testing capabilities in the Test Explorer for CMake projects. Currently, the known limitations with remote Linux unit testing are with certain dev container scenarios which are targeted to be fixed by 17.9 Preview 3.</p>
-<p>Some tips we would like to share from working with John to configure his remote scenarios are that:</p>
-<ul>
-<li>If you want to compile with IntelliSense in remote scenarios, you <strong>do not</strong> need extra information in your CMake Presets such as IntelliSenseOptions. It does not need any extra configuration steps and should automatically configure.</li>
-<li>If you are building on the same remote machine that you are debugging on then Visual Studio will copy binaries automatically to ~/.vs/&lt;project-name/.</li>
-<li>If you are building on a different machine, then you can specify deployment options in the launch.vs.json like the example below:</li>
-</ul>
-<pre>     <span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"deploy"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: [</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">        {</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"deploymentType"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #a31515;">"LocalRemote"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">,</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"executable"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: blue;">true</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">,</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"sourceMachine"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #a31515;">"localhost"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">,</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"sourcePath"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #a31515;">"C:\\path-to-exe"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">,</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"targetMachine"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #a31515;">"127.0.0.1"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">,</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">          </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #2e75b6;">"targetPath"</span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">: </span><span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: #a31515;">"/tmp/PortManagerTest"</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">        }</span>
-<span style="font-size: 9.5pt; font-family: 'Cascadia Mono'; color: black;">      ]</span></pre>
-<p class="xxxxmsonormal"><span style="font-family: 'Aptos',sans-serif;"> </span></p>
-<p class="xxxxmsonormal" style="text-autospace: none;"><span style="color: #52595e; font-family: Arimo, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; text-align: var(--bs-body-text-align);">The Microsoft C++ team would love to hear from any enterprises that work with our IDE and would like to see improvements with their remote Linux and/or CMake scenarios. Please reach out to us via email at <a href="mailto:cmake@microsoft.com">cmake@microsoft.com</a>.</span></p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements/">Azure Networking Team reaches peak productivity with Visual Studio&#8217;s new remote Linux capabilities and improvements</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
