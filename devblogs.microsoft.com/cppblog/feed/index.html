@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 13 Feb 2024 22:56:47 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 21 Feb 2024 11:04:40 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,242 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Backend Updates since Visual Studio 2022 version 17.3</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/#respond</comments>
+		
+		<dc:creator><![CDATA[Bran Hagger]]></dc:creator>
+		<pubDate>Wed, 21 Feb 2024 16:30:09 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33705</guid>
+
+					<description><![CDATA[<p>Since Visual Studio 2022 version 17.3, we have continued to improve the C++ backend with new features, improved support for arm64 and OpenMP, and new and improved optimizations across all architectures.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/">MSVC Backend Updates since Visual Studio 2022 version 17.3</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Since <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">Visual Studio 2022</a> version 17.3 we have continued to improve the C++ backend with new features and new and improved optimizations. Here are some of our exciting improvements.</p>
+<ul>
+<li>17.9 improvements for x86 and x64, thanks to our friends at Intel.
+<ul>
+<li>Support for Scalar FP intrinsics with double/float arguments</li>
+<li>Improve code generation by replacing <code>VINSERTPS</code> with <code>VBLENDPS</code> for x64 only</li>
+<li>Support for round scalar functions</li>
+</ul>
+</li>
+<li>17.8 improvements
+<ul>
+<li>The new <a href="https://learn.microsoft.com/cpp/build/reference/arm64-function-pad-min-x64">/ARM64XFUNCTIONPADMINX64:#</a> flag allows specifying the number of bytes of padding for x64 functions in arm64x images</li>
+<li>The new <a href="https://learn.microsoft.com/cpp/build/reference/no-function-pad-section">/NOFUNCTIONPADSECTION:sec</a> flag allows disabling function padding for functions in a particular section</li>
+<li>LTCG build takes better advantage of threads, improving throughput.</li>
+<li>Support for RAO-INT, thanks to our friends at Intel.</li>
+<li>Address sanitizer improvements:
+<ul>
+<li>The Address Sanitizer flag is now compatible with C++ modules.</li>
+<li>The compiler will now report an error when <code>/fsanitize=address</code> is combined with an incompatible flag, instead of silently disabling ASAN checks.</li>
+<li>ASAN checks are now emitted for loads and stores in memchr, memcmp, and the various string functions.</li>
+</ul>
+</li>
+<li>Performance improvements that will help every architecture:
+<ul>
+<li>Improve hoisting of loads and stores outside of loops.</li>
+</ul>
+</li>
+<li>Performance improvements for arm64:
+<ul>
+<li>Improve memcmp performance on both arm64 and arm64ec.</li>
+<li>When calling memcpy, memset, memchr, or memcmp from emulated x64 code, remove the performance overhead of switching to arm64ec versions of these functions.</li>
+<li>Optimize scalar immediate loads (from our friends at ARM)</li>
+<li>Combine <code>CSET</code> and <code>ADD</code> instructions into a single <code>CINC</code> instruction (from our friends at ARM)</li>
+</ul>
+</li>
+<li>Performance improvements for x86 and x64, many thanks to our friends at Intel:
+<ul>
+<li>Improve code generation for _mm_fmadd_sd.</li>
+<li>Improve code generation for <code>UMWAIT</code> and <code>TPAUSE</code>, preserving implicit input registers.</li>
+<li>Improve code generation for vector shift intrinsics by improving auto-vectorizer.</li>
+<li>Tune internal vectorization thresholds to improve auto-vectorization.</li>
+<li>Implement optimization for FP classification beyond std::isnan.</li>
+<li>Performance improvements for x64:
+<ul>
+<li>Generate a single <code>PSHUFLW</code> instruction for _mm_set1_epi16 when only the lower 64 bits of the result are used.</li>
+<li>Improve code generation for abs(). (Thanks to our friends at AMD)</li>
+<li>No longer generate redundant loads and stores when <code>LDDQU</code> is combined with <code>VBROADCAST128</code>.</li>
+<li>Generate <code>PMADDWD</code> instead of <code>PMULLD</code> where possible.</li>
+<li>Combine two contiguous stores into a single unaligned store.</li>
+<li>Use 32 vector registers in functions that use AVX512 intrinsics even when not compiling with /arch:AVX512.</li>
+<li>Don&#8217;t emit unnecessary register to register moves.</li>
+</ul>
+</li>
+<li>Performance improvements for x86:
+<ul>
+<li>Improve code generation for expf().</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>17.7 improvements
+<ul>
+<li>New <a href="https://learn.microsoft.com/cpp/build/reference/jump-table-rdata">/jumptablerdata</a> flag places jump tables for switch statements in the .rdata section instead of the .text section.</li>
+<li>Link time with a cold file system cache is now faster.</li>
+<li>Improve compilation time of POGO-instrumented builds.</li>
+<li>Speed up LTCG compilation in a variety of ways.</li>
+<li>OpenMP improvements with /openmp:llvm, thanks to our friends at Intel:
+<ul>
+<li><code>#pragma omp atomic update</code> and <code>#pragma omp atomic capture</code> no longer need to call into the runtime, improving performance.</li>
+<li>Better code generation for OpenMP floating point atomics.</li>
+<li>The clause <code>schedule(static)</code> is now respected for ordered loops.</li>
+</ul>
+</li>
+<li>Performance improvements for all architectures:
+<ul>
+<li>Copy propagation optimizations are now more effective, thanks to our friends from AMD.</li>
+<li>Improve optimization for DeBruijn table.</li>
+<li>Fully unroll loops of fixed size even if they contain function calls.</li>
+<li>Improve bit optimizations.</li>
+<li>Deeply nested loops are now optimized.</li>
+</ul>
+</li>
+<li>Performance improvements and additional functionality for x86 and x64, many thanks to our friends at Intel:
+<ul>
+<li>Support Intel Sierra Forest instruction set (AVX-IFMA, AVX-NE-CONVERT, AVX-VNNI-INT8, CMPCCXADD, Additional MSR support).</li>
+<li>Support Intel Granite Rapids instruction set (AMX-COMPLEX).</li>
+<li>Support <code>LOCK_SUB</code>.</li>
+<li>Add overflow detection functions for addition, subtraction, and multiplication.</li>
+<li>Implement intrinsic functions for isunordered, isnan, isnormal, isfinite, isinf, issubnormal, fmax, and fmin.</li>
+<li>Reduce code size of bitwise vector operations.</li>
+<li>Improve code generation for AVX2 instructions during tail call optimization.</li>
+<li>Improve code generation for floating point instructions without an SSE version.</li>
+<li>Remove unneeded PAND instructions.</li>
+<li>Improve assembler output for FP16 truncating conversions to use surpress-all-exceptions instead of embedded rounding.</li>
+<li>Eliminate unnecessary hoisting of conversions from FP to unsigned long long.</li>
+<li>Performance improvements for x64:
+<ul>
+<li>No longer emit unnecessary <code>MOVSX</code>/<code>MOVZX</code> instructions.</li>
+<li>Do a better job of devirtualizing calls to class functions.</li>
+<li>Improve performance of memmove.</li>
+<li>Improve code generation for <code>XOR-EXTRACT</code> combination pattern.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Performance improvements for arm64:
+<ul>
+<li>Improve register coloring for destinations of NEON <code>BIT</code>, <code>BIF</code>, and <code>BSL</code> instructions, thanks to our friends at ARM.</li>
+<li>Convert cross-binary indirect calls that use the import address table into direct calls.</li>
+<li>Add the <code>_CountTrailingZeros</code> and <code>_CountTrailingZeros64</code> <a href="https://learn.microsoft.com/cpp/intrinsics/arm64-intrinsics">intrinsics for counting trailing zeros in integers</a></li>
+<li>Generate BFI instructions in more places.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>17.6 improvements
+<ul>
+<li>The <code>/openmp:llvm</code> flag now supports the <code>collapse</code> clause on <code>#pragma omp loop</code> (<a href="https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/">Full Details</a>.)</li>
+<li>The new <code>/d2AsanInstrumentationPerFunctionThreshold:#</code> flag allows turning off ASAN instrumentation on functions that would add more than a certain number of extra ASAN calls.</li>
+<li>New <code>/OTHERARCHEXPORTS</code> option for <code>dumpbin /EXPORTS</code> will dump the x64 exports of an arm64x dll.</li>
+<li>Build time improvements:
+<ul>
+<li>Improved LTCG build throughput.</li>
+<li>Reduced LTCG build memory usage.</li>
+<li>Reduced link time during incremental linking.</li>
+</ul>
+</li>
+<li>Performance improvements that will help every architecture:
+<ul>
+<li>Vectorize loops that use min, max, and absolute, thanks to our friends at ARM.</li>
+<li>Turn loops with <code>a[i] = ((a[i]&gt;&gt;15)&amp;0x10001)*0xffff</code> into vector compares.</li>
+<li>Hoist calculation of array bases of the form <code>(a + constant)[i]</code> out of the loop.</li>
+</ul>
+</li>
+<li>Performance improvements on arm64:
+<ul>
+<li>Load floats directly into floating point registers instead of using integer load and FMOV instructions.</li>
+<li>Improve code generation for abs(), thanks to our friends at ARM.</li>
+<li>Improve code generation for vectors when NEON instructions are available.</li>
+<li>Generate CSINC instructions when the ? operator has the constant 1 as a possible result of the expression, thanks to our friends at ARM.</li>
+<li>Improve code generation for loops that sum an array by using vector add instructions.</li>
+<li>Combine vector extend and arithmetic instructions into a single instruction.</li>
+<li>Remove extraneous adds, subtractions, and ors with 0.</li>
+<li>Auxiliary delayload IAT: new import address table for calls into delayloaded DLLs in arm64x. At runtime, Windows will patch this table to speed up program execution.</li>
+</ul>
+</li>
+<li>Performance improvements and additional features on x86 and x64, many thanks to our friends at Intel:
+<ul>
+<li>Support for Intel Granite Rapids x64 instruction set, specifically <code>TDPFP16PS</code> (AMX-FP16) and <code>PREFETCHIT0</code>/<code>PREFETCHIT1</code>.</li>
+<li>Support for ties-to-away rounding for <strong>round and </strong>roundf intrinsic functions.</li>
+<li>Reduce small loops to vectors.</li>
+<li>No longer generate redundant <code>MOVD</code>/<code>MOVQ</code> instructions.</li>
+<li>Use <code>VBLEND</code> instructions instead of the slower <code>VINSERTF128</code> and <code>VBLENDPS</code> instructions on AVX512 where possible.</li>
+<li>Promote <code>PCLMULQDQ</code> instructions to <code>VPCLMULQDQ</code> where possible with /arch:AVX or later.</li>
+<li>Replace <code>VEXTRACTI128</code> instructions that extract the lower half of a vector with <code>VMOVDQU</code> instructions, thanks to our friends at AMD.</li>
+<li>Support for missing AVX512-FP16 intrinsics.</li>
+<li>Better code generation with correct VEX/EVEX encoding for VCMPXX pseudo-ops in MASM.</li>
+<li>Improve conversions from 64-bit integer to floating-point.</li>
+<li>Improve code generation on x64 with correct instruction scheduling for <code>STMXCSR</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>17.5 improvements
+<ul>
+<li>The new <a href="https://learn.microsoft.com/cpp/build/reference/zc-check-gwodr">/Zc:checkGwOdr flag</a> allows for enforcing C++ standards for ODR violations even when compiling with /Gw.</li>
+<li>Combine a <code>MOV</code> and a <code>CSEL</code> instruction into a <code>CSINV</code> instruction on arm64.</li>
+<li>Performance and code quality improvements for x86 and x64, thanks to our friends at Intel:
+<ul>
+<li>Improve code generation for returns of structs consisting of 2 64-bit values on x64.</li>
+<li>Type conversions no longer generate unnecessary <code>FSTP</code>/<code>FLD</code> instructions.</li>
+<li>Improve checking floating-point values for Not-a-Number.</li>
+<li>Emit smaller sequence in auto-vectorizer with bit masking and reduction.</li>
+<li>Correct expansion of round to use ROUND instruction only under /fp:fast.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>17.4 improvements
+<ul>
+<li>Performance improvements that will help every architecture:
+<ul>
+<li>Improve bswap for signed integers.</li>
+<li>Improve stackpacking for functions with memset calls.</li>
+</ul>
+</li>
+<li>Improve the debugging support and performance for Arm64:
+<ul>
+<li>Edit and Continue is now possible for programs targeting Arm64.</li>
+<li>Added support for armv8 int8 matrix multiplication instructions.</li>
+<li>Use <code>BIC</code> instructions in place of an <code>MVN</code> and <code>AND</code>.</li>
+<li>Use <code>BIC_SHIFT</code> instruction where appropriate.</li>
+</ul>
+</li>
+<li>Performance and code quality improvements on x64 and x86, thanks to our friends at Intel:
+<ul>
+<li>std::memchr now meets the additional C++17 requirement of stopping as soon as a matching byte is found.</li>
+<li>Improve code generation for 16-bit interlocked add.</li>
+<li>Coalesce register initialization on AVX/AVX2.</li>
+<li>Improve code generation for returns of structs consisting of 2 64-bit values.</li>
+<li>Improve codegen for _mm_ucomieq_ss.</li>
+<li>Use <code>VROUNDXX</code> instructions for ceil, floor, <strong>trunc, and </strong>round.</li>
+<li>Improve checking floating-point values for Not-a-Number.</li>
+</ul>
+</li>
+<li>Support for OpenMP Standard 3.1 under the experimental <code>-openmp:llvm</code> switch expanded to include the <code>min</code> and <code>max</code> operators on the <code>reduction</code> clause.</li>
+<li><a href="https://devblogs.microsoft.com/cppblog/improving-copy-and-move-elision/">Improve copy and move elision</a></li>
+<li>The new <a href="https://learn.microsoft.com/cpp/build/reference/qspectre-jmp">/Qspectre-jmp flag</a> adds an int3 after unconditional jump instructions.</li>
+</ul>
+</li>
+</ul>
+<p>Do you want to experience the new improvements in the C++ backend? Please <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">download the latest Visual Studio 2022</a> and give it a try! Any feedback is welcome. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>, Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>Stay tuned for more information on updates to the latest Visual Studio.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/">MSVC Backend Updates since Visual Studio 2022 version 17.3</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What&#8217;s New for C++ Developers in Visual Studio 2022 17.9</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/#comments</comments>
@@ -1196,319 +1432,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c-in-vs-code-getting-started-configuring-intellisense/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC ARM64 optimizations in Visual Studio 2022 17.8 </title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/#comments</comments>
-		
-		<dc:creator><![CDATA[Jiong Wang (ARM Ltd)]]></dc:creator>
-		<pubDate>Tue, 09 Jan 2024 17:00:51 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33353</guid>
-
-					<description><![CDATA[<p>Visual Studio 2022 17.8 has been released recently (download it here). While there is already a blog “Visual Studio 17.8 now available!” covering new features and improvements, we would like to share more information with you about what is new for the MSVC ARM64 backend in this blog.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/">MSVC ARM64 optimizations in Visual Studio 2022 17.8 </a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Visual Studio 2022 17.8 has been released recently (download it <a href="https://visualstudio.microsoft.com/downloads/">here</a>). While there is already a blog “<a href="https://devblogs.microsoft.com/visualstudio/visual-studio-17-8-now-available/">Visual Studio 17.8 now available!</a>” covering new features and improvements, we would like to share more information with you about what is new for the MSVC ARM64 backend in this blog. In the last couple of months, we have been improving code-generation for the auto-vectorizer so that it can generate Neon instructions for more cases. Also, we have optimized instruction selection for a few scalar code-generation scenarios, for example short circuit evaluation, comparison against immediate, and smarter immediate split for logic instruction.</p>
-<h2 id="auto-vectorizer-supports-conversions-between-floating-point-and-integer"><span style="font-size: 14pt;">Auto-Vec</span><span style="font-size: 14pt;">torizer</span><span style="font-size: 14pt;"> supports conversions between floating-point and integer</span></h2>
-<p>The following conversions between floating-point and integer types are common in real-world code. Now, they are all enabled in the ARM64 backend and hooked up with the auto-vectorizer.</p>
-<table>
-<tbody>
-<tr>
-<td>From</td>
-<td>To</td>
-<td>Instruction</td>
-</tr>
-<tr>
-<td><em>double</em></td>
-<td><em>float</em></td>
-<td><em>fcvtn</em></td>
-</tr>
-<tr>
-<td><em>double</em></td>
-<td><em>int64</em>_t</td>
-<td><em>fcvtzs</em></td>
-</tr>
-<tr>
-<td><em>double</em></td>
-<td><em>uint64_t</em></td>
-<td><em>fcvtzu</em></td>
-</tr>
-<tr>
-<td><em>float</em></td>
-<td><em>double</em></td>
-<td><em>fcvtl</em></td>
-</tr>
-<tr>
-<td><em>float</em></td>
-<td><em>int32_t</em></td>
-<td><em>fcvtzs</em></td>
-</tr>
-<tr>
-<td><em>float</em></td>
-<td><em>uint32_t</em></td>
-<td><em>fcvtzu</em></td>
-</tr>
-<tr>
-<td><em>int64_t</em></td>
-<td><em>double</em></td>
-<td><em>scvtf</em></td>
-</tr>
-<tr>
-<td><em>uint64_t</em></td>
-<td><em>double</em></td>
-<td><em>ucvtf</em></td>
-</tr>
-<tr>
-<td><em>int32_t</em></td>
-<td><em>float</em></td>
-<td><em>scvtf</em></td>
-</tr>
-<tr>
-<td><em>uint32_t</em></td>
-<td><em>float</em></td>
-<td><em>ucvtf</em></td>
-</tr>
-</tbody>
-</table>
-<p>For example:</p>
-<pre class="prettyprint language-c"><code class="language-c">void test (double * __restrict a, unsigned long long * __restrict b) 
-{ 
-    for (int i = 0; i &lt; 2; i++)
-    { 
-        a[i] = (double)b[i]; 
-    } 
-} </code></pre>
-<p>In Visual Studio 2022 17.7, the code-generation was the following in which both the computing throughput and load/store bandwidth utilization were suboptimal due to scalar instructions being used.</p>
-<pre class="prettyprint language-default"><code class="language-default">ldp    x9, x8, [x1]
-ucvtf  d17, x9
-ucvtf  d16, x8
-stp    d17, d16, [x0]</code></pre>
-<p>In Visual Studio 2022 17.8.2, the code-generation has been optimized into:</p>
-<pre class="prettyprint language-default"><code class="language-default">ldr    q16,[x1]
-ucvtf  v16.2d,v16.2d
-str    q16,[x0]</code></pre>
-<p>A single pair of Q register load &amp; store plus SIMD instructions are used now.</p>
-<p>The above example is a conversion between double and 64-bit integer, so both types are the same size. There was another issue in the ARM64 backend preventing auto-vectorization on conversion between different sized types and it has been fixed as well. MSVC also auto-vectorizes the following example now:</p>
-<pre class="prettyprint language-c"><code class="language-c">void test_df_to_sf (float * __restrict a, double * __restrict b, int * __restrict c)
-{
-    for (int i = 0; i &lt; 4; i++)
-    {
-        a[i] = (float) b[i];
-        c[i] = ((int)a[i]) &lt;&lt; 5;
-    }
-}</code></pre>
-<p>The code-generation in Visual Studio 2022 17.7 was:</p>
-<pre class="prettyprint language-default"><code class="language-default">ldp     d17, d16, [x1]
-ldp     d17, d16, [x1]
-fcvt    s17, d17
-fcvt    s16, d16
-fcvtzs  w8, s17
-stp     s17, s16, [x0]
-lsl     w9, w8, #5
-fcvtzs  w8, s16
-lsl     w8, w8, #5
-stp     w9, w8, [x2]</code></pre>
-<p>Scalar instructions plus loop unrolling were employed. In Visual Studio 2022 17.8.2, the loop is vectorized:</p>
-<pre class="prettyprint language-default"><code class="language-default">ldr     q16, [x1]
-fcvtn   v16.2s, v16.2d
-str     d16, [x0]
-fcvtzs  v16.2s, v16.2s
-shl     v16.2s, v16.2s, #5
-str     d16, [x2]</code></pre>
-<h2 id="auto-vectorizer-now-supports-extended-left-shifts"><span style="font-size: 14pt;">Auto-vectorizer now supports extended left shifts</span></h2>
-<p>Extended left shifts are also common in real world code, therefore the ARM64 ISA has native instructions to support it. Neon has <code>SSHLL </code>and <code>USHLL </code>to support signed and unsigned extended left shift. They extend the shift source first, then perform shift on the extended value. Let&#8217;s have a look at the following example:</p>
-<pre class="prettyprint language-c"><code class="language-c">void test_signed (signed short * __restrict a, signed char * __restrict b)
-{
-    for (int i = 0; i &lt; 8; i++)
-        a[i] = b[i] &lt;&lt; 7;
-}
-
-void test_unsigned (unsigned short * __restrict a, unsigned char * __restrict b)
-{
-    for (int i = 0; i &lt; 8; i++)
-        a[i] = b[i] &lt;&lt; 7;
-}</code></pre>
-<p>The code-generation in Visual Studio 2022 17.7 was:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
-    ldr    d16, [x1]
-    sxtl   v16.8h, v16.8b
-    shl    v16.8h, v16.8h, #7
-    str    q16, [x0]
-|test_unsigned| PROC
-    ldr    d16, [x1]
-    ushll  v16.8h, v16.8b, #0
-    shl    v16.8h, v16.8h, #7
-    str    q16, [x0]</code></pre>
-<p>There is vectorization, an independent type promotion is done first and followed by a normal shift. They can be optimized into a single extended shift. We have taught the ARM64 backend about this, and Visual Studio 2022 17.8.2 now generates:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
-    ldr    d16, [x1]
-    sshll  v16.8h, v16.8b, #7
-    str    q16, [x0]
-|test_unsigned| PROC
-    ldr    d16, [x1]
-    ushll  v16.8h, v16.8b, #7
-    str    q16, [x0]</code></pre>
-<p>A single <code>SSHLL</code> or <code>USHLL</code> is used. But <code>SSHLL</code> and <code>USHLL</code> only encode shift amounts within <code>[0, bit_size_of_shift_source - 1]</code>. For example, the shift amount can only be <code>[0, 15]</code> for the above testcases. Therefore, we cannot use both instructions if we want to move the element to the upper half of the wider destination, because the shift amount then will be 16, which is out of the encoding range. For this case, signedness does not matter and ARM64 Neon has <code>SHLL</code><em> (Shift Left Long &#8211; by element size) </em>to support it.</p>
-<p>Let us increase the shift amount to the element size of the shift source, which is 8:</p>
-<pre class="prettyprint language-c"><code class="language-c">void test_signed(signed short * __restrict a, signed char * __restrict b)
-{
-    for (int i = 0; i &lt; 8; i++)
-        a[i] = b[i] &lt;&lt; 8;
-}
-
-void test_unsigned(unsigned short * __restrict a, unsigned char * __restrict b)
-{
-    for (int i = 0; i &lt; 8; i++)
-        a[i] = b[i] &lt;&lt; 8;
-}</code></pre>
-<p>The code-generation in Visual Studio 2022 17.7 was:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
-    ldr    d16, [x1]
-    sxtl   v16.8h, v16.8b
-    shl    v16.8h, v16.8h, #7
-    str    q16, [x0]
-|test_unsigned| PROC
-    ldr    d16, [x1]
-    ushll  v16.8h, v16.8b, #0
-    shl    v16.8h, v16.8h, #7
-    str    q16, [x0]</code></pre>
-<p>And in Visual Studio 2022 17.8.2, it becomes:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_signed| PROC
-    ldr   d16, [x1]
-    shll  v16.8h, v16.8b, #8
-    str   q16, [x0]
-|test_unsigned| PROC
-    ldr   d16, [x1]
-    shll  v16.8h, v16.8b, #8
-    str   q16, [x0]</code></pre>
-<h2 id="scalar-code-generation-improved-on-immediate-materialization-for-cmp-cmn"><span style="font-size: 14pt;">Scalar code-generation improved on immediate materialization for CMP/CMN</span></h2>
-<p>On the blog introducing <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">ARM64 optimizations for Visual Studio 2022 17.6</a>, there was one piece of feedback on unnecessary immediate materialization for integer comparison. In the 17.8 development cycle, we have improved a couple of relevant places inside the ARM64 backend.</p>
-<p>For integer comparison, the ARM64 backend is now smarter and knows an <em>immediate</em> could be adjusted to <em>immediate</em> <em>+ 1</em> or <em>immediate &#8211; 1</em> then fits into adjusted comparison. Here are some examples:</p>
-<pre class="prettyprint language-c"><code class="language-c">int test_ge2gt (int a)
-{
-    if (a &gt;= 0x10001)
-        return 1;
-    else
-        return 0;
-}
-
-int test_lt2le (int a)
-{
-    if (a &lt; -0x1fff)
-        return 1;
-    else
-        return 0;
-}</code></pre>
-<p><code>0x10001</code> inside <code>test_ge2gt</code> does not fit into the immediate encoding for the ARM64 <a id="post-33353-_Int_I4YP8m5X"></a><code>CMP</code> instruction, either verbatim or shifted. However, if we subtract it by 1 and turn greater equal (ge) into greater (gt) accordingly, then <code>0x10000</code> will fit into the shifted encoding.</p>
-<p>For <em>test_lt2le</em>, the negative immediate, <em>-0x1fff</em>, does not fit into immediate encoding for ARM64 <em>CMN</em> instruction, but if we subtract it by 1 and turn less (lt) into less equal (le) accordingly, then <em>-0x2000</em> will fit into shifted encoding.</p>
-<p>So, the code-generation is the following by Visual Studio 2022 17.7:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_ge2gt| PROC
-    mov     w8, #0x10001
-    cmp     w0, w8
-    csetge  w0
-|test_lt2le| PROC
-    mov     w8, #-0x1FFF
-    cmp     w0, w8
-    csetlt  w0</code></pre>
-<p>There is an extra <code>MOV</code> instruction to materialize the immediate into the register because it does not fit into encoding verbatim. After the above-mentioned improvements, Visual Studio 2022 17.8.2 generates:</p>
-<pre class="prettyprint language-default"><code class="language-default">|test_ge2gt| PROC
-    cmp     w0, #0x10, lsl #0xC
-    csetgt  w0
-|test_lt2le| PROC
-    cmn     w0, #2, lsl #0xC
-    csetle  w0</code></pre>
-<p>The sequence is more efficient.</p>
-<h2 id="scalar-code-generation-improved-on-logic-immediate-loading"><span style="font-size: 14pt;">Scalar code-generation improved on logic immediate loading</span></h2>
-<p>We have also taken steps further to improve immediate handling of other instructions. One improvement is: ARM64 has a rotated encoding for logic immediate (please refer to description of <code>DecodeBitMasks</code> in the <em>Arm Architecture Reference Manual</em> for details<em>)</em>, this immediate encoding is used by <code>AND</code>/<code>ORR</code>. If one immediate does not fit into rotated encoding verbatim, it could after a split.</p>
-<p>For example, programmers frequently write code patterns like the following:</p>
-<pre class="prettyprint language-c"><code class="language-c">#define FLAG1_MASK 0x80000000
-#define FLAG2_MASK 0x00004000
-
-int cal (int a)
-{
-    return a &amp; (FLAG1_MASK | FLAG2_MASK);
-}</code></pre>
-<p>The compiler middle-end usually logically combines all the <code>AND</code>ed immediates with the return expression then returns <code>a &amp; 0x80004000</code> which does not fit into the rotated encoding, hence a <code>MOV</code>/<code>MOVK</code> sequence will be generated to load the immediate, the cost will be three instructions. The code generation in Visual Studio 2022 17.7 was:</p>
-<pre class="prettyprint language-default"><code class="language-default">mov   w8, #0x4000
-movk  w8, #0x8000, lsl #0x10
-and   w0, w0, w8</code></pre>
-<p>If we split <code>0x80004000</code> into <code>0xffffc000</code> and <code>0x80007fff</code>, <code>AND</code>ing them sequentially will have the same effect as <code>AND</code>ing <code>0x80004000</code>, but both <code>0xffffc000</code> and <code>0x80007fff</code> fit into the rotated encoding, so we save one instruction. The code generation in Visual Studio 2022 17.8.2 is:</p>
-<pre class="prettyprint language-default"><code class="language-default">and  w8, w0, #0xFFFFC000
-and  w0, w8, #0x80007FFF</code></pre>
-<p>The immediate gets split in a way that the split parts fit into two <code>AND</code> instructions. We only want to split the immediate when it has sole use site, otherwise we will end up with duplicated sequences. Therefore, the split is guided with use count.</p>
-<h2 id="scalar-code-generation-now-catches-more-ccmp-opportunities"><span style="font-size: 14pt;">Scalar code-generation now catches more CCMP opportunities</span></h2>
-<p>The <code>CCMP</code> (conditional compare) instruction is useful for accelerating short circuit evaluation, for example:</p>
-<pre class="prettyprint language-c"><code class="language-c">int test (int a)
-{
-    return a == 17 || a == 31;
-}</code></pre>
-<p>For this testcase, Visual Studio 2022 17.7 was smart enough to employ <code>CCMP</code> and generated:</p>
-<pre class="prettyprint language-default"><code class="language-default">cmp     w0, #0x11
-ccmpne  w0, #0x1F, #4
-cseteq  w0</code></pre>
-<p>However, <code>CCMP</code> only takes a 5-bit immediate, so if we change the testcase to:</p>
-<pre class="prettyprint language-c"><code class="language-c">int test (int a)
-{
-    return a == 17 || a == 32;
-}</code></pre>
-<p>The immediate <code>#32 </code>does not fit into <code>CCMP</code>’s encoding, so the compiler will stop generating it, hence the code generation in Visual Studio 2022 17.7 was:</p>
-<pre class="prettyprint language-default"><code class="language-default">    cmp  w0, #0x11
-    beq  |$LN3@test|
-    cmp  w0, #0x20
-    mov  w0, #0
-    bne  |$LN4@test|
-|$LN3@test|
-    mov  w0, #1
-|$LN4@test|
-    ret</code></pre>
-<p>It employs an if-then-else structure and is verbose. Here, the compiler should have a better cost model and knows it will still be beneficial if it moves <code>#32</code> into a register and employ <code>CCMP</code>’s register form. We have fixed this in Visual Studio 2022 17.8.2, and the code generation becomes:</p>
-<pre class="prettyprint language-default"><code class="language-default">cmp     w0, #0x11
-mov     w8, #0x20
-ccmpne  w0, w8, #4
-cseteq  w0
-ret</code></pre>
-<h2 id="using-movi-mvni-for-immediate-move-in-smaller-loops"><span style="font-size: 14pt;">Using MOVI/MVNI for immediate move in smaller loops</span></h2>
-<p>We missed an opportunity to use shifted <code>MOVI</code>/<code>MVNI</code> for combining immediate move</p>
-<p>In small loops. For example,</p>
-<pre class="prettyprint language-c"><code class="language-c">void vect_movi_msl (int *__restrict a, int *__restrict b, int *__restrict c) {
-    for (int i = 0; i &lt; 8; i++)
-        a[i] = 0x1200;
-
-    for (int i = 0; i &lt; 8; i++)
-        c[i] = 0x12ffffff;
-}</code></pre>
-<p>In 17.7 release, MSVC generated:</p>
-<pre class="prettyprint language-default"><code class="language-default">|movi_msl| PROC
-    mov x9, #0x1200
-    movk x9, #0x1200, lsl #0x20
-    ldr x8, |$LN29@movi_msl|
-    stp x9, x9, [x0]
-    stp x8, x8, [x2]
-    stp x9, x9, [x0, #0x10]
-    stp x8, x8, [x2, #0x10]</code></pre>
-<p>Scalar <code>MOV</code>/<code>MOVK</code> instructions are employed, and 8 iterations are needed to initialize each array. Both immediates can be loaded into vector registers using <code>MOVI</code>/<code>MVNI</code>, therefore increasing the storage bandwidth and reducing the iteration number.</p>
-<p>Shifted <code>MOVI</code> shifts the immediate to the left and fills with 0s, so <code>0x1200</code> can be loaded as the following:</p>
-<pre class="prettyprint language-c"><code class="language-c">0x12 &lt;&lt; 8 = 0x1200</code></pre>
-<p>Shifted <code>MVNI</code> shifts the immediate first, then inverts the result:</p>
-<pre class="prettyprint language-c"><code class="language-c">~((0xED) &lt;&lt; 0x18) = 0x12ffffff</code></pre>
-<p>In 17.8, MSVC generates:</p>
-<pre class="prettyprint language-default"><code class="language-default">|movi_msl| PROC
-    movi v17.4s, #0x12, lsl #8
-    mvni v16.4s, #0xED, lsl #0x18
-    stp q17, q17, [x0]
-    stp q16, q16, [x2]</code></pre>
-<p>Benefiting from vector register’s width and the employment of paired store, only one iteration is needed.</p>
-<p><strong><span style="font-size: 14pt;"><em>In closing</em></span></strong></p>
-<p>That is all for this blog, your feedback is valuable for us. Please share your thoughts and comments with us through <a href="https://developercommunity.visualstudio.com/cpp">Visual C++ Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/">MSVC ARM64 optimizations in Visual Studio 2022 17.8 </a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
