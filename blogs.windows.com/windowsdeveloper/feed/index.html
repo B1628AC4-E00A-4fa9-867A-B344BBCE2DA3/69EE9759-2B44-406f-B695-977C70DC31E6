@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 15 Feb 2024 17:28:38 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 06 Mar 2024 23:38:31 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,135 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Sandboxing Python with Win32 App Isolation </title>
+		<link>https://blogs.windows.com/windowsdeveloper/2024/02/01/sandboxing-python-with-win32-app-isolation/</link>
+		
+		<dc:creator><![CDATA[Tian Gao]]></dc:creator>
+		<pubDate>Thu, 01 Feb 2024 22:25:15 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56923</guid>
+
+					<description><![CDATA[<p><span data-contrast="auto">Sandboxing Python can be very useful for developers but has been challenging due to the flexibility of CPython implementation. It is particularly useful in many scenarios to have sandboxed Python.  For example, on any webs</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2024/02/01/sandboxing-python-with-win32-app-isolation/">Sandboxing Python with Win32 App Isolation </a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<span data-contrast="auto">Sandboxing Python can be very useful for developers but has been challenging due to the flexibility of CPython implementation. It is particularly useful in many scenarios to have sandboxed Python.  For example, on any website that needs to execute arbitrary code from users, like coding practice sites or online interpreters. It could also be useful to help prevent increasing attacks on LLMs (Large Language Models).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Win32 App Isolation (https://github.com/microsoft/win32-app-isolation) lights up a different path to sandboxing Python – not on a Python library level, but on an application/OS level.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Win32 App Isolation is designed to isolate Win32 application by creating a security boundary between the application and the OS, using the combination of AppContainer, virtualized resources and brokering file system, which helps to prevent the application from compromising the operating system.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Following are the specifics requirements and guidance for sandboxing</span> <span data-contrast="auto">CPython with Win32 App Isolation on recent Windows Insider releases. It takes about 30-60 minutes and anyone with the insider version of Windows can do it on their local machine.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">To use Win32 App Isolation, you need the insider version of Windows with version number &gt; 25357, and the MSIX Packaging Tool from https://github.com/microsoft/win32-app-isolation/releases/</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Step One:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Download the Python installer for Windows from python.org. 3.12.2 was used for this specific example.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Step Two:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Package it by following the documentation (</span><a href="https://github.com/microsoft/win32-app-isolation/blob/main/docs/packaging/msix-packaging-tool.md"><span data-contrast="none">https://github.com/microsoft/win32-app-isolation/blob/main/docs/packaging/msix-packaging-tool.md</span></a><span data-contrast="auto">). You may need a certificate to sign the package to install it (https://learn.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package#signing-preference).</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Add <code class="EnlighterJSRAW" data-enlighter-language="generic">isolatedWin32-PromptForAccess </code></span><span data-contrast="auto">capability for demonstration purposes, so you can allow it to access certain resources in prompts. Without the capability, all access to the user files that are not explicitly set to be available to the application would be denied.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Add an alias <code class="EnlighterJSRAW" data-enlighter-language="generic">python3.12.exe </code></span><span data-contrast="auto">to use it from PowerShell.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Step Three:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">Install the package. Use the defined alias <code class="EnlighterJSRAW" data-enlighter-language="generic">python3.12.exe</code> </span><span data-contrast="auto">in PowerShell to bring up the Python interpreter.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56928 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/1.png" alt="A screenshot of a computer" width="624" height="355" />
+
+<span data-contrast="auto">When starting the Python interpreter, it will prompt you to ask permission to the current working directory. Python itself would be brought up with either option – but this determines whether Python has access to the files in the current directory.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">For example, if you clicked “No” here, you would not be able to list the files in the current directory anymore:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56930 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture2.png" alt="A screenshot of a computer" width="624" height="356" />
+
+<span data-contrast="auto">The selection will be remembered so the application will only prompt once for any file/folder. The user can reset the file permissions in Settings – Privacy &amp; security – File system:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> <img class="alignnone wp-image-56931 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture3.png" alt="A screenshot of a computer" width="624" height="466" /></span>
+
+<span data-contrast="auto">The Python interpreter should work well on its own given no code has been changed. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56932 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture4.png" alt="A screenshot of a computer" width="624" height="356" />
+
+<span data-contrast="auto">The more interesting aspects to check out are the “sandboxing” features – network and file system.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">But before that, try to execute a script using isolated Python.</span><span data-contrast="auto"> </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56933 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture5.png" alt="A screenshot of a computer" width="624" height="357" />
+
+<span data-contrast="auto">As you are trying to access and execute a user file (the script), it will prompt for the access. If denied, the script will not run:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56934 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture6.png" alt="A screenshot of a computer" width="624" height="357" />
+
+<span data-contrast="auto">Allow it to review some examples, starting with network access.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">As you did not provide any network capabilities when packaging, Python will not have any access to the network. Confirm this by running this script:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">def test_urllib(): 
+    with urllib.request.urlopen(&quot;http://www.microsoft.com&quot;) as response: 
+        print(response.read())</pre>
+<img class="alignnone wp-image-56935 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture7.png" alt="A screenshot of a computer" width="624" height="355" />
+
+<span data-contrast="auto">Also try to access the file system.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">def test_open(): 
+    with open(&quot;../data/test.txt&quot;, &quot;w&quot;) as f: 
+        f.write(&quot;test&quot;)</pre>
+<img class="alignnone wp-image-56936 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture8.png" alt="A screenshot of a computer" width="624" height="354" />
+
+<span data-contrast="auto">A prompt was shown to request the access to the file to be written, and you can deny that access by clicking “No”</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<img class="alignnone wp-image-56937 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture10.png" alt="A screenshot of a computer" width="624" height="354" />
+
+<span data-contrast="auto">It will not work with the native APIs either:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">def test_native(): 
+    handle = ctypes.windll.kernel32.CreateFileW(&quot;../data/test.txt&quot;, 0x10000000, 0, None, 1, 0x80, 0) 
+    if handle &gt; 0: 
+        ctypes.windll.kernel32.CloseHandle(handle) 
+    else: 
+        raise RuntimeError(&quot;Failed to get the handle&quot;)</pre>
+<img class="alignnone wp-image-56938 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture11.png" alt="A screenshot of a computer" width="624" height="356" />
+
+<span data-contrast="auto">You can also test <code class="EnlighterJSRAW" data-enlighter-language="generic">os.system()</code></span><span style="background-color: #f9f9f9; font-family: 'Source Code Pro', 'Liberation Mono', 'Courier New', Courier, monospace; font-size: 0.7em;"> </span><span data-contrast="auto">and <code class="EnlighterJSRAW" data-enlighter-language="generic">subprocess</code></span><span data-contrast="auto">:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">def test_os_system(): 
+    os.system(&quot;powershell -command cat c:/data/test/bin/data/test.txt&quot;) 
+def test_subprocess(): 
+    subprocess.run([&quot;powershell&quot;, &quot;-command&quot;, &quot;cat&quot;, &quot;c:/data/test/bin/data/test.txt&quot;], shell=True)</pre>
+<span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"><img class="alignnone wp-image-56939 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture12.png" alt="A screenshot of a computer" width="624" height="355" /></span>
+
+<span data-contrast="auto">Importing modules by modifying <code class="EnlighterJSRAW" data-enlighter-language="generic">sys.path </code></span><span data-contrast="auto">will trigger the prompt too:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">def test_import(): 
+    sys.path.append(&quot;../data&quot;) 
+    import example</pre>
+<img class="alignnone wp-image-56940 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture13.png" alt="A screenshot of a computer" width="624" height="354" />
+
+<span data-contrast="auto">Clicking “no” will deny the access to the module (<code class="EnlighterJSRAW" data-enlighter-language="generic">example.py</code></span><span data-contrast="auto">is in the data directory and clicking “yes” would successfully import it):</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> <img class="alignnone wp-image-56941 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/02/Picture14.png" alt="A screenshot of a computer" width="624" height="354" /></span>
+
+<span data-contrast="auto">From the examples above, by introducing Win32 App Isolation you can help prevent Python from accessing the file system and the network without consent.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+
+<span data-contrast="auto">There are two obvious questions:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<ol>
+ 	<li>How can you “click” the prompts if you want to deploy this on your server? As mentioned above, <code class="EnlighterJSRAW" data-enlighter-language="generic">isolatedWin32-promptForAccess</code>is only added for demonstration purposes, and it is not needed for isolation. Without it, your system would simply deny any access to user files, thus helping to prevent attacks like ransomware.</li>
+ 	<li>Then how can you grant access to the application for required files like modules, scripts, and data? There are several ways to do it:<span style="font-size: min(max(16px, -0.70596px + 1rem + 0.1961vw), 20px);" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
+<ul>
+ 	<li>You can package the modules you need into your app, then they will be accessible by default.</li>
+ 	<li>You can put the file you need access to into the app’s profile in <code class="EnlighterJSRAW" data-enlighter-language="generic">%localappdata%</code> where the app is granted access automatically.</li>
+ 	<li>You can put the file to a “publisher directory”, which is any directory with a name ending with your app’s publisher ID in <code class="EnlighterJSRAW" data-enlighter-language="generic">c:\ProgramData</code>. (<a style="font-size: min(max(16px, -0.70596px + 1rem + 0.1961vw), 20px); background-color: #ffffff;" href="https://github.com/microsoft/win32-app-isolation/blob/main/docs/fundamentals/consent.md"><span data-contrast="none">win32-app-isolation/docs/fundamentals/consent.md at main · microsoft/win32-app-isolation (github.com)</span></a><span style="font-size: min(max(16px, -0.70596px + 1rem + 0.1961vw), 20px);" data-contrast="auto">)</span></li>
+ 	<li>You can set the access of files and directories with icalcs to allow your app or all apps to access them.</li>
+</ul>
+</li>
+</ol>
+<span data-contrast="auto">With the technology, the users can create much lighter solutions when they try to execute code from an untrusted source. Isolated Python can live in parallel with normal Python and perform as a low-privilege interpreter on the side. Or, with correct configuration, it can be used on its own which could help protect the system from being compromised while keeping all the functionalities from Python.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Introducing Neural Processor Unit (NPU) support in DirectML (developer preview)</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2024/02/01/introducing-neural-processor-unit-npu-support-in-directml-developer-preview/</link>
 		
@@ -514,76 +643,6 @@ We encourage you to read more about <a href="https://learn.microsoft.com/windows
 Have suggestions or ideas for API improvement? Still have questions about how your app and Windows Update can work together? Please share your thoughts by submitting them via Feedback Hub (Windows key + F)!
 
 <em><strong>Editor's note -- July 20, 2023 --</strong> <span class="ui-provider en bep beq ber bes bet beu bev bew bex bey bez bfa bfb bfc bfd bfe bff bfg bfh bfi bfj bfk bfl bfm bfn bfo bfp bfq bfr bfs bft bfu bfv bfw" dir="ltr">The code samples above were updated following initial publication.</span></em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Dev Home Preview 0.3 Release</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2023/07/19/dev-home-preview-0-3-release/</link>
-		
-		<dc:creator><![CDATA[Kayla Cinnamon]]></dc:creator>
-		<pubDate>Wed, 19 Jul 2023 16:02:33 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<category><![CDATA[Release Updates]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56827</guid>
-
-					<description><![CDATA[<p>We’re back with another release for Dev Home! This release updates Dev Home Preview to version 0.3 and the Dev Home GitHub extension to version 0.3 as well. You can install Dev Home from the <a href="https://aka.ms/devhome">Microsoft Store</a> or f</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2023/07/19/dev-home-preview-0-3-release/">Dev Home Preview 0.3 Release</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[We’re back with another release for Dev Home! This release updates Dev Home Preview to version 0.3 and the Dev Home GitHub extension to version 0.3 as well. You can install Dev Home from the <a href="https://aka.ms/devhome">Microsoft Store</a> or from the <a href="https://github.com/microsoft/devhome/releases">GitHub releases page</a>. Let’s get into what’s new. 😊
-<h3>Rearrangeable widgets</h3>
-You read right! Widgets can now be rearranged in the Dev Home dashboard by clicking and dragging. 🎉 We’ve also fixed the bug where your widgets would get randomly rearranged, so your preferred dashboard layout should now remain intact.
-<h3>Miscellaneous improvements</h3>
-🛠️ The GitHub query is now displayed when adding an issue or pull request widget with a URL containing filters.
-
-🛠️ Empty widgets show a message rather than nothing.
-
-🛠️ In the repository review and repository tool dialogs, long names are now truncated. The tooltip will show the whole name.
-
-🛠️ We’ve added progress rings for when Dev Home is fetching repositories.
-
-🛠️ The terms checkbox in the setup tool review page should only be shown if apps are selected to be installed.
-<h3>Bug fixes</h3>
-🐛 Our localization should be improved.
-
-🐛 The speed on the CPU widget should now show the actual CPU speed (Thanks <a href="https://github.com/daxter44">@daxter44</a>!).
-
-🐛 Times shown in GitHub widgets should now align to the times displayed on GitHub.
-
-🐛 Clicking the Add widget button shouldn’t crash Dev Home anymore.
-<h3>Top contributors</h3>
-We absolutely love working with the community on GitHub to help make Dev Home awesome. Here are the top contributors for this release:
-
-<strong>Contributors who opened the most non-duplicate issues</strong>
-
-🏆 <a href="https://github.com/Georgios1999">Georgios1999</a>
-
-🏆 <a href="https://github.com/luislhg">luislhg</a>
-
-🏆 <a href="https://github.com/snickler">snickler</a>
-
-🏆 <a href="https://github.com/scottluskcis">scottluskcis</a>
-
-<strong>Contributors who created the most merged pull requests</strong>
-
-🏆 <a href="https://github.com/eltociear">eltociear</a>
-
-🏆 <a href="https://github.com/Sergio0694">Sergio0694</a>
-
-🏆 <a href="https://github.com/mdanish-kh">mdanish-kh</a>
-
-🏆 <a href="https://github.com/xcloudplatform">xcloudplatform</a>
-
-<strong>Contributors who provided the most comment on pull requests</strong>
-
-🏆 <a href="https://github.com/Sergio0694">Sergio0694</a>
-
-🏆 <a href="https://github.com/riverar">riverar</a>
-
-🏆 <a href="https://github.com/mdanish-kh">mdanish-kh</a>
-<h3>Cheers!</h3>
-We hope you like this latest release of Dev Home! If you want to learn more about Dev Home, feel free to check out our <a href="https://aka.ms/devhomedocs">docs site</a>. If you find any bugs or have any feature requests, you can file an issue on <a href="https://github.com/microsoft/devhome">GitHub</a>. If you have any questions, feel free to reach out to Kayla (<a href="https://twitter.com/cinnamon_msft">@cinnamon_msft</a>) on Twitter. We’ll see you next month with our next release!]]></content:encoded>
 					
 		
 		
