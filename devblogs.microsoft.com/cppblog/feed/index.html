@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 19 Mar 2024 21:37:19 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 22 Mar 2024 09:02:02 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,47 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Improvements in Variable Visibility when Debugging</title>
+		<link>https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/#respond</comments>
+		
+		<dc:creator><![CDATA[Terry Mahaffey]]></dc:creator>
+		<pubDate>Fri, 22 Mar 2024 16:30:15 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33766</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2022 17.10 Preview 2, we’re including a small quality-of-life improvement that results in the Watch/Locals window displaying local variables correctly for any arbitrary frames in the call stack in debug builds. To try it out, please install the recently released Preview.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/">Improvements in Variable Visibility when Debugging</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In Visual Studio 2022 17.10 Preview 2, we’re including a small quality-of-life improvement that results in the Watch/Locals window displaying local variables correctly for any arbitrary frames in the call stack in debug builds. To try it out, please install the recently released Preview. For more information, read on. </p>
+<h4 id="the-problem-missing-variables-in-watch-window">The problem: missing variables in Watch Window</h4>
+<p>Have you ever been in this situation? We’re debugging some code, and have a breakpoint we hit in a function, <em>foo</em>. We need to inspect the values of some local variables a bit up the call stack, so we open up the call stack window and click to that frame. </p>
+<p>In this case, we want to see the value of the variable <em>y</em>, which is an input to calculate the argument to the function foo we’re inspecting. Unfortunately, it’s not available:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a.png"><img decoding="async" class="alignnone wp-image-33769 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a.png" alt="variable y is not available" width="975" height="727" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a.png 975w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-300x224.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-768x573.png 768w" sizes="(max-width: 975px) 100vw, 975px" /></a></p>
+<p>The reason it isn’t available has to do with scoping, and how call stacks are walked. The variable <em>y</em> is scoped to just that one if statement; when you’re outside the if block, <em>y</em> no longer exists. And, the way call stacks work, the return address we use to determine the scope is actually the next instruction after the call, or in this case, the <em>return</em> statement.</p>
+<h4 id="improvements-to-variable-visibility">Improvements to variable visibility</h4>
+<p>In Visual Studio 2022 17.10 Preview 2, we’ve addressed this <img src="https://s.w.org/images/core/emoji/14.0.0/72x72/1f64f.png" alt="🙏" class="wp-smiley" style="height: 1em; max-height: 1em;" /> <a href="https://developercommunity.visualstudio.com/t/VS-Debugger-CC-watch-doesnt-have-acc/10445086">Community Suggestion</a>. Now, in this toy example, you will see the value of the variable <em>y</em>:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-1.png"><img decoding="async" class="alignnone wp-image-33772 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-1.png" alt="variable y is available" width="975" height="727" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-1.png 975w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-1-300x224.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-1-768x573.png 768w" sizes="(max-width: 975px) 100vw, 975px" /></a></p>
+<p>The breakpoint is in the same location, but now when you click to the previous frame, you’ll see the “next statement” arrow still points to the call, so all the variables in that scope are now available.</p>
+<p>How did we do this? Well, there are a ton of approaches we could have taken, but the one we went with was to change the code generation of debug builds to include <em>nop</em> instructions after every call which ends a lexical scope (and only calls which are the final instruction in a scope).</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-2.png"><img decoding="async" class="alignnone wp-image-33773 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-2.png" alt="nop inserted after call" width="974" height="580" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-2.png 974w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-2-300x179.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-2-768x457.png 768w" sizes="(max-width: 974px) 100vw, 974px" /></a></p>
+<p>The extra <em>nop</em> instruction after the call to <em>foo</em> is what makes this work. It’s located in the same scope, so everything works as expected without having to modify the debugger or the stack walking algorithm. This has the advantage of also working on older debuggers.</p>
+<p>This approach does increase the code size generated in Debug builds, so should something go wrong, we’ve added a switch to disable this behavior. Just add <strong>/d2EnsureCallScopeForDebugging-</strong> to the “Additional Options” under the Command Line for your project, and you’ll get the previous behavior of not generating extra <em>nops</em>:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-3.png"><img decoding="async" class="alignnone wp-image-33774 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-3.png" alt="command line option added to disable this feature" width="975" height="685" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-3.png 975w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-3-300x211.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-3-768x540.png 768w" sizes="(max-width: 975px) 100vw, 975px" /></a></p>
+<p>This switch may be removed in the future.</p>
+<h4 id="send-us-your-feedback">Send us your feedback</h4>
+<p>That’s the feature, let us know if you find it helpful or find any issues. Please install Visual Studio 2022 17.10 Preview 2 and give it a try! We are very much interested in your feedback to continue to improve this experience. The comments below are open.</p>
+<p>We appreciate the time you took to report issues and sharing suggestions like this one. We hope you will continue to give us feedback when using Visual Studio about what you like and what we can improve. Your feedback is critical to help us make Visual Studio the best tool it can be. Please share your feedback via <a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a>. You can also reach us on X (<a href="https://twitter.com/visualc">@VisualC</a>), or via email at visualcpp@microsoft.com.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/">Improvements in Variable Visibility when Debugging</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Sign Up for the free Pure Virtual C++ 2024 Conference</title>
 		<link>https://devblogs.microsoft.com/cppblog/sign-up-for-the-free-pure-virtual-c-2024-conference/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/sign-up-for-the-free-pure-virtual-c-2024-conference/#respond</comments>
@@ -1241,154 +1282,6 @@ done2:
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>5</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC Toolset Minor Version Number 14.40 in VS 2022 v17.10</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/#comments</comments>
-		
-		<dc:creator><![CDATA[Daniel Griffing]]></dc:creator>
-		<pubDate>Thu, 01 Feb 2024 18:51:22 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33499</guid>
-
-					<description><![CDATA[<p>As we approach delivery of Visual Studio 2022 v17.9, the MSVC toolset version is 14.39. In Visual Studio 2022 version 17.10, the MSVC Toolset minor version will continue with 14.40 and continue incrementing in the ‘14.4x’ series.<br />
-The file version and directories in Visual Studio v17.10 and subsequent installations will appear as follows:<br />
-[VSInstallDir]\VC\Tools\MSVC\14.4x.BBBBB<br />
-Where: </p>
-<p>‘4x’ is a digit 40-49,</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/">MSVC Toolset Minor Version Number 14.40 in VS 2022 v17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>As we approach delivery of Visual Studio 2022 v17.9, the MSVC toolset version is 14.39. In Visual Studio 2022 version 17.10, the MSVC Toolset minor version will continue with 14.40 and continue incrementing in the ‘14.4x’ series.</p>
-<p>The file version and directories in Visual Studio v17.10 and subsequent installations will appear as follows:</p>
-<p>[VSInstallDir]\VC\Tools\MSVC\14.<strong><em>4x</em></strong>.<strong><em>BBBBB</em></strong></p>
-<p><em>Where: </em></p>
-<ul>
-<li><em>‘</em><strong><em>4x</em></strong><em>’ is a digit 40-49, where the ‘x’ value will continue to increase in future Visual Studio releases, starting with ‘40’</em> in VS 2022 v17.10<em>.</em></li>
-<li><em>‘</em><strong><em>BBBBB</em></strong><em>’ is a build-specific version 5-digit number, which increases with each release/update/servicing update.</em></li>
-</ul>
-<p>We will make separate announcements about MSVC compiler toolset versions beyond 14.4x (i.e., versions &gt;= 14.50) at an appropriate time in the future.</p>
-<h3 id="build-system-and-library-impact">Build System and Library Impact</h3>
-<p>In Visual Studio 2022 version 17.10 and later, in-box project system support is being updated to support MSVC toolsets in the 14.4x version range. Specifically:</p>
-<ul>
-<li>The C++ Project System (MS Build) is being updated to support ‘14.4x’ MSVC toolsets under the v143 Platform Toolset.</li>
-</ul>
-<p><img decoding="async" width="1384" height="381" class="wp-image-33506" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-description-automatica-1.png 1384w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-description-automatica-1-300x83.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-description-automatica-1-1024x282.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-description-automatica-1-768x211.png 768w" sizes="(max-width: 1384px) 100vw, 1384px" /></p>
-<p><img decoding="async" width="1290" height="248" class="wp-image-33507" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-program-description-au-1.png" alt="A screenshot of a computer program Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-program-description-au-1.png 1290w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-program-description-au-1-300x58.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-program-description-au-1-1024x197.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/a-screenshot-of-a-computer-program-description-au-1-768x148.png 768w" sizes="(max-width: 1290px) 100vw, 1290px" /></p>
-<ul>
-<li>We have validated that CMake support in Visual Studio 2022 supports the minor version change.</li>
-</ul>
-<p>Custom build systems, projects, libraries, and VS Extensions checking for valid MSVC build version will need to be adjusted to allow for ‘14.4x’. For example, code which checks the _MSC_VER predefined macro and assumes that all Visual Studio 2022 versions of MSVC having a value below 1940 will need to be updated.</p>
-<p>Table 1. Mapping of VS 2022 update releases to current MSVC versions</p>
-<table>
-<tbody>
-<tr>
-<td width="161"><strong><span style="font-size: 10pt;">Visual Studio Releases</span></strong></td>
-<td width="211"><strong><span style="font-size: 10pt;">Updates with new MSVC Tools</span></strong></td>
-<td width="137"><strong><span style="font-size: 10pt;">MSVC version  </span></strong></td>
-<td width="102"><strong><span style="font-size: 10pt;">_MSC_VER</span></strong></td>
-<td width="120"><strong><span style="font-size: 10pt;">End of Support</span></strong></td>
-</tr>
-<tr>
-<td width="161"><span style="font-size: 10pt;"><strong>Visual Studio 2022</strong></span></td>
-<td width="211"><span style="font-size: 10pt;"> GA (Version 17.0) LTSC</span></td>
-<td width="137"><span style="font-size: 10pt;">19.30.30705</span></td>
-<td width="102"><span style="font-size: 10pt;">1930</span></td>
-<td width="120"><span style="font-size: 10pt;">Jul 11, 2023</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.1</span></td>
-<td width="137"><span style="font-size: 10pt;">19.31.31103</span></td>
-<td width="102"><span style="font-size: 10pt;">1931</span></td>
-<td width="120"><span style="font-size: 10pt;">May 10, 2022</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.2 LTSC</span></td>
-<td width="137"><span style="font-size: 10pt;">19.32.31326</span></td>
-<td width="102"><span style="font-size: 10pt;">1932</span></td>
-<td width="120"><span style="font-size: 10pt;">Jan 9, 2024</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.3</span></td>
-<td width="137"><span style="font-size: 10pt;">19.33.31629</span></td>
-<td width="102"><span style="font-size: 10pt;">1933</span></td>
-<td width="120"><span style="font-size: 10pt;">Nov 8, 2022</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.4.14 LTSC</span></td>
-<td width="137"><span style="font-size: 10pt;">19.34.31948</span></td>
-<td width="102"><span style="font-size: 10pt;">1934</span></td>
-<td width="120"><span style="font-size: 10pt;">Jul 11, 2024</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.5.3</span></td>
-<td width="137"><span style="font-size: 10pt;">19.35.32216</span></td>
-<td width="102"><span style="font-size: 10pt;">1935</span></td>
-<td width="120"><span style="font-size: 10pt;">May 16, 2023</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.6.11 LTSC</span></td>
-<td width="137"><span style="font-size: 10pt;">19.36.32544</span></td>
-<td width="102"><span style="font-size: 10pt;">1936</span></td>
-<td width="120"><span style="font-size: 10pt;">Jan 9, 2025</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.7.7</span></td>
-<td width="137"><span style="font-size: 10pt;">19.37.32826</span></td>
-<td width="102"><span style="font-size: 10pt;">1937</span></td>
-<td width="120"><span style="font-size: 10pt;">Nov 14, 2023</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.8.6 LTSC</span></td>
-<td width="137"><span style="font-size: 10pt;">19.38.33135</span></td>
-<td width="102"><span style="font-size: 10pt;">1938</span></td>
-<td width="120"><span style="font-size: 10pt;">Jul 8, 2025</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.9</span></td>
-<td width="137"><span style="font-size: 10pt;">19.39.xxxxx</span></td>
-<td width="102"><span style="font-size: 10pt;">1939</span></td>
-<td width="120"><span style="font-size: 10pt;">TBD</span></td>
-</tr>
-<tr>
-<td width="161"></td>
-<td width="211"><span style="font-size: 10pt;">Version 17.10</span></td>
-<td width="137"><span style="font-size: 10pt;">19.40.xxxxx</span></td>
-<td width="102"><span style="font-size: 10pt;">1940</span></td>
-<td width="120"><span style="font-size: 10pt;">TBD</span></td>
-</tr>
-<tr>
-<td width="161"><span style="font-size: 10pt;"><strong> </strong></span></td>
-<td width="211"><span style="font-size: 10pt;">…</span></td>
-<td width="137"><span style="font-size: 10pt;">…</span></td>
-<td width="102"><span style="font-size: 10pt;">…</span></td>
-<td width="120"><span style="font-size: 10pt;">…</span></td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-<h3 id="side-by-side-msvc-toolsets">Side-By-Side MSVC Toolsets</h3>
-<p>We recognize that it may not be possible to immediately address existing built-in checks in build environments. To mitigate issues encountered, until built-in checks are updated, we recommend using an older MSVC Toolset in VS 2022 via the <a href="https://devblogs.microsoft.com/cppblog/side-by-side-minor-version-msvc-toolsets-in-visual-studio-2019/">Side-By-Side Minor Version MSVC Toolsets</a> feature.</p>
-<p>In addition to the mechanism provided in the linked blog post, it is also possible to select a SxS toolset in the C++ Project system on a per-project basis via Project Properties &gt; Advanced &gt; MSVC Toolset Version. The drop-down will contain the installed MSVC Toolsets under the v143 Platform Toolset.</p>
-<p><img decoding="async" width="1210" height="613" class="wp-image-33508" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/word-image-33499-3-1.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/word-image-33499-3-1.png 1210w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/word-image-33499-3-1-300x152.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/word-image-33499-3-1-1024x519.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/01/word-image-33499-3-1-768x389.png 768w" sizes="(max-width: 1210px) 100vw, 1210px" /></p>
-<h3 id="send-us-your-feedback">Send us your feedback</h3>
-<p>Your feedback is invaluable to us as we strive to enhance your experience. Please feel free to leave your comments below. Alternatively, you can share your thoughts through the <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>, where we have created <a href="https://aka.ms/msvc-ver14.40-devcom">this feedback item</a> related to this announcement. We are also available on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>) and can be reached via email at visualcpp@microsoft.com. We look forward to hearing from you!</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/">MSVC Toolset Minor Version Number 14.40 in VS 2022 v17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-toolset-minor-version-number-14-40-in-vs-2022-v17-10/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
