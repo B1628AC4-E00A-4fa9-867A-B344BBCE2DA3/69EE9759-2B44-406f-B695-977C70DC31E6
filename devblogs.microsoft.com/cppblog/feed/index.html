@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Mon, 25 Mar 2024 17:29:34 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 29 Mar 2024 17:42:19 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,183 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New in vcpkg (March 2024)</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2024/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2024/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Fri, 29 Mar 2024 17:42:19 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33831</guid>
+
+					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2024.03.19 and 2024.03.25 releases as well as changes to vcpkg documentation throughout March. This month’s vcpkg release includes an arm64ec platform expression, more flexibility when mixing static and dynamic libraries,</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2024/">What’s New in vcpkg (March 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.03.19">2024.03.19</a> and <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.03.25">2024.03.25</a> releases as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout March. This month’s vcpkg release includes an arm64ec platform expression, more flexibility when mixing static and dynamic libraries, diagnostics improvements, a change in the binary caching ABI calculation, and bug fixes.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li>There are now <strong>2,415 total libraries</strong> available in the vcpkg public registry.</li>
+<li><strong>21 new ports</strong> were added to the open-source registry. A <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
+<li><strong>405 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 13 main <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/triplets">triplets</a>.</li>
+<li><strong>32 contributors</strong> submitted PRs, issues, or participated in discussions in the main repo.</li>
+<li>The main vcpkg repo has over <strong>5,900 forks</strong> and <strong>21,200 stars</strong> on GitHub.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="vcpkg-changelog-2024-03-19-2024-03-25-releases">vcpkg changelog (2024.03.19 + 2024.03.25 releases)</h3>
+<p>Several improvements to diagnostics output. For example:</p>
+<pre class="prettyprint language-default"><code class="language-default"># Before
+.\vcpkg.exe install zlib:x64-windows[core]
+&lt;unknown&gt;:1:17: error: expected eof on expression: zlib:x64-windows[core]
+                                                                   ^
+vcpkg install &lt;port name&gt; &lt;port name&gt;...
+vcpkg install zlib zlib:x64-windows curl boost
+
+# After
+.\vcpkg.exe install zlib:x64-windows[core]
+error: expected the end of input parsing a package spec; did you mean zlib[core]:x64-windows instead?
+on expression: zlib:x64-windows[core]
+                               ^</code><code></code></pre>
+<ul>
+<li>Added an arm64ec platform expression to assist with creating triplets targeting arm64ec (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1352" target="_blank" rel="noopener">Microsoft/vcpkg-tool#1352</a>, thanks @autoantwort!).</li>
+<li>Removed the warning about the default triplet change that was implemented in a previous release (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1351">Microsoft/vcpkg-tool#1351</a>).</li>
+<li>DLLs can now be used in static triplets if BuildPolicy::DLLS_IN_STATIC_LIBRARY is turned on. Those DLLs should still have CRT and architecture checked. Static libraries can also now be in dynamic triplets if their CRT linkage matches (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1358" target="_blank" rel="noopener">Microsoft/vcpkg-tool#1358</a>).</li>
+<li>New behavior: vcpkg will output a message with the path to the compiler it is using in certain cases where there is ambiguity about the compiler version (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1328">Microsoft/vcpkg-tool#1328</a>).</li>
+<li>Installing ports with &#8211;only-downloads will no longer affect the ABI calculation used by the binary caching feature (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1363" target="_blank" rel="noopener">Microsoft/vcpkg-tool#1363</a>).</li>
+</ul>
+<p><strong>Bug fixes: </strong></p>
+<ul>
+<li>Fixed a bug that could cause a vcpkg command to exit prematurely if a ‘)’ character was present in certain path assignments (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1354">Microsoft/vcpkg-tool#1354</a>, thanks @jcbrill!).</li>
+<li>Fixed a bug preventing certain versioning schemes from working with the versioning overrides feature (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1329">Microsoft/vcpkg-tool#1329</a>).</li>
+<li>Fixed a regression that broke binary caching for the Meson tool port (PR: <a href="https://github.com/microsoft/vcpkg/pull/37585">Microsoft/vcpkg#37585</a>).</li>
+<li>Fixed a crash that could occur when running vcpkg install against a manifest with a non-existent port and version override. (PR: <a href="https://github.com/microsoft/vcpkg/issues/36994">Microsoft/vcpkg#36994</a>, thanks @dforsten!).</li>
+<li>Various other minor bugfixes.</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="documentation-changes">Documentation changes</h3>
+<ul>
+<li>New articles:
+<ul>
+<li><a href="https://learn.microsoft.com/vcpkg/concepts/default-features">Understanding default features in vcpkg</a></li>
+</ul>
+</li>
+<li>Added Default Features section to versioning troubleshooting guide.</li>
+<li>Unified some manifest mode articles and fixed links.</li>
+<li>Changed <em>CMakePresets.json</em> sample files to use schema version 1.</li>
+<li>Various minor improvements throughout the docs.</li>
+</ul>
+<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or use the button “This page” at the bottom of a particular article.</p>
+<p><img decoding="async" width="304" height="172" class="wp-image-33832" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-screenshot-of-a-website-description-automatical.png" alt="A screenshot of a website Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-screenshot-of-a-website-description-automatical.png 304w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/a-screenshot-of-a-website-description-automatical-300x170.png 300w" sizes="(max-width: 304px) 100vw, 304px" /></p>
+<p>&nbsp;</p>
+<h3 id="total-ports-available-for-tested-triplets">Total ports available for tested triplets</h3>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>2,273</td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>2,189</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>2,162</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>2,190</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,851</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1,259</td>
+</tr>
+<tr>
+<td>arm64-uwp</td>
+<td>1,225</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>2,231</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>2,079</td>
+</tr>
+<tr>
+<td>arm64-osx</td>
+<td>2,045</td>
+</tr>
+<tr>
+<td>arm-neon-android</td>
+<td>1,553</td>
+</tr>
+<tr>
+<td>x64-android</td>
+<td>1,611</td>
+</tr>
+<tr>
+<td>arm64-android</td>
+<td>1,582</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<p>&nbsp;</p>
+<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release:</p>
+<ul>
+<li>jiayuehua (84 commits)</li>
+<li>dg0yt (32 commits)</li>
+<li>Neumann-A (13 commits)</li>
+<li>waywardmonkeys (8 commits)</li>
+<li>Thomas1664 (8 commits)</li>
+<li>miyanyan (7 commits)</li>
+<li>SchaichAlonso (4 commits)</li>
+<li>Be-ing (3 commits)</li>
+<li>Osyotr (3 commits)</li>
+<li>AenBleidd (3 commits)</li>
+<li>RT2Code (3 commits)</li>
+<li>autoantwort (3 commits)</li>
+<li>moritz-h (2 commits)</li>
+<li>omarhogni (2 commits)</li>
+<li>xiaozhuai (2 commits)</li>
+<li>coryan (2 commits)</li>
+<li>Honeybunch (1 commit)</li>
+<li>DragonJoker (1 commit)</li>
+<li>horenmar (1 commit)</li>
+<li>Tradias (1 commit)</li>
+<li>fran6co (1 commit)</li>
+<li>yurybura (1 commit)</li>
+<li>eao197 (1 commit)</li>
+<li>chausner (1 commit)</li>
+<li>VelocityRa (1 commit)</li>
+<li>dforsten (1 commit)</li>
+<li>jcbrill (1 commit)</li>
+</ul>
+<p>&nbsp;</p>
+<h3 id="is-your-company-looking-for-a-better-c-c-dependency-management-experience">Is your company looking for a better C/C++ dependency management experience?</h3>
+<p>We are partnering with companies to help them get started with vcpkg and overcome any initial hurdles. We have also been making product and documentation changes based on feedback we receive from these partnerships. If you are interested in trying out vcpkg or just have some thoughts to share with us, feel free to reach out at <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a>.</p>
+<p>&nbsp;</p>
+<h3 id="learn-more">Learn more</h3>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.03.19">full 2024.03.19 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2024/">What’s New in vcpkg (March 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2024/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Improvements in Variable Visibility when Debugging</title>
 		<link>https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/#comments</comments>
@@ -1209,80 +1386,6 @@ done2:
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/open-mp-improvements-in-visual-studio-cpp/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Quick Tips for using Copilot Chat with C++ in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Tue, 06 Feb 2024 19:42:28 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33531</guid>
-
-					<description><![CDATA[<p>GitHub Copilot Chat is now available in both Visual Studio and Visual Studio Code when you have an active subscription to the service. Copilot Chat is your AI pair-programmer that allows you to speak in plain text through the chat interface to accomplish programming tasks such as understanding sections of code,</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/">Quick Tips for using Copilot Chat with C++ in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>GitHub Copilot Chat is now available in both <a href="https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.VSGitHubCopilot">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat">Visual Studio Cod</a><a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat">e</a> when you have an active subscription to the service. Copilot Chat is your AI pair-programmer that allows you to speak in plain text through the chat interface to accomplish programming tasks such as understanding sections of code, generating test cases, and generating code.</p>
-<p>This blog post will focus on tips for using Copilot Chat functionality with C++ in Visual Studio, but the same functionality is available in Visual Studio Code and will be covered in future blog posts. Additionally, in future posts, we will dive into various C++ scenarios as reported by our customers.</p>
-<p>You can learn more about the Copilot Chat extension through the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-chat?view=vs-2022">Visual Studio documentation</a>.</p>
-<hr />
-<h4 style="text-align: center;" style="text-align: center;" id="download-github-copilot-chat"><strong>Download GitHub Copilot Chat</strong></h4>
-<p>To learn more about accessing GitHub Copilot Chat in Visual Studio, please view <a href="https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-chat?view=vs-2022">these instructions</a>. You will need a <a href="https://docs.github.com/en/billing/managing-billing-for-github-copilot/about-billing-for-github-copilot">subscription</a> to GitHub Copilot for Individuals or GitHub Copilot for Business. You will also need both the <a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">Copilot</a> and <a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat">Copilot Chat</a> extensions installed for autocomplete-style suggestions and the chat-based features respectively.</p>
-<hr />
-<h3 id="introduction-to-copilot-chat-in-visual-studio">Introduction to Copilot Chat in Visual Studio</h3>
-<p>You can use the new Copilot Chat functionality to work with your existing C++ code.  To open the chat window, navigate to <em>View &gt; GitHub Copilot Chat </em>or right-click anywhere in your code and select <strong>Ask Copilot</strong>.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS.png"><img decoding="async" class="size-large wp-image-33540 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS-1024x846.png" alt="An image of the Copilot Chat pane in Visual Studio" width="640" height="529" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS-1024x846.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS-300x248.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS-768x635.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-VS.png 1188w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<h5 id="performing-actions-via-commands">Performing actions via / commands</h5>
-<p>In the chat window, you can use the <strong>/</strong> symbol to list out commands to perform on the codebase. The full list of available commands can be found <a href="https://learn.microsoft.com/en-us/visualstudio/ide/copilot-chat-context?view=vs-2022">here</a>, or the list of commands will automatically populate the available commands when you type <strong>/</strong> in the chat window.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands.png"><img decoding="async" class=" wp-image-33541 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands-1024x429.png" alt="A list of all the slash commands available in Visual Studio once pressed, such as the /askvs command highlighted and a brief explanation to the right." width="704" height="295" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands-1024x429.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands-300x126.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands-768x322.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/slash-commands.png 1192w" sizes="(max-width: 704px) 100vw, 704px" /></a></p>
-<p>For example, you can use <strong>/explain</strong> to get code explanations on a desired function or file. You can also use <strong>/generate </strong>to ask Copilot Chat to generate a specific snippet of code.</p>
-<h5 id="adding-file-context-via-sign">Adding file context via # sign</h5>
-<p>Large language models (LLMs) are trained on public repository data at a point in time and do not know anything about your current codebase. You can use the <strong>#</strong> commands to specify the context you want Copilot Chat to include and help Copilot Chat provide contextually relevant answers. For example, you can specify <strong>#file:FIleName.cpp</strong> in-line in your prompt to Copilot Chat so that it looks at the specified file. Once you type the <strong># </strong>sign, all file names or selections will populate to select.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot.png"><img decoding="async" class="size-large wp-image-33542 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot-1024x429.png" alt="Pressing the # sign in Copilot Chat populates all the documents available to specify to Copilot Chat." width="640" height="268" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot-1024x429.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot-300x126.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot-768x322.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/file-context-copilot.png 1197w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>By selecting a specific context, you can provide more information to Copilot Chat without having to copy/paste code and ensure you receive the most relevant answers when applicable. Copilot Chat will always indicate which files were included as context under <strong>References</strong> under your prompt. For example, by default, there are no references sent from my code upon no file specification.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/no-references-copilot.png"><img decoding="async" class="size-full wp-image-33543 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/no-references-copilot.png" alt="Copilot Chat References displaying no references were sent to the model when no file context is provided." width="694" height="265" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/no-references-copilot.png 694w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/no-references-copilot-300x115.png 300w" sizes="(max-width: 694px) 100vw, 694px" /></a></p>
-<p>Then, once some file is specified, you can see the code references in the <strong>References</strong> flyout.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername.png"><img decoding="async" class="size-large wp-image-33582 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername-1024x286.png" alt="Image references nousername" width="640" height="179" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername-1024x286.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername-300x84.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername-768x214.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/references-nousername.png 1461w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>As you&#8217;ll see, Copilot Chat can empower you as a C++ developer to focus more on the task at hand by being a true AI pair programmer through help with asks such as:</p>
-<ul>
-<li>Making code more readable</li>
-<li>Generating functions</li>
-<li>Generating test cases</li>
-<li>Understanding what a snippet of code does.</li>
-</ul>
-<p><div class="alert alert-primary">Please keep in mind that while GitHub Copilot Chat is a great tool for software developers to get started across a multitude of different tasks, it is powered by AI and surprises and mistakes are possible. Make sure to verify any generated code or suggestions provided in your scenarios.</div></p>
-<h3 id="making-code-more-readable">Making code more readable</h3>
-<p>Copilot Chat can improve your existing C++ code, as you can ask it prompts like to make your code more readable or simplify your existing code.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp.png"><img decoding="async" class="size-large wp-image-33549 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp-1024x732.png" alt="Some C++ code showcasing a Calculator class with functions such as add, subtract, multiply, and divide" width="640" height="458" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp-1024x732.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp-300x215.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp-768x549.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/calculator-cpp.png 1116w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<p>Here, there is some C++ code (starting repo linked <a href="https://github.com/sinemakinci1/basic-cpp-copilot-example/">here</a>) that creates a Calculator class and has operations to add, subtract, multiply, and divide. This code is not as simple as it could be and creates some excessive variables. You can highlight the section and right-click to Ask Copilot to simplify this code for you. Copilot Chat will take the context in the highlighted section to propose better C++ code for your project. Since Copilot Chat operates as a pair programmer, Visual Studio will provide a diff view to allow you to accept, modify, or cancel the proposed changes from Copilot Chat.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/New-simplify.gif"><img decoding="async" class="aligncenter wp-image-33550 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/New-simplify.gif" alt="Copilot Chat simplifying some code as shown in a GIF." width="1920" height="938" /></a></p>
-<p>Copilot Chat can also help you fix functions. For example, there are a few issues with this C++ code. Firstly, dividing by zero returns zero, which is not quite accurate. Instead, you may want it to return an error such as Not-A-Number (NaN). Therefore, you can ask Copilot Chat to rewrite the code such that it returns NaN and insert it into the file.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/Nan-copilot-1.png"><img decoding="async" class=" wp-image-33569 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/Nan-copilot-1.png" alt="Asking Copilot to rewrite the divide function such that it returns NaN instead of 0." width="727" height="697" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/Nan-copilot-1.png 705w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/Nan-copilot-1-300x288.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/Nan-copilot-1-24x24.png 24w" sizes="(max-width: 727px) 100vw, 727px" /></a></p>
-<p>Additionally, these functions in the calculator do not change the Calculator state, so you can have Copilot Chat fix this issue at large by appending static modifiers to member functions that do not change the Calculator state. Copilot Chat will even provide helpful commentary on static functions.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-static.png"><img decoding="async" class=" wp-image-33554 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-static.png" alt="Asking Copilot Chat to make member functions static" width="656" height="1012" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-static.png 586w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/copilot-chat-static-194x300.png 194w" sizes="(max-width: 656px) 100vw, 656px" /></a></p>
-<h3 id="generate-new-c-code">Generate new C++ code</h3>
-<p>Copilot Chat can also help generate new code for you.</p>
-<p>You can generate code by asking Copilot Chat in the chat window using the <strong>/generate</strong> command and specifying the specific file to generate code for. In this case, you can ask it to create a new function that calculates if two numbers are equal, and it will even use your existing coding conventions to generate a new function in your class.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/generate-code.png"><img decoding="async" class="size-full wp-image-33555 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/generate-code.png" alt="Asking copilot to generate a new function that checks if two numbers are equal and copilot chat generated code" width="907" height="787" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/generate-code.png 907w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/generate-code-300x260.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/generate-code-768x666.png 768w" sizes="(max-width: 907px) 100vw, 907px" /></a></p>
-<h3 id="create-tests-for-your-code">Create tests for your code</h3>
-<p>Now that there are a few functions written for the calculator, you can ask Copilot Chat to create tests for this. Specifically, you can ask by using the <strong>/tests</strong> command in the Copilot Chat window to write out tests for my code. In this case, the output was GTests that follow the mathematical conventions expected and included the appropriate header functions.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot.png"><img decoding="async" class=" wp-image-33557 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-1024x996.png" alt="Asking copilot chat to create tests for your code creates GTest unit tests" width="848" height="825" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-1024x996.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-300x292.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-768x747.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot-48x48.png 48w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gtest-copilot.png 1117w" sizes="(max-width: 848px) 100vw, 848px" /></a></p>
-<p>Giving Copilot Chat additional context on your desired needs can yield better responses tailored to you. For example, if you did not want it to generate tests using the GTest framework, but instead wanted to use Catch2, you should explain that in your prompt. You can always add other relevant additional project contexts to Copilot Chat based on your desired results, such as desired package manager, language standard, and testing framework.</p>
-<h3 id="explain-a-section-of-code"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot.png"><img decoding="async" class=" wp-image-33558 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-1024x997.png" alt="A prompt asking for Catch2 framework to create unit tests in main.cpp with Copilot giving the right response." width="966" height="941" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-1024x997.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-300x292.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-768x748.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot-48x48.png 48w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/catch2-copilot.png 1113w" sizes="(max-width: 966px) 100vw, 966px" /></a>Explain a section of code</h3>
-<p>Copilot Chat can also help explain C++ code in plain text while referencing the applicable symbols. For example, you can ask Copilot what a highlighted section of the new test code does, and it will explain it all to you in plain language to make it easier for you to digest.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain.png"><img decoding="async" class="alignnone wp-image-33559 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain.png" alt="Copilot Chat explaining what a section of my test code does." width="732" height="511" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain.png 675w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain-300x209.png 300w" sizes="(max-width: 732px) 100vw, 732px" /></a></p>
-<p>Copilot Chat will even suggest follow-up questions to the snippet of code at the bottom with easy, thought-provoking access.</p>
-<h3 id="what-do-you-think"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain-2-highlight.png"><img decoding="async" class=" wp-image-33561 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain-2-highlight.png" alt="Copilot Chat will automatically suggest follow-up questions to ask. In this case, it asked follow up questions about running my Google Tests" width="724" height="490" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain-2-highlight.png 643w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/add-test-explain-2-highlight-300x203.png 300w" sizes="(max-width: 724px) 100vw, 724px" /></a>What do you think?</h3>
-<p>Copilot Chat can help you achieve new levels of productivity in your C++ workflows. We are working hard on integrating it even further with Visual Studio, so please let us know any suggestions you’d like to see to improve your workflows. Additionally, let us know what other types of content you’d like to see regarding use cases or additional information about Copilot Chat. We welcome all types of feedback on your experience with the product. The comments below are open, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc">@VisualC</a>. To open a bug, please see <a href="https://developercommunity.visualstudio.com/report?space=8&amp;entry=problem">Visual Studio feedback</a>. You can also always upvote or downvote the provided suggestion in Copilot Chat to provide feedback to the model itself.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/">Quick Tips for using Copilot Chat with C++ in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/quick-tips-for-using-copilot-chat-with-c-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>5</slash:comments>
 		
 		
 			</item>
