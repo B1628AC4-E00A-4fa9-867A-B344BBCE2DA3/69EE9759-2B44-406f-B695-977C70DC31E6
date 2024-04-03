@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 03 Apr 2024 14:54:10 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 03 Apr 2024 17:57:57 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,82 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>How Copilot is being used by the Time Travel Debugging team for repetitive C++ coding</title>
+		<link>https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/#respond</comments>
+		
+		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
+		<pubDate>Wed, 03 Apr 2024 17:55:03 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Copilot]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33777</guid>
+
+					<description><![CDATA[<p>Background <br />
+Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on Time Travel Debugging at Microsoft. They are part of the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake and they primarily use VS Code for day-to-day development of their code. </p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/">How Copilot is being used by the Time Travel Debugging team for repetitive C++ coding</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h3 aria-level="2" aria-level="2" id="background"><span data-contrast="none">Background</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:278}"> </span></h3>
+<p><span data-contrast="auto">Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on Time Travel Debugging at Microsoft. They are part of the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake and they primarily use VS Code for day-to-day development of their code.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><span data-contrast="auto">They have been integrating GitHub Copilot and GitHub Copilot Chat into their C++ development in VS Code and have found many useful workflows for the AI pair programming tool. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<hr />
+<p style="text-align: center;"><strong>Download GitHub Copilot Chat</strong></p>
+<p>To access GitHub Copilot and Copilot Chat, you will need an active subscription to GitHub Copilot. If you’re just getting started, please check out <a href="https://code.visualstudio.com/docs/copilot/getting-started-chat" target="_blank" rel="noopener">the VS Code documentation</a>.</p>
+<hr />
+<p><i><span data-contrast="auto">This blog post series has been written in partnership with Ken and JCAB to highlight their workflows with Copilot and Copilot Chat respectively and inspire other C++ developers on potential use cases to integrate with their code.</span></i><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<hr />
+<h3 id="how-we-use-copilot-for-c">How we use Copilot for C++</h3>
+<p><span data-contrast="auto">Copilot provides AI-generated autocomplete-style suggestions as we code. Copilot has greatly helped our team with reaching new levels of productivity when interacting with our large codebases. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><span data-contrast="auto">For example, it has been good at following our coding styles for repetitive tasks. We highly recommend Copilot to save you some time with repetitive typing.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><span data-contrast="auto">This has been widely applicable to many areas of our C++ workflows, from writing test code to implementing classes. Two specific examples that have been greatly impactful in that we will expand upon below are </span><b><span data-contrast="auto">adding additional methods to a class</span></b><span data-contrast="auto"> and </span><b><span data-contrast="auto">generating classes after migrating library dependencies.</span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><span class="TextRun SCXW152403903 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart SCXW152403903 BCX8">You can follow along with the examples in this sample repo</span><span class="NormalTextRun SCXW152403903 BCX8">: </span></span><a class="Hyperlink SCXW152403903 BCX8" href="https://github.com/KenSykes/ExampleLibraryConversion" target="_blank" rel="noreferrer noopener"><span class="FieldRange SCXW152403903 BCX8"><span class="TextRun Underlined SCXW152403903 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW152403903 BCX8" data-ccp-charstyle="Hyperlink">KenSykes/ExampleLibraryConversion: Demonstration of Copilot code completion (github.com)</span></span></span></a><span class="TextRun SCXW152403903 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW152403903 BCX8">. Please note that Copilot suggestions are probabilistic, not deterministic, and you may not see the exact same suggestions as you follow along.</span></span><span class="EOP SCXW152403903 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<h5 id="adding-additional-methods-to-a-class"><em>Adding additional methods to a class</em></h5>
+<p><span style="text-decoration: underline;">Reference code</span>: <a href="https://github.com/KenSykes/ExampleLibraryConversion/blob/main/ExampleLibraryConversion.cpp"><i><span data-contrast="none">Branch: main, file: ExampleLibraryConversion.cpp</span></i></a><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><span data-contrast="auto">One of our favorite ways to use Copilot is to have it follow existing coding patterns to save typing. For example, we have a class that interacts with <code>dbghelp.dll</code> through function pointers (GetProcAddress-based delay loading). Recently we needed to add some additional dbghelp methods to this class, such as </span><code>SymInitializeW</code><span data-contrast="auto">. All we need to do is go to the places that define existing structs, press enter and start to type, and Copilot will dynamically update to fill in the rest. Then, we can edit down the results to get to the desired outcome.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymInitializev2-ezgif.com-crop-1.gif"><img decoding="async" class="size-full wp-image-33866 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymInitializev2-ezgif.com-crop-1.gif" alt="a GIF representing GH Copilot automatically helping fill in the SymInitializeW method declaration after typing in decltype." width="995" height="308" /></a></p>
+<p>After adding this new class member, we can scroll up to the constructor and notice that Copilot is able to offer a valid initialization suggestion for us.</p>
+<p><span style="color: #ff0000;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/InitializeSymInitialize-ezgif.com-crop.gif"><img decoding="async" class="alignnone size-full wp-image-33900" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/InitializeSymInitialize-ezgif.com-crop.gif" alt="Copilot automatically generated the constructor for the SymInitialize function generated." width="1675" height="187" /></a></span></p>
+<p>Then, add the prototype for the wrapper and Copilot can offer a reasonable implementation.</p>
+<p style="text-align: center;"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/Initializev2SymInitialize-ezgif.com-crop-1.gif"><img decoding="async" class="alignnone size-full wp-image-33864" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/Initializev2SymInitialize-ezgif.com-crop-1.gif" alt="A GIF showcasing once you type out an Initialize function in the struct, GitHub Copilot is able to fill in the necessary information below to initialize the object" width="1011" height="281" /></a></p>
+<p>&nbsp;</p>
+<p>A more complex example of Copilot helping with initializations can be viewed below for now a new Load Module object.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymLoadModule-ezgif.com-crop.gif"><img decoding="async" class="size-full wp-image-33868 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymLoadModule-ezgif.com-crop.gif" alt="A gif showcasing now declaring a new type of object called SymLoadModules and copilot assisting with the initialization" width="963" height="235" /></a></p>
+<p>In this example, Copilot can generate the implementation of the method with great default options. These default options are also commented by Copilot to document what the zeros and nullptrs mean.<a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymLoadModules2-ezgif.com-crop-1.gif"><img decoding="async" class="size-full wp-image-33870 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/SymLoadModules2-ezgif.com-crop-1.gif" alt="A Gif showcasing the initialization of a function Load Module. Once the function has been initialized, Copilot filled in the implementation of the method and commented on each default option recommended" width="934" height="598" /></a></p>
+<h5 id="generating-code-when-migrating-libraries"><em>Generating code when migrating libraries</em></h5>
+<p><span style="text-decoration: underline;">Reference code:</span> <a href="https://github.com/KenSykes/ExampleLibraryConversion/blob/convert_to_nlohmann/ExampleLibraryConversion.cpp"><em>Branch: convert_to_nlohmann, file:ExampleLibraryConversion.cpp</em></a></p>
+<p>We have found Copilot helpful with managing libraries in our repository and refactoring code. Specifically, we previously used the rapidJSON library, managed through a <code>vcpkg.json</code> file, to serialize our structs into JSON.</p>
+<p>An example of such a struct of information can be viewed here:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-struct.png"><img decoding="async" class=" wp-image-33871 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-struct.png" alt="An example struct of system information such as major/minor version, and struct of processor architecture related information" width="678" height="759" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-struct.png 901w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-struct-268x300.png 268w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-struct-768x860.png 768w" sizes="(max-width: 678px) 100vw, 678px" /></a></p>
+<p>The original rapidJSON code was hand-written and took hours to do (including time to become familiar with the library). While producing this blog, we found that Copilot could generate much of the code correctly once some rapidJSON boilerplate code is provided. See how easily Copilot can generate the JSON object using pre-determined o and s objects for rapidJSON:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/Generate-rapidJSON.gif"><img decoding="async" class="alignnone size-full wp-image-33873" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/Generate-rapidJSON.gif" alt="a GIF showcasing generating all the objects under object o and object s using the struct information above and rapidJSON library construct with Copilot." width="1530" height="844" /></a></p>
+<p>We recently had a desire to update this library dependency from rapidJSON to nlohmann-json, since the nlohmann-json library is better-maintained.  To start updating the code, all we needed to do was update our <code>vcpkg.json</code> dependencies to have a nlohmann-json entry and include this new dependency in our cpp file per official library documentation.</p>
+<p>From there, Copilot was able to produce 80% of the code for this process with the proper formatting for nlohmann-json, letting the team focus on reviewing the generated code rather than implementing the fixes in applicable areas.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/JSONGeneratev2-ezgif.com-crop-1.gif"><img decoding="async" class="alignnone size-full wp-image-33894" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/JSONGeneratev2-ezgif.com-crop-1.gif" alt="Image JSONGeneratev2 ezgif com crop" width="1530" height="664" /></a></p>
+<h5 id="generating-code-based-on-input-data"><em>Generating code based on input data</em></h5>
+<p><span style="text-decoration: underline;">Reference code:</span> <a href="https://github.com/KenSykes/ExampleLibraryConversion/blob/convert_to_nlohmann/ExampleParser.cpp"><em>Branch: convert_to_nlohmann, File: ExampleParser.cpp</em></a></p>
+<p>Copilot can also save you time writing parsing code. Given some sample input data pasted in a comment, Copilot can generate C++ structures and parsing code for you. To demonstrate this, we started with the nlohmann JSON parser, added a conversion for <code>std::string</code>, and then pasted some sample JSON from openweathermap.org in a comment.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-JSON-data.png"><img decoding="async" class="alignnone size-full wp-image-33895" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-JSON-data.png" alt="An example of JSON data from openweather.org passed into a comment in the code" width="781" height="1042" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-JSON-data.png 781w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-JSON-data-225x300.png 225w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/example-JSON-data-768x1025.png 768w" sizes="(max-width: 781px) 100vw, 781px" /></a></p>
+<p>Now, watch Copilot go to work. Move cursor below the comment and hit Enter. You will start to get suggestions for code. Keep pressing Tab and Enter as Copilot writes out all the structures to represent the data and the nlohmann <code>to_json()</code> / <code>from_json()</code> methods, culminating in a <code>ParseWeatherData()</code> method that can fully parse the sample text.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/LibraryParserv2-ezgif.com-crop-1.gif"><img decoding="async" class="alignnone size-full wp-image-33897" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/LibraryParserv2-ezgif.com-crop-1.gif" alt="An example of Copilot generating all the data for to_json and from_json functions for the library parser based on the weather data commented." width="1171" height="1040" /></a></p>
+<p>The full Copilot-generated code can be found <a href="https://github.com/KenSykes/ExampleLibraryConversion/blob/convert_to_nlohmann/ExampleParser.cpp">here</a>.</p>
+<p>If you look closely that the Weather field of WeatherData is a single element but the JSON is an array, so a <code>std::vector&lt;&gt;</code> would have been a better choice. Things like this are easy to fix up on your own, or perhaps add more representative JSON samples to the comment to give Copilot more context.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/weatherdatastruct.png"><img decoding="async" class="size-full wp-image-33898 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/weatherdatastruct.png" alt="Image weatherdatastruct" width="421" height="595" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/weatherdatastruct.png 421w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/04/weatherdatastruct-212x300.png 212w" sizes="(max-width: 421px) 100vw, 421px" /></a></p>
+<hr />
+<h3 id=""></h3>
+<h3 id="wrap-up">Wrap up</h3>
+<p><strong>A big thanks to Ken and JCAB from the Time Travel Debugging Team for collaborating with us on this blog post!</strong></p>
+<p>Copilot can provide you with AI-powered assistance at many points in your C++ development, such as migrating libraries and initializing new methods. Download Copilot and try out utilizing it in your areas of repetitive coding! Please note that responses are generated by AI, so we recommend reviewing any responses provided and iterating when necessary.</p>
+<p>Our team is working hard on improving C++ integrations, so please let us know any improvements you’d like to see to your C++ workflows. Additionally, let us know what other types of content you’d like to see regarding use cases or additional information about Copilot.</p>
+<p>We welcome all types of feedback on your experience with the product. The comments below are open, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>.</p>
+<div></div>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/">How Copilot is being used by the Time Travel Debugging team for repetitive C++ coding</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Pure Virtual C++ 2024 Sessions Announced</title>
 		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2024-sessions-announced/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2024-sessions-announced/#respond</comments>
@@ -48,7 +124,7 @@
 <li><strong>Automated Testing of Shader Code with Keith Stockdale</strong> (Rare) &#8211; Rare has a rich culture of writing automated tests for their game and engine code. The &#8216;Sea of Thieves&#8217; project has hundreds of thousands of automated tests that exist to validate behavior and to ensure that bugs are kept to a minimum, as we continually deliver an ever-changing experience to players. Among this large test suite are tests that validate and verify shader code. This session explores the new Rare Shader Test framework, describing how tests are written for shader code. The talk will also delve into the C++ and HLSL implementation of the shader testing framework to discuss the design goals of the system, and how we are using C++ to meet these design goals.</li>
 <li><strong>Message Handling with Boolean Implication with Ben Deane </strong>(Intel) &#8211; Message reception and dispatch is something common to many codebases. This talk shows the unreasonable effectiveness of going back to basics and really understanding and unlocking the power of Boolean algebra in the design of a message handling library. We&#8217;ll talk about composing predicates on messages and manipulating them at compile time in order to do the least work when dispatching them at runtime. Particularly we&#8217;ll introduce implication, develop an intuition for this lesser-used Boolean operation, and see how it is key to a generic approach for simplifying predicates.</li>
 <li><strong>I Embedded a Programming Language In Debug Information with Sy Brand</strong> (Microsoft) &#8211; DWARF information on Linux provides debuggers with a bridge between high-level source code and the machine instructions generated by the compiler. As part of this, it describes how to locate variables within your program at runtime using a language called DWARF Expressions. When implementing a parser for DWARF Expressions I thought &#8220;this seems suspiciously Turing-complete, can I implement a programming language inside this?&#8221; It turns out the answer is yes. In this session you&#8217;ll learn how debug information and executables are stored on Linux systems and how I managed to (ab)use them to implement a programming language interpreter that runs when you ask your debugger for the address of a variable.</li>
-<li><strong>Enhancing C++ development with Copilot Chat with Sinem Akinci</strong> (Microsoft) &#8211; Copilot and Copilot Chat are AI-powered tools integrated into Visual Studio and VS Code that have the potential to unlock new levels of productivity with your C++ development. In this session, we’ll introduce Copilot and Copilot Chat, share tips for achieving the results you want, and provide use cases for using these tools. Then, we’ll see these tools in action in C++ code in Visual Studio as we tackle a variety of problems from navigating and understanding code to refactoring existing code.</li>
+<li><strong>Enhancing C++ development with Copilot Chat with Sinem Akinci</strong> (Microsoft) &#8211; Copilot is an AI-powered pair programmer integrated into Visual Studio and VS Code that can be there to assist you at many different points in your C++ development journey. In this session, we’ll introduce Copilot and Copilot Chat, share tips for achieving the results you want, and provide different use cases for using these tools. Then, we’ll see these tools in action in C++ code in Visual Studio as we tackle a variety of problems from navigating and understanding code to refactoring existing code.</li>
 <li><strong>Progress Report: Adopting Header Units in Microsoft Word with Zachary Henkel</strong> (Microsoft) &#8211; Microsoft Office is a huge C++ codebase with nearly 100 million lines of native code. This size provides a constant challenge to build the product as quickly as possible. C++20 header units are a way to receive many of the benefits of modules, while still working with a codebase originally designed for classic header inclusion. At CppCon 2022 we announced that Office would investigate header units with the goal of improved build throughput. We’re excited to present the results of that work for the benefit of the C++ community at large. In this session, we’ll share build performance metrics for the first time.</li>
 </ul>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2024-sessions-announced/">Pure Virtual C++ 2024 Sessions Announced</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
@@ -880,393 +956,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>A Year of C++ Improvements in Visual Studio, VS Code, and vcpkg</title>
-		<link>https://devblogs.microsoft.com/cppblog/a-year-of-cpp-improvements-in-visual-studio-vs-code-and-vcpkg/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/a-year-of-cpp-improvements-in-visual-studio-vs-code-and-vcpkg/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Mon, 12 Feb 2024 16:45:29 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33593</guid>
-
-					<description><![CDATA[<p>As we enter the new year, it’s a good time to look back at all the features and improvements we made for C++ developers in our tools in 2023. We’ve made advancements across Visual Studio, Visual Studio Code, our toolchain, and the vcpkg package manager in both performance and functionality.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/a-year-of-cpp-improvements-in-visual-studio-vs-code-and-vcpkg/">A Year of C++ Improvements in Visual Studio, VS Code, and vcpkg</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>As we enter the new year, it’s a good time to look back at all the features and improvements we made for C++ developers in our tools in 2023. We’ve made advancements across Visual Studio, Visual Studio Code, our toolchain, and the vcpkg package manager in both performance and functionality. Some particular areas of focus have been ARM64 support, Unreal Engine development, code safety, and cross-platform development.</p>
-<h1 id="contents">Contents</h1>
-<table style="border-collapse: collapse; width: 100%; height: 465px;">
-<tbody>
-<tr style="height: 197px;">
-<td style="width: 50%; height: 197px;"><a href="#cross-platform">Cross-Platform</a></td>
-<td style="width: 50%; height: 197px;">
-<ul>
-<li><a href="#integrated-linux-terminal">Integrated Linux Terminal</a></li>
-<li><a href="#multi-cmake">Test and Build Multiple CMake Targets</a></li>
-<li><a href="#cmake-debugger">CMake Debugger</a></li>
-<li><a href="#remote-file-explorer">Remote File Explorer</a></li>
-<li><a href="#stm32">STM32CubeIDE Project Support</a></li>
-<li><a href="#wsl-for-me">Automatic WSL Installation</a></li>
-<li><a href="#remote-linux-unit-test">Remote Linux Unit Test Support</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#productivity">Productivity</a></td>
-<td style="width: 50%; height: 28px;">
-<ul>
-<li><a href="#sticky-scroll">Sticky Scroll</a></li>
-<li><a href="#brace-pair-colorization">Brace Pair Colorization</a></li>
-<li><a href="#spell-checker">Spell Checker</a></li>
-<li><a href="#all-in-one-search">All-in-one Search</a></li>
-<li><a href="#breakpoint-groups">Breakpoint Groups</a></li>
-<li><a href="#file-comparison-window">File Comparison Window</a></li>
-<li><a href="#copy-paste">Copy-paste with Correct Indentation</a></li>
-<li><a href="#parallel-stack-filtering">Parallel Stack Filtering</a></li>
-<li><a href="#doxygen">Doxygen for Overloaded Functions</a></li>
-<li><a href="#macro-expansion-visualization">Macro Expansion Visualization</a></li>
-<li><a href="#github-pr">Create GitHub Pull Request from Visual Studio</a></li>
-<li><a href="#structured-diagnostics">Structured Diagnostics</a></li>
-<li><a href="#size-and-alignment">Size and Alignment of Types</a></li>
-<li><a href="#memory-layout">Memory Layout Visualization</a></li>
-<li><a href="#include-cleanup">Include Cleanup</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#game-development">Game Development</a></td>
-<td style="width: 50%; height: 28px;">
-<ul>
-<li><a href="#ue-blueprint">Unreal Engine Blueprint References and Asset Inspector</a></li>
-<li><a href="#ue-log">Unreal Engine Log Viewer</a></li>
-<li><a href="#hlsl">HLSL Support</a></li>
-<li><a href="#ue-macro">Unreal Engine Macro Formatting</a></li>
-<li><a href="#ue-naming">Unreal Engine Naming Convention Checker</a></li>
-<li><a href="#ue-blueprint-find">Unreal Engine Blueprint Find All References</a></li>
-<li><a href="#ue-test">Unreal Engine Test Adapter</a></li>
-<li><a href="#ue-snippets">Unreal Engine Code Snippets</a></li>
-<li><a href="#ue-macro-suggestions">Unreal Engine Macro Specifier Suggestions</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#build-insights">Build Insights</a></td>
-<td style="width: 50%; height: 28px;"><a href="#build-insights">Build Insights</a></td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#ide-performance">Visual Studio IDE Performance</a></td>
-<td style="width: 50%; height: 28px;"><a href="#ide-performance">IDE Performance</a></td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#toolchain">Toolchain</a></td>
-<td style="width: 50%; height: 28px;">
-<ul>
-<li><a href="#conformance">Conformance</a></li>
-<li><a href="#code-performance">Code Performance</a></li>
-<li><a href="#code-safety">Code Safety</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#vcpkg">vcpkg</a></td>
-<td style="width: 50%; height: 28px;"><a href="#vcpkg">vcpkg</a></td>
-</tr>
-<tr style="height: 44px;">
-<td style="width: 50%; height: 44px;"><a href="#cpp-extension">Visual Studio Code C++ Extension</a></td>
-<td style="width: 50%; height: 44px;">
-<ul>
-<li><a href="#missing-header">Missing Header File Quick Fix</a></li>
-<li><a href="#call-hierarchy">Call Hierarchy View</a></li>
-<li><a href="#extract-code">Extract Code to Function</a></li>
-<li><a href="#compiler-acquisition">New Compiler Acquisition Process</a></li>
-<li><a href="#create-declaration-definition">Create Declaration/Definition</a></li>
-<li><a href="#copy-declaration-definition">Copy Function Declaration/Definition</a></li>
-<li><a href="#markdown-comments">Markdown Comment Formatting</a></li>
-<li><a href="#looking-forward">Looking Forward</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#cmake-extension">Visual Studio Code CMake Extension</a></td>
-<td style="width: 50%; height: 28px;">
-<ul>
-<li><a href="#test-explorer">Test Explorer</a></li>
-<li><a href="#vcpkg-portfile-debugging">vcpkg Portfile Debugging</a></li>
-<li><a href="#cmake-status-bar">Simplified CMake Status Bar</a></li>
-<li><a href="#vscode-cmake-debugger">CMake Debugger</a></li>
-</ul>
-</td>
-</tr>
-<tr style="height: 28px;">
-<td style="width: 50%; height: 28px;"><a href="#conference-talks">Conference Talks</a></td>
-<td style="width: 50%; height: 28px;"><a href="#conference-talks">Conference Talks</a></td>
-</tr>
-</tbody>
-</table>
-<h1 id="visual-studio">Visual Studio</h1>
-<h2><a id="cross-platform"></a>Cross-Platform</h2>
-<p>Cross-platform development is a first-class citizen in Visual Studio and has been for many years now. We’ve added many new features for those targeting Linux, <a href="https://learn.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux</a>, embedded platforms, and those using CMake for their builds.</p>
-<h3><a id="integrated-linux-terminal"></a>Integrated Linux Terminal</h3>
-<ul>
-<li>The <a href="https://devblogs.microsoft.com/cppblog/debug-linux-console-apps-in-visual-studios-integrated-terminal/">Linux Integrated Terminal</a> allows you to debug Linux applications with a fully-featured terminal experience directly inside Visual Studio.</li>
-</ul>
-<p><img decoding="async" width="1706" height="1080" class="wp-image-33594" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/linux-console-output-appearing-in-visual-studio-te.gif" alt="Linux console output appearing in Visual Studio terminal window" /></p>
-<h3><a id="multi-cmake"></a>Test and Build Multiple CMake Targets</h3>
-<p>You can now test and build multiple CMake Targets from the CMake Targets view.</p>
-<p><img decoding="async" width="940" height="360" class="wp-image-33595" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical.png" alt="A screenshot of a computer Description automatically generated with medium confidence" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical.png 940w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-300x115.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-768x294.png 768w" sizes="(max-width: 940px) 100vw, 940px" /></p>
-<h3><a id="cmake-debugger"></a>CMake Debugger</h3>
-<p>Use the <a href="https://devblogs.microsoft.com/cppblog/cmake-debugger-allows-you-to-debug-your-cmake-scripts-and-more/">CMake Debugger</a> to debug your CMake scripts like you would any other program. You can set breakpoints, see the values of CMake variables at the current point of execution, and more.</p>
-<p><img decoding="async" width="846" height="478" class="wp-image-33596" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/screenshot-of-visual-studio-in-a-debugging-session.png" alt="Screenshot of Visual Studio in a debugging session showing an exception dialog that originated from a CMake script " srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/screenshot-of-visual-studio-in-a-debugging-session.png 846w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/screenshot-of-visual-studio-in-a-debugging-session-300x170.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/screenshot-of-visual-studio-in-a-debugging-session-768x434.png 768w" sizes="(max-width: 846px) 100vw, 846px" /></p>
-<h3><a id="remote-file-explorer"></a>Remote File Explorer</h3>
-<p>Use the <a href="https://devblogs.microsoft.com/cppblog/view-files-on-your-remote-machines-using-the-new-remote-file-explorer-in-visual-studio/">Remote File Explorer</a> to see a directory tree of the files on a remote system.</p>
-<p><img decoding="async" width="660" height="466" class="wp-image-33597" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-remote-file-explorer-lets-you-view-your-files.png" alt="The Remote File Explorer lets you view your files on your remote machines" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-remote-file-explorer-lets-you-view-your-files.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-remote-file-explorer-lets-you-view-your-files-300x212.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></p>
-<h3><a id="stm32"></a>STM32CubeIDE Project Support</h3>
-<p>Import STM32CubeIDE projects with the new <a href="https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio/">STM32CubeIDE Project Support</a>.</p>
-<p><a class="lightbox-link" href="https://devblogs.microsoft.com/visualstudio/wp-content/uploads/sites/4/2024/01/file-menu-entry-for-import-stm32cubeide-project-op.png" aria-label="Lightbox image, click or press enter to enlarge" data-featherlight="image"><img decoding="async" class="wp-image-246866" src="https://devblogs.microsoft.com/visualstudio/wp-content/uploads/sites/4/2024/01/file-menu-entry-for-import-stm32cubeide-project-op.png" sizes="(max-width: 444px) 100vw, 444px" srcset="https://devblogs.microsoft.com/visualstudio/wp-content/uploads/sites/4/2024/01/file-menu-entry-for-import-stm32cubeide-project-op.png 444w, https://devblogs.microsoft.com/visualstudio/wp-content/uploads/sites/4/2024/01/file-menu-entry-for-import-stm32cubeide-project-op-300x124.png 300w" alt="File menu entry for Import STM32CubeIDE project option" width="444" height="183" /></a></p>
-<h3><a id="wsl-for-me"></a>Automatic Windows Subsystem for Linux Installation</h3>
-<p>Install Windows Subsystem for Linux automatically from Visual Studio with <a href="https://devblogs.microsoft.com/cppblog/automatically-install-windows-subsystem-for-linux-from-visual-studio-using-new-seamless-integration/">“Install WSL for Me”</a>.</p>
-<p><img decoding="async" width="1100" height="410" class="wp-image-33599" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-wsl-automatic-acquisition.png" alt="Image WSL Automatic Acquisition" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-wsl-automatic-acquisition.png 1100w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-wsl-automatic-acquisition-300x112.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-wsl-automatic-acquisition-1024x382.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-wsl-automatic-acquisition-768x286.png 768w" sizes="(max-width: 1100px) 100vw, 1100px" /></p>
-<h3><a id="remote-linux-unit-test"></a>Remote Linux Unit Test Support</h3>
-<p><a href="https://learn.microsoft.com/en-us/visualstudio/test/remote-testing?view=vs-2022">Remote Linux unit test support</a> adds your remote Linux tests to the Test Explorer.</p>
-<p><img decoding="async" width="982" height="235" class="wp-image-33600" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/view-test-results-from-remote-environment-in-the-t.png" alt="View test results from remote environment in the test explorer" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/view-test-results-from-remote-environment-in-the-t.png 982w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/view-test-results-from-remote-environment-in-the-t-300x72.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/view-test-results-from-remote-environment-in-the-t-768x184.png 768w" sizes="(max-width: 982px) 100vw, 982px" /></p>
-<h2><a id="productivity"></a>Productivity</h2>
-<p>We want your development to be as fast and low-friction as possible. Our productivity features address this, giving you better ways to complete your day-to-day tasks.</p>
-<h3><a id="sticky-scroll"></a>Sticky Scroll</h3>
-<p><a href="https://learn.microsoft.com/en-us/visualstudio/ide/editor-sticky-scroll?view=vs-2022">Sticky Scroll</a> gives you context for the current code location in your editor by sticking the top line of nested blocks to the top of the window.</p>
-<p><img decoding="async" width="1232" height="329" class="wp-image-33601" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/an-animation-of-the-sticky-scroll-feature-being-us.gif" alt="An animation of the Sticky Scroll feature being used in C++ code." /></p>
-<h3><a id="brace-pair-colorization"></a>Brace Pair Colorization</h3>
-<p><a href="https://devblogs.microsoft.com/cppblog/brace-pair-colorization-and-more-in-visual-studio/">Brace Pair Colorization</a> lets you easily see matching brace pairs by making them the same color.</p>
-<p><img decoding="async" width="300" height="278" class="wp-image-33602" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/c-brace-pair-colorization-example.png" alt="C++ Brace Pair Colorization example" /></p>
-<h3><a id="spell-checker"></a>Spell Checker</h3>
-<p>The new <a href="https://learn.microsoft.com/en-us/visualstudio/ide/text-spell-checker?view=vs-2022">Spell Checker</a> finds and corrects spelling issues in your code.</p>
-<p><img decoding="async" width="642" height="180" class="wp-image-33603" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic.png" alt="A screen shot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic.png 642w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic-300x84.png 300w" sizes="(max-width: 642px) 100vw, 642px" /></p>
-<h3><a id="all-in-one-search"></a>All-in-one Search</h3>
-<p><a href="https://devblogs.microsoft.com/visualstudio/all-in-one-search-available-in-17-6/">All-in-one Search</a> joints together the code search and feature search functions into one tool.</p>
-<p><img decoding="async" width="788" height="496" class="wp-image-33604" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica.png 788w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-300x189.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-768x483.png 768w" sizes="(max-width: 788px) 100vw, 788px" /></p>
-<h4><a id="breakpoint-groups"></a>Breakpoint Groups</h4>
-<p><a href="https://devblogs.microsoft.com/visualstudio/streamlining-your-debugging-process-with-breakpoint-groups/">Breakpoint groups</a> let you organize breakpoints to make large collections easier to manage.</p>
-<p><img decoding="async" width="444" height="263" class="wp-image-33605" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-1.png 444w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-1-300x178.png 300w" sizes="(max-width: 444px) 100vw, 444px" /></p>
-<h3><a id="file-comparison-window"></a>File Comparison Window</h3>
-<p>You can now compare files straight from the solution explorer with the <a href="https://devblogs.microsoft.com/visualstudio/new-in-visual-studio-compare-files-with-solution-explorer/">File Comparison window</a>.</p>
-<p><img decoding="async" width="889" height="450" class="wp-image-33606" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut.png" alt="A screenshot of a computer program Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut.png 889w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-300x152.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-768x389.png 768w" sizes="(max-width: 889px) 100vw, 889px" /></p>
-<h3><a id="copy-paste"></a>Copy-paste with Correct Indentation</h3>
-<p><a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-7-now-available/#copy-and-trim-indentation">Copy-paste with correct indentation</a> makes it easier to accurately share code with others.</p>
-<p><img decoding="async" width="815" height="450" class="wp-image-33607" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-screen-description-auto.png" alt="A screenshot of a computer screen Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-screen-description-auto.png 815w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-screen-description-auto-300x166.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-screen-description-auto-768x424.png 768w" sizes="(max-width: 815px) 100vw, 815px" /></p>
-<h3><a id="parallel-stack-filtering"></a>Parallel Stack Filtering</h3>
-<p><a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-7-now-available/#parallel-stack-filtering">Parallel stack filtering</a> lets you selectively display or hide specific threads or frames.</p>
-<p><img decoding="async" width="1278" height="908" class="wp-image-33608" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-2.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-2.png 1278w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-2-300x213.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-2-1024x728.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-2-768x546.png 768w" sizes="(max-width: 1278px) 100vw, 1278px" /></p>
-<h4><a id="doxygen"></a>Doxygen for Overloaded Functions</h4>
-<p>We <a href="https://devblogs.microsoft.com/cppblog/improved-doxygen-overload-resolution/">improved Doxygen behaviour for overload resolution.</a></p>
-<p><img decoding="async" width="864" height="419" class="wp-image-33609" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-improved-doxygen-overload-resolution.png" alt="Image Improved Doxygen overload resolution" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-improved-doxygen-overload-resolution.png 864w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-improved-doxygen-overload-resolution-300x145.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-improved-doxygen-overload-resolution-768x372.png 768w" sizes="(max-width: 864px) 100vw, 864px" /></p>
-<h4><a id="macro-expansion-visualization"></a>Macro Expansion Visualization</h4>
-<p>You can now see macro expansions step-by-step with <a href="https://devblogs.microsoft.com/cppblog/visualize-macro-expansion-for-c/">Macro Expansion Visualization</a>.</p>
-<p><img decoding="async" width="911" height="468" class="wp-image-33610" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-au.gif" alt="A screenshot of a computer program Description automatically generated" /></p>
-<h3><a id="github-pr"></a>Create GitHub Pull Request from Visual Studio</h3>
-<p>You can now <a href="https://devblogs.microsoft.com/visualstudio/create-a-pull-request-in-visual-studio/">create GitHub pull requests from Visual Studio</a>.</p>
-<p><img decoding="async" width="1551" height="542" class="wp-image-33611" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1.png 1551w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1-300x105.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1-1024x358.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1-768x268.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-1-1536x537.png 1536w" sizes="(max-width: 1551px) 100vw, 1551px" /></p>
-<h3><a id="structured-diagnostics"></a>Structured Diagnostics</h3>
-<p>Visualize complex, hierarchical compiler errors with <a href="https://devblogs.microsoft.com/cppblog/structured-diagnostics-in-the-new-problem-details-window/">structured diagnostics</a>.</p>
-<p><img decoding="async" width="460" height="331" class="wp-image-33612" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-2.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-2.png 460w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-2-300x216.png 300w" sizes="(max-width: 460px) 100vw, 460px" /></p>
-<h3><a id="size-and-alignment"></a>Size and Alignment of Types</h3>
-<p><a href="https://devblogs.microsoft.com/visualstudio/size-alignment-and-memory-layout-insights-for-c-classes-structs-and-unions/#size-and-alignment">See size and alignment of types</a> directly in the editor.</p>
-<p><img decoding="async" width="1090" height="286" class="wp-image-33613" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-3.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-3.png 1090w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-3-300x79.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-3-1024x269.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-3-768x202.png 768w" sizes="(max-width: 1090px) 100vw, 1090px" /></p>
-<h3><a id="memory-layout"></a>Memory Layout Visualization</h3>
-<p>Use our new <a href="https://devblogs.microsoft.com/visualstudio/size-alignment-and-memory-layout-insights-for-c-classes-structs-and-unions/#memory-layout">memory layout visualization</a> tool for seeing how types will be stored in memory.</p>
-<p><img decoding="async" width="2886" height="1458" class="wp-image-33614" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-gif-displaying-an-example-of-memory-layout.gif" alt="A GIF displaying an example of Memory Layout" /></p>
-<h3><a id="include-cleanup"></a>Include Cleanup</h3>
-<p>Optimize your #includes with <a href="https://learn.microsoft.com/en-us/cpp/ide/include-cleanup-overview?view=msvc-170">#include directive cleanup</a>.</p>
-<p><img decoding="async" width="1266" height="633" class="wp-image-33615" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-screen-description-aut.gif" alt="A screen shot of a computer screen Description automatically generated" /></p>
-<h2><a id="game-development"></a>Game Development</h2>
-<p>Game development is a key area of focus for us, as game developers often have constraints and workflows which other C++ developers do not. Last year we focused especially on our Unreal Engine support.</p>
-<h3><a id="ue-blueprint"></a>Unreal Engine Blueprint References and Asset Inspector</h3>
-<p>Navigate your Unreal Engine Blueprints with the new <a href="https://devblogs.microsoft.com/cppblog/unreal-engine-integrations-now-available-in-visual-studio-2022/">Unreal Engine Blueprint References and Asset Inspector</a>.</p>
-<p><img decoding="async" width="1428" height="546" class="wp-image-33616" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-ue-blueprint-references-in-visual.png" alt="A screenshot of UE Blueprint references in Visual Studio. " srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-ue-blueprint-references-in-visual.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-ue-blueprint-references-in-visual-300x115.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-ue-blueprint-references-in-visual-1024x392.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-ue-blueprint-references-in-visual-768x294.png 768w" sizes="(max-width: 1428px) 100vw, 1428px" /></p>
-<h3><a id="ue-log"></a>Unreal Engine Log Viewer</h3>
-<p>Use the <a href="https://devblogs.microsoft.com/cppblog/empower-your-unreal-engine-development-with-the-latest-ue-integrations-in-visual-studio-2022/#stream-unreal-engine-log">Unreal Engine Log Viewer</a> to see your UE logs directly in Visual Studio.</p>
-<p><img decoding="async" width="623" height="197" class="wp-image-33617" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/unreal-engine-log-tool-window-in-visual-studio-sho.png" alt="Unreal Engine Log tool window in Visual Studio showing several lines of logs outputted by an Unreal Engine game" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/unreal-engine-log-tool-window-in-visual-studio-sho.png 623w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/unreal-engine-log-tool-window-in-visual-studio-sho-300x95.png 300w" sizes="(max-width: 623px) 100vw, 623px" /></p>
-<h3><a id="hlsl"></a>HLSL Support</h3>
-<p>Edit HLSL shaders with <a href="https://devblogs.microsoft.com/cppblog/empower-your-unreal-engine-development-with-the-latest-ue-integrations-in-visual-studio-2022/#hlsl-tools-by-tim-jones">improved HLSL editor integration</a>.</p>
-<p><img decoding="async" width="1379" height="776" class="wp-image-33618" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/hlsl-editor-showcasing-syntax-highlighting.png" alt="HLSL editor showcasing syntax highlighting" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/hlsl-editor-showcasing-syntax-highlighting.png 1379w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/hlsl-editor-showcasing-syntax-highlighting-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/hlsl-editor-showcasing-syntax-highlighting-1024x576.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/hlsl-editor-showcasing-syntax-highlighting-768x432.png 768w" sizes="(max-width: 1379px) 100vw, 1379px" /></p>
-<h3><a id="ue-macro"></a>Unreal Engine Macro Formatting</h3>
-<p><a href="https://devblogs.microsoft.com/visualstudio/unleashing-the-power-of-visual-studio-2022-for-c-game-development/#special-macro-indentation-rules-for-unreal-engine">Unreal Engine macro formatting</a> ensures that your UE macros are handled appropriately by the autoformatter.</p>
-<p><img decoding="async" width="660" height="371" class="wp-image-33619" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-macros-formatting-for-c.png" alt="Image Unreal Engine Macros Formatting for C" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-macros-formatting-for-c.png 660w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-macros-formatting-for-c-300x169.png 300w" sizes="(max-width: 660px) 100vw, 660px" /></p>
-<h3><a id="ue-naming"></a>Unreal Engine Naming Convention Checker</h3>
-<p>Use the <a href="https://devblogs.microsoft.com/visualstudio/unleashing-the-power-of-visual-studio-2022-for-c-game-development/#code-analysis-for-unreal-engine-naming-convention-checker">Unreal Engine naming convention checker</a> to ensure your code conforms to expectations.</p>
-<p><img decoding="async" width="869" height="490" class="wp-image-33620" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-naming-convention-checker-for.png" alt="Image Unreal Engine Naming Convention Checker for C" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-naming-convention-checker-for.png 869w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-naming-convention-checker-for-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-unreal-engine-naming-convention-checker-for-768x433.png 768w" sizes="(max-width: 869px) 100vw, 869px" /></p>
-<h3><a id="ue-blueprint-find"></a>Unreal Engine Blueprint Find All References</h3>
-<p>Find all UE Blueprint references with a single command using <a href="https://devblogs.microsoft.com/visualstudio/unleashing-the-power-of-visual-studio-2022-for-c-game-development/#unreal-engine-blueprint-find-all-references">Unreal Engine Blueprint Find All References.</a></p>
-<p><img decoding="async" width="1202" height="367" class="wp-image-33621" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-4.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-4.png 1202w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-4-300x92.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-4-1024x313.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-4-768x234.png 768w" sizes="(max-width: 1202px) 100vw, 1202px" /></p>
-<h3><a id="ue-test"></a>Unreal Engine Test Adapter</h3>
-<p>The <a href="https://devblogs.microsoft.com/cppblog/unreal-engine-cpp-game-development-made-easy-visual-studio-2022/#unreal-engine-test-adapter">Unreal Engine test adapter</a> adds your UE tests to the Test Explorer window.</p>
-<p><img decoding="async" width="1008" height="567" class="wp-image-33622" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-5.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-5.png 1008w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-5-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatical-5-768x432.png 768w" sizes="(max-width: 1008px) 100vw, 1008px" /></p>
-<h3><a id="ue-snippets"></a>Unreal Engine Code Snippets</h3>
-<p>Use <a href="https://devblogs.microsoft.com/cppblog/unreal-engine-cpp-game-development-made-easy-visual-studio-2022/#unreal-engine-code-snippets">Unreal Engine code snippets</a> to quickly generate common UE-specific code.</p>
-<p><img decoding="async" width="1000" height="563" class="wp-image-33623" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-computer-screen-shot-of-a-program-code-descripti.png" alt="A computer screen shot of a program code Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-computer-screen-shot-of-a-program-code-descripti.png 1000w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-computer-screen-shot-of-a-program-code-descripti-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-computer-screen-shot-of-a-program-code-descripti-768x432.png 768w" sizes="(max-width: 1000px) 100vw, 1000px" /></p>
-<h3><a id="ue-macro-suggestions"></a>Unreal Engine Macro Specifier Suggestions</h3>
-<p><a href="https://devblogs.microsoft.com/cppblog/unreal-engine-cpp-game-development-made-easy-visual-studio-2022/#unreal-engine-macro-specifier-intellisense">Unreal Engine macro specifier suggestions</a> gives you a quick description of UE macros without you having to leave your editor.</p>
-<p><img decoding="async" width="1367" height="768" class="wp-image-33624" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-1.png" alt="A screenshot of a computer program Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-1.png 1367w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-1-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-1-1024x575.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-aut-1-768x431.png 768w" sizes="(max-width: 1367px) 100vw, 1367px" /></p>
-<h2><a id="build-insights"></a>Build Insights</h2>
-<p><a href="https://learn.microsoft.com/en-us/cpp/build-insights/get-started-with-cpp-build-insights?view=msvc-170">C++ Build Insights</a> is a collection of tools that collect data about your C++ builds and present it in a format that can help you answer common questions, like:</p>
-<ul>
-<li>Are my builds sufficiently parallelized?</li>
-<li>What should I include in my pre-compiled header (PCH)?</li>
-<li>Is there a specific bottleneck I should focus on to increase my build speeds?</li>
-</ul>
-<p>Last year, we integrated <a href="https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/">Build Insights into Visual Studio</a>, letting you see details on how your #includes are affecting your builds:</p>
-<p><img decoding="async" width="1024" height="399" class="wp-image-33625" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-included-files-view-of-the-build-insights-anal.png" alt="The Included Files view of the Build Insights analysis window" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-included-files-view-of-the-build-insights-anal.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-included-files-view-of-the-build-insights-anal-300x117.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-included-files-view-of-the-build-insights-anal-768x299.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
-<p>We then added a <a href="https://devblogs.microsoft.com/cppblog/functions-view-for-build-insights-in-visual-studio-2022-17-8/">Functions View</a> for seeing the amount of time the compiler took to process specific functions:</p>
-<p><img decoding="async" width="1099" height="571" class="wp-image-33626" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-3.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-3.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-3-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-3-1024x532.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-3-768x399.png 768w" sizes="(max-width: 1099px) 100vw, 1099px" /></p>
-<h2 id="ide-performance">IDE Performance</h2>
-<p>As well as the performance of your code, we continue to work on the performance of Visual Studio itself. Here are some of the highlights.</p>
-<ul>
-<li>Improved time-to-open and time-to-close</li>
-</ul>
-<p><img decoding="async" width="800" height="400" class="wp-image-33627" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/chart-showing-performance-comparison-between-vs-17.png" alt="Chart showing performance comparison between VS 17.5 and 17.6 on Solution Load and Solution Close. Both charts show significant improvements in the latest release." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/chart-showing-performance-comparison-between-vs-17.png 800w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/chart-showing-performance-comparison-between-vs-17-300x150.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/chart-showing-performance-comparison-between-vs-17-768x384.png 768w" sizes="(max-width: 800px) 100vw, 800px" /></p>
-<ul>
-<li>Improved time-to-colorization</li>
-</ul>
-<p><img decoding="async" width="2116" height="1406" class="wp-image-33628" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked.png" alt="a graph showing time to intellisense bench marked on unreal engine 5.1. VS 17.8 =1.3s VS 17.7 =1.8s " srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked.png 2116w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked-300x199.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked-1024x680.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked-768x510.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked-1536x1021.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-graph-showing-time-to-intellisense-bench-marked-2048x1361.png 2048w" sizes="(max-width: 2116px) 100vw, 2116px" /></p>
-<ul>
-<li>Improved debug launch performance</li>
-</ul>
-<p><img decoding="async" width="2240" height="1293" class="wp-image-33629" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs.png" alt="graph showing faster debugger launch speed 24 secs in 17.7 and 19 secs in 17.8" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs.png 2240w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs-300x173.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs-1024x591.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs-768x443.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs-1536x887.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/graph-showing-faster-debugger-launch-speed-24-secs-2048x1182.png 2048w" sizes="(max-width: 2240px) 100vw, 2240px" /></p>
-<h1><a id="toolchain"></a>Toolchain</h1>
-<p>Our toolchain for C++ spans components such as the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170">MSVC compiler</a>, our <a href="https://github.com/microsoft/STL">open-source C++ standard library implementation</a>, and our <a href="https://learn.microsoft.com/en-us/cpp/code-quality/code-analysis-for-c-cpp-overview?view=msvc-170&amp;viewFallbackFrom=vs-2022">code analysis tools</a>.</p>
-<h2><a id="conformance"></a>Conformance</h2>
-<p>For conformance with the C and C++ standards, we added support for C11<a href="https://devblogs.microsoft.com/cppblog/c11-atomics-in-visual-studio-2022-version-17-5-preview-2/"> atomics</a> and <a href="https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/">threads</a>. We also extended our <a href="https://devblogs.microsoft.com/cppblog/cpp20-support-comes-to-cpp-cli/">C++20 support to C++/CLI projects</a>. We also shipped the <a href="https://learn.microsoft.com/en-us/cpp/cpp/tutorial-import-stl-named-module?view=msvc-170">standard library modules</a> which are available in both C++23 mode and C++20 mode (the latter is a <a href="https://github.com/microsoft/STL/issues/3945">cross-vendor extension</a>).</p>
-<p>You can see the <a href="https://github.com/microsoft/STL/wiki/Changelog">STL changelog</a> for full details of our advances on our open-source standard library. You can also see the live <a href="https://microsoft.github.io/STL/">STL Status Chart</a> to see where we’re at for standards conformance. At the time of writing, only 8 standard library features remain for C++23 conformance. Thank you to everyone who contributed features in the last year! Please continue to <a href="https://github.com/microsoft/STL/issues">file issues</a> and <a href="https://github.com/microsoft/STL/pulls">create pull requests</a> on the GitHub repository; this is very much a community project.</p>
-<p>We also <a href="https://devblogs.microsoft.com/cppblog/open-sourcing-ifc-sdk-for-cpp-modules/">open-sourced the IFC SDK for C++ Modules</a>, which provides an interface for interacting with IFC files. IFC is an on-disk binary format which stores a representation of C++ source code for machine consumption. It was designed to implement C++ Modules, but can be used for other tools which require information about C++ code and don’t want to integrate a full C++ parser. <span class="TextRun SCXW205442904 BCX8" lang="EN-GB" xml:lang="EN-GB" data-contrast="auto"><span class="NormalTextRun CommentStart CommentHighlightPipeClickedV2 CommentHighlightClicked SCXW205442904 BCX8">The Microsoft Office Word codebase be</span><span class="NormalTextRun CommentHighlightClicked SCXW205442904 BCX8">gan adopting header units with MSVC, which you can read about in </span></span><a class="Hyperlink SCXW205442904 BCX8" href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW205442904 BCX8" lang="EN-GB" xml:lang="EN-GB" data-contrast="none"><span class="NormalTextRun CommentHighlightClicked SCXW205442904 BCX8" data-ccp-charstyle="Hyperlink">Integrating C++ header units into Office using MSVC</span></span></a><span class="TextRun SCXW205442904 BCX8" lang="EN-GB" xml:lang="EN-GB" data-contrast="auto"><span class="NormalTextRun CommentHighlightClicked SCXW205442904 BCX8">.</span></span></p>
-<p>Finally, we wrote extensive <a href="https://devblogs.microsoft.com/cppblog/documentation-for-cpp20-ranges/">documentation for C++20 Ranges</a>.</p>
-<p><img decoding="async" width="941" height="512" class="wp-image-33630" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-view2.png" alt="Image view2" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-view2.png 941w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-view2-300x163.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-view2-768x418.png 768w" sizes="(max-width: 941px) 100vw, 941px" /></p>
-<h2><a id="code-performance"></a>Code Performance</h2>
-<p>We’ve been working on the MSVC backend to improve code generation so that your C and C++ code runs as fast as possible. We’ve introduced new optimizations for ARM64 (particularly the auto-vectorizer for NEON instructions) as well as ones which will benefit all architectures (e.g. optimizations across basic blocks and vectorized loops). We also improved debug build performance by introducing new inlining controls for named type casts (like std::move and std::forward). Here are some blog posts which describe some of the bigger changes we’ve made in the past year:</p>
-<ul>
-<li><a href="https://devblogs.microsoft.com/cppblog/improving-the-state-of-debug-performance-in-c/">Improved debug build performance</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-6/">ARM64 optimizations</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/msvc-machine-independent-optimizations-in-visual-studio-2022-17-7/">Machine-independent optimizations</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-7/">More ARM64 optimizations</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/msvc-arm64-optimizations-in-visual-studio-2022-17-8/">Even more ARM64 optimizations!</a></li>
-</ul>
-<h2><a id="code-safety"></a>Code Safety</h2>
-<p>Code safety has been one of our team’s key focuses for the past several years. In addition to improvements to our Address Sanitizer support and static analysis tools, we produced a set of guidelines on how to <a href="https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/">build reliable and secure C++ programs</a>. This is a section-by-section companion to the United States government publication <a href="https://nvlpubs.nist.gov/nistpubs/ir/2021/NIST.IR.8397.pdf" target="_blank" rel="noopener">NISTIR 8397: Guidelines on Minimum Standards for Developer Verification of Software</a>.</p>
-<p>Here are blog posts on some of the key improvements we made:</p>
-<ul>
-<li><a href="https://devblogs.microsoft.com/cppblog/using-key-events-with-warning-c26800/">Key Events for use-after-move</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/high-confidence-lifetime-checks-in-visual-studio-version-17-5-preview-2/">High-Confidence Lifetime Checks</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/code-analysis-improvements-in-visual-studio-17-6/">Several code analysis improvements</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/stdstring-now-supports-address-sanitizer/">Address Sanitizer support for std::string</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/addresssanitizer-continue_on_error/">Address Sanitizer continue_on_error mode</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/">Address Sanitizer Runtime Unification</a></li>
-</ul>
-<h1><a id="vcpkg"></a>vcpkg</h1>
-<p><a href="https://vcpkg.io/en/">vcpkg</a> is our free, cross-platform package manager for C and C++. Here are some of the main advancements we made in the last year:</p>
-<ul>
-<li><a href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-04-15-release-vcpkg-ships-in-visual-studio-xbox-triplets-github-actions-cache-support-and-more/">vcpkg Shipped with Visual Studio</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/vcpkg-documentation-moves-to-microsoft-docs-platform/">Documentation moved to Microsoft Learn</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/vcpkg-integration-with-the-github-dependency-graph/">Integration with the GitHub Dependency Graph</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-06-20-and-2023-07-21-releases-github-dependency-graph-support-android-tested-triplets-xbox-triplet-improvements-and-more/#android-tested-triplets">Android tested triplets</a></li>
-<li><a href="https://devblogs.microsoft.com/cppblog/vcpkg-2023-10-19-release-export-for-manifests-documentation-improvements-and-more/">Default triplet is now detected from host</a></li>
-</ul>
-<h1><a id="visual-studio-code"></a>Visual Studio Code</h1>
-<p>We have official Visual Studio Code extensions for <a href="https://github.com/microsoft/vscode-cpptools">C++</a>, <a href="https://github.com/microsoft/vscode-cmake-tools">CMake</a>, <a href="https://github.com/microsoft/vscode-makefile-tools">Makefiles</a>, and <a href="https://github.com/microsoft/vscode-embedded-tools">Embedded</a>. We also maintain a <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack">C/C++ Extension Pack</a>, which collects some of these and other helpful extensions. We introduced many new features last year, most of them in response to issues filed on GitHub, so please keep sending in your feedback!</p>
-<h2><a id="cpp-extension"></a>C++ Extension</h2>
-<h3><a id="missing-header"></a>Missing Header File Quick Fix</h3>
-<p>We introduced new <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-18-release-quick-fixes-for-missing-header-files-extract-to-function-more/">Quick Fixes for missing header files</a> &#8211; if there is an unknown symbol in your C++ code and the C/C++ Extension identifies the correct header file in your workspace, you will now have a quick fix available.</p>
-<p><img decoding="async" width="1596" height="627" class="wp-image-33631" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-user-selecting-a-variable-with-an-underline-sel.gif" alt="a user selecting a variable with an underline, selecting the fixit and then selecting insert header. This adds the header to the top of their file." /></p>
-<h3><a id="call-hierarchy"></a>Call Hierarchy View</h3>
-<p>Use the new <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-16-release-call-hierarchy-more/#call-hierarchy">Call Hierarchy view</a> to can easily navigate your codebase &#8211; especially to understand the complex calling relationships between functions. This was our most requested feature in 2023 and 3<sup>rd</sup> most requested feature of all time!</p>
-<p><img decoding="async" width="1749" height="1370" class="wp-image-33632" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-gif-shows-a-user-navigating-to-their-call-hier.gif" alt="The gif shows a user navigating to their call hierarchy by right clicking a function with a Quick Fix available, then selecting &quot;Show Call Hierarchy&quot;. This opens a side bar with all the calls. The user then clicks on the phone icon in the menu of the side bar to toggle between calls from and calls to for that function." /></p>
-<h4><a id="extract-code"></a>Extract Code to Function</h4>
-<p>You can also now <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-18-release-quick-fixes-for-missing-header-files-extract-to-function-more/">automatically extract code into a function</a> &#8211; our 2<sup>nd</sup> most requested feature of 2023,and 10<sup>th</sup> most requested feature of all time!</p>
-<p><img decoding="async" width="2434" height="1365" class="wp-image-33633" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-extractmethodwithoutexperimentation.gif" alt="Image ExtractMethodwithoutexperimentation" /></p>
-<h3><a id="compiler-acquisition"></a>New Compiler Acquisition Process</h3>
-<p>We added a new, simpler <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-18-release-quick-fixes-for-missing-header-files-extract-to-function-more/#new-c-compiler-acquisition-process">C++ compiler acquisition process.</a></p>
-<p><img decoding="async" width="1300" height="224" class="wp-image-33634" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-install-a-compiler-mac-shows-that-for-the-c.png" alt="Image install a compiler mac, shows that for the configure intellisense command you can select install compiler" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-install-a-compiler-mac-shows-that-for-the-c.png 1300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-install-a-compiler-mac-shows-that-for-the-c-300x52.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-install-a-compiler-mac-shows-that-for-the-c-1024x176.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/image-install-a-compiler-mac-shows-that-for-the-c-768x132.png 768w" sizes="(max-width: 1300px) 100vw, 1300px" /></p>
-<h3><a id="create-declaration-definition"></a>Create Declaration/Definition</h3>
-<p>You can now automatically generate a function definition from a function declaration and vice versa with the <a href="https://devblogs.microsoft.com/cppblog/vs-code-c-extension-january-update-create-definitions-and-declarations">Create Declaration/Definition</a> feature.</p>
-<p><img decoding="async" width="732" height="526" class="wp-image-33635" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic-1.png" alt="A screen shot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic-1.png 732w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic-1-300x216.png 300w" sizes="(max-width: 732px) 100vw, 732px" /></p>
-<h3><a id="copy-declaration-definition"></a>Copy Function Declaration/Definition</h3>
-<p>You can also <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-16-release-call-hierarchy-more/#copy-declaration-definition">copy function declarations/definitions</a> to the clipboard to customize where the declaration/definition is placed in your code. to the clipboard.</p>
-<p><img decoding="async" width="1340" height="934" class="wp-image-33636" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/gif-showing-that-when-you-are-creating-a-declarati.gif" alt="Gif showing that when you are creating a declaration/definition, when you click on the function, rather than selecting &quot;create declaration&quot; you will select &quot;copy declaration&quot; and vice versa for declarations." /></p>
-<h3><a id="markdown-comments"></a>Markdown Comment Formatting</h3>
-<p>When commenting on your code, you can now <a href="https://devblogs.microsoft.com/cppblog/c-extension-in-vs-code-1-18-release-quick-fixes-for-missing-header-files-extract-to-function-more/#catching-up-adding-markdown-support#catching-up-adding-markdown-support">use markdown to format your comments</a> when using the hover tooltip.</p>
-<p><img decoding="async" width="1024" height="572" class="wp-image-33637" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33593-44.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33593-44.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33593-44-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33593-44-768x429.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
-<h3><a id="looking-forward"></a>Looking Forward</h3>
-<p>Looking forward, we are focusing on performance, so keep an eye out in 2024 for new features for a faster, more efficient experience in the C/C++ Extension!</p>
-<h2><a id="cmake-extension"></a>CMake Extension</h2>
-<h3><a id="test-explorer"></a>Test Explorer</h3>
-<p>We added a <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cmake-tools-1-14-in-vs-code-test-explorer/#test-explorer">Test Explorer</a> for CTest which lets you view details of your tests and their latest results.</p>
-<p><img decoding="async" width="1716" height="960" class="wp-image-33638" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-new-test-explorer-in-action.gif" alt="The new Test Explorer in action" /></p>
-<h3><a id="vcpkg-portfile-debugging"></a>vcpkg Portfile Debugging</h3>
-<p>We added support for <a href="https://devblogs.microsoft.com/cppblog/debug-vcpkg-portfiles-in-cmake-script-mode-with-visual-studio-code/">vcpkg portfile debugging</a>.</p>
-<p><img decoding="async" width="1024" height="672" class="wp-image-33639" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/debugging-your-portfile-cmake-using-the-cmake-debu.png" alt="Debugging your portfile.cmake using the CMake debugger" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/debugging-your-portfile-cmake-using-the-cmake-debu.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/debugging-your-portfile-cmake-using-the-cmake-debu-300x197.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/debugging-your-portfile-cmake-using-the-cmake-debu-768x504.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
-<h4><a id="cmake-status-bar"></a>Simplified CMake Status Bar</h4>
-<p>We <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-16-update-new-cmake-tools-sidebar-and-cmake-debugging-options/">simplified the CMake Status Bar</a>.</p>
-<p><img decoding="async" width="1024" height="501" class="wp-image-33640" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-new-cmake-status-bar-only-has-build-debug-an.png" alt="The new CMake status bar only has Build, Debug, and Run options by default" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-new-cmake-status-bar-only-has-build-debug-an.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-new-cmake-status-bar-only-has-build-debug-an-300x147.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/the-new-cmake-status-bar-only-has-build-debug-an-768x376.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
-<h3><a id="vscode-cmake-debugger"></a>CMake Debugger</h3>
-<p>As with Visual Studio, use the new <a href="https://devblogs.microsoft.com/cppblog/introducing-cmake-debugger-in-vs-code-debug-your-cmake-scripts-using-open-source-cmake-debugger/">CMake Debugger</a> to debug your CMake scripts like you would any other program. You can set breakpoints, see the values of CMake variables at the current point of execution, and more.</p>
-<p><img decoding="async" width="663" height="112" class="wp-image-33641" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-black-box-with-blue-text-description-automatica.png" alt="A black box with blue text Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-black-box-with-blue-text-description-automatica.png 663w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-black-box-with-blue-text-description-automatica-300x51.png 300w" sizes="(max-width: 663px) 100vw, 663px" /></p>
-<h1><a id="conference-talks"></a>Conference Talks</h1>
-<p>Our main two events for this year were <a href="https://cppcon.org/">CppCon</a> and <a href="https://learn.microsoft.com/en-us/events/learn-events/pure-virtual-c-plus-plus/">Pure Virtual C++</a>. You can read our <a href="https://devblogs.microsoft.com/cppblog/microsoft-visual-c-at-cppcon-2023-trip-report/">trip report for CppCon</a> to find out what we thought.</p>
-<p>Here are the videos for all our talks this past year at many conferences:</p>
-<ul>
-<li>Pure Virtual C++
-<ul>
-<li><a href="https://www.youtube.com/watch?v=Bi-J1amqFTA">C++ Compiler Errors for Humans</a> – Sy Brand</li>
-<li><a href="https://www.youtube.com/watch?v=i8_RfDAEjMs">Address Sanitizer continue_on_error</a> – Jim Radigan</li>
-<li><a href="https://www.youtube.com/watch?v=GzBzDW86cwk">Productive Cross-Platform and Game Development in Visual Studio </a>– Sinem Akinci &amp; David Li</li>
-<li><a href="https://www.youtube.com/watch?v=fXh2hVsFDso">Build Time Reflection with C++ in Year 2023</a> – Gabriel Dos Reis</li>
-<li><a href="https://www.youtube.com/watch?v=AWZRa3BXEnM">Value Oriented Programming</a> – Tony Van Eerd (guest)</li>
-</ul>
-</li>
-<li>CppCon
-<ul>
-<li><a href="https://www.youtube.com/watch?v=PTdy65m_gRE&amp;feature=youtu.be">Lifetime Safety in C++</a> – Gabor Horvath</li>
-<li><a href="https://www.youtube.com/watch?v=0UbkMysE7OM">New in Visual Studio: CMake Debugger, Better Diagnostics, and Video Games</a> – David Li &amp; Mryam Girmay</li>
-<li><a href="https://www.youtube.com/watch?v=8U3hl8XMm8c">Cooperative C++ Evolution: Towards a Typescript for C++</a> – Herb Sutter (Keynote)</li>
-<li><a href="https://www.youtube.com/watch?v=Soy3RjGYUJw">How Visual Studio Code Can Help You Develop More Efficiently in C++</a> – Alexandra Kemper &amp; Sinem Akinci</li>
-<li><a href="https://www.youtube.com/watch?v=NReDubvNjRg">Getting Started with C++</a> – Michael Price</li>
-</ul>
-</li>
-<li>ACCU
-<ul>
-<li><a href="https://www.youtube.com/watch?v=9mjNbl6DZnI">Cracking Collaboration: Problems and Solutions for C++ Development</a> &#8211; Sinem Akinci &amp; Alexandra Kemper</li>
-<li><a href="https://www.youtube.com/watch?v=bRFLKEfPvgk&amp;t=6s">And Then() Some(T)</a> – Victor Ciura</li>
-</ul>
-</li>
-<li>Meeting C++
-<ul>
-<li><a href="https://youtu.be/BkyrQgjJVAo?si=uwd8tiBl4AWpnXPB">AI Assistants for C++ Developers</a> – Michael Price</li>
-</ul>
-</li>
-<li>Code::dive
-<ul>
-<li><a href="https://www.youtube.com/watch?v=-STE4rQjrjk">Swift ABI Resilience</a> – Victor Ciura</li>
-</ul>
-</li>
-<li>C++ on Sea
-<ul>
-<li><a href="https://www.youtube.com/watch?v=8FlP0FiARAI">C++ Mythbusters Strike 2</a> – Victor Ciura</li>
-</ul>
-</li>
-<li>NDC Techtown
-<ul>
-<li><a href="https://www.youtube.com/watch?v=B0l7aE9KXOs">C++ Mythbusters Strike 2</a> – Victor Ciura</li>
-</ul>
-</li>
-</ul>
-<h1 id="send-us-your-feedback">Send us your feedback!</h1>
-<p>The comments below are open for us to track any requests. You can also find us on Twitter (<a href="https://twitter.com/visualc">@VisualC</a>) or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. To open a bug for Visual Studio, please see <a href="https://developercommunity.visualstudio.com/report?space=8&amp;entry=problem">Visual Studio Feedback</a>. To leave feedback for VS Code, visit the GitHub repository for the <a href="https://github.com/microsoft/vscode-cpptools">C++</a>, <a href="https://github.com/microsoft/vscode-cmake-tools">CMake</a>, <a href="https://github.com/microsoft/vscode-makefile-tools">Makefiles</a>, or <a href="https://github.com/microsoft/vscode-embedded-tools">Embedded</a> extension. We look forward to another year of C++!</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/a-year-of-cpp-improvements-in-visual-studio-vs-code-and-vcpkg/">A Year of C++ Improvements in Visual Studio, VS Code, and vcpkg</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/a-year-of-cpp-improvements-in-visual-studio-vs-code-and-vcpkg/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
