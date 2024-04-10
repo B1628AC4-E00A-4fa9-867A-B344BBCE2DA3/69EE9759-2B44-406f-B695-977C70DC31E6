@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 03 Apr 2024 19:15:54 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 10 Apr 2024 16:08:51 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,232 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Time Travel Debugging team uses Copilot Chat for C++</title>
+		<link>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/#respond</comments>
+		
+		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
+		<pubDate>Wed, 10 Apr 2024 16:06:58 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Copilot]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33744</guid>
+
+					<description><![CDATA[<p>Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on the Time Travel Debugging team at Microsoft, which is the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake,</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/">Time Travel Debugging team uses Copilot Chat for C++</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on the Time Travel Debugging team at Microsoft, which is the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake, and they primarily use Visual Studio Code for developing their code.</p>
+<p>They have been integrating<a href="https://docs.github.com/en/copilot/using-github-copilot/getting-started-with-github-copilot"> GitHub Copilot</a> and <a href="https://docs.github.com/en/copilot/github-copilot-chat/using-github-copilot-chat-in-your-ide">GitHub Copilot Chat</a> into their C++ development in VS Code and have found many useful workflows for the AI pair programmer.</p>
+<p><em>This blog post series has been written in partnership with Ken and JCAB to highlight their successful workflows with GitHub Copilot and GitHub Copilot Chat respectively and inspire other C++ developers on potential use cases to integrate with their coding workflows.</em></p>
+<p><em>This blog post series has been written in partnership with Ken and JCAB to highlight their workflows with Copilot and Copilot Chat respectively and inspire other C++ developers on potential use cases to integrate with their code. </em></p>
+<p><em>To view the first blog post on Copilot, please visit <a href="https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/">this link</a>.</em></p>
+<h2 id="how-they-use-copilot-chat">How they use Copilot Chat</h2>
+<p>They have integrated Copilot Chat as a search tool and pair programmer when coding, as it has provided applicable and relevant answers to some of their programming questions for their codebase.</p>
+<p>For example, some sample scenarios that JCAB uses Copilot Chat to help with are:</p>
+<ul>
+<li>Learning how to find, install, and use various tools</li>
+<li>Asking programming documentation questions</li>
+<li>Asking coding questions</li>
+</ul>
+<p>Example questions and actual responses provided by Copilot Chat are enumerated below by JCAB throughout his workflows.</p>
+<h3 id="learn-how-to-find-install-and-use-various-tools">Learn how to find, install, and use various tools</h3>
+<h4 id="installing-tools"><em>Installing Tools</em></h4>
+<p>For Windows users, it is not natural to know how to install various Linux tools, but it is necessary for Linux development on their WSL Ubuntu machines. Luckily, Copilot Chat was able to get us close to the right set of directions to do so by iterating over the prompt. For example, I was curious about learning more about acquiring clang via package manager.</p>
+<p>Please note, it is always a good idea to validate Copilot responses to ensure they are correct.</p>
+<hr />
+<p><span style="font-family: times;">jcab_microsoft: How do I list &#8220;apt&#8221; packages that match a portion of their names?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: You can use the `apt-cache search` command to list all packages that match a portion of their names. Here&#8217;s how you can do it: </span></p>
+<pre>apt-cache search &lt;package-name-portion&gt;</pre>
+<p><span style="font-family: times;">
+Replace `&lt;package-name-portion&gt;` with the portion of the package name you&#8217;re interested in. This command will return a list of all packages that contain the specified string in their name or description.</span></p>
+<p><span style="font-family: times;">For example, to search for all packages that contain the word &#8220;python&#8221; in their name or description, you would use:</span></p>
+<pre>apt-cache search python</pre>
+<p><span style="font-family: times;">
+This will return a list of all packages related to Python.</span></p>
+<hr />
+<p>Ubuntu’s “apt” packages tend to be quite old, so it defaults to clang 14 and offers “clang-15” as an opt-in. But apparently, there’s a way to get packages directly from the makers.</p>
+<p>I didn’t know about this but asked the basic question anyway and Copilot delivered wonderfully. In the end, this got me brand-spanking-new clang 19 without breaking a sweat.</p>
+<hr />
+<p><span style="font-family: times;">
+jcab_microsoft: How can I get a current version of clang in my Ubuntu 22?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: To get the current version of Clang on Ubuntu 22.04, you can use the LLVM project&#8217;s own repositories. Here are the steps:</span></p>
+<ol>
+<li><span style="font-family: times;">First, add the LLVM repository to your system:</span></li>
+</ol>
+<pre>wget -O - <a href="https://apt.llvm.org/llvm-snapshot.gpg.key">https://apt.llvm.org/llvm-snapshot.gpg.key</a> | sudo apt-key add -
+
+echo "deb <a href="https://apt.llvm.org/focal/">https://apt.llvm.org/focal/</a> llvm-toolchain-focal main" | sudo tee /etc/apt/sources.list.d/llvm.list</pre>
+<ol start="2">
+<li><span style="font-family: times;">Update the package list:</span></li>
+</ol>
+<pre>sudo apt-get update</pre>
+<ol start="3">
+<li><span style="font-family: times;">Install Clang:</span></li>
+</ol>
+<pre>sudo apt-get install clang</pre>
+<p><span style="font-family: times;">This will install the latest stable version of Clang available in the LLVM repository. </span></p>
+<p><span style="font-family: times;">To check the installed version of Clang, you can use the following command:</span></p>
+<pre>clang --version</pre>
+<p><span style="font-family: times;">Please note that the LLVM repository might not always have the absolute latest version of Clang, but it generally has more recent versions than the official Ubuntu repositories.</span></p>
+<hr />
+<p>In general, I like to use iterative questions with Copilot Chat to understand how to install tools, especially in unfamiliar territories and can probe for more information when prompted.</p>
+<p>As I mentioned before, it’s a good idea to check Copilot responses for issues. In this case, it suggested to use a command “apt-key” which is deprecated. Luckily in this case, that command provided good instructions on how to do it the non-deprecated way.</p>
+<h3 id="ask-about-programming-documentation">Ask about programming documentation</h3>
+<p>Despite being an experienced C++ and Windows developer, I don&#8217;t know everything! But I can ask C++ and Windows-specific questions for my programming and see that Copilot Chat is very helpful.</p>
+<hr />
+<p><span style="font-family: times;">
+jcab_microsoft: What was the NTSTATUS generated by a fastfail in Windows?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: The `NTSTATUS` code generated by a fastfail in Windows is `0xC0000409`, which corresponds to `STATUS_STACK_BUFFER_OVERRUN`. This status code indicates that a stack buffer overrun has occurred in the application, compromising the integrity of the process.</span></p>
+<p><span style="font-family: times;">When a fastfail occurs, the process is terminated immediately without running any exception handling or cleanup code. This is designed to prevent potential security vulnerabilities from being exploited.</span></p>
+<hr />
+<p>Note that Copilot isn’t perfect, and its information can sometimes be out of date, so sometimes I use it as a nudge in the right direction (see <a href="https://devblogs.microsoft.com/oldnewthing/20230731-00/?p=108505">this blog from 2023</a> clarifying this information, although this is what was meant at first).</p>
+<p>And sometimes, documentation questions turn into code questions.</p>
+<hr />
+<p><span style="font-family: times;">
+jcab_microsoft: In C++, is there a way to wait for multiple synchronization objects?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: In C++, there isn&#8217;t a direct way to wait for multiple synchronization objects like you can in some other languages or platforms (for example, `WaitForMultipleObjects` in Windows API). However, you can achieve similar functionality using condition variables along with a status check for the objects you&#8217;re interested in.</span></p>
+<p><span style="font-family: times;">Here&#8217;s a simplified example:</span></p>
+<pre>#include &lt;mutex&gt;
+
+#include &lt;condition_variable&gt;
+
+#include &lt;vector&gt;
+
+std::mutex mtx;
+
+std::condition_variable cv;
+
+std::vector&lt;bool&gt; objects_ready; // replace with actual status of your objects
+
+void wait_for_objects() {
+
+    std::unique_lock&lt;std::mutex&gt; lock(mtx);
+
+    cv.wait(lock, []{ 
+
+        // This is a predicate function that checks if all objects are ready
+
+        for (bool is_ready : objects_ready) {
+
+            if (!is_ready) return false;
+
+        }
+
+        return true;
+
+    });
+
+}
+
+void set_object_ready(int index) {
+
+    std::lock_guard&lt;std::mutex&gt; lock(mtx);
+
+    objects_ready[index] = true;
+
+    cv.notify_all(); // notify all waiting threads
+
+}</pre>
+<p><span style="font-family: times;">In this example, `wait_for_objects` waits until all objects are ready. `set_object_ready` sets an object as ready and notifies all waiting threads.</span></p>
+<p><span style="font-family: times;">Please note that this is a simplified example and may not be suitable for all use cases. Depending on your needs, you may need to use a different synchronization mechanism or a third-party library.</span></p>
+<hr />
+<h3 id="ask-coding-questions">Ask coding questions</h3>
+<p>In my current line of work, I often need to find how to do a given Windows thing in Standard C++ and/or Linux. Below are some questions I’ve asked Copilot Chat that have been highly performant and helpful.</p>
+<hr />
+<p><span style="font-family: times;">jcab_microsoft: what is the standard C++ way to implement _BitScanForward?</span></p>
+<p><span style="font-family: times;">Github Copilot: `_BitScanForward` is a Microsoft-specific intrinsic function that is not part of the C++ standard library. However, you can use the `__builtin_ctz` function in GCC and Clang to achieve the same functionality. Here&#8217;s an example implementation:</span></p>
+<pre>#include &lt;cstdint&gt;
+
+#ifdef _MSC_VER
+
+#include &lt;intrin.h&gt;
+
+#endif
+
+uint32_t BitScanForward(uint32_t mask)
+
+{
+
+#ifdef _MSC_VER
+
+    unsigned long index;
+
+    _BitScanForward(&amp;index, mask);
+
+    return index;
+
+#else
+
+    return __builtin_ctz(mask);
+
+#endif
+
+}</pre>
+<p><span style="font-family: times;">This implementation checks if the code is being compiled with Microsoft Visual C++ (indicated by the `_MSC_VER` macro) and uses `_BitScanForward` if it is. Otherwise, it uses the `__builtin_ctz` function to achieve the same functionality. Note that `__builtin_ctz` returns the number of trailing zeros in the input, so you may need to subtract the result from the bit width of the input type to get the index of the first set bit.</span></p>
+<hr />
+<p>Notice that Copilot Chat didn’t necessarily fully answer the question using C++20 standards, but still provided some level of guidance for me. Again, it can be important to iterate with Copilot if this is a priority for you.</p>
+<p>And some more for porting over code&#8230;</p>
+<hr />
+<p><span style="font-family: times;">
+jcab_microsoft: How can I get the _byteswap_ulong intrinsic in clang?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: The `_byteswap_ulong` intrinsic is specific to Microsoft&#8217;s compiler. In Clang, you can use the `__builtin_bswap32` function to achieve the same functionality. Here&#8217;s an example:</span></p>
+<pre>#include &lt;cstdint&gt;
+
+uint32_t byteswap_ulong(uint32_t value)
+
+{
+
+    return __builtin_bswap32(value);
+
+}</pre>
+<p><span style="font-family: times;">In this function, `__builtin_bswap32` reverses the byte order of a 32-bit value, which is equivalent to what `_byteswap_ulong` does in Microsoft&#8217;s compiler.</span></p>
+<p><span style="font-family: times;">
+jcab_microsoft: What about a clang intrinsic for _mul128?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: Clang does not have a direct intrinsic for `_mul128`. However, you can use the built-in type `__int128` to perform 128-bit multiplication. Here&#8217;s an example:</span></p>
+<pre>#include &lt;cstdint&gt;
+
+void mul128(int64_t a, int64_t b, int64_t* high, int64_t* low) {
+
+    __int128 result = static_cast&lt;__int128&gt;(a) * static_cast&lt;__int128&gt;(b);
+
+    *high = result &gt;&gt; 64;
+
+    *low = result;
+
+}</pre>
+<p><span style="font-family: times;">In this function, `a` and `b` are the 64-bit integers to multiply, and `high` and `low` are pointers to 64-bit integers where the high and low 64 bits of the result will be stored, respectively. The function first casts `a` and `b` to `__int128` and performs the multiplication, then it stores the high and low 64 bits of the result in `*high` and `*low`, respectively.</span></p>
+<p><span style="font-family: times;">
+jcab_microsoft: What&#8217;s the best equivalent on Linux to fastfail?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: On Linux, the closest equivalent to Windows&#8217; `fastfail` would be to use the `abort()` function from the C Standard Library. This function causes the program to terminate abnormally and generate a core dump file for post-mortem analysis.</span></p>
+<p><span style="font-family: times;">Here&#8217;s how you can modify the `DBG_FAIL` macro in your code to use `abort()`:</span></p>
+<pre>#define DBG_FAIL(...)          abort()</pre>
+<p><span style="font-family: times;">
+This will cause the program to terminate immediately when `DBG_FAIL` is called, similar to how `fastfail` works on Windows. However, please note that unlike `fastfail`, `abort()` does not allow you to specify an exit code. The program will always return with a status indicating abnormal termination.</span></p>
+<hr />
+<p>And always, if in doubt, never hesitate to ask for clarification and pointers to the relevant documentation.</p>
+<hr />
+<p><span style="font-family: times;">
+jcab_microsoft: Do you have any pointers to references expanding on the use of abort() in place of __fastfail()?</span></p>
+<p><span style="font-family: times;">GitHub Copilot: The use of `abort()` in place of `__fastfail()` is a common practice in Unix-like environments, including Linux, where `__fastfail()` is not available. The `abort()` function raises the `SIGABRT` signal, causing the process to terminate unless the signal is caught by a signal handler. This is similar to how `__fastfail()` works on Windows.</span></p>
+<p><span style="font-family: times;">Here are some references that discuss the use of `abort()`:</span></p>
+<p>&#8211; [abort &#8211; C++ Reference](<a href="http://www.cplusplus.com/reference/cstdlib/abort/">http://www.cplusplus.com/reference/cstdlib/abort/</a>)</p>
+<p>&#8211; [abort &#8211; Linux man page](<a href="https://man7.org/linux/man-pages/man3/abort.3.html">https://man7.org/linux/man-pages/man3/abort.3.html</a>)</p>
+<p><span style="font-family: times;">These references provide detailed information about how `abort()` works and how it can be used to terminate a process in response to a fatal error or security violation.</span></p>
+<p><span style="font-family: times;">Please note that while `abort()` is similar to `__fastfail()`, there are some differences. For example, `abort()` does not allow you to specify an exit code, and it does not guarantee that the process will terminate immediately in all circumstances. If you need more control over the termination process, you may need to use a different function or mechanism.</span></p>
+<hr />
+<h2 id="wrap-up">Wrap Up</h2>
+<p><strong>A big thanks to Ken and JCAB from the Time Travel Debugging Team for collaborating with us on this blog post!</strong></p>
+<p>Copilot Chat can provide you with AI-powered assistance at many points in your C++ development, such as installing new tools and answering various programming questions. Download Copilot Chat (<a href="https://devblogs.microsoft.com/visualstudio/introducing-the-new-copilot-experience-in-visual-studio/">automatically available with Visual Studio as of 17.10 Preview 3</a>) and try out utilizing it when you are learning new processes or generating code! Please note that responses are generated by AI, so we recommend reviewing any responses provided and augmenting and iterating with your prompts when necessary.</p>
+<p>Our team is working hard on improving C++ integrations, so please let us know any improvements you’d like to see to your C++ workflows. Additionally, let us know what other types of content you’d like to see regarding use cases or additional information about Copilot Chat.</p>
+<p>We welcome all types of feedback on your experience with the product. The comments below are open, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/">Time Travel Debugging team uses Copilot Chat for C++</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>How Copilot is being used by the Time Travel Debugging team for repetitive C++ coding</title>
 		<link>https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/#comments</comments>
@@ -886,76 +1112,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio Code CMake Tools Extension 1.17 Update: CMake Presets v6, Overriding Cache Variables, and Side Bar Updates</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Tue, 13 Feb 2024 19:34:41 +0000</pubDate>
-				<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33670</guid>
-
-					<description><![CDATA[<p>The February release of the CMake Tools extension in VS Code is now available. With this release, we have three major new updates to the extension, including some of our highly upvoted requests:</p>
-<p>There is now support for CMake Presets v6,</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/">Visual Studio Code CMake Tools Extension 1.17 Update: CMake Presets v6, Overriding Cache Variables, and Side Bar Updates</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The February release of the CMake Tools extension in VS Code is now available. With this release, we have three major new updates to the extension, including some of our highly upvoted requests:</p>
-<ul>
-<li>There is now support for CMake Presets v6, which includes the new <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#workflow-preset">workflow presets</a> and <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#package-preset">package presets</a>. (<a href="https://github.com/microsoft/vscode-cmake-tools/issues/2871">Issue #2871</a>)</li>
-<li>You can now pin common CMake Tools commands in the CMake side bar.</li>
-<li>You can now override/add to cache variables and other settings when using CMake Presets (<a href="https://github.com/microsoft/vscode-cmake-tools/issues/1836">Issue #1836</a>)</li>
-</ul>
-<p>To view the full list of updates with this release, please look at our <a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/CHANGELOG.md">CHANGELOG</a>. This release features 2 contributions from our open-source community, and we greatly thank you for your support!</p>
-<h3 id="cmake-presets-v6-support">CMake Presets v6 Support</h3>
-<p>Kitware has added two new CMake Presets in version 6: workflow and package presets. Workflow presets allow you to define a string of CMake presets that you want to execute (e.g.  a configure action followed by a build action). Package presets are presets that invoke CPack to package your software based on a variety of specifications. You can learn more about these presets from <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">Kitware’s CMake Presets documentation.</a> There is now added support to include these new preset types in your CMake presets file and invoke them through the extension.</p>
-<p>With this added capability, you can select and run these presets by default from the CMake Side bar as you would any other preset.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-sidebar-package-workflow.png"><img decoding="async" class="size-full wp-image-33671 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-sidebar-package-workflow.png" alt="The Cmake Sidebar in VS Code with Package and Workflow nodes highlighted and their relevant presets" width="709" height="922" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-sidebar-package-workflow.png 709w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-sidebar-package-workflow-231x300.png 231w" sizes="(max-width: 709px) 100vw, 709px" /></a></p>
-<p>Additionally, you can toggle the presets visibility across the side bar and status bar via the CMake Status Bar Visibility options through <strong>“<code>workflow</code>”</strong>, <strong>“<code>workflowPreset</code>”</strong>, and <strong>“<code>packagePreset</code>”</strong> settings. To learn more about the supported visibility options, please see <a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/docs/cmake-options-configuration.md">our documentation</a>.</p>
-<p>While CMake Presets v7 and v8 do not have official support yet in the product, expansion of <code>$penv{}</code> in #include<a href="https://github.com/microsoft/vscode-cmake-tools/pull/3377"> was added in the previous 1.16 release</a> of the extension. We will be working to add the full support for v7 and v8 in upcoming releases.</p>
-<h3 id="override-add-to-cache-variables-when-using-cmake-presets">Override/add to cache variables when using CMake Presets</h3>
-<p>One of our most highly-upvoted tickets was to add adjustments to CMake Presets by overriding/adding to cache variables. There are now new <strong>settings.json </strong>fields that modify configuration, build, and testing to override CMake Presets environments and arguments if you require this workflow. Specifically, these fields include:</p>
-<p><em>Overrides any CMake command:</em></p>
-<ul>
-<li><code>cmake.environment</code></li>
-</ul>
-<p><em>Overrides configure CMake commands</em></p>
-<ul>
-<li><code>cmake.configureArgs</code></li>
-</ul>
-<p><em>Overrides build CMake commands</em></p>
-<ul>
-<li><code>cmake.buildArgs</code></li>
-<li><code>cmake.buildEnvironment</code></li>
-<li><code>cmake.buildToolsArgs</code></li>
-</ul>
-<p><em>Overrides test CMake commands</em></p>
-<ul>
-<li><code>cmake.ctestArgs</code></li>
-<li><code>cmake.testEnvironment</code></li>
-</ul>
-<p>If there are settings set in any of the above fields, the affected CMake presets will display in the UI whether override settings have been applied for ease of tracking.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override.png"><img decoding="async" class=" wp-image-33672 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override-1024x560.png" alt="An example of cmake.configureArgs override showing in the UI that override settings are applied." width="812" height="444" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override-1024x560.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override-300x164.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override-768x420.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/configure-args-override.png 1246w" sizes="(max-width: 812px) 100vw, 812px" /></a></p>
-<p>Additionally, a setting icon will appear that, when clicked, will open to the possible settings that may be affecting the configuration.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon.png"><img decoding="async" class=" wp-image-33673 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon-1024x618.png" alt="A Settings gear that allows you to view the settings overriding your Configure Preset." width="693" height="418" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon-1024x618.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon-300x181.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon-768x464.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/settings-override-icon.png 1189w" sizes="(max-width: 693px) 100vw, 693px" /></a></p>
-<h3 id="pin-common-cmake-commands-to-side-bar">Pin common CMake commands to side bar</h3>
-<p>If you commonly perform any type of CMake command, you can now pin these commands to the CMake side bar so that they’re easily accessible. To add a new CMake command to the side bar, navigate to the <strong>Pinned CMake Commands</strong> section and select the plus sign to search for a new CMake command to add.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-pinned-commands.png"><img decoding="async" class="size-full wp-image-33675 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-pinned-commands.png" alt="An empty pinned commands pane in the CMake side bar with the option to add a new commands" width="766" height="598" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-pinned-commands.png 766w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-pinned-commands-300x234.png 300w" sizes="(max-width: 766px) 100vw, 766px" /></a></p>
-<p>To run any given command, just hover over the command and select the corresponding play button. You can also remove any command from the list by hovering over it, right-clicking, and selecting <strong>Unpin Command</strong>.</p>
-<h3 id="whats-next"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands.png"><img decoding="async" class="size-large wp-image-33676 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands-1024x299.png" alt="Whenever you have any cmake command pinned, you also have the option to unpin them." width="640" height="187" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands-1024x299.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands-300x87.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands-768x224.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/cmake-unpin-commands.png 1084w" sizes="(max-width: 640px) 100vw, 640px" /></a>What&#8217;s next?</h3>
-<p>We have a lot of exciting new things planned for the 1.18 release including <a href="https://github.com/microsoft/vscode-cmake-tools/issues/534">adding the first layers of CMake language services to the extension</a>, <a href="https://github.com/microsoft/vscode-cmake-tools/issues/2984">adding tasks to the CMake side bar</a>, and <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3081">having an option for CMake to be automatically installed when missing via package manager</a>. You can view these plans any time via <a href="https://github.com/orgs/microsoft/projects/1024/views/4">our new GitHub project view</a>.</p>
-<p>Let our team know what else you would like to see from us by <a href="https://github.com/microsoft/vscode-cmake-tools/issues/3291" target="_blank" rel="noopener">adding an issue to our repo</a> or upvoting any existing issues with a thumbs up.</p>
-<h3 class="screenreader-text" aria-atomic="true" aria-live="polite" class="screenreader-text" aria-atomic="true" aria-live="polite" id="what-do-you-think">What do you think?</h3>
-<p>Download the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools" target="_blank" rel="noopener">CMake Tools extension </a>for Visual Studio Code and let us know what you think. We would love to see what you contribute to our<a href="https://github.com/microsoft/vscode-cmake-tools" target="_blank" rel="noopener"> repo</a> and we are active on reviews and collaboration. Comment below or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/">Visual Studio Code CMake Tools Extension 1.17 Update: CMake Presets v6, Overriding Cache Variables, and Side Bar Updates</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-17-update-cmake-presets-v6-overriding-cache-variables-and-side-bar-updates/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
