@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 10 Apr 2024 16:08:51 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 12 Apr 2024 19:39:12 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,67 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Address Sanitizer adoption in .NET’s CoreCLR</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/#respond</comments>
+		
+		<dc:creator><![CDATA[Zack Johnson]]></dc:creator>
+		<pubDate>Fri, 12 Apr 2024 19:39:12 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33957</guid>
+
+					<description><![CDATA[<p>Collaboration to improve the reliability and security of .NET, from the perspective of an MSVC Address Sanitizer Developer<br />
+Introduction<br />
+.NET (on GitHub) is a cross-platform, open-source, and general-purpose development platform with widespread adoption. A core component of .NET is the Core Common Language Runtime (CoreCLR),</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/">MSVC Address Sanitizer adoption in .NET’s CoreCLR</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Collaboration to improve the reliability and security of .NET, from the perspective of an MSVC Address Sanitizer Developer</p>
+<h1 id="introduction">Introduction</h1>
+<p>.NET (<a href="https://github.com/dotnet/runtime/">on GitHub</a>) is a cross-platform, open-source, and general-purpose development platform with widespread adoption. A core component of .NET is the Core Common Language Runtime (CoreCLR), which provides services such as memory management, exception handling, threading, and interoperability with native code. It is used by millions of developers across multiple platforms, including Windows, Linux, and Mac OSx.</p>
+<p>The CoreCLR is implemented in native code, C and C++, and is a complex performance-critical system that interacts with various components, such as the operating system, the native libraries, and managed code. As such, it is susceptible to memory errors such as buffer overflows, use-after-frees, and memory leaks. These errors can cause crashes, undefined behavior, data corruption, security vulnerabilities, and performance degradation. It is crucial to detect and fix them as early as possible in development.</p>
+<p>The MSVC Address Sanitizer (<a href="https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170">ASan</a>) team was able to work with the CoreCLR team to help them consume and integrate ASan into their development workflow. ASan’s promise of zero false positive memory safety error reports increases security confidence in existing and legacy codebases, and CoreCLR was a great candidate for usage. As a bonus, since .NET is cross-platform, it can leverage ASan across Clang, GCC, and now also MSVC. In addition to this work, the native ahead-of-time (NativeAOT) runtime component is also sanitized.</p>
+<h1 id="why-were-changes-required">Why were changes required?</h1>
+<p>Previous work had been done to enable ASan for CoreCLR on gcc, but incompatibilities on Windows with build infrastructure, mixed configurations during testing, and run time issues precluded adoption. However, the effort for gcc was fruitful in finding memory safety errors, such as alloc-dealloc mismatches, buffer overruns, and use-after-scopes.</p>
+<p>CoreCLR also contains some unique constraints on Windows that made ASan integration more challenging.</p>
+<ol>
+<li>It loads and unloads modules <strong>during</strong> runtime, which can interfere with ASan&#8217;s initialization and finalization.</li>
+<li>It uses custom memory allocators and stack unwinding mechanisms, which can conflict with ASan’s tracking and reporting.</li>
+<li>It has some code paths containing fast checked casts and tail calls, which originally caused ASan false positives.</li>
+<li>It contains a Just-In-Time (JIT) layer that generates machine code, which can be tricky for ASan to navigate.</li>
+</ol>
+<p>Work to resolve some issues shared across all platforms was completed previously. However, for CoreCLR on Windows, both build and run time changes were required from the ASan team before adoption could take place.</p>
+<h1 id="what-changed-in-msvc-asan">What changed in MSVC ASan</h1>
+<p>A significant barrier to entry for several potential consumers of ASan on Windows was the different configurations and consuming debug vs release and dynamic vs statically linked libraries. This problem was addressed by creating a single always-dynamically-linked library that is used as the one source of truth for the application’s memory state. You can read more about the library change in the blog post <a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/">here</a>. This was also a requirement for ASan adoption in CoreCLR.</p>
+<p>Summary of changes:</p>
+<ul>
+<li>Annotate allocations that happen prior to when ASan begins tracking the allocations to prevent false positive reports.</li>
+<li>Intercept AddVectoredExceptionHandler and RemoveVectoredExceptionHandler on x64 to prevent spurious AccessViolationExceptions. This is necessary due to the shadow memory implementation on x64, which makes use of an on-demand mapping scheme which uses an exception handler to map shadow memory.</li>
+<li>Correct an issue regarding ODR (One Definition Rule) violations for global variables of the same size in separate DLLs (Dynamic Link Libraries).</li>
+<li>Support for weak symbols to allow the usage of ASan interface functions.</li>
+<li>Suppress ASan communication with debuggers to avoid being caught by CoreCLR’s exception handler.</li>
+</ul>
+<h1 id="what-changed-in-coreclr">What changed in CoreCLR</h1>
+<p>After appropriate changes were made from the ASan side, some changes were necessary to avoid build time errors, run time errors, and false positives on the CoreCLR side:</p>
+<ul>
+<li>Build infrastructure changes were required to have distinct sanitized and unsanitized component builds to test individual components one at a time, and then later all together. Most of those changes can be seen <a href="https://github.com/dotnet/runtime/pull/74623/files#diff-5158a979b64d41ef8f50b266afbd32c3434e5409b293651f7da5e41b98c2cc02">here</a>.</li>
+<li>The <code>__asan_handle_no_return</code> function was inserted into several exception handling code paths to unpoison the stack memory and frames to correctly identify stack-use-after-scope and stack-use-after-return when using a sanitized CoreCLR.</li>
+<li>The final test, configuration, and enablement of ASan pull request can be viewed <a href="https://github.com/dotnet/runtime/pull/95758">here</a>.</li>
+</ul>
+<p>After the changes were made, a <a href="https://dev.azure.com/dnceng-public/public/_build?definitionId=243&amp;_a=summary">weekly pipeline</a> run was created. The overall pipeline stability is still work in progress, but the <a href="https://dev.azure.com/dnceng-public/public/_build/results?buildId=608098&amp;view=logs&amp;j=943d8489-b13a-562a-30e1-90495a314d97">windows-x64 Checked CoreCLR_RuntimeTests</a> and <a href="https://dev.azure.com/dnceng-public/public/_build/results?buildId=608098&amp;view=logs&amp;j=62cc0a81-1f10-51a9-aa4f-cd7cddcf5989">windows-x64 release NativeAOT</a> steps are the important jobs related to this post. Since the project is so large, and the build and test steps take a significant amount of time already, the decision was to run on a weekly cadence. This prevents hindering code velocity while also providing useful feedback to bisect memory safety errors as they appear. It is important to continue to monitor these results after enabling ASan in projects to not regress memory safety metrics. Much of the work done by both teams was already completed before the release of Visual Studio 2022 17.8, but until the CI infrastructure for .NET could consume the changes in an official release, they were blocked.</p>
+<p>Special thanks to Jeremy Koritzinsky and the CoreCLR team for their hard work and collaboration!</p>
+<h1 id="call-to-action">Call to action</h1>
+<p>We’d love for you to download Visual Studio and give the Address Sanitizer a try. As always, we welcome your feedback. We can be reached via the comments below. If you encounter other problems with MSVC or have a suggestion for Visual Studio please let us know through <a href="https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2017/ide/how-to-report-a-problem-with-visual-studio?view=vs-2017">Help &gt; Send Feedback &gt; Report A Problem / Provide a Suggestion in the product</a>, or via <a href="https://developercommunity.visualstudio.com/topics/C%2B%2B.html">Developer Community</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/">MSVC Address Sanitizer adoption in .NET’s CoreCLR</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Time Travel Debugging team uses Copilot Chat for C++</title>
 		<link>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/#respond</comments>
@@ -1046,72 +1107,6 @@ Some stats for this period:</p>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-since-visual-studio-2022-version-17-3/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>What&#8217;s New for C++ Developers in Visual Studio 2022 17.9</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 13 Feb 2024 20:09:41 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33657</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.9 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/">What&#8217;s New for C++ Developers in Visual Studio 2022 17.9</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.9 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
-<h1 id="standard-library">Standard Library</h1>
-<p>We&#8217;re continuing to improve our open source <a href="https://github.com/microsoft/STL">standard library implementation</a>. Thank you to everyone who has contributed features and fixes to this release! You can find the full set of changes at the <a href="https://github.com/microsoft/STL/wiki/Changelog">STL changelog</a>.</p>
-<p>The main conformance highlight for this release is the implementation of the <code>&lt;mdspan&gt;</code> header. This provides support for multi-dimensional views of data. You can read WG21 paper <a href="https://wg21.link/P0009R18" rel="nofollow">P0009R18</a> for details and the <a href="https://en.cppreference.com/w/cpp/container/mdspan">cppreference page</a> for documentation on how to use it.</p>
-<p>We&#8217;ve also made progress on the implementation of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html">P2286 Formatting Ranges</a>. This work will continue into version 17.10.</p>
-<p>Outside of conformance, you&#8217;ll also find improved performance for some algorithms. For example, we optimized the <code>copy()</code>, <code>copy_n()</code>, and <code>move()</code> algorithms for <code>vector&lt;bool&gt;</code> iterators, with speedups varying from 1.8x (times, not percent) to 3200x (not a typo), depending on the size and alignment of the bits being copied.</p>
-<h1 id="core-editor">Core Editor</h1>
-<h2 id="ai-generated-git-commit-messages">AI Generated Git Commit Messages</h2>
-<p>Although developers frequently make Git commits, many often overlook the importance of writing meaningful commit messages. The new generated commit message feature is designed to assist you in describing your changes, ensuring clarity and relevance in your commits.</p>
-<p><img decoding="async" width="397" height="426" class="wp-image-33658 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-au.png" alt="A screenshot of a computer program Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-au.png 397w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-program-description-au-280x300.png 280w" sizes="(max-width: 397px) 100vw, 397px" /></p>
-<p>To get started, ensure you have an active GitHub Copilot subscription along with the preview GitHub Copilot Chat Extension installed. Simply click the &#8216;Add AI Generated Commit Message&#8217; sparkle pen icon within the Git Changes window for a suggested commit message. GitHub Copilot analyzes your commit&#8217;s file changes, provides a summary, and then offers a descriptive message for each change. Choose to &#8216;Insert AI Suggestion&#8217; or &#8216;Discard&#8217; based on your preference. We welcome your feedback on this feature at <a href="https://aka.ms/AICommitMessages"><em>this link</em></a>. Additionally, the issue related to the icon&#8217;s appearance has been addressed; more information can be found <a href="https://developercommunity.visualstudio.com/t/How-do-I-enable-GitHub-Copilot-Commit-Me/10528699"><em>here.</em></a></p>
-<h2 id="open-a-pull-request-in-visual-studio-or-in-the-browser">Open a Pull Request in Visual Studio or in the Browser</h2>
-<p>To support GitHub and Azure DevOps users who prefer to use the browser view for creating pull requests, we&#8217;ve added a secondary link to help maintain current user flows.</p>
-<p><img decoding="async" class="wp-image-33659 size-medium aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-4-300x265.png" alt="A screenshot of a computer Description automatically generated" width="300" height="265" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-4-300x265.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-4-768x679.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-4.png 894w" sizes="(max-width: 300px) 100vw, 300px" /></p>
-<h2 id="responsive-ref-labels-in-the-git-repository-window">Responsive Ref Labels in the Git Repository Window</h2>
-<p>Your branch and tag labels now resize responsively to make it easier to see which branches you&#8217;re looking at in the Git graph.</p>
-<p><img decoding="async" width="164" height="77" class="wp-image-33660 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica.gif" alt="A screenshot of a computer Description automatically generated" /></p>
-<h2 id="multi-project-configuration">Multi Project Configuration</h2>
-<p>Now, you can easily set up and save profiles for launching specific projects within a multi-project solution for streamlined debugging. Simplify working with complex solutions, enhance debugging efficiency, and effortlessly share configurations with your team.</p>
-<p><img decoding="async" width="774" height="537" class="wp-image-33661 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33657-4.gif" /></p>
-<h2 id="auto-surround-with-quotes-or-brackets">Auto Surround with Quotes or Brackets</h2>
-<p>You can now easily surround a selection with bracket delimiters including: &#8220;double quotes&#8221;, &#8216;single quotes&#8217;, and (parentheses). Just select an area of code and press the relevant key.</p>
-<p><img decoding="async" width="767" height="77" class="wp-image-33662 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/word-image-33657-5.gif" /></p>
-<p>To enable or disable this feature, go to <strong>Tools </strong>&gt; <strong>Options </strong>&gt; <strong>Text Editor </strong>and check the &#8220;Automatically surround selections when typing quotes or brackets&#8221; option.</p>
-<h1 id="game-development">Game Development</h1>
-<h2 id="streamlined-unreal-engine-blueprints-references">Streamlined Unreal Engine Blueprints References</h2>
-<p>Available gradually over the upcoming weeks, you will no longer need the Visual Studio Unreal Engine plugin to see Blueprint References, and Visual Studio will now display CodeLens hints with reduced latency and use fewer machine resources. Additionally, we have added support for including usages of UFUNCTIONs outside of the class hierarchy directly in the CodeLens results. We will cache your results from previous scans and only process new or modified assets since the last scan.</p>
-<h2 id="improved-intellisense-for-unreal-engine-projects">Improved IntelliSense for Unreal Engine projects</h2>
-<p>Unreal Engine uses its own reflection mechanism to connect the worlds of C++ and Blueprints. This is achieved through custom preprocessing of C++ sources with the Unreal Header Tool (UHT) and injection through the regular C++ preprocessor. We have improved the handling of Unreal Engine IntelliSense by ensuring consistency and accuracy. IntelliSense will now refresh more readily for UHT generated files, reducing the likelihood of displaying unwarranted errors.</p>
-<h1 id="cross-platform">Cross Platform</h1>
-<h2 id="remote-linux-unit-testing">Remote Linux Unit Testing</h2>
-<p>Based on <a href="https://developercommunity.visualstudio.com/t/ctest-support-for-remote-linux-targets/431771">your feedback</a> we have enabled running unit tests for remote Linux scenarios. Try it out with your C++ projects that target Linux on WSL or remote systems in the Test Explorer. Learn more about how the <a href="https://devblogs.microsoft.com/cppblog/azure-networking-team-reaches-peak-productivity-with-visual-studios-new-remote-linux-capabilities-and-improvements">Azure Networking Team has used remote Linux in Visual Studio</a>, including remote unit testing.</p>
-<h2 id=""><img decoding="async" width="1024" height="544" class="wp-image-33663 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-5.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-5.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-5-300x159.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-5-768x408.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></h2>
-<h2 id="specify-custom-cmake-executable">Specify custom CMake executable</h2>
-<p>Visual Studio ships with CMake bundled when you download the Desktop Development with C++ workload. However, you can now specify your own custom CMake executable on your machine if desired. Navigate to <strong>Tools</strong> &gt; <strong>Options</strong> and select <strong>CMake &gt; General.</strong> From here, you can check <strong>Enable custom CMake executable</strong> and specify the directory path of your CMake executable you wish to use.</p>
-<p><img decoding="async" width="1126" height="743" class="wp-image-33664 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-6.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-6.png 1126w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-6-300x198.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-6-1024x676.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-6-768x507.png 768w" sizes="(max-width: 1126px) 100vw, 1126px" /></p>
-<h1 id="productivity">Productivity</h1>
-<h2 id="c-memory-layout-visualization">C++ Memory Layout Visualization</h2>
-<p>Based on <a href="https://developercommunity.visualstudio.com/t/Add-tools-to-display-c-class-memory-la/392536?q=memory+layout">your feedback</a> we have added the<strong> Memory Layout</strong> feature. This feature enables visualization of the memory arrangements for your classes, structs, and unions directly within your editor, removing the need for compilation to view these layouts. When you hover over your types, a “Memory Layout” link will appear within the Quick Info. Clicking this link will open a dedicated window displaying the memory layout of the selected type. Furthermore, hovering over individual data types within this window will provide detailed information about their size and offset within the type.</p>
-<p><img decoding="async" class="aligncenter wp-image-33665 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7-980x1024.png" alt="A screenshot of a computer Description automatically generated" width="640" height="669" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7-980x1024.png 980w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7-287x300.png 287w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7-768x802.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screenshot-of-a-computer-description-automatica-7.png 1080w" sizes="(max-width: 640px) 100vw, 640px" /></p>
-<h2 id="include-diagnostics">#include Diagnostics</h2>
-<p>Visual Studio now introduces <strong>#include Diagnostics</strong>, which provides a detailed analysis of your #include directives by displaying their references and build time. Once you turn on this feature, the number of references will be displayed in CodeLens. From there, you can easily navigate to the list of references and locate each reference. To view the build time of your #include directives next to their references, you will need to run Build Insights by navigating to Build &gt; Run Build Insights.</p>
-<p><img decoding="async" width="1279" height="598" class="wp-image-33666 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/02/a-screen-shot-of-a-computer-description-automatic.gif" alt="A screen shot of a computer Description automatically generated" /></p>
-<h2 id="send-us-your-feedback">Send us your feedback</h2>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/">What&#8217;s New for C++ Developers in Visual Studio 2022 17.9</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-9/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
