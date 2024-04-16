@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Mon, 15 Apr 2024 11:37:39 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 16 Apr 2024 12:46:25 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -151,7 +151,7 @@ Introduction<br />
 <p>The CoreCLR is implemented in native code, C and C++, and is a complex performance-critical system that interacts with various components, such as the operating system, the native libraries, and managed code. As such, it is susceptible to memory errors such as buffer overflows, use-after-frees, and memory leaks. These errors can cause crashes, undefined behavior, data corruption, security vulnerabilities, and performance degradation. It is crucial to detect and fix them as early as possible in development.</p>
 <p>The MSVC Address Sanitizer (<a href="https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170">ASan</a>) team was able to work with the CoreCLR team to help them consume and integrate ASan into their development workflow. ASan’s promise of zero false positive memory safety error reports increases security confidence in existing and legacy codebases, and CoreCLR was a great candidate for usage. As a bonus, since .NET is cross-platform, it can leverage ASan across Clang, GCC, and now also MSVC. In addition to this work, the native ahead-of-time (NativeAOT) runtime component is also sanitized.</p>
 <h1 id="why-were-changes-required">Why were changes required?</h1>
-<p>Previous work had been done to enable ASan for CoreCLR on gcc, but incompatibilities on Windows with build infrastructure, mixed configurations during testing, and run time issues precluded adoption. However, the effort for gcc was fruitful in finding memory safety errors, such as alloc-dealloc mismatches, buffer overruns, and use-after-scopes.</p>
+<p>Previous work had been done to enable ASan for CoreCLR on GCC, but incompatibilities on Windows with build infrastructure, mixed configurations during testing, and run time issues precluded adoption. However, the effort for GCC was fruitful in finding memory safety errors, such as alloc-dealloc mismatches, buffer overruns, and use-after-scopes.</p>
 <p>CoreCLR also contains some unique constraints on Windows that made ASan integration more challenging.</p>
 <ol>
 <li>It loads and unloads modules <strong>during</strong> runtime, which can interfere with ASan&#8217;s initialization and finalization.</li>
