@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 01 May 2024 06:40:02 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 03 May 2024 16:12:41 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,97 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>New Checks Since Visual Studio 2022 17.8</title>
+		<link>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/#respond</comments>
+		
+		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
+		<pubDate>Fri, 03 May 2024 16:10:22 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Diagnostics]]></category>
+		<category><![CDATA[New Feature]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34061</guid>
+
+					<description><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. In the last couple of releases, we added new safety checks based on the requests of internal customers like the Windows group. Below is the overview of the new checks.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/">New Checks Since Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. In the last couple of releases, we added new safety checks based on the requests of internal customers like the Windows group. Below is the overview of the new checks. For additional information for each of the checks, please refer to the linked help documents.</p>
+<h1 id="c6395-helping-migration-to-c17-and-above">C6395: Helping migration to C++17 and above</h1>
+<p>Consider the following snippet:</p>
+<pre>a[++i] = i;</pre>
+<p>The meaning of the code depends on the order in which we evaluate the subexpressions. In case we evaluate the left-hand side of the assignment first, the code stores the incremented value of i into the array. Otherwise, it stores the original value before the increment. Before C++17, the order of evaluation in this expression is unspecified, and the write and the read of i are not sequenced, resulting in undefined behavior. Starting in C++17 the evaluation order is standardized, and it does not match what MSVC had pre-C++17. As a result, MSVC has a different evaluation order depending on the language mode. A new rule help find cases where changing the language mode will change the meaning of the program.</p>
+<h1 id="checks-to-find-typos">Checks to find typos</h1>
+<p>The next checks will find common cases where a typo results in code that compiles but the behavior is probably not what the author intended.</p>
+<h2 id="c6392-error-prone-stream-usage">C6392: Error-prone stream usage</h2>
+<p>What does the following program do?</p>
+<pre>#include &lt;iostream&gt;
+
+int main() {
+     std::cout &lt;&lt; L"Foo\n";
+}</pre>
+<p>In this snippet, the string literal will decay to a pointer that points to the beginning of the literal. This pointer points to a wide string. While wcout can print wide strings, cout cannot. The operator&lt;&lt; of std::basic_ostream has an overload that takes a void* argument. The compiler will pick that overload and the user will see the address of the literal on the terminal. This problem can be easily fixed by using wcout or a nonwide string.</p>
+<p><a href="https://aka.ms/cpp/warnings/C6392">C6392</a> to the rescue, it will find cases where the code inadvertently prints an address instead of the value of a string. In case printing the address is intentional, an explicit cast to void* will make the intent explicit and suppress the warning.</p>
+<h2 id="c6396-error-prone-sizeof-usage">C6396: Error-prone sizeof usage</h2>
+<p>The following code snippet has a typo in the argument of the sizeof operator, and as a result it does incorrect offset calculations:</p>
+<pre>#define SOMESTRUCT_ERRNO_THAT_MATTERS 0x8000000d
+
+typedef struct {
+               int a;
+               bool b;
+} SOMESTRUCT_THAT_MATTERS;
+
+if (somedata.length &gt;= sizeof(SOMESTRUCT_ERRNO_THAT_MATTERS))  {
+    /// Do something
+}</pre>
+<p><a href="https://aka.ms/cpp/warnings/C6396">C6396</a> finds typos like this where the argument of sizeof is an integral constant.</p>
+<h2 id="c6397-bogus-pointer-comparison-to-null">C6397: Bogus pointer comparison to null</h2>
+<p>The address-of operator returns the address of its operand. This value should never be compared to nullptr.</p>
+<ul>
+<li>The address-of a field can only be nullptr if the base pointer was nullptr and the field is at the zero offset (&amp;p-&gt;field == nullptr implies p == nullptr). In this case, the expression should be simplified.</li>
+<li>In any other cases, the value of the unary &amp; operator can&#8217;t be nullptr unless there&#8217;s undefined behavior in the code. &amp;v == nullptr always evaluates to false.</li>
+</ul>
+<p><a href="https://aka.ms/cpp/warnings/C6397">C6397</a> finds typos where &amp; was inadvertently added to null-checking code.</p>
+<h1 id="find-interlockedcompareexchange-misuse">Find InterlockedCompareExchange misuse</h1>
+<h2 id="c26735-comparand-value-read-from-destination-location-twice">C26735: Comparand value read from destination location twice</h2>
+<p>The <a href="https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchange">InterlockedCompareExchange</a> function and its derivatives such as <a href="https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchangepointer">InterlockedCompareExchangePointer</a> perform an atomic compare-and-exchange operation on the specified values. It is not hard to use these functions, but unfortunately optimizations performed by the compiler can produce machine instructions that were not obvious from the source code. Sometimes, the comparand value that is meant to be read just once from the destination location and used multiple times can really be read multiple times through the optimized machine instructions. Here is an example code:</p>
+<pre>#include &lt;Windows.h&gt;
+
+bool TryLock(__int64* plock)
+{
+    __int64 lock = *plock;
+    return (lock &amp; 1) &amp;&amp;
+        _InterlockedCompareExchange64(plock, lock &amp; ~1, lock) == lock;
+}</pre>
+<p>It seems like we are reading the value of *plock just once. However, when compiled by MSVC with /O1 option, this source code will turn into machine instructions that read the value of *plock multiple times, which makes use of InterlockedCompareExchange pointless.</p>
+<p>Please refer to the online help document for the for more details of how this can happen, what consequences of the generated machine instructions might be, and how the source code can be fixed.</p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26837">C26837</a> finds above mentioned potential misuses of InterlockedCompareExchange and its derivatives in source code.</p>
+<h1 id="leap-year-checks">Leap year checks</h1>
+<p>A few leap-day mishandling checks have been added to 17.8. Among these leap year related rules, rules are “opt-in” rules, meaning that code analysis should use a ruleset file, and the rules should be explicitly included in the ruleset file, and enabled for them to be applied. For more information on creating a custom ruleset for code analysis, please refer to <a href="https://learn.microsoft.com/en-us/cpp/code-quality/using-rule-sets-to-specify-the-cpp-rules-to-run?view=msvc-170">Use Rule Sets to Specify the C++ Rules to Run</a>.</p>
+<h2 id="c6393-c6394-containers-with-insufficient-storage">C6393 / C6394: Containers with insufficient storage</h2>
+<p>It is common to use data structures that are indexed by the day of the year. If those data structures have only 365 elements, the code has a bug. Leap years have 366 days. <a href="https://aka.ms/cpp/warnings/C6393">C6393</a> will find data structures like vectors that are constant and initialized to 365 elements. This warning can falsely flag some code where the size of the data structure is not related to the days of the year, it is merely a coincidence. <a href="https://aka.ms/cpp/warnings/C6394">C6394</a> is a stricter version of this check that also warns on variables that are not const.</p>
+<h2 id="c26861-modifying-field-of-date-time-object-without-leap-year-check">C26861: Modifying field of date-time object without leap year check</h2>
+<p>If one or more of the year, month, or day fields of a date or a date-time object are changed directly without proper leap year validation, the resultant date or date-time object can become invalid. For example, incrementing a year of a date-time object whose year-month-day fields represent a leap-day will make the resulting date-time object invalid.</p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26861">C26861</a> finds direct modifications to year, month, or day field of a date-time object when there is no leap year checking before or after the modification.</p>
+<h2 id="c26862-incomplete-conversion-of-date-time-objects">C26862: Incomplete conversion of date-time objects</h2>
+<p>There are many date-time object types, and there is a need to convert from a date-time object of one type to a date-time object of another type. Unfortunately, different date-time object types may use different year, month, or day bases. For example, SYSTEMTIME struct uses a 0-based year, but 1-based month and day fields. On the other hand, tm struct uses a 1900-based year, a 0-based month, and a 1-based day. To convert an object of one of these types to an object of another type, the year, month, and day fields must be adjusted appropriately.</p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26862">C26862</a> finds incomplete conversion between objects of SYSTEMTIME and tm structures.</p>
+<h2 id="c26863-ignored-return-value-from-date-time-handling-function">C26863: Ignored return value from date-time handling function</h2>
+<p>Some functions that create or handle date-time objects return values indicating success or failure. It&#8217;s important to verify the return value of such a function, especially without proper leap year handling. Otherwise, the function may have failed, and execution continues with an output value containing invalid data.</p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26863">C26863</a> finds ignored return values from a set of known date-time handling functions when there is no leap year checking.</p>
+<h2 id="c26864-day-field-manipulation-assuming-365-days-per-year">C26864: Day field manipulation assuming 365 days per year</h2>
+<p>It is a subset of C26861, specifically looking for modifications of the day field of date-time object assuming there are 365 days in all years. To advance a date-time object by a year, either calculate the correct number of days to advance through checking leap year or advance the year field directly and adjust the resultant date-time per leap year rule.</p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26864">C26864</a> finds manipulations of date-time objects assuming 365 days per year.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Recent releases of Visual Studio 2022 feature many new checks in our code analysis tools. Give it a try and let us know what you think. The work that we do is heavily influenced by the feedback we receive on the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. Please file feedback tickets and let us know if there is a check that you would like to see added. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on X.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/">New Checks Since Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>OpenMP improvements in Visual Studio C/C++ compiler: triangular loop collapse</title>
 		<link>https://devblogs.microsoft.com/cppblog/openmp-improvements-in-visual-studio-c-c-compiler-triangular-loop-collapse/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/openmp-improvements-in-visual-studio-c-c-compiler-triangular-loop-collapse/#respond</comments>
@@ -535,232 +626,6 @@ Introduction<br />
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-adoption-in-nets-coreclr/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Time Travel Debugging team uses Copilot Chat for C++</title>
-		<link>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Wed, 10 Apr 2024 16:06:58 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=33744</guid>
-
-					<description><![CDATA[<p>Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on the Time Travel Debugging team at Microsoft, which is the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake,</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/">Time Travel Debugging team uses Copilot Chat for C++</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Ken Sykes and Juan Carlos Arevalo Baeza (JCAB) are both Principal Software Engineers who work on the Time Travel Debugging team at Microsoft, which is the team that maintains and develops the Windows Debugger (WinDbg) and related technologies. Their codebase is developed with C++ and CMake, and they primarily use Visual Studio Code for developing their code.</p>
-<p>They have been integrating<a href="https://docs.github.com/en/copilot/using-github-copilot/getting-started-with-github-copilot"> GitHub Copilot</a> and <a href="https://docs.github.com/en/copilot/github-copilot-chat/using-github-copilot-chat-in-your-ide">GitHub Copilot Chat</a> into their C++ development in VS Code and have found many useful workflows for the AI pair programmer.</p>
-<p><em>This blog post series has been written in partnership with Ken and JCAB to highlight their successful workflows with GitHub Copilot and GitHub Copilot Chat respectively and inspire other C++ developers on potential use cases to integrate with their coding workflows.</em></p>
-<p><em>This blog post series has been written in partnership with Ken and JCAB to highlight their workflows with Copilot and Copilot Chat respectively and inspire other C++ developers on potential use cases to integrate with their code. </em></p>
-<p><em>To view the first blog post on Copilot, please visit <a href="https://devblogs.microsoft.com/cppblog/how-copilot-is-being-used-by-the-time-travel-debugging-team-for-repetitive-c-coding/">this link</a>.</em></p>
-<h2 id="how-they-use-copilot-chat">How they use Copilot Chat</h2>
-<p>They have integrated Copilot Chat as a search tool and pair programmer when coding, as it has provided applicable and relevant answers to some of their programming questions for their codebase.</p>
-<p>For example, some sample scenarios that JCAB uses Copilot Chat to help with are:</p>
-<ul>
-<li>Learning how to find, install, and use various tools</li>
-<li>Asking programming documentation questions</li>
-<li>Asking coding questions</li>
-</ul>
-<p>Example questions and actual responses provided by Copilot Chat are enumerated below by JCAB throughout his workflows.</p>
-<h3 id="learn-how-to-find-install-and-use-various-tools">Learn how to find, install, and use various tools</h3>
-<h4 id="installing-tools"><em>Installing Tools</em></h4>
-<p>For Windows users, it is not natural to know how to install various Linux tools, but it is necessary for Linux development on their WSL Ubuntu machines. Luckily, Copilot Chat was able to get us close to the right set of directions to do so by iterating over the prompt. For example, I was curious about learning more about acquiring clang via package manager.</p>
-<p>Please note, it is always a good idea to validate Copilot responses to ensure they are correct.</p>
-<hr />
-<p><span style="font-family: times;">jcab_microsoft: How do I list &#8220;apt&#8221; packages that match a portion of their names?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: You can use the `apt-cache search` command to list all packages that match a portion of their names. Here&#8217;s how you can do it: </span></p>
-<pre>apt-cache search &lt;package-name-portion&gt;</pre>
-<p><span style="font-family: times;">
-Replace `&lt;package-name-portion&gt;` with the portion of the package name you&#8217;re interested in. This command will return a list of all packages that contain the specified string in their name or description.</span></p>
-<p><span style="font-family: times;">For example, to search for all packages that contain the word &#8220;python&#8221; in their name or description, you would use:</span></p>
-<pre>apt-cache search python</pre>
-<p><span style="font-family: times;">
-This will return a list of all packages related to Python.</span></p>
-<hr />
-<p>Ubuntu’s “apt” packages tend to be quite old, so it defaults to clang 14 and offers “clang-15” as an opt-in. But apparently, there’s a way to get packages directly from the makers.</p>
-<p>I didn’t know about this but asked the basic question anyway and Copilot delivered wonderfully. In the end, this got me brand-spanking-new clang 19 without breaking a sweat.</p>
-<hr />
-<p><span style="font-family: times;">
-jcab_microsoft: How can I get a current version of clang in my Ubuntu 22?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: To get the current version of Clang on Ubuntu 22.04, you can use the LLVM project&#8217;s own repositories. Here are the steps:</span></p>
-<ol>
-<li><span style="font-family: times;">First, add the LLVM repository to your system:</span></li>
-</ol>
-<pre>wget -O - <a href="https://apt.llvm.org/llvm-snapshot.gpg.key">https://apt.llvm.org/llvm-snapshot.gpg.key</a> | sudo apt-key add -
-
-echo "deb <a href="https://apt.llvm.org/focal/">https://apt.llvm.org/focal/</a> llvm-toolchain-focal main" | sudo tee /etc/apt/sources.list.d/llvm.list</pre>
-<ol start="2">
-<li><span style="font-family: times;">Update the package list:</span></li>
-</ol>
-<pre>sudo apt-get update</pre>
-<ol start="3">
-<li><span style="font-family: times;">Install Clang:</span></li>
-</ol>
-<pre>sudo apt-get install clang</pre>
-<p><span style="font-family: times;">This will install the latest stable version of Clang available in the LLVM repository. </span></p>
-<p><span style="font-family: times;">To check the installed version of Clang, you can use the following command:</span></p>
-<pre>clang --version</pre>
-<p><span style="font-family: times;">Please note that the LLVM repository might not always have the absolute latest version of Clang, but it generally has more recent versions than the official Ubuntu repositories.</span></p>
-<hr />
-<p>In general, I like to use iterative questions with Copilot Chat to understand how to install tools, especially in unfamiliar territories and can probe for more information when prompted.</p>
-<p>As I mentioned before, it’s a good idea to check Copilot responses for issues. In this case, it suggested to use a command “apt-key” which is deprecated. Luckily in this case, that command provided good instructions on how to do it the non-deprecated way.</p>
-<h3 id="ask-about-programming-documentation">Ask about programming documentation</h3>
-<p>Despite being an experienced C++ and Windows developer, I don&#8217;t know everything! But I can ask C++ and Windows-specific questions for my programming and see that Copilot Chat is very helpful.</p>
-<hr />
-<p><span style="font-family: times;">
-jcab_microsoft: What was the NTSTATUS generated by a fastfail in Windows?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: The `NTSTATUS` code generated by a fastfail in Windows is `0xC0000409`, which corresponds to `STATUS_STACK_BUFFER_OVERRUN`. This status code indicates that a stack buffer overrun has occurred in the application, compromising the integrity of the process.</span></p>
-<p><span style="font-family: times;">When a fastfail occurs, the process is terminated immediately without running any exception handling or cleanup code. This is designed to prevent potential security vulnerabilities from being exploited.</span></p>
-<hr />
-<p>Note that Copilot isn’t perfect, and its information can sometimes be out of date, so sometimes I use it as a nudge in the right direction (see <a href="https://devblogs.microsoft.com/oldnewthing/20230731-00/?p=108505">this blog from 2023</a> clarifying this information, although this is what was meant at first).</p>
-<p>And sometimes, documentation questions turn into code questions.</p>
-<hr />
-<p><span style="font-family: times;">
-jcab_microsoft: In C++, is there a way to wait for multiple synchronization objects?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: In C++, there isn&#8217;t a direct way to wait for multiple synchronization objects like you can in some other languages or platforms (for example, `WaitForMultipleObjects` in Windows API). However, you can achieve similar functionality using condition variables along with a status check for the objects you&#8217;re interested in.</span></p>
-<p><span style="font-family: times;">Here&#8217;s a simplified example:</span></p>
-<pre>#include &lt;mutex&gt;
-
-#include &lt;condition_variable&gt;
-
-#include &lt;vector&gt;
-
-std::mutex mtx;
-
-std::condition_variable cv;
-
-std::vector&lt;bool&gt; objects_ready; // replace with actual status of your objects
-
-void wait_for_objects() {
-
-    std::unique_lock&lt;std::mutex&gt; lock(mtx);
-
-    cv.wait(lock, []{ 
-
-        // This is a predicate function that checks if all objects are ready
-
-        for (bool is_ready : objects_ready) {
-
-            if (!is_ready) return false;
-
-        }
-
-        return true;
-
-    });
-
-}
-
-void set_object_ready(int index) {
-
-    std::lock_guard&lt;std::mutex&gt; lock(mtx);
-
-    objects_ready[index] = true;
-
-    cv.notify_all(); // notify all waiting threads
-
-}</pre>
-<p><span style="font-family: times;">In this example, `wait_for_objects` waits until all objects are ready. `set_object_ready` sets an object as ready and notifies all waiting threads.</span></p>
-<p><span style="font-family: times;">Please note that this is a simplified example and may not be suitable for all use cases. Depending on your needs, you may need to use a different synchronization mechanism or a third-party library.</span></p>
-<hr />
-<h3 id="ask-coding-questions">Ask coding questions</h3>
-<p>In my current line of work, I often need to find how to do a given Windows thing in Standard C++ and/or Linux. Below are some questions I’ve asked Copilot Chat that have been highly performant and helpful.</p>
-<hr />
-<p><span style="font-family: times;">jcab_microsoft: what is the standard C++ way to implement _BitScanForward?</span></p>
-<p><span style="font-family: times;">Github Copilot: `_BitScanForward` is a Microsoft-specific intrinsic function that is not part of the C++ standard library. However, you can use the `__builtin_ctz` function in GCC and Clang to achieve the same functionality. Here&#8217;s an example implementation:</span></p>
-<pre>#include &lt;cstdint&gt;
-
-#ifdef _MSC_VER
-
-#include &lt;intrin.h&gt;
-
-#endif
-
-uint32_t BitScanForward(uint32_t mask)
-
-{
-
-#ifdef _MSC_VER
-
-    unsigned long index;
-
-    _BitScanForward(&amp;index, mask);
-
-    return index;
-
-#else
-
-    return __builtin_ctz(mask);
-
-#endif
-
-}</pre>
-<p><span style="font-family: times;">This implementation checks if the code is being compiled with Microsoft Visual C++ (indicated by the `_MSC_VER` macro) and uses `_BitScanForward` if it is. Otherwise, it uses the `__builtin_ctz` function to achieve the same functionality. Note that `__builtin_ctz` returns the number of trailing zeros in the input, so you may need to subtract the result from the bit width of the input type to get the index of the first set bit.</span></p>
-<hr />
-<p>Notice that Copilot Chat didn’t necessarily fully answer the question using C++20 standards, but still provided some level of guidance for me. Again, it can be important to iterate with Copilot if this is a priority for you.</p>
-<p>And some more for porting over code&#8230;</p>
-<hr />
-<p><span style="font-family: times;">
-jcab_microsoft: How can I get the _byteswap_ulong intrinsic in clang?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: The `_byteswap_ulong` intrinsic is specific to Microsoft&#8217;s compiler. In Clang, you can use the `__builtin_bswap32` function to achieve the same functionality. Here&#8217;s an example:</span></p>
-<pre>#include &lt;cstdint&gt;
-
-uint32_t byteswap_ulong(uint32_t value)
-
-{
-
-    return __builtin_bswap32(value);
-
-}</pre>
-<p><span style="font-family: times;">In this function, `__builtin_bswap32` reverses the byte order of a 32-bit value, which is equivalent to what `_byteswap_ulong` does in Microsoft&#8217;s compiler.</span></p>
-<p><span style="font-family: times;">
-jcab_microsoft: What about a clang intrinsic for _mul128?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: Clang does not have a direct intrinsic for `_mul128`. However, you can use the built-in type `__int128` to perform 128-bit multiplication. Here&#8217;s an example:</span></p>
-<pre>#include &lt;cstdint&gt;
-
-void mul128(int64_t a, int64_t b, int64_t* high, int64_t* low) {
-
-    __int128 result = static_cast&lt;__int128&gt;(a) * static_cast&lt;__int128&gt;(b);
-
-    *high = result &gt;&gt; 64;
-
-    *low = result;
-
-}</pre>
-<p><span style="font-family: times;">In this function, `a` and `b` are the 64-bit integers to multiply, and `high` and `low` are pointers to 64-bit integers where the high and low 64 bits of the result will be stored, respectively. The function first casts `a` and `b` to `__int128` and performs the multiplication, then it stores the high and low 64 bits of the result in `*high` and `*low`, respectively.</span></p>
-<p><span style="font-family: times;">
-jcab_microsoft: What&#8217;s the best equivalent on Linux to fastfail?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: On Linux, the closest equivalent to Windows&#8217; `fastfail` would be to use the `abort()` function from the C Standard Library. This function causes the program to terminate abnormally and generate a core dump file for post-mortem analysis.</span></p>
-<p><span style="font-family: times;">Here&#8217;s how you can modify the `DBG_FAIL` macro in your code to use `abort()`:</span></p>
-<pre>#define DBG_FAIL(...)          abort()</pre>
-<p><span style="font-family: times;">
-This will cause the program to terminate immediately when `DBG_FAIL` is called, similar to how `fastfail` works on Windows. However, please note that unlike `fastfail`, `abort()` does not allow you to specify an exit code. The program will always return with a status indicating abnormal termination.</span></p>
-<hr />
-<p>And always, if in doubt, never hesitate to ask for clarification and pointers to the relevant documentation.</p>
-<hr />
-<p><span style="font-family: times;">
-jcab_microsoft: Do you have any pointers to references expanding on the use of abort() in place of __fastfail()?</span></p>
-<p><span style="font-family: times;">GitHub Copilot: The use of `abort()` in place of `__fastfail()` is a common practice in Unix-like environments, including Linux, where `__fastfail()` is not available. The `abort()` function raises the `SIGABRT` signal, causing the process to terminate unless the signal is caught by a signal handler. This is similar to how `__fastfail()` works on Windows.</span></p>
-<p><span style="font-family: times;">Here are some references that discuss the use of `abort()`:</span></p>
-<p>&#8211; [abort &#8211; C++ Reference](<a href="http://www.cplusplus.com/reference/cstdlib/abort/">http://www.cplusplus.com/reference/cstdlib/abort/</a>)</p>
-<p>&#8211; [abort &#8211; Linux man page](<a href="https://man7.org/linux/man-pages/man3/abort.3.html">https://man7.org/linux/man-pages/man3/abort.3.html</a>)</p>
-<p><span style="font-family: times;">These references provide detailed information about how `abort()` works and how it can be used to terminate a process in response to a fatal error or security violation.</span></p>
-<p><span style="font-family: times;">Please note that while `abort()` is similar to `__fastfail()`, there are some differences. For example, `abort()` does not allow you to specify an exit code, and it does not guarantee that the process will terminate immediately in all circumstances. If you need more control over the termination process, you may need to use a different function or mechanism.</span></p>
-<hr />
-<h2 id="wrap-up">Wrap Up</h2>
-<p><strong>A big thanks to Ken and JCAB from the Time Travel Debugging Team for collaborating with us on this blog post!</strong></p>
-<p>Copilot Chat can provide you with AI-powered assistance at many points in your C++ development, such as installing new tools and answering various programming questions. Download Copilot Chat (<a href="https://devblogs.microsoft.com/visualstudio/introducing-the-new-copilot-experience-in-visual-studio/">automatically available with Visual Studio as of 17.10 Preview 3</a>) and try out utilizing it when you are learning new processes or generating code! Please note that responses are generated by AI, so we recommend reviewing any responses provided and augmenting and iterating with your prompts when necessary.</p>
-<p>Our team is working hard on improving C++ integrations, so please let us know any improvements you’d like to see to your C++ workflows. Additionally, let us know what other types of content you’d like to see regarding use cases or additional information about Copilot Chat.</p>
-<p>We welcome all types of feedback on your experience with the product. The comments below are open, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via Twitter at <a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/">Time Travel Debugging team uses Copilot Chat for C++</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/time-travel-debugging-team-uses-copilot-chat-for-c/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
