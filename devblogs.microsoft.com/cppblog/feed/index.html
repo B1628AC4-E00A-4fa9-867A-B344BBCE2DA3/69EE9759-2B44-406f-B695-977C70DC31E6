@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 04 Jun 2024 19:17:34 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 05 Jun 2024 08:15:44 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,192 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Integrating C++ header units into Office using MSVC (3/n)</title>
+		<link>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Wed, 05 Jun 2024 16:30:47 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<category><![CDATA[performance]]></category>
+		<category><![CDATA[build throughput]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[C++20]]></category>
+		<category><![CDATA[modernization]]></category>
+		<category><![CDATA[modules]]></category>
+		<category><![CDATA[Office]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34284</guid>
+
+					<description><![CDATA[<p>Overview</p>
+<p>Recap: Where we were, what we&#8217;re doing now.<br />
+Changes adopted in Word: Composing headers for reuse.<br />
+Testing Details: The setup of the performance experiment.<br />
+Opportunity for Improvement: Identifying a potential performance bottleneck.<br />
+Upcoming Improvements to MSVC.<br />
+What&#8217;s next for Office?</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/">Integrating C++ header units into Office using MSVC (3/n)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2 id="overview">Overview</h2>
+<ul>
+<li><a href="#recap">Recap: Where we were, what we&#8217;re doing now.</a></li>
+<li><a href="#changes">Changes adopted in Word: Composing headers for reuse.</a></li>
+<li><a href="#details">Testing Details: The setup of the performance experiment.</a></li>
+<li><a href="#opportunity">Opportunity for Improvement: Identifying a potential performance bottleneck.</a></li>
+<li><a href="#upcoming">Upcoming Improvements to MSVC.</a></li>
+<li><a href="#what-next">What&#8217;s next for Office?</a></li>
+<li><a href="#final-thoughts">Closing thoughts.</a></li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>In our previous two (<a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/">part 1</a>, <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/">part 2</a>) blog posts we discussed how Office was thinking holistically about header units. In this installment we’d like to share the concrete steps taken to integrate header units into the build of Microsoft Word, and their effect on build throughput. Throughout the post we&#8217;ll use the term &#8220;build throughput&#8221; as opposed to &#8220;build performance&#8221; to avoid potential confusion with application runtime performance. This blog is primarily a recap of the <a href="https://www.youtube.com/watch?v=RvliLGtaQ0c">presentation</a> that Zachary gave at Pure Virtual C++ 2024.</p>
+<p>Remember that precompiled headers are an established technology, dating back 30 years, compared to header units, which are a newer feature, only 5 years old. There are still a lot of opportunities for optimization!</p>
+<p>In the best case migrating from a precompiled header (PCH) to header units produced a <em>21.3% build throughput improvement</em>. In the worst case the migration yielded a <em>0.9% build throughput regression</em>.</p>
+<h2><span id="changes">Changes adopted in Word</span></h2>
+<p>There are two precompiled headers that Word code can select between. The first of these, minpch, is extremely lightweight. It contains things like the C++ standard library, windows.h, some common Word internal helpers, and a very small set of low-level Office shared headers. In total it includes about 250 files if you count all transitive includes. Minpch is not widely used; it&#8217;s the PCH chosen by only 2% of the files in Word.</p>
+<p>On the other extreme is the word_shared precompiled header. It captures nearly every upstream header, with only some minimal holdbacks for test headers. It contains around 2500 transitive includes. This makes word_shared a challenging test for header units, both in terms of the breadth of C++ compiled into a header unit and what effect it will have on build throughput. As previously mentioned, Word used <a href="https://learn.microsoft.com/en-us/cpp/build-insights/get-started-with-cpp-build-insights?view=msvc-170">C++ Build Insights</a> to measure each individual file&#8217;s contribution as justification for its inclusion in word_shared.</p>
+<p>At a high level the conversion we performed was:</p>
+<ol>
+<li>Switch <code>/Yc</code> to <a href="https://learn.microsoft.com/en-us/cpp/build/reference/module-exportheader?view=msvc-170"><code>/exportHeader</code></a></li>
+<li>Switch <code>/Yu</code> to <a href="https://learn.microsoft.com/en-us/cpp/build/reference/headerunit?view=msvc-170"><code>/headerUnit:quoteword_shared.h=path/to/word_shared.ifc</code></a></li>
+<li>Measure!</li>
+</ol>
+<h2><span id="details">Testing Details</span></h2>
+<h3 id="process">Process</h3>
+<p>These were the steps to gather measurements:</p>
+<ol>
+<li>Set the configuration to PCH or Header Units</li>
+<li>Perform a full build of Word</li>
+<li>Disable build caching</li>
+<li>Run all compiler invocations, excluding PCH or HU creation (repeat 7x)</li>
+<li>Record CPU time spent by the compiler, excluding highest and lowest results</li>
+<li>Repeat every night, on 3 unique boxes, for 3 weeks</li>
+</ol>
+<p>In step 4, 3 unique sets of files were chosen to compile and measure. In the first case all C++ files (roughly 6000) in Word were compiled. In addition, two active areas of investment were chosen to measure. The first of these, henceforth referred to as &#8220;Folder A&#8221;, consisted of approximately 300 files. The second, which will be termed &#8220;Folder B&#8221;, consisted of around 200 files.</p>
+<h3 id="test-equipment">Test Equipment</h3>
+<table>
+<tbody>
+<tr>
+<td></td>
+<td><b>Build the World (BTW)</b></td>
+<td><b>Physical Workstation (PDW)</b></td>
+<td><b>Microsoft DevBox (MDB)</b></td>
+</tr>
+<tr>
+<td><b>Threads</b></td>
+<td>64</td>
+<td>32</td>
+<td>16</td>
+</tr>
+<tr>
+<td><b>Max Clock</b></td>
+<td>4.2 GHz</td>
+<td>4.3 GHz</td>
+<td>3.5 GHz</td>
+</tr>
+<tr>
+<td><b>RAM</b></td>
+<td>256 GB</td>
+<td>128 GB</td>
+<td>64 GB</td>
+</tr>
+<tr>
+<td><b>Storage</b></td>
+<td>Boot SSD + Software RAID data drive</td>
+<td>Boot SSD + Software RAID data drive</td>
+<td>Single Azure Premium SSD (P30)</td>
+</tr>
+</tbody>
+</table>
+<p>The Build the World machines are server-class machines, generally reserved for the limited number of developers that need to make changes that span all of Office at once. The physical workstations are more common and reflect what a developer working on an application team, such as Word, would have for their box. The Microsoft Dev Box is a publicly available product; a virtual machine running in Azure. Other MDB options are available from the service—these specifications are merely the specifications chosen for an internal pilot program.</p>
+<h3 id="results">Results</h3>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput.png"><img decoding="async" class="alignnone wp-image-34295 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1024x532.png" alt="Image office modules throughput" width="640" height="333" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1024x532.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-768x399.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1536x798.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-2048x1065.png 2048w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<h3 id="additional-advantages">Additional Advantages</h3>
+<p>Beyond build speed, header units have additional advantages. The IFC files produced by header units are portable. Precompiled headers produced by MSVC must be created and consumed locally. Header units don&#8217;t have this limitation.</p>
+<p>It would be possible for a separate project upstream of Word to create the minpch and word_shared header units. Most Word developers would not need to build the files locally; the IFC files could simply be downloaded from the cloud.
+Second, the IFC produced for a header unit follows a <a href="https://github.com/microsoft/ifc-spec">fully documented specification</a> and <a href="https://github.com/microsoft/ifc">corresponding SDK</a>. Cameron&#8217;s presentation on the IFC SDK from Pure Virtual C++ is <a href="https://www.youtube.com/watch?v=t6QCzVXrwIw">available on YouTube</a>.</p>
+<p>Finally, header units are significantly smaller on disk than their corresponding PCH. The comparison between a single PCH file and a corresponding header unit may not be an unbiased comparison because of how well header units compose with their dependencies. To create a fairer picture, we&#8217;ve also included data on the disk size of Word&#8217;s header units plus all its upstream dependencies.</p>
+<table>
+<tbody>
+<tr>
+<td></td>
+<td><b>PCH</b></td>
+<td><b>Header Unit</b></td>
+<td><b>% Reduction</b></td>
+<td><b>Full header unit chain</b></td>
+<td><b>% Reduction</b></td>
+</tr>
+<tr>
+<td><b>minpch</b></td>
+<td>174 MB</td>
+<td>8.78 MB</td>
+<td>95%</td>
+<td>42.8 MB</td>
+<td>77%</td>
+</tr>
+<tr>
+<td><b>word_shared</b></td>
+<td>1.16 GB</td>
+<td>111 MB</td>
+<td>90%</td>
+<td>150 MB</td>
+<td>88%</td>
+</tr>
+</tbody>
+</table>
+<h2><span id="opportunity">Uncovering an Opportunity for Improvement</span></h2>
+<p>We were surprised to discover that storage system performance was the best predictor of build compile time improvement. We measured the size of the object files on disk, and found a sizable increase. The total disk space of all object files created for Word under header units was 1.22x the size on disk vs the total size of object files when consuming a PCH. The median increase per obj file was 1.25x and the largest was 8000x larger under header units.</p>
+<p>This was due to the compiler duplicating debug information into each of the object files due to Office&#8217;s use of the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170"><code>/Z7</code> compiler flag</a>. This is a change from the toolchain&#8217;s ability to look up many kinds of debug information directly from the PCH file. The biggest offenders in Word were a pair of large enums with 10,000 and 30,000 entries. The first is an enum of all command IDs for all Office applications. The other is to idenitfy performance data scenarios. Even when only one enum value was used, all values of corresponding enum was recorded in the obj file.</p>
+<p>After removing the include files that brought two enums into Word&#8217;s word_shared header, the object sizes on disk dropped by a measurable amount.</p>
+<table>
+<tbody>
+<tr>
+<td><b>PCH vs Header Units</b></td>
+<td><b>Default</b></td>
+<td><b>Large Enums Omitted</b></td>
+</tr>
+<tr>
+<td><b>Total .obj file size increase</b></td>
+<td>1.22x</td>
+<td>1.18x</td>
+</tr>
+<tr>
+<td><b>Median size increase</b></td>
+<td>1.25x</td>
+<td>1.22x</td>
+</tr>
+<tr>
+<td><b>Greatest obj size increase</b></td>
+<td>8000x</td>
+<td>1700x</td>
+</tr>
+</tbody>
+</table>
+<p>As the table demonstrates, removing the large enums improved the size of binaries on disk but also made us anxious for the upcoming work in the MSVC toolchain that would eliminate this duplicate data.</p>
+<h2><span id="upcoming">Upcoming improvements in MSVC</span></h2>
+<p>Office hit a recent bug where the linker can fail to perform an incremental link and it falls back to performing a full link. If you run into the same issue in your projects, please update to compiler version 17.8.10 or 17.10.0 for the fix.</p>
+<p>The other big item is to update the toolchain so that debug information can be gathered directly from an IFC file, and avoid creating huge obj files. Notably, this optimization benefits both named modules as well as header units.</p>
+<p>This is a more invasive change than fixes Office has needed for header units in the past as it will require changes to the compiler, linker, and PDB writer—essentially requiring the entire toolset to cooperate. We don&#8217;t have a release date for this work, but please stay tuned for an announcement when it&#8217;s ready for testing.</p>
+<h2><span id="what-next">What&#8217;s next for Office?</span></h2>
+<p>In Office we want to continue making low-level libraries into header units. As a prerequisite we need to remove Office&#8217;s global &#8216;inc&#8217; folder, our collection of headers that don&#8217;t share a single logical responsibility. Once all these headers are moved to new homes their component libraries can each have a header unit created for them.</p>
+<p>Once that&#8217;s done, we can migrate our shared PCH to become a header unit in the same way that was done for Word. The shared PCH is consumed by a huge percentage of our shared code, so we expect header unit creation and consumption to greatly accelerate once we reach this milestone.</p>
+<p>In addition, we have ongoing work to do to continue striving for consistent build flags, the same issue we&#8217;ve highlighted in each of these blog posts. We&#8217;ve done a lot of prep work to mark where there are deviations from the global defaults, but the work remains to perform the migration to the common settings. Once we achieve continuity, downstream libraries can also become header units.</p>
+<h2><span id="final-thoughts">Final Thoughts</span></h2>
+<p>Moving a part of the Office codebase to utilize header units has been an excellent learning experience and collaborative effort between the compiler team and the Office engineering team. Without a doubt, this experience has shown that not only can header units (and therefore C++ modules) scale to a multi-million-line codebase, but the technology is flexible enough to match that of preexisting technology with 30+ years of improvements and improve upon it for even more throughput.</p>
+<p>The MSVC implementation of modules is continuing to improve with each release and the more exposure the compiler gets to community feedback/usage the better the team can improve the overall quality and robustness. We recommend you go out and try to integrate C++ modules or header units into your code and tell us about your experiences. We’re eager to learn from and work with the community to elevate the implementation into something we are all happy to use!</p>
+<h4 id="closing">Closing</h4>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report
+a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us
+know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/">Integrating C++ header units into Office using MSVC (3/n)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New in vcpkg (May 2024): Dedicated Pages for Each Package on vcpkg.io</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/#comments</comments>
@@ -747,97 +933,6 @@ digraph G{ rankdir=LR; node [fontname=Sans]; edge [minlen=3]; overlap=false;
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-april-2024/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>New Checks Since Visual Studio 2022 17.8</title>
-		<link>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/#comments</comments>
-		
-		<dc:creator><![CDATA[Gabor Horvath]]></dc:creator>
-		<pubDate>Fri, 03 May 2024 16:10:22 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Diagnostics]]></category>
-		<category><![CDATA[New Feature]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34061</guid>
-
-					<description><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. In the last couple of releases, we added new safety checks based on the requests of internal customers like the Windows group. Below is the overview of the new checks.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/">New Checks Since Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ team is committed to making your C++ coding experience as safe as possible. In the last couple of releases, we added new safety checks based on the requests of internal customers like the Windows group. Below is the overview of the new checks. For additional information for each of the checks, please refer to the linked help documents.</p>
-<h1 id="c6395-helping-migration-to-c17-and-above">C6395: Helping migration to C++17 and above</h1>
-<p>Consider the following snippet:</p>
-<pre>a[++i] = i;</pre>
-<p>The meaning of the code depends on the order in which we evaluate the subexpressions. In case we evaluate the left-hand side of the assignment first, the code stores the incremented value of i into the array. Otherwise, it stores the original value before the increment. Before C++17, the order of evaluation in this expression is unspecified, and the write and the read of i are not sequenced, resulting in undefined behavior. Starting in C++17 the evaluation order is standardized, and it does not match what MSVC had pre-C++17. As a result, MSVC has a different evaluation order depending on the language mode. A new rule help find cases where changing the language mode will change the meaning of the program.</p>
-<h1 id="checks-to-find-typos">Checks to find typos</h1>
-<p>The next checks will find common cases where a typo results in code that compiles but the behavior is probably not what the author intended.</p>
-<h2 id="c6392-error-prone-stream-usage">C6392: Error-prone stream usage</h2>
-<p>What does the following program do?</p>
-<pre>#include &lt;iostream&gt;
-
-int main() {
-     std::cout &lt;&lt; L"Foo\n";
-}</pre>
-<p>In this snippet, the string literal will decay to a pointer that points to the beginning of the literal. This pointer points to a wide string. While wcout can print wide strings, cout cannot. The operator&lt;&lt; of std::basic_ostream has an overload that takes a void* argument. The compiler will pick that overload and the user will see the address of the literal on the terminal. This problem can be easily fixed by using wcout or a nonwide string.</p>
-<p><a href="https://aka.ms/cpp/warnings/C6392">C6392</a> to the rescue, it will find cases where the code inadvertently prints an address instead of the value of a string. In case printing the address is intentional, an explicit cast to void* will make the intent explicit and suppress the warning.</p>
-<h2 id="c6396-error-prone-sizeof-usage">C6396: Error-prone sizeof usage</h2>
-<p>The following code snippet has a typo in the argument of the sizeof operator, and as a result it does incorrect offset calculations:</p>
-<pre>#define SOMESTRUCT_ERRNO_THAT_MATTERS 0x8000000d
-
-typedef struct {
-               int a;
-               bool b;
-} SOMESTRUCT_THAT_MATTERS;
-
-if (somedata.length &gt;= sizeof(SOMESTRUCT_ERRNO_THAT_MATTERS))  {
-    /// Do something
-}</pre>
-<p><a href="https://aka.ms/cpp/warnings/C6396">C6396</a> finds typos like this where the argument of sizeof is an integral constant.</p>
-<h2 id="c6397-bogus-pointer-comparison-to-null">C6397: Bogus pointer comparison to null</h2>
-<p>The address-of operator returns the address of its operand. This value should never be compared to nullptr.</p>
-<ul>
-<li>The address-of a field can only be nullptr if the base pointer was nullptr and the field is at the zero offset (&amp;p-&gt;field == nullptr implies p == nullptr). In this case, the expression should be simplified.</li>
-<li>In any other cases, the value of the unary &amp; operator can&#8217;t be nullptr unless there&#8217;s undefined behavior in the code. &amp;v == nullptr always evaluates to false.</li>
-</ul>
-<p><a href="https://aka.ms/cpp/warnings/C6397">C6397</a> finds typos where &amp; was inadvertently added to null-checking code.</p>
-<h1 id="find-interlockedcompareexchange-misuse">Find InterlockedCompareExchange misuse</h1>
-<h2 id="c26735-comparand-value-read-from-destination-location-twice">C26735: Comparand value read from destination location twice</h2>
-<p>The <a href="https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchange">InterlockedCompareExchange</a> function and its derivatives such as <a href="https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchangepointer">InterlockedCompareExchangePointer</a> perform an atomic compare-and-exchange operation on the specified values. It is not hard to use these functions, but unfortunately optimizations performed by the compiler can produce machine instructions that were not obvious from the source code. Sometimes, the comparand value that is meant to be read just once from the destination location and used multiple times can really be read multiple times through the optimized machine instructions. Here is an example code:</p>
-<pre>#include &lt;Windows.h&gt;
-
-bool TryLock(__int64* plock)
-{
-    __int64 lock = *plock;
-    return (lock &amp; 1) &amp;&amp;
-        _InterlockedCompareExchange64(plock, lock &amp; ~1, lock) == lock;
-}</pre>
-<p>It seems like we are reading the value of *plock just once. However, when compiled by MSVC with /O1 option, this source code will turn into machine instructions that read the value of *plock multiple times, which makes use of InterlockedCompareExchange pointless.</p>
-<p>Please refer to the online help document for the for more details of how this can happen, what consequences of the generated machine instructions might be, and how the source code can be fixed.</p>
-<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26837">C26837</a> finds above mentioned potential misuses of InterlockedCompareExchange and its derivatives in source code.</p>
-<h1 id="leap-year-checks">Leap year checks</h1>
-<p>A few leap-day mishandling checks have been added to 17.8. Among these leap year related rules, rules are “opt-in” rules, meaning that code analysis should use a ruleset file, and the rules should be explicitly included in the ruleset file, and enabled for them to be applied. For more information on creating a custom ruleset for code analysis, please refer to <a href="https://learn.microsoft.com/en-us/cpp/code-quality/using-rule-sets-to-specify-the-cpp-rules-to-run?view=msvc-170">Use Rule Sets to Specify the C++ Rules to Run</a>.</p>
-<h2 id="c6393-c6394-containers-with-insufficient-storage">C6393 / C6394: Containers with insufficient storage</h2>
-<p>It is common to use data structures that are indexed by the day of the year. If those data structures have only 365 elements, the code has a bug. Leap years have 366 days. <a href="https://aka.ms/cpp/warnings/C6393">C6393</a> will find data structures like vectors that are constant and initialized to 365 elements. This warning can falsely flag some code where the size of the data structure is not related to the days of the year, it is merely a coincidence. <a href="https://aka.ms/cpp/warnings/C6394">C6394</a> is a stricter version of this check that also warns on variables that are not const.</p>
-<h2 id="c26861-modifying-field-of-date-time-object-without-leap-year-check">C26861: Modifying field of date-time object without leap year check</h2>
-<p>If one or more of the year, month, or day fields of a date or a date-time object are changed directly without proper leap year validation, the resultant date or date-time object can become invalid. For example, incrementing a year of a date-time object whose year-month-day fields represent a leap-day will make the resulting date-time object invalid.</p>
-<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26861">C26861</a> finds direct modifications to year, month, or day field of a date-time object when there is no leap year checking before or after the modification.</p>
-<h2 id="c26862-incomplete-conversion-of-date-time-objects">C26862: Incomplete conversion of date-time objects</h2>
-<p>There are many date-time object types, and there is a need to convert from a date-time object of one type to a date-time object of another type. Unfortunately, different date-time object types may use different year, month, or day bases. For example, SYSTEMTIME struct uses a 0-based year, but 1-based month and day fields. On the other hand, tm struct uses a 1900-based year, a 0-based month, and a 1-based day. To convert an object of one of these types to an object of another type, the year, month, and day fields must be adjusted appropriately.</p>
-<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26862">C26862</a> finds incomplete conversion between objects of SYSTEMTIME and tm structures.</p>
-<h2 id="c26863-ignored-return-value-from-date-time-handling-function">C26863: Ignored return value from date-time handling function</h2>
-<p>Some functions that create or handle date-time objects return values indicating success or failure. It&#8217;s important to verify the return value of such a function, especially without proper leap year handling. Otherwise, the function may have failed, and execution continues with an output value containing invalid data.</p>
-<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26863">C26863</a> finds ignored return values from a set of known date-time handling functions when there is no leap year checking.</p>
-<h2 id="c26864-day-field-manipulation-assuming-365-days-per-year">C26864: Day field manipulation assuming 365 days per year</h2>
-<p>It is a subset of C26861, specifically looking for modifications of the day field of date-time object assuming there are 365 days in all years. To advance a date-time object by a year, either calculate the correct number of days to advance through checking leap year or advance the year field directly and adjust the resultant date-time per leap year rule.</p>
-<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/c26864">C26864</a> finds manipulations of date-time objects assuming 365 days per year.</p>
-<h1 id="conclusion">Conclusion</h1>
-<p>Recent releases of Visual Studio 2022 feature many new checks in our code analysis tools. Give it a try and let us know what you think. The work that we do is heavily influenced by the feedback we receive on the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>. Please file feedback tickets and let us know if there is a check that you would like to see added. Stay tuned for more C++ static analysis blogs. In the meanwhile, do not hesitate to reach out to us. We can be reached via the comments below or <a href="https://twitter.com/visualc">@VisualC</a> on X.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/">New Checks Since Visual Studio 2022 17.8</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/new-checks-since-visual-studio-2022-17-8/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
