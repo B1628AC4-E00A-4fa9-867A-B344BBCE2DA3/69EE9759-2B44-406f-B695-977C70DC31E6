@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Wed, 03 Jul 2024 14:09:55 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 11 Jul 2024 20:47:28 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,92 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Local AI on Windows: Explaining the Audio Editor app sample </title>
+		<link>https://blogs.windows.com/windowsdeveloper/2024/07/11/local-ai-on-windows-explaining-the-audio-editor-app-sample/</link>
+		
+		<dc:creator><![CDATA[Zachary Teutsch]]></dc:creator>
+		<pubDate>Thu, 11 Jul 2024 20:47:28 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57064</guid>
+
+					<description><![CDATA[<p>Building Windows apps that leverage on-device AI models can seem like a daunting task - there's a lot of work that goes into defining your use case, choosing and tuning the right models, and refining the logic surrounding the models.</p>
+<p>While there's n</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2024/07/11/local-ai-on-windows-explaining-the-audio-editor-app-sample/">Local AI on Windows: Explaining the Audio Editor app sample </a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Building Windows apps that leverage on-device AI models can seem like a daunting task - there's a lot of work that goes into defining your use case, choosing and tuning the right models, and refining the logic surrounding the models.
+
+While there's no quick and easy path to learning the ins and outs of AI on Windows, we are going to breakdown an application sample that was showcased at Build to help you see how on-device models can be leveraged to power up your applications.
+
+The sample we will be looking at is an AI-empowered Audio Editor, built with WinUI3 and WinAppSDK. The application functionality itself is minimal, but provides a good framework to showcase the AI portion of the app.
+
+<img class="aligncenter wp-image-57067 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/07/hero-1024x685.png" alt="View of the audio editor app" width="1024" height="685" />
+
+<b>Audio Smart Trimming</b>
+
+The Audio Editor app uses several models to enable "smart trimming" of audio, which has a flow like this:
+<ol>
+ 	<li>User uploads an audio file that includes recognizable speech</li>
+ 	<li>They provide a theme keyword or phrase and a trim duration</li>
+ 	<li>The Audio Editor generates a trimmed audio clip that contains the most relevant segment of audio related to the provided theme</li>
+</ol>
+The input UI for this flow helps visualize what exactly is expected in the sample:
+
+<img class="aligncenter wp-image-57069 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/07/image1-1024x685.png" alt="View of the audio editor app" width="1024" height="685" />
+
+Once <em>Generate new clip</em> is clicked, the new audio clip is uploaded to the app and can be played for validation:
+
+<img class="aligncenter wp-image-57070 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/07/image2-1024x685.png" alt="View of the audio editor app" width="1024" height="685" />
+
+<span class="NormalTextRun SCXW83085235 BCX8">Now let’s </span><span class="NormalTextRun SCXW83085235 BCX8">take a look</span><span class="NormalTextRun SCXW83085235 BCX8"> at the models that were used to make this work.</span>
+
+<b>Enabling Smart Trimming with Silero, Whisper, and MiniLML6v2</b>
+
+For the "smart trimming" task, it takes three different models, all of them <a href="https://onnx.ai/onnx/">ONNX</a>, to process the input audio data into the output we are expecting. We'll break down what each model does, what it accomplishes for our use case, and where you can find more info on the models.
+
+In order of usage:
+
+<b>Silero Voice Activity Detection (VAD)</b>
+
+We use this model to "smart-chunk" our audio into smaller bits so that it can be processed by our transcription model.
+
+This is necessary because Whisper (our transcription model) can only process thirty second snippets of audio at a time. We can't naively cut the audio at 30 second intervals because this would chop sentences in the middle, resulting in a transcription that didn't accurately reflect the structure and grammar of the spoken audio.
+
+As a solution, we use Silero VAD to detect voice activity and cut on breaks in speaking, resulting in audio chunks that are small enough for Whisper to process, but are still properly sectioned portions of speech.
+
+You can learn more about Silero VAD itself on <a href="https://github.com/snakers4/silero-vad/tree/master">GitHub</a>.
+
+<strong>Whisper Tiny</strong>
+
+After our audio has been chunked, we take the output and feed it to the Whisper Tiny model. This model transcribes speech to text and is probably the most straightforward step in our pipeline: audio chunks go in, and transcribed chunks come out.
+
+We use the Tiny version of Whisper to optimize on performance, but it comes with some drawbacks, such as being limited to English and a possible drop off in accuracy. However, for our use case, it works great.
+
+You can learn more about Whisper Tiny, or its variants, on <a href="https://huggingface.co/openai/whisper-tiny">HuggingFace</a>.
+
+<strong>MiniLM</strong>
+
+The last model we use is a text embedding model called MiniLM. MiniLM maps written sentences to a multi-dimensional vector space that encapsulates all the semantic information contained in a sentence. In other words, this model maps all the things we inherently understand about language (like meaning, grammar, vocabulary, etc.) to a numerical representation of that information. This is useful for all sorts of tasks, but we will use it for semantic search.
+
+For this sample, we take the text transcribed from our Whisper model, our input theme phrase to search on, and use MiniLM to generate text embeddings for both. Once we have our embeddings, we can calculate the <a href="https://en.wikipedia.org/wiki/Cosine_similarity">Cosine Similarity</a> between our theme phrase and embedded sections of our audio text to get the most semantically similar section of our audio.
+
+From there, we just have to cut our audio based on the timestamps, load it into the player, and that's it!
+
+You can learn more about MiniLM on <a href="https://huggingface.co/optimum/all-MiniLM-L6-v2">HuggingFace</a>.
+
+<b>Running the Sample and Checking out the Code</b>
+
+If you want to run the sample for yourself, or dive into the implementation for some more details on how this all works, head over to this <a href="https://github.com/microsoft/Windows-DevRel/tree/main/Samples/AudioEditor">repository</a> where the sample lives.
+
+We also have a <a href="https://github.com/microsoft/Windows-DevRel/blob/main/Samples/AudioEditor/CodeWalkthrough.md">Code Walkthrough document</a> if you want an entry point into how this sample was written.
+
+There's quite a bit of set-up that goes into getting all the models set up in the project (since they can't be checked into source control), but all the prerequisite steps are defined in the README. Go check it out!
+
+If you want to learn more using local models on Windows, head over to <span data-contrast="none"><a href="https://learn.microsoft.com/en-us/windows/ai/">this documentation</a> to learn more. </span>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Frequently Asked Questions about using AI in Windows apps</title>
 		<link>https://learn.microsoft.com/en-us/windows/ai/faq</link>
 		
@@ -650,56 +736,6 @@ Be sure to check out these sessions at Microsoft’s Build Conference to learn m
 <i><span data-contrast="auto">3 Optimized for select languages (English, Chinese (simplified), French, German, Japanese, and Spanish.) Content-based and storage limitations apply. See [</span></i><span data-contrast="none">aka.ms/copilotpluspcs</span><i><span data-contrast="auto">].</span></i><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>
 
 <i><span data-contrast="auto">4 </span></i><span data-contrast="auto">Optimized for English text prompts. See aka.ms/copilotpluspcs.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Microsoft App Assure helps Opera build Arm-optimized browser</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2024/05/16/microsoft-app-assure-helps-opera-build-arm-optimized-browser/</link>
-		
-		<dc:creator><![CDATA[Mike Adams, Corporate Vice President, Customer Experience Engineering]]></dc:creator>
-		<pubDate>Thu, 16 May 2024 16:00:04 +0000</pubDate>
-				<category><![CDATA[Windows Developers]]></category>
-		<category><![CDATA[App Assure]]></category>
-		<category><![CDATA[ARM]]></category>
-		<category><![CDATA[browser]]></category>
-		<category><![CDATA[Developers]]></category>
-		<category><![CDATA[opera]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=56961</guid>
-
-					<description><![CDATA[<p>The Microsoft App Assure team helps app developers around the world to ensure their users have top-notch experience on all Microsoft platforms. Today, I want to highlight one of our many successful engagements: the new Opera Browser for Arm-based Win</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2024/05/16/microsoft-app-assure-helps-opera-build-arm-optimized-browser/">Microsoft App Assure helps Opera build Arm-optimized browser</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[The Microsoft App Assure team helps app developers around the world to ensure their users have top-notch experience on all Microsoft platforms. Today, I want to highlight one of our many successful engagements: the new Opera Browser for Arm-based Windows devices. In May, an Arm-optimized version of Opera for Windows was made available on the <a href="https://www.opera.com/browsers/opera/developer">developer stream</a> of the browser. Engineering assistance from the Microsoft App Assure team played a key role in this effort.
-
-The App Assure program delivers on Microsoft’s application compatibility promise: your apps will run on Windows on Arm, and if you encounter any issues, Microsoft will help you remediate them. This no-cost program has a proven track record helping over 300 market-leading developers build Arm-optimized apps for Windows. With the recent worldwide release of our <a href="https://blogs.windows.com/windowsdeveloper/2024/03/13/announcing-worldwide-availability-of-arm-advisory-service-for-developers/">Arm Advisory Service</a>, more developers than ever before have been turning to App Assure for guidance.
-
-We continue to see excitement in the market for the coming wave of Windows PCs based on the Qualcomm Snapdragon X Elite platform. These new devices feature powerful on-device AI capability, which will herald a new age of groundbreaking AI features. As with all Arm-based Windows devices, they offer fast connectivity, extended battery life, best-in-class performance, advanced camera capabilities, along with many other benefits.
-<h4>Porting to Windows Arm is easy</h4>
-Windows users expect their favorite apps to work great on Arm-based PCs. To meet this expectation, App Assure engages with the most popular apps, such as the Opera Browser, helping them optimize for the platform. App Assure engineers worked directly with Opera’s engineering team, offering technical assistance and guidance. It quickly became apparent that both teams had a similar take on strong signals reflecting growing industry awareness of the performance and efficiency benefits offered by Arm devices.
-
-<img class="alignnone size-full wp-image-56964" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/05/App-Assure-Opera-Screen-Shot-With-Shadow.jpg" alt="Screenshot of the Opera browser" width="1000" height="714" />
-
-“Windows is our biggest audience, so it is very important for us to deliver a seamless experience on all Windows devices,” said Bartosz Wiklak, head of QA and Automation at Opera. “We had been seeing increased market excitement about the future of Arm-based PCs for some time. When the App Assure team got in touch with us, we decided it was a great time to start focusing on it. We always aim to be at the forefront of the adoption curve and offer more options for our customers.”
-
-Through a series of technical workshops, App Assure engineers met with Opera engineers to discuss the nuts and bolts of optimizing for Arm. These in-depth sessions provided a deep dive into the intricacies of Arm's architecture, covering details that go beyond simple cross-platform build configuration or signing multi-architecture app bundles. App Assure engineers also provided technical documentation to further Opera’s understanding of Windows on Arm. This work helped lay the foundation for a version of Opera that is not only compatible with Arm devices, but also takes advantage of the best-in-class performance offered by these devices.
-
-“Our experience developing for other Arm platforms was that it took quite a bit of work, so we were initially concerned about the time commitment. But when we looked deeper into it, we found out that a lot of the porting work had already been done in the Chromium project for the Arm-native release of Microsoft Edge. So, it was a very smooth process. We produced a first build in just a few days.” said Wiklak. “Once the builds passed quality bar, we benchmarked optimized browser using Speedometer, a widely popular benchmark for web browsers. We were really pleased that the score was more than double when compared to emulated version.” The Arm-optimized version of Opera will be first available on the <a href="https://www.opera.com/browsers/opera/developer">developer stream</a> of the browser, allowing early adopters to try it out on Arm-based Windows devices.
-
-<img class="alignnone size-large wp-image-56965" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/05/Designed-quote_Bartosz-Opera-1-1024x224.jpg" alt="Developer quote and thumbnail photo" width="1024" height="224" />
-<h4>App Assure helps developers unlock potential</h4>
-We are confident that Windows on Arm is going to revolutionize personal computing, and we are excited to offer App Assure to Windows on Arm developers to help all organizations see just how easy it is to build for this platform.
-
-If you’d like to know more about how to add Arm support to your Windows app, check out the <a href="http://aka.ms/win/arm/howto">technical documentation</a>.
-
-Once you’re ready to begin your porting journey, Microsoft’s Arm Advisory Service can provide detailed insights into platform features, best practices and code examples. For example, App Assure engineers can help you:
-<ul>
- 	<li>Understand the nuances of emulated code translation and how to seamlessly interoperate between native and x64 code.</li>
- 	<li>Configure build systems most efficiently for multi-architecture delivery.</li>
- 	<li>Obtain Arm-based hardware or get started with Azure Virtual Machines and then prepare those environments for development, continuous integration, or test runners.</li>
-</ul>
-If this sounds like something you’re interested in, <a href="https://aka.ms/AppAssureServicesForm">reach out to us by completing this form</a>.]]></content:encoded>
 					
 		
 		
