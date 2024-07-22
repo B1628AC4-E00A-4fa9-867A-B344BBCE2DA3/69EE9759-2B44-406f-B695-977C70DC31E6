@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 18 Jul 2024 03:37:11 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 22 Jul 2024 14:43:56 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,41 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Improving GitHub Copilot Completions in VS Code for C++ Developers</title>
+		<link>https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/#respond</comments>
+		
+		<dc:creator><![CDATA[Erika Sweet]]></dc:creator>
+		<pubDate>Mon, 22 Jul 2024 14:43:56 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Copilot]]></category>
+		<category><![CDATA[Visual Studio Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34429</guid>
+
+					<description><![CDATA[<p>GitHub Copilot code completions are autocomplete-stye suggestions that appear inline as you code. Until today, they have used context from your active file and other tabs open in the editor to inform the suggestion that is returned. However, we know that more contextually relevant input leads to better suggestions.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/">Improving GitHub Copilot Completions in VS Code for C++ Developers</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>GitHub Copilot code completions are autocomplete-stye suggestions that appear inline as you code. Until today, they have used context from your <a href="https://code.visualstudio.com/docs/copilot/ai-powered-suggestions#_context">active file and other tabs open in the editor</a> to inform the suggestion that is returned. However, we know that more contextually relevant input leads to better suggestions. Our team has made changes to the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack">C/C++ extension</a> and the <a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">GitHub Copilot extension</a> in VS Code to ensure that other relevant C++ context — like available types and methods — are also provided to Copilot completions.</p>
+<p>When you use the latest version of the C/C++ extension and the GitHub Copilot extension together in VS Code, directly-referenced header files will be automatically considered when gathering additional context for Copilot completions, even if they’re not open in the editor. This helps to reduce hallucinations and provide more relevant suggestions. Let’s look at an example.</p>
+<h5 id="before-directly-referenced-header-files-are-not-considered-as-context-for-github-copilot-code-completions">Before: Directly-referenced header files are not considered as context for GitHub Copilot code completions</h5>
+<p>In this example, I want to create a new function in the OSS <a href="https://github.com/dolphin-emu/dolphin/tree/321c4649a5c9d185ea163707d0ee9f296df1ecd6">Dolphin codebase</a> to find text files. When directly-referenced header files are not considered as context, GitHub Copilot hallucinates a <a href="https://github.com/search?q=repo%3Adolphin-emu%2Fdolphin%20FindFiles&amp;type=code">non-existent FindFiles() function</a>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/07/headers-context-off-blog.gif"><img decoding="async" class="aligncenter size-full wp-image-34432" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/07/headers-context-off-blog.gif" alt="A snippet of C++ code in VS Code. A user types a function name (FindAllTextFiles), and Copilot hallucinates a non-existent function (FindFiles()) in the function body." width="1440" height="379" /></a></p>
+<h5 id="after-directly-referenced-header-files-are-considered-as-context-for-github-copilot-code-completions">After: Directly-referenced header files are considered as context for Github Copilot code completions</h5>
+<p>Now, when directly-referenced header files are considered as context, Copilot correctly suggests an <a href="https://github.com/dolphin-emu/dolphin/blob/321c4649a5c9d185ea163707d0ee9f296df1ecd6/Source/Core/Common/FileSearch.h#L13-L15">existing DoFileSearch()</a> utility function declared in FileSearch.h.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/07/headers-context-on-blog.gif"><img decoding="async" class="aligncenter size-full wp-image-34433" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/07/headers-context-on-blog.gif" alt="A snippet of C++ code in VS Code. A user types a function name (FindAllTextFiles), and Copilot suggests an existing utility function (DoFileSearch) in the function body." width="1440" height="379" /></a></p>
+<p>To get started, make sure you’re using the <a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot">GitHub Copilot extension</a> version 1.205 or later and have an active <a href="https://github.com/features/copilot?utm_source=vscom&amp;utm_medium=hero&amp;utm_campaign=cta-get#pricing">GitHub Copilot subscription</a>. You’ll also need the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack">C/C++ extension</a> version 1.21 or later with <a href="https://code.visualstudio.com/docs/cpp/configure-intellisense">IntelliSense configured correctly</a>. Version 1.21 of the C/C++ extension is currently in pre-release. Our team is committed to C++ Copilot support in both Visual Studio and VS Code, and similar support is coming to Visual Studio in Visual Studio 2022 version 17.12.</p>
+<h3 id="contacts-us">Contacts Us</h3>
+<p>Your feedback helps inform our work to improve the Copilot experience for C++ developers in Visual Studio and VS Code. You can provide feedback on GitHub Copilot by opening a <a href="https://github.com/orgs/community/discussions/categories/copilot">GitHub discussion</a>. You can also reach our team via email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>), X (<a href="https://x.com/visualc">@VisualC</a>), or through the comments below.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/">Improving GitHub Copilot Completions in VS Code for C++ Developers</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What&#8217;s New in vcpkg (June 2024)</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2024/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2024/#respond</comments>
@@ -862,39 +897,6 @@ Some major highlights include improvements to the CMake: Quick Start command and
 <h4 aria-level="3" aria-level="3" id="what-do-you-think"><b><span data-contrast="none">What do you think?</span></b><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335557856&quot;:16777215,&quot;335559738&quot;:0,&quot;335559739&quot;:120,&quot;335559740&quot;:279}"> </span></h4>
 <p><span data-contrast="none">Let us know about your experience by commenting below, emailing us at </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com,</span></a><span data-contrast="none"> or reaching out via X/Twitter at </span><a href="https://twitter.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">.</span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335557856&quot;:16777215,&quot;335559738&quot;:0,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/cpp-at-vs-code-day-2024/">C++ at VS Code Day 2024</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Use AI-Powered Rename Suggestions to rename your C++ variables in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/use-ai-powered-rename-suggestions-to-rename-your-c-variables-in-visual-studio/</link>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Mon, 13 May 2024 16:27:30 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34141</guid>
-
-					<description><![CDATA[<p>We are very excited to announce C++ support for AI-Powered Rename Suggestions from GitHub Copilot in Visual Studio 2022. Seamlessly integrated into your familiar Rename workflow in the IDE, AI-powered rename suggestions dynamically generate name suggestions for any C++ identifier. It will generate proposed names based on its usage and your code&#8217;s style to help you strike a balance between describing the variable with appropriate descriptive qualities while remaining concise.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/use-ai-powered-rename-suggestions-to-rename-your-c-variables-in-visual-studio/">Use AI-Powered Rename Suggestions to rename your C++ variables in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are very excited to announce <strong>C++ support</strong> for <a href="https://devblogs.microsoft.com/visualstudio/ai-powered-rename-suggestions/">AI-Powered Rename Suggestions</a> from GitHub Copilot in Visual Studio 2022. Seamlessly integrated into your familiar Rename workflow in the IDE, AI-powered rename suggestions dynamically generate name suggestions for any C++ identifier. It will generate proposed names based on its usage and your code&#8217;s style to help you strike a balance between describing the variable with appropriate descriptive qualities while remaining concise. Instead of spending time brainstorming new names, you can focus on reviewing the variable names generated by Copilot to determine the appropriate new name that describes the identifier.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions.png"><img decoding="async" class="wp-image-34142 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions.png" alt="AI-Powered rename suggestions suggesting more appropriate qualifiers for a vague variable named &quot;property&quot;" width="698" height="358" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions.png 1417w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-300x154.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-1024x525.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-768x394.png 768w" sizes="(max-width: 698px) 100vw, 698px" /></a></p>
-<p>To enable AI-powered rename suggestions for C++, you&#8217;ll need at least <a href="https://visualstudio.microsoft.com/">Visual Studio 2022 version 17.10 Preview 1 installed</a>, the GitHub Copilot and Copilot Chat extensions installed, and an active subscription to GitHub Copilot.</p>
-<p><em>Note that as of Visual Studio 2022 17.10 Preview 3, these extensions are <a href="https://devblogs.microsoft.com/visualstudio/introducing-the-new-copilot-experience-in-visual-studio/">unified as one GitHub Copilot extension</a> and automatically included with Visual Studio as a recommended component.</em></p>
-<p>You can toggle the visibility of this feature via <strong>Tools &gt; Options</strong> under <strong>GitHub &gt; Copilot chat</strong> Preview features.</p>
-<h3 id="how-to-use-ai-powered-rename-suggestions"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions.png"><img decoding="async" class="wp-image-34144 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions-e1715272284697.png" alt="The Options for GitHub &gt; Copilot chat preview features to enable rename suggestions" width="847" height="587" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions-e1715272284697.png 1438w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions-e1715272284697-300x208.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions-e1715272284697-1024x710.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/options-rename-suggestions-e1715272284697-768x532.png 768w" sizes="(max-width: 847px) 100vw, 847px" /></a>How to use AI-Powered Rename Suggestions</h3>
-<p>To access this feature, right-click any variable and select <strong>Rename</strong>. To the right of the familiar Rename dialog, you&#8217;ll see a new sparkle icon to call for AI-powered rename suggestions.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2.png"><img decoding="async" class=" wp-image-34146 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2.png" alt="Request AI-generated rename suggestions icon in the rename dialog highlighted" width="965" height="494" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2.png 1299w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2-300x154.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2-1024x524.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-v2-768x393.png 768w" sizes="(max-width: 965px) 100vw, 965px" /></a>Copilot chat will be invoked on this symbol to generate suggestions for what to rename the identifier to, based on its usage in the code and the code&#8217;s naming conventions.</p>
-<h3 id="what-do-you-think"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2.png"><img decoding="async" class="wp-image-34147 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2.png" alt="A dropdown list containing the generated rename suggestions." width="772" height="389" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2.png 1703w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2-300x151.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2-1024x516.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2-768x387.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/rename-suggestions-generated-v2-1536x774.png 1536w" sizes="(max-width: 772px) 100vw, 772px" /></a>What do you think?</h3>
-<p>Try out the new AI-powered rename suggestions whenever you need to rename C++ symbols. Please share your thoughts on this experience with C++ in the survey below, as we look to improve this feature:</p>
-<p style="text-align: center;"><div style="text-align:center"><a class="cta_button_link" href="https://www.research.net/r/renamesuggestionsblog" style="text-transform: titlecase; display: inline-block; background-color: #0078D4; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Take Survey</a></div></p>
-<p>In addition, our team is working hard on improving C++ integrations with Copilot Chat, so please let us know any other improvements you&#8217;d like to see to your C++ workflows and content you&#8217;d like to see.</p>
-<p>We welcome all types of feedback on your experience with the product. Comment below or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via X at <a href="https://twitter.com/visualc">@VisualC</a></p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/use-ai-powered-rename-suggestions-to-rename-your-c-variables-in-visual-studio/">Use AI-Powered Rename Suggestions to rename your C++ variables in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
 		
