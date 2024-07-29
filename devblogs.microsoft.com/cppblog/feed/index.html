@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 23 Jul 2024 14:56:00 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 29 Jul 2024 19:12:11 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,119 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Backend Updates in Visual Studio 2022 version 17.10</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/#comments</comments>
+		
+		<dc:creator><![CDATA[Sarthak Tamboli]]></dc:creator>
+		<pubDate>Mon, 29 Jul 2024 19:10:48 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34439</guid>
+
+					<description><![CDATA[<p>Visual Studio 2022 17.10 brings new optimizations, intrinsics, features, and improvements to the MSVC backend. Check out the highlights below:</p>
+<p>Performance improvements and additional functionality for all architectures:</p>
+<p>Improved SLP vectorizer. Now it runs on more functions, recognizes more operations, and may choose to use larger vector widths if allowed by the appropriate /arch flag.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/">MSVC Backend Updates in Visual Studio 2022 version 17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">Visual Studio 2022</a> 17.10 brings new optimizations, intrinsics, features, and improvements to the MSVC backend. Check out the highlights below:</p>
+<ul>
+<li>Performance improvements and additional functionality for all architectures:
+<ul>
+<li>Improved SLP vectorizer. Now it runs on more functions, recognizes more operations, and may choose to use larger vector widths if allowed by the appropriate <code>/arch</code> flag. Add the <code><a href="https://learn.microsoft.com/en-us/cpp/build/reference/qvec-report-auto-vectorizer-reporting-level?view=msvc-170">/Qvec-report:1</a></code> switch and look for info <em>C5003: block vectorized</em> for more SLP vectorization.</li>
+<li>Support <code>__declspec(guard(overflow))</code> with signed operations for add/mul.</li>
+<li><a href="https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/">Improvements in Variable Visibility when Debugging.</a></li>
+<li>Enabled code coverage of managed C++ binaries targeting .NET Core.</li>
+<li>Increase debug information for symbol removal during <a href="https://devblogs.microsoft.com/cppblog/improvements-in-variable-visibility-when-debugging/"><code>/LTCG</code>.</a></li>
+<li>Significant improvements to ASAN code generation, fixing codegen bugs, and reducing false negatives. ASAN now emits more checks in the presence of inlining.</li>
+<li>Made security improvements to the PDB handling code.</li>
+</ul>
+</li>
+<li>New functionality and performance improvements on ARM64:
+<ul>
+<li>The new <a href="https://learn.microsoft.com/en-us/cpp/build/reference/feature-arm64?view=msvc-170"><code>/feature</code> (ARM64)</a> flag allows you to enable one or more optional Arm A-Profile architecture features for a specified ARM64 extension. You can also enable ARM64 features by specifying them in the updated <a href="https://learn.microsoft.com/en-us/cpp/build/reference/arch-arm64?view=msvc-170"><code>/arch</code></a> ARM64 option. For example, if you’d like to enable feature <code>FEAT_LSE</code> (Large System Extensions), you can use both <code>/feature:lse</code> and <code>/arch:armv8.0</code> or only use <code>/arch:armv8.0+lse</code>. Note that only certain ARM64 features are currently supported by MSVC. Along with adding the option to enable Arm A-Profile architecture features, the <code>/arch</code> ARM64 option now has the additional arguments for Armv8-A architecture extension version armv8.9 and Armv9-A architecture extensions armv9.0, armv9.1, armv9.2, armv9.3, and armv9.4. For more information about both options, please refer to our documentation for <a href="https://learn.microsoft.com/en-us/cpp/build/reference/arch-arm64?view=msvc-170"><code>/feature</code> (ARM64)</a> and <a href="https://learn.microsoft.com/en-us/cpp/build/reference/arch-arm64?view=msvc-170"><code>/arch</code> (ARM64)</a>.</li>
+<li>Added Arm64 intrinsics, and variants, for exclusive load/store and load/store for unprivileged registers, <code>ldtr</code> and <code>sttr</code><em>.</em> Thanks to our friends at ARM.</li>
+<li>Optimized Arm64 CRT functions to run faster and take less space
+<ul>
+<li><code>strstr</code>/<code>wcschr</code>/<code>wcsrchr</code>/<code>wcsstr</code></li>
+<li><code>strchr</code><em>, </em><code>strrchr</code>, and <code>memchr</code>, thanks to our friends at ARM.</li>
+</ul>
+</li>
+<li>Speed up intrinsic expansion by reducing intermediate steps</li>
+<li>Support SVE2 instructions in the assembler and disassembler, thanks to our friends at ARM.
+<ul>
+<li>bit permutation</li>
+<li>element move and broadcasting</li>
+<li>constructive multiplication</li>
+<li>polynomial and complex integer arithmetic/dot product/matrix multiplication/comparison</li>
+<li>uniform/widening/narrowing/unary DSP operations</li>
+<li>cryptography support</li>
+<li>extended table lookup</li>
+<li>non-temporal gather/scatter</li>
+<li>floating-point extra conversion and floating-point widening multiply-accumulate</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Improvements to ARM64EC:
+<ul>
+<li>No longer generate mismatched thunks with different call signatures</li>
+<li>Now considers x64 functions during long-branch optimizations <a href="https://learn.microsoft.com/en-us/cpp/build/reference/opt-optimizations?view=msvc-170"><code>/OPT:LBR</code></a></li>
+<li><code><a href="https://learn.microsoft.com/en-us/cpp/build/reference/map-generate-mapfile?view=msvc-170">/map</a></code> now contains Arm64 native symbols</li>
+</ul>
+</li>
+<li>Performance improvements and additional functionality for x86 and x64:
+<ul>
+<li>Vectorizer optimized to run in additional scenarios, thanks to our friends at AMD.</li>
+<li>Optimize FMA generation with <code>/favor:ATOM</code>, thanks to our friends at Intel.</li>
+<li>New functionality on x64:
+<ul>
+<li>Support the vectorization of the multiplication of 8-bit types for AVX512, thanks to our friends at Intel.</li>
+<li>Support AVX2 and AVX512 variable bit shift instructions, thanks to our friends at AMD.</li>
+<li>Our friends at Intel added intrinsics for Intel Lion Cove to enable:
+<ul>
+<li>AVX-VNNI-INT16
+<ul>
+<li><code>VPDPW[SU,US,UU]D[,S]</code></li>
+</ul>
+</li>
+<li>TSE
+<ul>
+<li><code>PBNDKB</code></li>
+</ul>
+</li>
+<li>SHA512
+<ul>
+<li><code>VSHA512MSG1</code><em>, </em><code>VSHA512MSG2</code><em>, </em><code>VSHA512RNDS2</code></li>
+</ul>
+</li>
+<li>SM3
+<ul>
+<li><code>VSM3MSG1</code><em>, </em><code>VMS3MSG2</code><em>, </em><code>VSM3RNDS2</code></li>
+</ul>
+</li>
+<li>SM4
+<ul>
+<li><code>VSM4KEY4</code><em>, </em><code>VSM4RNDS4</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Do you want to experience the new improvements in the C++ backend? Please <a href="https://visualstudio.microsoft.com/vs/features/cplusplus/">download the latest Visual Studio 2022</a> and give it a try! Any feedback is welcome. We can be reached via the comments below, <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>, X (<a href="https://twitter.com/visualc">@VisualC</a>), or email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>Stay tuned for more information on updates to the latest Visual Studio.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/">MSVC Backend Updates in Visual Studio 2022 version 17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Genetec uses Visual Studio, CMake, vcpkg, and Docker for remote Linux C++ development</title>
 		<link>https://devblogs.microsoft.com/cppblog/genetec-uses-visual-studio-for-cmake-and-remote-container-development/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/genetec-uses-visual-studio-for-cmake-and-remote-container-development/#respond</comments>
@@ -842,74 +955,6 @@ Some major highlights include improvements to the CMake: Quick Start command and
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-18-update-quick-start-with-cmake-and-more/">Visual Studio Code CMake Tools Extension 1.18 Update: Quick Start with CMake and more&#8230;</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>What&#8217;s New for C++ Developers in Visual Studio 2022 17.10</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-10/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-10/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Wed, 22 May 2024 18:17:46 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34181</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.10 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-10/">What&#8217;s New for C++ Developers in Visual Studio 2022 17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.10 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
-<h1 id="standard-library-and-compiler">Standard Library and Compiler</h1>
-<p>We have incremented the minor version number of the MSVC toolset from 19.39 (VS 2022 v17.9) to 19.40 (VS 2022 v17.10). For more details, and some ways in which this will affect projects that assume that MSVC versions are all 19.3X for Visual Studio 2022 releases, see the <a href="https://aka.ms/msvc-ver14.40">MSVC Toolset Minor Version Number 14.40 in VS 2022 v17.10 blog post</a>.</p>
-<p>We’ve made a host of changes to our standard library implementation, with the help of the community. As always, you can see the <a href="https://github.com/microsoft/STL/wiki/Changelog">STL Changelog</a> for full details. We implemented C++26’s <a href="https://wg21.link/P2510R3">P2510R3 Formatting Pointers</a>, which brings the set of format specifiers for pointers when using <code>std::format</code> more in line with those that already exist for integers. We also implemented a few smaller features from C++26 and C++23, such as <a href="https://wg21.link/P2836R1">P2836R1</a>, which makes <code>std::basic_const_iterator</code> act in a more natural way with respect to implicit conversions. On the performance side, we improved the vectorized implementations of <code>std::min_element</code>, <code>std::ranges::min</code> and friends, made the copy/move assignment operators of <code>std::expected</code> trivial when expected, and more.</p>
-<h1 id="c-productivity-and-game-development">C++ Productivity and Game Development</h1>
-<p>You can now use Build Insights to view your template instantiation information. Template instantiation collection must be activated in Tools &gt; Options &gt; Build Insights.</p>
-<p><img decoding="async" width="1197" height="256" class="wp-image-34182" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/recursive-template-instantiation.png" alt="Recursive Template Instantiation" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/recursive-template-instantiation.png 1197w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/recursive-template-instantiation-300x64.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/recursive-template-instantiation-1024x219.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/recursive-template-instantiation-768x164.png 768w" sizes="(max-width: 1197px) 100vw, 1197px" /></p>
-<p>Check out our <a href="https://devblogs.microsoft.com/cppblog/templates-view-for-build-insights-in-visual-studio-2/">blog post on Templates View</a> or our recording from Pure Virtual C++ for more details:</p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/68pOEQ5YA5s?si=bvviIud9zlGHzvci" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<p>You can now keep our Unreal Engine plugin needed for Unreal Engine Test Adapter running in the background, greatly reducing startup costs. This is an opt-in feature that can be activated via Tools &gt; Options &gt; Unreal Engine. Furthermore, we have added additional Unreal Engine Macros to be indented in accordance with the UE Code Style.</p>
-<h1 id="cross-platform">Cross-Platform</h1>
-<p>If you’re targeting Linux, be sure to check out our video on our most recent development features for Linux from Pure Virtual C++:</p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/jZTMRvm8AwY?si=mzS86jQg4WS7Mia7" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<h2 id="cmake-targets-view">CMake Targets View</h2>
-<p>We have added support for pinning CMake targets in the CMake Targets View. There is a top-level folder now for Pinned Targets. You can pin any targets by right-clicking and selecting the Pin option in the context menu.</p>
-<p><img decoding="async" width="546" height="897" class="wp-image-34183" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/pinning-a-cmake-target-via-the-context-menu.png" alt="Pinning a CMake Target via the context menu" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/pinning-a-cmake-target-via-the-context-menu.png 546w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/pinning-a-cmake-target-via-the-context-menu-183x300.png 183w" sizes="(max-width: 546px) 100vw, 546px" /></p>
-<p>You can also unpin any target in the Pinned Targets folder by selecting Unpin.</p>
-<h2 id="connection-manager">Connection Manager</h2>
-<p>We introduced some UX updates and usability improvements to the Connection Manager. With these updates we provide a more seamless experience when connecting to remote systems and/or debugging failed connections. Check out <a href="https://devblogs.microsoft.com/cppblog/usability-improvements-in-the-visual-studio-connection-manager/">our blog post</a> for more details.</p>
-<p><img decoding="async" width="443" height="490" class="wp-image-34184" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-updated-connect-to-remote-system.png" alt="Screenshot of the updated Connect to Remote System dialog with a failed connection error. The error is displayed above the fields in an info bar and the Host Name and Port field are highlighted and labelled as &quot;may be incorrect&quot;. The Connect button is enabled." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-updated-connect-to-remote-system.png 443w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-updated-connect-to-remote-system-271x300.png 271w" sizes="(max-width: 443px) 100vw, 443px" /></p>
-<h1 id="core-editor">Core Editor</h1>
-<h2 id="view-and-address-pull-request-comments">View and Address Pull Request Comments</h2>
-<p>You can now view your GitHub and Azure DevOps pull request comments directly in your working file in Visual Studio. Enable the feature flag, &#8220;Pull Request Comments,&#8221; in Options &gt; Environment &gt; Preview Features and checkout the pull request branch to get started.</p>
-<p><img decoding="async" width="705" height="168" class="wp-image-34185" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screen-shot-of-a-computer-description-automatic.png" alt="A screen shot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screen-shot-of-a-computer-description-automatic.png 705w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screen-shot-of-a-computer-description-automatic-300x71.png 300w" sizes="(max-width: 705px) 100vw, 705px" /></p>
-<h2 id="generated-pull-request-descriptions">Generated Pull Request Descriptions</h2>
-<p>Similar to our generated <a href="https://devblogs.microsoft.com/visualstudio/write-your-git-commits-with-github-copilot/">Git commit message feature</a>, you can now get a first draft for your pull request description created by GitHub Copilot. You&#8217;ll need to verify you have an active GitHub Copilot subscription. Try it out by clicking the &#8216;Add AI Generated Pull Request Description&#8217; sparkle pen icon within the Create a Pull Request window. Please share your feedback on this feature <a href="https://aka.ms/GeneratedPRDescriptions">here</a>.</p>
-<p><img decoding="async" width="670" height="438" class="wp-image-34186" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica.png 670w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-300x196.png 300w" sizes="(max-width: 670px) 100vw, 670px" /></p>
-<h2 id="image-hover-preview">Image Hover Preview</h2>
-<p>If you hover over the path to an image, Visual Studio will now give you a small preview of the image itself, along with the size of the image in pixels and bytes. The size is capped to 500px wide and high.</p>
-<p><img decoding="async" width="946" height="240" class="wp-image-34187" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-1.png 946w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-1-300x76.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-1-768x195.png 768w" sizes="(max-width: 946px) 100vw, 946px" /></p>
-<h2 id="new-text-formatting-options">New Text Formatting Options</h2>
-<p>You can now choose italic, bold, strikethrough, or underline styles for text formatting in the Options &gt; Environment &gt; Fonts and Colors settings:</p>
-<p><img decoding="async" width="1351" height="446" class="wp-image-34188" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-screen-description-aut.png" alt="A screenshot of a computer screen Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-screen-description-aut.png 1351w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-screen-description-aut-300x99.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-screen-description-aut-1024x338.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-screen-description-aut-768x254.png 768w" sizes="(max-width: 1351px) 100vw, 1351px" /></p>
-<h2 id="creating-conditional-breakpoints-and-tracepoints-from-expressions">Creating Conditional Breakpoints and Tracepoints from Expressions</h2>
-<p>You can now create a conditional breakpoint or tracepoint directly from an expression in your source code from the right-click menu. This works on property or field names and values from autos, locals, watch windows, or DataTips:</p>
-<p><img decoding="async" width="671" height="796" class="wp-image-34189" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-8.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-8.png 671w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-8-253x300.png 253w" sizes="(max-width: 671px) 100vw, 671px" /></p>
-<h2 id="attach-to-process-dialog-revamp">Attach to Process Dialog Revamp</h2>
-<p>The Attach to Process dialog has been improved for better functionality and user-friendliness. You can now easily switch between tree and list views, organize processes better with collapsible sections, and select code types with a simplified combobox. Moreover, the “Select/Track Window&#8221; feature is now easier to use, allowing two-way tracking: selecting a process highlights its window, and clicking on a window selects its process.</p>
-<p><img decoding="async" width="1194" height="895" class="wp-image-34190" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-9.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-9.png 1194w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-9-300x225.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-9-1024x768.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34181-9-768x576.png 768w" sizes="(max-width: 1194px) 100vw, 1194px" /></p>
-<h1 id="github-copilot">GitHub Copilot</h1>
-<p>We have unified the experience from the GitHub Copilot and Copilot Chat extensions and shipped them directly in Visual Studio. To install it, install the GitHub Copilot component in the Visual Studio Installer:</p>
-<p><img decoding="async" width="1379" height="319" class="wp-image-34191" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-visual-studio-installer-the-git.png" alt="Screenshot of the Visual Studio Installer. The GitHub Copilot component is highlighted with an orange outline." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-visual-studio-installer-the-git.png 1379w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-visual-studio-installer-the-git-300x69.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-visual-studio-installer-the-git-1024x237.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/screenshot-of-the-visual-studio-installer-the-git-768x178.png 768w" sizes="(max-width: 1379px) 100vw, 1379px" /></p>
-<p>To use it, you’ll need an active GitHub Copilot subscription, and you can find the interface in the top-right corner of Visual Studio.</p>
-<p><img decoding="async" width="394" height="259" class="wp-image-34192" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/copilot-in-action.png" alt="Copilot in action" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/copilot-in-action.png 394w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/copilot-in-action-300x197.png 300w" sizes="(max-width: 394px) 100vw, 394px" /></p>
-<h2 id="send-us-your-feedback">Send us your feedback</h2>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-10/">What&#8217;s New for C++ Developers in Visual Studio 2022 17.10</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-10/feed/</wfw:commentRss>
-			<slash:comments>9</slash:comments>
 		
 		
 			</item>
