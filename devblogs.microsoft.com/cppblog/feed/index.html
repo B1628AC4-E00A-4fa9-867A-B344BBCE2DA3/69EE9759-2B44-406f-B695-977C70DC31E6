@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 06 Aug 2024 22:26:56 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 13 Aug 2024 13:36:48 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,116 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New for C++ Developers in Visual Studio 2022 17.11</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-11/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-11/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 13 Aug 2024 13:36:48 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34498</guid>
+
+					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.11 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-11/">What’s New for C++ Developers in Visual Studio 2022 17.11</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.11 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
+<h1 id="standard-library">Standard Library</h1>
+<p>We’re continuing to improve our open source <a href="https://github.com/microsoft/STL" target="_blank" rel="noopener">standard library implementation</a>. Thank you to everyone who has contributed features and fixes to this release! You can find the full set of changes at the <a href="https://github.com/microsoft/STL/wiki/Changelog" target="_blank" rel="noopener">STL changelog</a>.</p>
+<h2 id="formatted-output">Formatted Output</h2>
+<p>We’ve made several advancements in our formatted output implementation. As part of <a href="https://wg21.link/P2286R8">P2286R8</a> Formatting Ranges, we’ve implemented <code>std::range_formatter</code> and formatters for <code>std::pair</code> and <code>std::tuple</code>. We’ve also added support for calling <code>std::println()</code> with no arguments, which prints a blank line (proposed in <a href="https://wg21.link/P3142R0">P3142R0</a>, which importantly also includes a recipe for banana bread).</p>
+<h2 id="diagnostics">Diagnostics</h2>
+<p>This release also comes with some improved error messages for a couple of scenarios. The first is for when you call <code>std::get&lt;T&gt;</code> on a <code>std::tuple</code> that has multiple instances of T in its template arguments. MSVC used to produce the following error:</p>
+<pre class="prettyprint language-default"><code class="language-default">error C2338: static_assert failed: 'duplicate type T in get&lt;T&gt;(tuple)'</code></pre>
+<p>In Visual Studio 17.11, MSVC produces this error:</p>
+<pre class="prettyprint language-default"><code class="language-default">error C2338: static_assert failed: 'get&lt;T&gt;(tuple&lt;Types...&gt;&amp;) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)'</code></pre>
+<p>We also improved the diagnostics for when std::ranges::to is unable to construct the requested result. MSVC used to print a message such as this:</p>
+<pre class="prettyprint language-default"><code class="language-default">error C2338: static_assert failed: 'the program is ill-formed per N4950 [range.utility.conv.to]/2.3'</code></pre>
+<p>In Visual Studio 2022 17.11, we provide more details:</p>
+<pre class="prettyprint language-default"><code class="language-default">error C2338: static_assert failed: 'ranges::to requires the result to be constructible from the source range, either by using a suitable constructor, or by inserting each element of the range into the default-constructed object. (N4981 [range.utility.conv.to]/2.1.5)'</code></pre>
+<h2 id="vectorization">Vectorization</h2>
+<p>We’ve improved vectorization for several algorithms, some by adding custom vectorized implementations, some by helping the compiler auto-vectorize the code. The improved algorithms are:</p>
+<ul>
+<li><code>replace_copy()</code>, <code>replace_copy_if()</code>, <code>ranges::replace_copy</code>, and <code>ranges::replace_copy_if</code></li>
+<li><code>find_first_of()</code> and <code>ranges::find_first_of</code> for 8-bit and 16-bit elements</li>
+<li><code>mismatch()</code> and <code>ranges::mismatch</code></li>
+<li><code>count()</code> and <code>ranges::count</code></li>
+<li><code>find()</code>, <code>ranges::find</code>, and <code>ranges::find_last</code></li>
+<li><code>ranges::iota</code></li>
+</ul>
+<h1 id="core-editor">Core Editor</h1>
+<h2 id="code-search-scoping">Code Search Scoping</h2>
+<p>You can now narrow the scope of code searches with the newly added scoping options.</p>
+<p>For the default code search experience and each filter, you can now set the scope to <em>Entire solution</em>, <em>Current project</em>, or <em>Current document</em> and toggle inclusion of external files.</p>
+<p>You can set different scopes for different filters. For example, the default experience can be set to look through <em>Entire solution</em> and <strong>members</strong> can be set to look through only current document. Your selections will be preserved past the current session.</p>
+<p><img decoding="async" width="793" height="502" class="wp-image-34499" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer
+
+Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/a-screenshot-of-a-computer-description-automatica.png 793w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/a-screenshot-of-a-computer-description-automatica-300x190.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/a-screenshot-of-a-computer-description-automatica-768x486.png 768w" sizes="(max-width: 793px) 100vw, 793px" /></p>
+<p>This feature must be enabled under <strong>Tools -&gt; Manage Preview Features</strong>.</p>
+<h2 id="pull-request-support-in-visual-studio">Pull Request Support in Visual Studio</h2>
+<h3 id="pull-request-comments">Pull Request Comments</h3>
+<p>We&#8217;ve made it easier to view your GitHub and Azure DevOps pull request comments directly in your working file in Visual Studio. You can now stay in your context, make necessary code changes, and interact with your colleagues&#8217; suggestions without switching contexts to the browser.</p>
+<p>Enable the feature flag, <strong>Pull Request Comments</strong>, checkout any branch with an active pull request branch, and click on <strong>Show comments in files</strong> in the InfoBar.</p>
+<p><img decoding="async" width="900" height="506" class="wp-image-34500" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/view-pull-request-comments-notification.png" alt="View pull request comments notification" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/view-pull-request-comments-notification.png 900w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/view-pull-request-comments-notification-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/view-pull-request-comments-notification-768x432.png 768w" sizes="(max-width: 900px) 100vw, 900px" /></p>
+<p>The latest improvements include better support for @ mentions and work item references, visual improvements to the attention dot and comment margin, the addition of avatars, better sync with the server, and an additional entry point in the Git changes window. This feature must be enabled under <strong>Tools -&gt; Manage Preview Features</strong>.</p>
+<h3 id="pull-requests-using-drafts-and-templates">Pull Requests Using Drafts and Templates</h3>
+<p>You can now create pull request drafts and start your descriptions with GitHub templates in Visual Studio. These were the two top requests for the create a pull request experience.</p>
+<p>Use the drop-down menu on the <strong>Create</strong> button to <strong>Create as Draft</strong>.</p>
+<p><img decoding="async" width="504" height="284" class="wp-image-34501" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/create-pull-requests-draft-option.png" alt="Create pull requests draft option" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/create-pull-requests-draft-option.png 504w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/create-pull-requests-draft-option-300x169.png 300w" sizes="(max-width: 504px) 100vw, 504px" /></p>
+<p>Your default PR template will be used when creating a new PR for both GitHub and Azure DevOps. Learn more about how to add a PR template to your repository in the <a href="https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository">GitHub documentation</a> and <a href="https://learn.microsoft.com/en-us/azure/devops/repos/git/pull-request-templates?view=azure-devops#default-pull-request-templates">Azure DevOps documentation</a>. This feature must be enabled under <strong>Tools -&gt; Manage Preview Features</strong>.</p>
+<h1 id="game-development">Game Development</h1>
+<h2 id="build-insights-quality-of-life-update">Build Insights Quality of Life Update</h2>
+<p>In this update, we added quality of life changes to C++ Build Insights integration. You can now filter your Build Insights trace results by project. For results in each row, you will now see the relative path and file name instead of the full path. We have also improved the grouping of results in the Included Files view.</p>
+<p><img decoding="async" width="1024" height="576" class="wp-image-34502" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/build-insights-qol-update.png" alt="Build Insights QoL Update" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/build-insights-qol-update.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/build-insights-qol-update-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/build-insights-qol-update-768x432.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
+<h2 id="unreal-engine-add-class-templates">Unreal Engine Add Class Templates</h2>
+<p>You can now add additional common Unreal Engine class templates to your project with the new <strong>Add Class</strong> dialog. This dialog provides a list of common Unreal Engine class templates that you can add to your project. You can also now add your class to a module of your choosing.</p>
+<p>To get started, right click on the project in Solution Explorer and select <strong>Add</strong> &gt; <strong>Unreal Engine Item</strong>. In the <strong>Add New Item</strong> dialog, select <strong>Unreal Engine Class</strong> to open the <strong>Add Class</strong> dialog.</p>
+<p><img decoding="async" width="1024" height="576" class="wp-image-34503" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class.png" alt="Unreal Engine Add Class" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-768x432.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
+<h2 id="unreal-engine-add-module">Unreal Engine Add Module</h2>
+<p>You can now add Unreal Engine modules to your project with the new <strong>Add Module</strong> dialog.</p>
+<p>To get started, right click on the project in Solution Explorer and select <strong>Add</strong> &gt; <strong>Unreal Engine Item</strong>. In the <strong>Add New Item</strong> dialog, select <strong>Empty Unreal Engine Module</strong> to open the <strong>Add Module</strong> dialog.</p>
+<p><img decoding="async" width="1024" height="576" class="wp-image-34504" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-1.png" alt="Unreal Engine Add Class" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-1.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-1-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-add-class-1-768x432.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
+<h2 id="unreal-engine-toolbar">Unreal Engine Toolbar</h2>
+<p>The new Unreal Engine toolbar provides quick access to Unreal Engine related actions. The toolbar is available when you have an Unreal Engine project loaded in Visual Studio. The toolbar includes the following actions:</p>
+<ol>
+<li>Quickly attach to Unreal Engine processes</li>
+<li>Rescan Blueprints Cache</li>
+<li>Quick Access to Unreal Engine Log</li>
+<li>Quick Access Unreal Engine Configuration Page for Visual Studio</li>
+</ol>
+<p><img decoding="async" width="1024" height="576" class="wp-image-34505" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-toolbar.png" alt="Unreal Engine Toolbar" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-toolbar.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-toolbar-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/unreal-engine-toolbar-768x432.png 768w" sizes="(max-width: 1024px) 100vw, 1024px" /></p>
+<h1 id="cross-platform">Cross-Platform</h1>
+<h2 id="cmake-debugger-linux-support">CMake Debugger Linux Support</h2>
+<p>We have added support for the CMake debugger in CMake projects targeting Linux via WSL or SSH. The CMake debugger allows you to debug your CMake scripts and <em>CMakeLists.txt</em> files through the Visual Studio debugger.</p>
+<p>To start a CMake debugging session, set a breakpoint in your <em>CMakeLists.txt</em> file and then navigate to <strong>Project &gt; Configure Cache with CMake Debugging</strong>.</p>
+<p><img decoding="async" width="610" height="343" class="wp-image-34506" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/cmake-debugger-linux.png" alt="CMake debugger Linux" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/cmake-debugger-linux.png 610w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/cmake-debugger-linux-300x169.png 300w" sizes="(max-width: 610px) 100vw, 610px" /></p>
+<h1 id="debugging">Debugging</h1>
+<h2 id="faster-c-breakpoints">Faster C++ Breakpoints</h2>
+<p>We have significantly enhanced the performance of conditional breakpoints in C++ through a reworked implementation.</p>
+<p>Beginning with version 17.11, our initial assessment finds that execution time is almost four times as fast, reducing execution time from 80 seconds to 21 seconds over 80,000 iterations.</p>
+<h2 id="auto-add-breakpoints-to-the-default-group">Auto-add Breakpoints to the Default Group</h2>
+<p>You can now mark the selected breakpoint group as the default, ensuring all newly added breakpoints are automatically included in that group.</p>
+<p><img decoding="async" width="900" height="432" class="wp-image-34507" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/default-breakpoint-group.png" alt="Default Breakpoint Group" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/default-breakpoint-group.png 900w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/default-breakpoint-group-300x144.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/default-breakpoint-group-768x369.png 768w" sizes="(max-width: 900px) 100vw, 900px" /></p>
+<h1 id="github-copilot">GitHub Copilot</h1>
+<h2 id="copilot-naming-suggestions">Copilot Naming Suggestions</h2>
+<p>GitHub Copilot can now generate naming suggestions for your identifiers (variables, methods, or classes) based on how your identifier is being used and the style of your code.</p>
+<p><img decoding="async" width="700" height="346" class="wp-image-34508" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/rename-suggestions.png" alt="Rename suggestions" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/rename-suggestions.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/rename-suggestions-300x148.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<p>To try it out, you&#8217;ll need an active <a href="https://visualstudio.microsoft.com/github-copilot/">GitHub Copilot subscription</a>. Navigate to any variable you wish to rename, right-click -&gt; <strong>Rename</strong> (Keyboard: Ctrl+R, Ctrl+R). You&#8217;ll notice a GitHub Copilot sparkle icon that you can click or toggle to generate naming suggestions.</p>
+<h2 id="copilot-in-quick-info">Copilot in Quick Info</h2>
+<p>When you hover over symbols in your codebase, you’ll now have the ability to invoke Copilot conveniently within the Quick Info dialog to learn more about a given symbol and enhance existing or lacking code documentation.</p>
+<p><img decoding="async" width="1378" height="293" class="wp-image-34509" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/word-image-34498-11.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/word-image-34498-11.png 1378w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/word-image-34498-11-300x64.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/word-image-34498-11-1024x218.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/word-image-34498-11-768x163.png 768w" sizes="(max-width: 1378px) 100vw, 1378px" /></p>
+<h1 id="send-us-your-feedback">Send us your feedback</h1>
+<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-11/">What’s New for C++ Developers in Visual Studio 2022 17.11</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-11/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>GitHub Copilot Extensions for C++ developers and beyond now available in VS Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/github-copilot-extensions-for-c-developers-and-beyond-now-available-in-vs-code/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/github-copilot-extensions-for-c-developers-and-beyond-now-available-in-vs-code/#respond</comments>
@@ -867,171 +977,6 @@ know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>What’s New in vcpkg (May 2024): Dedicated Pages for Each Package on vcpkg.io</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/#comments</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Fri, 31 May 2024 19:53:46 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34273</guid>
-
-					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2024.05.24 release as well as changes to vcpkg documentation throughout May. This month’s update also includes individual pages for each package on the vcpkg website as well as several new documentation articles.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/">What’s New in vcpkg (May 2024): Dedicated Pages for Each Package on vcpkg.io</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.05.24">2024.05.24</a> release as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout May. This month’s update also includes individual pages for each package on the vcpkg website as well as several new documentation articles.</p>
-<p>Some stats for this period:</p>
-<ul>
-<li>There are now <strong>2,434 total ports </strong>available in the vcpkg public registry. A <a href="https://learn.microsoft.com/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
-<li><strong>11 new ports</strong> were added to the open-source registry.</li>
-<li><strong>387 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 13 main <a href="https://learn.microsoft.com/vcpkg/concepts/triplets">triplets</a>.</li>
-<li><strong>20 contributors</strong> submitted PRs, issues, or participated in discussions in the main repo.</li>
-<li>The main vcpkg repo has over <strong>6,100 forks</strong> and <strong>21,900 stars</strong> on GitHub.</li>
-</ul>
-<p>There was no update this month to the vcpkg tool binary itself. However, we have made an important update to our website, <a href="https://vcpkg.io/">vcpkg.io</a>.</p>
-<p>&nbsp;</p>
-<h3 id="individual-pages-for-each-port">Individual pages for each port</h3>
-<p>Each one of the 2,434 ports available in the vcpkg open-source registry now has a dedicated page on vcpkg.io with more information about them. You can access these pages by using the search features accessible under <em>Packages</em> at the top right of the site. Below are some example screenshots of the openssl port. You can also review it for yourself at <a href="https://vcpkg.io/en/package/openssl">vcpkg.io/en/package/openssl</a>.</p>
-<p><img decoding="async" class="wp-image-34275" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-2.png" alt="A screenshot of a computer Description automatically generated" width="999" height="566" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-2.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-2-300x170.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-2-1024x580.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-2-768x435.png 768w" sizes="(max-width: 999px) 100vw, 999px" /></p>
-<p>Each port page contains the following elements:</p>
-<ol>
-<li>The name of the port.</li>
-<li>The most recently available version.</li>
-<li>A description of the port.</li>
-<li>The license for the port.</li>
-<li>The last updated date for the port.</li>
-<li>The “Supports” expression for the port which lists which triplets are explicitly supported or not supported. If blank, all triplets are assumed to be supported.</li>
-<li>A link to documentation for the port, if available.</li>
-<li>A link to the homepage for the port, if available.</li>
-<li>Installation instructions for both classic and manifest mode.</li>
-<li>Four tabs with additional information:
-<ol>
-<li>Dependencies: Lists the port’s dependencies.</li>
-<li>Features: Lists the port’s optional features.</li>
-<li>Versions: Lists all available versions of the port in the vcpkg registry.</li>
-<li>Port Content: Lists all the files that comprise the port.</li>
-</ol>
-</li>
-</ol>
-<p>A view of the Features tab for openssl:</p>
-<p><img decoding="async" class="wp-image-34276" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-3.png" alt="A screenshot of a computer Description automatically generated" width="999" height="555" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-3.png 1427w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-3-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-3-1024x569.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-3-768x427.png 768w" sizes="(max-width: 999px) 100vw, 999px" /></p>
-<p>A view of the Versions tab for openssl:</p>
-<p><img decoding="async" class="wp-image-34277" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-4.png" alt="A screenshot of a computer Description automatically generated" width="999" height="561" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-4.png 1428w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-4-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-4-1024x575.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-4-768x431.png 768w" sizes="(max-width: 999px) 100vw, 999px" /></p>
-<p>A view of the Port Content tab for openssl:</p>
-<p><img decoding="async" class="wp-image-34278" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-5.png" alt="A screenshot of a computer Description automatically generated" width="999" height="556" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-5.png 1426w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-5-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-5-1024x570.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/a-screenshot-of-a-computer-description-automatica-5-768x428.png 768w" sizes="(max-width: 999px) 100vw, 999px" /></p>
-<p>We hope these new pages make it easier for anyone interested in vcpkg to learn more about libraries they can install out of the box from the open-source registry. And we would love your feedback on how we can make our website better!</p>
-<p>&nbsp;</p>
-<h3 id="documentation-changes">Documentation changes</h3>
-<ul>
-<li>Separated previous binary caching article into separate <a href="https://learn.microsoft.com/vcpkg/users/binarycaching">concepts</a> and <a href="https://learn.microsoft.com/vcpkg/reference/binarycaching">reference</a> articles. The concepts article is a good place to start if you are new to binary caching or want to learn best practices. The reference article lists all the interaction points of the feature and is useful when you are actually implementing or updating binary caching support for your libraries.</li>
-<li>Added <a href="https://learn.microsoft.com/vcpkg/reference/policies">Port policies reference</a> article. Documents various ways to change and customize vcpkg’s behavior, such as post-build checks, and how certain ports are categorized based on their intended functionality.</li>
-<li>Added <a href="https://learn.microsoft.com/vcpkg/concepts/continuous-integration">Continuous integration concepts</a> article. Provides guidance for using vcpkg in continuous integration environments.</li>
-</ul>
-<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img decoding="async" class="wp-image-34279" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34273-5.png" width="700" height="206" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34273-5.png 1508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34273-5-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34273-5-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/05/word-image-34273-5-768x226.png 768w" sizes="(max-width: 700px) 100vw, 700px" /></p>
-<p>&nbsp;</p>
-<h3 id="total-ports-available-for-tested-triplets">Total ports available for tested triplets</h3>
-<table>
-<tbody>
-<tr>
-<td><strong>triplet</strong></td>
-<td><strong>ports available</strong></td>
-</tr>
-<tr>
-<td>x64-windows</td>
-<td>2,298</td>
-</tr>
-<tr>
-<td>x86-windows</td>
-<td>2,208</td>
-</tr>
-<tr>
-<td>x64-windows-static</td>
-<td>2,184</td>
-</tr>
-<tr>
-<td>x64-windows-static-md</td>
-<td>2,216</td>
-</tr>
-<tr>
-<td>arm64-windows</td>
-<td>1,873</td>
-</tr>
-<tr>
-<td>x64-uwp</td>
-<td>1,267</td>
-</tr>
-<tr>
-<td>arm64-uwp</td>
-<td>1,233</td>
-</tr>
-<tr>
-<td>x64-linux</td>
-<td>2,256</td>
-</tr>
-<tr>
-<td>x64-osx</td>
-<td>2,144</td>
-</tr>
-<tr>
-<td>arm64-osx</td>
-<td>2,067</td>
-</tr>
-<tr>
-<td>arm-neon-android</td>
-<td>1,565</td>
-</tr>
-<tr>
-<td>x64-android</td>
-<td>1,620</td>
-</tr>
-<tr>
-<td>arm64-android</td>
-<td>1,594</td>
-</tr>
-</tbody>
-</table>
-<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<p>&nbsp;</p>
-<h3 id="thank-you-to-our-contributors">Thank you to our contributors</h3>
-<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release:</p>
-<ul>
-<li>dg0yt (18 commits)</li>
-<li>Neumann-A (7 commits)</li>
-<li>miyanyan (5 commits)</li>
-<li>AenBleidd (4 commits)</li>
-<li>alagoutte (3 commits)</li>
-<li>talregev (3 commits)</li>
-<li>Thomas1664 (3 commits)</li>
-<li>waywardmonkeys (2 commits)</li>
-<li>cenit (2 commits)</li>
-<li>RT2Code (2 commits)</li>
-<li>MehdiChinoune (1 commit)</li>
-<li>HappySeaFox (1 commit)</li>
-<li>RealTimeChris (1 commit)</li>
-<li>moritz-h (1 commit)</li>
-<li>danielaparker (1 commit)</li>
-<li>an-tao (1 commit)</li>
-<li>yurybura (1 commit)</li>
-<li>SchaichAlonso (1 commit)</li>
-<li>Osyotr (1 commit)</li>
-<li>coryan (1 commit)</li>
-</ul>
-<p>&nbsp;</p>
-<h3 id="learn-more">Learn more</h3>
-<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.05.24">full 2024.05.24 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a>, or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/">What’s New in vcpkg (May 2024): Dedicated Pages for Each Package on vcpkg.io</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-may-2024-dedicated-pages-for-each-package-on-vcpkg-io/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
