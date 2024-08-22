@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 21 Aug 2024 18:09:39 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 22 Aug 2024 18:12:24 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,151 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Prevent Critical Bugs with MSVC Code Analysis</title>
+		<link>https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/#respond</comments>
+		
+		<dc:creator><![CDATA[Mryam Girmay]]></dc:creator>
+		<pubDate>Thu, 22 Aug 2024 18:12:24 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34525</guid>
+
+					<description><![CDATA[<p>Imagine this: You’re deep into a complex C++ project, and everything seems to be running smoothly. But then, out of nowhere, a critical bug surfaces— one that requires a bit more foresight. We’ve all been there, right? This is where code analysis steps in as your silent guardian. </p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/">Prevent Critical Bugs with MSVC Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><span data-contrast="none">Imagine this: You’re deep into a complex C++ project, and everything seems to be running smoothly. But then, out of nowhere, a critical bug surfaces— one that requires a bit more foresight. We’ve all been there, right? This is where code analysis steps in as your silent guardian.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><a href="https://learn.microsoft.com/en-us/cpp/code-quality/code-analysis-for-c-cpp-overview?view=msvc-170"><span data-contrast="none">Code analysis</span></a><span data-contrast="none"> is a great tool for catching those elusive bugs and ensuring your code adheres to the best programming practices. It identifies defects that are difficult to discover through testing by searching for specific code patterns known to cause problems. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><span data-contrast="none"> The analysis results are displayed in the Visual Studio Error List window and as squiggles in the editor. This feature checks for problematic code patterns, such as buffer overruns caused by converting an element count into a byte count and null pointer dereferences, even if the code </span> <span data-contrast="none">looks correct. In this blog, we will focus on MSVC Code Analysis, which is one of the different types of code analysis available in Visual Studio for C++.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h3 id="where-msvc-code-analysis-shines"><span class="TextRun SCXW227821436 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun CommentStart SCXW227821436 BCX8" data-ccp-parastyle="heading 1">Where MSVC Code Analysis Shines</span></span><span class="EOP SCXW227821436 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:360,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
+<p><span data-contrast="auto">In 2014, the tech world was shaken by the discovery of the Heartbleed bug in OpenSSL. This critical vulnerability, caused by a missing bounds check, allowed attackers to exploit the TLS heartbeat extension and read sensitive data from server memory, including private keys, usernames, and passwords. The fallout was massive, affecting millions of users and causing widespread panic.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><span data-contrast="auto">Now, picture yourself as a C++ developer working on a high-stakes project. You know that even a small mistake can lead to significant security vulnerabilities, just like Heartbleed. This is where MSVC Code Analysis becomes your best ally.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><span data-contrast="auto">MSVC Code Analysis is a static analysis tool that checks your code for errors, potential improvements, and adherence to coding best practices when using the Microsoft Visual C++ (MSVC) compiler. For example, failing to initialize a pointer (e.g.,</span> <code class="language-cpp">int* uninitializedPtr;</code><span data-contrast="auto">) in your project can result in unpredictable behavior, crashes, and security vulnerabilities. Consider the following scenario: </span><span data-contrast="auto">You declare a pointer and initialize it to nullptr (</span><code class="language-cpp">int* imageData = nullptr;</code><span data-contrast="auto">). Later, you attempt to allocate memory for the pointer based on uninitialized width and height </span><span data-contrast="auto">variables (</span><code class="language-cpp">imageData = new int[width * height];</code><span data-contrast="auto">).</span><span data-contrast="auto"> This can lead to undefined behavior because <code class="language-cpp">width</code> and <code class="language-cpp">height</code> are not initialized before use. If the pointer is used before being properly assigned, it can lead to accessing uninitialized memory, which Rule C6001 identifies, helping you catch these issues before they become critical problems. The following sample generates ‘<strong>Using uninitialized memory</strong>’ warning:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;iostream&gt; 
+
+#include &lt;stdexcept&gt; 
+
+ class ImageProcessor { 
+
+public: 
+
+    void processImage() { 
+
+        int width, height; 
+
+        int* imageData = nullptr; 
+
+        try { 
+
+            // Attempt to allocate memory based on width and height 
+
+            imageData = new int[width * height]; // Uninitialized width and height 
+
+            // Process the image data (this will cause undefined behavior) 
+
+            for (int i = 0; i &lt; width * height; ++i) { 
+
+                imageData[i] = i; // Potentially accessing uninitialized memory 
+
+            } 
+
+            // Simulate further processing 
+
+            std::cout &lt;&lt; "Image processed successfully." &lt;&lt; std::endl; 
+
+        } 
+
+        catch (const std::bad_alloc&amp; e) { 
+
+            std::cerr &lt;&lt; "Memory allocation failed: " &lt;&lt; e.what() &lt;&lt; std::endl; 
+
+        } 
+
+        // Clean up allocated memory 
+
+        delete[] imageData; 
+
+    } 
+
+}; </code></pre>
+<p><span class="TrackedChange SCXW266567688 BCX8"><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">Now, </span><span class="NormalTextRun SCXW266567688 BCX8">let’s</span><span class="NormalTextRun SCXW266567688 BCX8"> use this example to understand the </span><span class="NormalTextRun SCXW266567688 BCX8">different ways</span><span class="NormalTextRun SCXW266567688 BCX8"> to invoke </span></span></span><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">c</span></span><span class="TrackedChange SCXW266567688 BCX8"><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">ode </span></span></span><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">a</span></span><span class="TrackedChange SCXW266567688 BCX8"><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">nalysis</span></span></span><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8"> in Visual Studio</span></span><span class="TrackedChange SCXW266567688 BCX8"><span class="TextRun SCXW266567688 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW266567688 BCX8">.</span></span></span></p>
+<h3 id="background-code-analysis"><span class="TrackedChange SCXW52097281 BCX8"><span class="TextRun SCXW52097281 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW52097281 BCX8" data-ccp-parastyle="heading 3">Background Code Analysis</span></span></span><span class="TrackedChange SCXW52097281 BCX8"><span class="TextRun SCXW52097281 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW52097281 BCX8" data-ccp-parastyle="heading 3"> </span></span></span><span class="EOP SCXW52097281 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
+<p><span data-contrast="none">This integral feature of Visual Studio functions as a real-time code analysis tool. This tool is particularly beneficial for you because it:</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="33" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Provides immediate feedback on potential issues, aiding in early problem resolution.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="33" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Focuses on the files that are currently open in the editor, streamlining analysis during active development. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+</ul>
+<p><span data-contrast="none">Background code analysis will automatically run after you open or save the file. The warning for uninitialized memory will be enabled by default, displaying a green squiggle in the editor and appearing in the error list, as demonstrated in the example below.</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png"><img decoding="async" class="aligncenter size-full wp-image-34553" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png" alt="Image displaying background Code Analysis example" width="1395" height="775" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png 1395w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-1024x569.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-768x427.png 768w" sizes="(max-width: 1395px) 100vw, 1395px" /></a></p>
+<p><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">This feature is enabled by default; </span><span class="NormalTextRun CommentStart SCXW229980447 BCX8">however, you can</span> <span class="NormalTextRun SCXW229980447 BCX8">double check </span><span class="NormalTextRun SCXW229980447 BCX8">the setting by navigating to </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Tools </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Options </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Text Editor </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt;</span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> C/C++</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> &gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Advanced </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Code Analysis</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> &gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Disable Background Code Analysis</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">: False.</span></span></p>
+<h3 id="manually-running-code-analysis"><span class="TrackedChange SCXW135980693 BCX8"><span class="TextRun SCXW135980693 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW135980693 BCX8" data-ccp-parastyle="heading 3">Manually Running Code Analysis</span></span></span><span class="EOP SCXW135980693 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
+<p><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">In addition to background code analysis</span><span class="NormalTextRun SCXW134682869 BCX8">,</span><span class="NormalTextRun SCXW134682869 BCX8"> you can also </span><span class="NormalTextRun CommentStart SCXW134682869 BCX8">manually run code analysis</span> <span class="NormalTextRun SCXW134682869 BCX8">as </span><span class="NormalTextRun SCXW134682869 BCX8">needed. </span><span class="NormalTextRun SCXW134682869 BCX8">You can start by </span><span class="NormalTextRun CommentStart SCXW134682869 BCX8">clearing</span><span class="NormalTextRun SCXW134682869 BCX8"> all warnings in the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">current file</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"> <span class="NormalTextRun SCXW134682869 BCX8">you’re</span><span class="NormalTextRun SCXW134682869 BCX8"> working on, then invoke Code Analysis for the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">current project</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">. Periodically, run Code Analysis for the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">entire solution</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8"> to </span><span class="NormalTextRun SCXW134682869 BCX8">maintain</span><span class="NormalTextRun SCXW134682869 BCX8"> overall code quality</span><span class="NormalTextRun SCXW134682869 BCX8">.</span> <span class="NormalTextRun SCXW134682869 BCX8">You can also manually run code analysis for individual files.</span> <span class="NormalTextRun SCXW134682869 BCX8">There are several ways to manually run a code analysis. Following any of these steps will display the ‘Using uninitialized memory’ warning in the error list window for our example.</span></span><span class="EOP SCXW134682869 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h4 id="1-menu-bar"><span class="TextRun SCXW32697975 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW32697975 BCX8" data-ccp-charstyle="Strong">1. </span><span class="NormalTextRun SCXW32697975 BCX8" data-ccp-charstyle="Strong">Menu-bar:</span></span><span class="EOP SCXW32697975 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></h4>
+<ol>
+<li><span class="TextRun SCXW80981315 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW80981315 BCX8">Open </span><span class="NormalTextRun SCXW80981315 BCX8">the project.</span></span></li>
+<li>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="6" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">From the </span><b><span data-contrast="none">menu-bar</span></b><span data-contrast="none">, select </span><b><span data-contrast="none">Build </span></b><span data-contrast="none">-&gt; </span><b><span data-contrast="none">Run Code Analysis</span></b><span data-contrast="none"> on [</span><b><span data-contrast="none">Solution </span></b><span data-contrast="none">|</span><b><span data-contrast="none"> Project Name</span></b><span data-contrast="none"> | </span><b><span data-contrast="none">File</span></b><span data-contrast="none">]</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+</ul>
+<ul>
+<li data-leveltext="" data-font="Symbol" data-listid="6" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">From the </span><b><span data-contrast="none">menu-bar</span></b><span data-contrast="none">, select </span><b><span data-contrast="none">Analyze </span></b><span data-contrast="none">-&gt; </span><b><span data-contrast="none">Run Code Analysis</span></b><span data-contrast="none"> -&gt; [</span><b><span data-contrast="none">On Solution </span></b><span data-contrast="none">| </span><b><span data-contrast="none">Run Code Analysis on ‘project name’</span></b><span data-contrast="none"> | </span><b><span data-contrast="none">Run Code Analysis on File</span></b><span data-contrast="none">]</span></li>
+</ul>
+</li>
+</ol>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Code-Analysis-from-Analyze-Menu.png"><img decoding="async" class="aligncenter size-full wp-image-34555" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Code-Analysis-from-Analyze-Menu.png" alt="Image showing Code Analysis from Analyze Menu" width="973" height="253" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Code-Analysis-from-Analyze-Menu.png 973w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Code-Analysis-from-Analyze-Menu-300x78.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Code-Analysis-from-Analyze-Menu-768x200.png 768w" sizes="(max-width: 973px) 100vw, 973px" /></a></p>
+<h4 id="2-keyboard-shortcut"><span class="TextRun SCXW177107939 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW177107939 BCX8" data-ccp-charstyle="Strong">2. </span><span class="NormalTextRun SCXW177107939 BCX8" data-ccp-charstyle="Strong">Keyboard Shortcut:</span></span><span class="EOP SCXW177107939 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></h4>
+<ul>
+<li><span class="TextRun SCXW210910475 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW210910475 BCX8">For a single file: </span></span><strong><span class="TextRun SCXW210910475 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW210910475 BCX8">Ctrl + Shift + Alt + F7</span></span><span class="EOP SCXW210910475 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></strong></li>
+</ul>
+<p><span class="TextRun SCXW68786483 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW68786483 BCX8">Learn more about the </span><span class="NormalTextRun SCXW68786483 BCX8">different ways</span><span class="NormalTextRun SCXW68786483 BCX8"> to run code analysis manually in </span></span><a class="Hyperlink SCXW68786483 BCX8" href="https://learn.microsoft.com/en-us/cpp/code-quality/quick-start-code-analysis-for-c-cpp?view=msvc-170#run-code-analysis" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW68786483 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW68786483 BCX8" data-ccp-charstyle="Hyperlink">Run code analysis</span></span></a><span class="TextRun SCXW68786483 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW68786483 BCX8">.</span></span><span class="EOP SCXW68786483 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
+<h3 id="enable-code-analysis-on-build"><span class="TextRun SCXW88942987 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW88942987 BCX8" data-ccp-parastyle="heading 3">Enable Code Analysis on Build</span></span><span class="EOP SCXW88942987 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></h3>
+<p><span data-contrast="auto">This setup ensures that code analysis runs automatically every time you build your project or compile a single file. Think of code analysis as an inspector who checks your project. While this inspector might take more time to examine everything, catching potential issues early provides peace of mind.</span><span data-contrast="auto"> This </span><span data-contrast="auto">additional time you invest  </span><span data-contrast="auto"> is necessary to ensure your code is secure.</span> <span data-contrast="auto">To enable it:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<ol>
+<li data-leveltext="%1." data-font="Aptos" data-listid="34" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none"> </span><span data-contrast="none">Open Project Properties in Visual Studio.</span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="34" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Navigate to </span><b><span data-contrast="none">Configuration Properties &gt; Code Analysis &gt; General</span></b><span data-contrast="none">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="34" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Select the </span><b><span data-contrast="none">Yes</span></b><span data-contrast="none"> option for </span><b><span data-contrast="none">Enable Code Analysis on Build.</span></b><span data-contrast="none"> Note that this option is disabled by default, whereas Microsoft Code Analysis is enabled by default.</span>
+<ul>
+<li data-leveltext="%1." data-font="Aptos" data-listid="34" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">To view all default selected rules, including the rule for detecting uninitialized memory, navigate to </span><b><span data-contrast="none">Configuration Properties</span></b><span data-contrast="none"> &gt; </span><b><span data-contrast="none">Code Analysis </span></b><span data-contrast="none">&gt; </span><b><span data-contrast="none">Microsoft</span></b><span data-contrast="none">, and then click </span><b><span data-contrast="none">Configure</span></b><span data-contrast="none">.  </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+</ul>
+</li>
+</ol>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting.png"><img decoding="async" class="aligncenter size-full wp-image-34556" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting.png" alt="Image displaying Enable Code Analysis on Build Setting" width="1159" height="799" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting.png 1159w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting-300x207.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting-1024x706.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Enable-Code-Analysis-on-Build-Setting-768x529.png 768w" sizes="(max-width: 1159px) 100vw, 1159px" /></a></p>
+<p><span class="TextRun SCXW149037879 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW149037879 BCX8">After enabling code analysis on build, building the example code will cause Visual Studio to generate a warning for the lines</span></span> <code class="language-cpp">imageData = new int[width * height];</code><span class="TextRun SCXW149037879 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW149037879 BCX8">,</span> <span class="NormalTextRun SCXW149037879 BCX8">indicating</span><span class="NormalTextRun SCXW149037879 BCX8"> that<span data-contrast="auto"> <code class="language-cpp">width</code> and <code class="language-cpp">height</code> </span></span><span class="NormalTextRun SCXW149037879 BCX8">are uninitialized. </span></span><span class="TrackedChange SCXW149037879 BCX8"><span class="TextRun SCXW149037879 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW149037879 BCX8">Background code analysis focuses on the files </span><span class="NormalTextRun SCXW149037879 BCX8">you’re</span><span class="NormalTextRun SCXW149037879 BCX8"> actively working on, while build-time analysis ensures all project files are checked, catching any missed issues that </span><span class="NormalTextRun SCXW149037879 BCX8">aren’t</span><span class="NormalTextRun SCXW149037879 BCX8"> in the current file</span></span></span><span class="TextRun SCXW149037879 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW149037879 BCX8">. This warning will appear in the Error List window.</span></span><span class="EOP SCXW149037879 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/ImageProcessor_example.gif"><img decoding="async" class="aligncenter size-full wp-image-34536" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/ImageProcessor_example.gif" alt="Gif showing MSVC code analysis running on build" width="1530" height="832" /></a></p>
+<p><span class="TextRun SCXW220067071 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW220067071 BCX8">Key Events in Microsoft C++ Code Analysis help you quickly </span><span class="NormalTextRun SCXW220067071 BCX8">identify</span><span class="NormalTextRun SCXW220067071 BCX8"> and fix defects by providing detailed information in selected warnings</span><span class="NormalTextRun SCXW220067071 BCX8"> from </span><span class="NormalTextRun SCXW220067071 BCX8">the </span><span class="NormalTextRun SCXW220067071 BCX8">Error List</span><span class="NormalTextRun SCXW220067071 BCX8">. They trace code flow to pinpoint root causes, making it easier to understand issues like variable initialization or branching. For example, double-clicking the <strong>C6001 ‘Using uninitialized memory: width’</strong> warning in the Error List opens a new window showing the Key Events. </span></span><span class="TextRun SCXW220067071 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW220067071 BCX8">For further insights, please refer to the </span></span><a class="Hyperlink SCXW220067071 BCX8" href="https://devblogs.microsoft.com/cppblog/microsoft-cpp-code-analysis-warnings-with-key-events/" target="_blank" rel="noreferrer noopener"><span class="FieldRange SCXW220067071 BCX8"><span class="TextRun Underlined SCXW220067071 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW220067071 BCX8" data-ccp-charstyle="Hyperlink">Microsoft C++ Code Analysis Warnings with Key Events</span></span></span></a><span class="TextRun SCXW220067071 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW220067071 BCX8"> blog.</span></span><span class="EOP SCXW220067071 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events.png"><img decoding="async" class="aligncenter size-full wp-image-34558" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events.png" alt="Image showing Key Events" width="1587" height="306" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events.png 1587w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events-300x58.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events-1024x197.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events-768x148.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/Key-Events-1536x296.png 1536w" sizes="(max-width: 1587px) 100vw, 1587px" /></a></p>
+<h3 id="code-analysis-rules-and-rulesets"><span class="NormalTextRun CommentStart SCXW74181844 BCX8" data-ccp-parastyle="heading 2">Code Analysis </span><span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2">Rules and </span><span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2">R</span><span class="NormalTextRun CommentStart SCXW74181844 BCX8" data-ccp-parastyle="heading 2">ule</span><span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2">s</span><span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2">et</span><span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2">s</span> <span class="NormalTextRun SCXW74181844 BCX8" data-ccp-parastyle="heading 2"> </span></h3>
+<p><span class="TrackedChange SCXW176653324 BCX8"><span class="TextRun SCXW176653324 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun CommentStart SCXW176653324 BCX8">Rulesets</span></span></span><span class="TrackedChange SCXW176653324 BCX8"><span class="TextRun SCXW176653324 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW176653324 BCX8"> in Visual Studio for C++ are collections of code analysis rules that ensure code quality and adherence to standards</span></span></span><span class="TextRun SCXW176653324 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW176653324 BCX8">. </span><span class="NormalTextRun CommentStart SCXW176653324 BCX8">For example</span><span class="NormalTextRun SCXW176653324 BCX8">, </span><span class="NormalTextRun CommentStart SCXW176653324 BCX8">enabling the MSVC rule <strong>C26440</strong></span><strong><span class="NormalTextRun SCXW176653324 BCX8">, </span><span class="NormalTextRun SCXW176653324 BCX8">‘Function can be declared ‘</span><span class="NormalTextRun SpellingErrorV2Themed SCXW176653324 BCX8">noexcept</span></strong><span class="NormalTextRun SCXW176653324 BCX8"><strong>’,’</strong> suggests marking functions with ‘</span><span class="NormalTextRun SpellingErrorV2Themed SCXW176653324 BCX8">noexcept</span><span class="NormalTextRun SCXW176653324 BCX8">’ if they do not throw exceptions. This can improve both performance and reliability</span><span class="NormalTextRun SCXW176653324 BCX8">.</span></span><span class="EOP SCXW176653324 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
+<p><span class="TextRun SCXW234673389 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW234673389 BCX8">To create a new custom rule set with the “Function can be declared ‘</span><span class="NormalTextRun SpellingErrorV2Themed SCXW234673389 BCX8">noexcept</span><span class="NormalTextRun SCXW234673389 BCX8">’” rule added, follow these steps:</span></span><span class="EOP SCXW234673389 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
+<ol>
+<li data-leveltext="%1." data-font="Aptos" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Open </span><b><span data-contrast="none">Project Properties</span></b><span data-contrast="none"> in Visual Studio </span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="none">Navigate to </span><b><span data-contrast="none">Configuration Properties &gt; Code Analysis &gt; </span></b><b><span data-contrast="auto">Microsoft</span></b><span data-contrast="none">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">In the</span><b><span data-contrast="auto"> Active rules </span></b><span data-contrast="auto">section, click “</span><b><span data-contrast="auto">Configure</span></b><span data-contrast="auto">” </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1">Select the check box for the rule that you want to include in the ruleset. The Action will automatically change from <b style="font-size: 1rem; text-align: var(--bs-body-text-align);"><span data-contrast="auto">‘None’ </span></b><span style="font-size: 1rem; text-align: var(--bs-body-text-align);" data-contrast="auto">to </span><b style="font-size: 1rem; text-align: var(--bs-body-text-align);"><span data-contrast="auto">‘Warning’</span></b><span style="font-size: 1rem; text-align: var(--bs-body-text-align);" data-contrast="auto">. You can change the severity of this rule based on your needs, with options like Error, Info, Hidden, None, or &lt;Inherit&gt;. </span><span style="font-size: 1rem; text-align: var(--bs-body-text-align);" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+<li data-leveltext="%1." data-font="Aptos" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span class="TextRun SCXW70220677 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW70220677 BCX8">Save the rule set with a new file name. The custom rule set is now </span><span class="NormalTextRun CommentStart SCXW70220677 BCX8">automatically assigned</span><span class="NormalTextRun SCXW70220677 BCX8"> to the project.</span></span><span class="EOP SCXW70220677 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
+</ol>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule.png"><img decoding="async" class="aligncenter size-full wp-image-34551" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule.png" alt="Image showing Code Analysis rules" width="1278" height="436" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule.png 1278w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule-300x102.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule-1024x349.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/CA_rule-768x262.png 768w" sizes="(max-width: 1278px) 100vw, 1278px" /></a></p>
+<p><span class="TextRun SCXW132631001 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW132631001 BCX8">To learn more about using rule sets in depth, refer to the </span></span><a class="Hyperlink SCXW132631001 BCX8" href="https://learn.microsoft.com/en-us/cpp/code-quality/using-rule-sets-to-specify-the-cpp-rules-to-run?view=msvc-170" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW132631001 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW132631001 BCX8" data-ccp-charstyle="Hyperlink">Use Rule Sets to Specify the C++ Rules to Run</span></span></a><span class="TextRun SCXW132631001 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW132631001 BCX8"> article.</span><span class="NormalTextRun SCXW132631001 BCX8"> </span></span><span class="EOP TrackedChange SCXW132631001 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h3 id="additional-tools-and-techniques"><span class="TextRun SCXW181654809 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun CommentStart SCXW181654809 BCX8" data-ccp-parastyle="heading 2">Additional Tools and Techniques</span></span></h3>
+<p><span class="TextRun SCXW174501084 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW174501084 BCX8">Visual Studio offers several features that can enhance code quality and prevent issues like the Heartbleed bug. Here are some tools you might find useful:</span></span><span class="EOP SCXW174501084 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h4 id="clang-tidy-code-analysis"><span class="FieldRange SCXW141823079 BCX8"><span class="TextRun Underlined SCXW141823079 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun CommentStart SCXW141823079 BCX8" data-ccp-charstyle="Hyperlink">Clang-Tidy Code Analysis</span></span></span><span class="EOP SCXW141823079 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></h4>
+<p><span class="TextRun SCXW201964196 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW201964196 BCX8">Clang-Tidy, a tool used with the LLVM/clang-cl compiler, is designed to modernize your code, ensure adherence to standards, perform static analysis, and automatically format your code. When using an MSVC toolset, you can configure Clang-Tidy to complement or replace the conventional Code Analysis process. This helps catch </span><span class="NormalTextRun SCXW201964196 BCX8">different types</span><span class="NormalTextRun SCXW201964196 BCX8"> of issues and improves overall code quality.</span><span class="NormalTextRun SCXW201964196 BCX8"> You can find more details in </span></span><a class="Hyperlink SCXW201964196 BCX8" href="https://learn.microsoft.com/en-us/cpp/code-quality/clang-tidy?view=msvc-170" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW201964196 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW201964196 BCX8" data-ccp-charstyle="Hyperlink">Using Clang-Tidy in Visual Studio</span></span></a><span class="TextRun SCXW201964196 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"> <span class="NormalTextRun SCXW201964196 BCX8">article</span></span><span class="TextRun SCXW201964196 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW201964196 BCX8">.</span></span><span class="EOP SCXW201964196 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h4 id="suppress-specific-warnings"><span class="TextRun Underlined SCXW55448385 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW55448385 BCX8" data-ccp-charstyle="Hyperlink">Suppress Specific Warnings</span></span><span class="EOP SCXW55448385 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></h4>
+<p><span data-contrast="none">Suppressing specific warnings in C++ involves configuring your project settings to ignore certain compiler warnings</span><span data-contrast="none"> for a single line, section of code, file, or entire project</span><span data-contrast="none">. This can be done at the project level or for individual files using Visual Studio’s project properties or ‘</span><a href="https://learn.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-170&amp;viewFallbackFrom=msvc-170)."><span data-contrast="none">#pragma warning’</span></a><span data-contrast="none"> directives. By suppressing less relevant warnings, you can focus on the most critical issues, making the build output cleaner and easier to read, which simplifies identifying and addressing significant problems. To dive deeper into this topic, check out the </span><a href="https://learn.microsoft.com/en-us/visualstudio/ide/how-to-suppress-compiler-warnings?view=vs-2022&amp;viewFallbackFrom=vs-2022%22%20%5Cl%20%22suppress-specific-warnings-for-c"><span data-contrast="none">Suppress compiler warnings</span></a><span data-contrast="none"> article.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><span data-contrast="none">It’s important to note that Code Analysis</span> <span data-contrast="none">tools may occasionally generate false positives. If you encounter a false positive, please report it through the </span><a href="https://developercommunity.visualstudio.com/cpp"><span data-contrast="none">Visual Studio Developer Community</span></a><span data-contrast="none"> channel with detailed repro code and information. This helps us to improve the accuracy of Code Analysis tools and ensures a smoother development experience.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<h3 id="learn-more"><span class="TextRun SCXW164900013 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW164900013 BCX8" data-ccp-charstyle="Heading 2 Char">Learn More</span></span><span class="EOP SCXW164900013 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></h3>
+<p><span data-contrast="none">To learn more about securing your C++ programs, visit</span><span data-contrast="auto"> the </span><a href="https://devblogs.microsoft.com/cppblog/build-reliable-and-secure-cpp-programs-microsoft-learn/"><span data-contrast="none">Build Reliable and Secure C++ programs</span></a><span data-contrast="auto"> blog. For the latest updates to the MSVC backend, check out the </span><a href="https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-10/"><span data-contrast="none">MSVC Backend Updates in Visual Studio 2022 version 17.10</span></a><span data-contrast="auto"> blog. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p><span data-contrast="auto">Your feedback is invaluable in helping us enhance the MSVC Code Analysis experience. </span><span data-contrast="none">Please share your suggestions in the comments below or through the</span> <a href="https://developercommunity.visualstudio.com/cpp"><span data-contrast="none">Developer Community</span></a><span data-contrast="auto">. </span><span data-contrast="none">You can also reach us via email at</span> <a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com</span></a><span data-contrast="none"> or via X at </span><a href="https://x.com/visualc"><span data-contrast="none">@VisualC</span></a><span data-contrast="none">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/">Prevent Critical Bugs with MSVC Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New for C++ Developers in Visual Studio 2022 17.11</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-11/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-11/#comments</comments>
@@ -789,192 +934,6 @@ While evaluating Visual Studio 2022, the team had a positive experience of using
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/bosch-widely-adopts-visual-studio-2022-after-experiencing-performance-improvements-for-c-linux-cross-compilation/">Bosch widely adopts Visual Studio 2022 after experiencing performance improvements for C++ Linux cross-compilation</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>Integrating C++ header units into Office using MSVC (3/n)</title>
-		<link>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/#comments</comments>
-		
-		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
-		<pubDate>Wed, 05 Jun 2024 16:30:47 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[General C++ Series]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[build throughput]]></category>
-		<category><![CDATA[C++ language]]></category>
-		<category><![CDATA[C++20]]></category>
-		<category><![CDATA[modernization]]></category>
-		<category><![CDATA[modules]]></category>
-		<category><![CDATA[Office]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34284</guid>
-
-					<description><![CDATA[<p>Overview</p>
-<p>Recap: Where we were, what we&#8217;re doing now.<br />
-Changes adopted in Word: Composing headers for reuse.<br />
-Testing Details: The setup of the performance experiment.<br />
-Opportunity for Improvement: Identifying a potential performance bottleneck.<br />
-Upcoming Improvements to MSVC.<br />
-What&#8217;s next for Office?</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/">Integrating C++ header units into Office using MSVC (3/n)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h2 id="overview">Overview</h2>
-<ul>
-<li><a href="#recap">Recap: Where we were, what we&#8217;re doing now.</a></li>
-<li><a href="#changes">Changes adopted in Word: Composing headers for reuse.</a></li>
-<li><a href="#details">Testing Details: The setup of the performance experiment.</a></li>
-<li><a href="#opportunity">Opportunity for Improvement: Identifying a potential performance bottleneck.</a></li>
-<li><a href="#upcoming">Upcoming Improvements to MSVC.</a></li>
-<li><a href="#what-next">What&#8217;s next for Office?</a></li>
-<li><a href="#final-thoughts">Closing thoughts.</a></li>
-</ul>
-<h2 id="introduction">Introduction</h2>
-<p>In our previous two (<a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-1-n/">part 1</a>, <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-2-n/">part 2</a>) blog posts we discussed how Office was thinking holistically about header units. In this installment we’d like to share the concrete steps taken to integrate header units into the build of Microsoft Word, and their effect on build throughput. Throughout the post we&#8217;ll use the term &#8220;build throughput&#8221; as opposed to &#8220;build performance&#8221; to avoid potential confusion with application runtime performance. This blog is primarily a recap of the <a href="https://www.youtube.com/watch?v=RvliLGtaQ0c">presentation</a> that Zachary gave at Pure Virtual C++ 2024.</p>
-<p>Remember that precompiled headers are an established technology, dating back 30 years, compared to header units, which are a newer feature, only 5 years old. There are still a lot of opportunities for optimization!</p>
-<p>In the best case migrating from a precompiled header (PCH) to header units produced a <em>21.3% build throughput improvement</em>. In the worst case the migration yielded a <em>0.9% build throughput regression</em>.</p>
-<h2><span id="changes">Changes adopted in Word</span></h2>
-<p>There are two precompiled headers that Word code can select between. The first of these, minpch, is extremely lightweight. It contains things like the C++ standard library, windows.h, some common Word internal helpers, and a very small set of low-level Office shared headers. In total it includes about 250 files if you count all transitive includes. Minpch is not widely used; it&#8217;s the PCH chosen by only 2% of the files in Word.</p>
-<p>On the other extreme is the word_shared precompiled header. It captures nearly every upstream header, with only some minimal holdbacks for test headers. It contains around 2500 transitive includes. This makes word_shared a challenging test for header units, both in terms of the breadth of C++ compiled into a header unit and what effect it will have on build throughput. As previously mentioned, Word used <a href="https://learn.microsoft.com/en-us/cpp/build-insights/get-started-with-cpp-build-insights?view=msvc-170">C++ Build Insights</a> to measure each individual file&#8217;s contribution as justification for its inclusion in word_shared.</p>
-<p>At a high level the conversion we performed was:</p>
-<ol>
-<li>Switch <code>/Yc</code> to <a href="https://learn.microsoft.com/en-us/cpp/build/reference/module-exportheader?view=msvc-170"><code>/exportHeader</code></a></li>
-<li>Switch <code>/Yu</code> to <a href="https://learn.microsoft.com/en-us/cpp/build/reference/headerunit?view=msvc-170"><code>/headerUnit:quoteword_shared.h=path/to/word_shared.ifc</code></a></li>
-<li>Measure!</li>
-</ol>
-<h2><span id="details">Testing Details</span></h2>
-<h3 id="process">Process</h3>
-<p>These were the steps to gather measurements:</p>
-<ol>
-<li>Set the configuration to PCH or Header Units</li>
-<li>Perform a full build of Word</li>
-<li>Disable build caching</li>
-<li>Run all compiler invocations, excluding PCH or HU creation (repeat 7x)</li>
-<li>Record CPU time spent by the compiler, excluding highest and lowest results</li>
-<li>Repeat every night, on 3 unique boxes, for 3 weeks</li>
-</ol>
-<p>In step 4, 3 unique sets of files were chosen to compile and measure. In the first case all C++ files (roughly 6000) in Word were compiled. In addition, two active areas of investment were chosen to measure. The first of these, henceforth referred to as &#8220;Folder A&#8221;, consisted of approximately 300 files. The second, which will be termed &#8220;Folder B&#8221;, consisted of around 200 files.</p>
-<h3 id="test-equipment">Test Equipment</h3>
-<table>
-<tbody>
-<tr>
-<td></td>
-<td><b>Build the World (BTW)</b></td>
-<td><b>Physical Workstation (PDW)</b></td>
-<td><b>Microsoft DevBox (MDB)</b></td>
-</tr>
-<tr>
-<td><b>Threads</b></td>
-<td>64</td>
-<td>32</td>
-<td>16</td>
-</tr>
-<tr>
-<td><b>Max Clock</b></td>
-<td>4.2 GHz</td>
-<td>4.3 GHz</td>
-<td>3.5 GHz</td>
-</tr>
-<tr>
-<td><b>RAM</b></td>
-<td>256 GB</td>
-<td>128 GB</td>
-<td>64 GB</td>
-</tr>
-<tr>
-<td><b>Storage</b></td>
-<td>Boot SSD + Software RAID data drive</td>
-<td>Boot SSD + Software RAID data drive</td>
-<td>Single Azure Premium SSD (P30)</td>
-</tr>
-</tbody>
-</table>
-<p>The Build the World machines are server-class machines, generally reserved for the limited number of developers that need to make changes that span all of Office at once. The physical workstations are more common and reflect what a developer working on an application team, such as Word, would have for their box. The Microsoft Dev Box is a publicly available product; a virtual machine running in Azure. Other MDB options are available from the service—these specifications are merely the specifications chosen for an internal pilot program.</p>
-<h3 id="results">Results</h3>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput.png"><img decoding="async" class="alignnone wp-image-34295 size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1024x532.png" alt="Image office modules throughput" width="640" height="333" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1024x532.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-768x399.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-1536x798.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/office-modules-throughput-2048x1065.png 2048w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
-<h3 id="additional-advantages">Additional Advantages</h3>
-<p>Beyond build speed, header units have additional advantages. The IFC files produced by header units are portable. Precompiled headers produced by MSVC must be created and consumed locally. Header units don&#8217;t have this limitation.</p>
-<p>It would be possible for a separate project upstream of Word to create the minpch and word_shared header units. Most Word developers would not need to build the files locally; the IFC files could simply be downloaded from the cloud.
-Second, the IFC produced for a header unit follows a <a href="https://github.com/microsoft/ifc-spec">fully documented specification</a> and <a href="https://github.com/microsoft/ifc">corresponding SDK</a>. Cameron&#8217;s presentation on the IFC SDK from Pure Virtual C++ is <a href="https://www.youtube.com/watch?v=t6QCzVXrwIw">available on YouTube</a>.</p>
-<p>Finally, header units are significantly smaller on disk than their corresponding PCH. The comparison between a single PCH file and a corresponding header unit may not be an unbiased comparison because of how well header units compose with their dependencies. To create a fairer picture, we&#8217;ve also included data on the disk size of Word&#8217;s header units plus all its upstream dependencies.</p>
-<table>
-<tbody>
-<tr>
-<td></td>
-<td><b>PCH</b></td>
-<td><b>Header Unit</b></td>
-<td><b>% Reduction</b></td>
-<td><b>Full header unit chain</b></td>
-<td><b>% Reduction</b></td>
-</tr>
-<tr>
-<td><b>minpch</b></td>
-<td>174 MB</td>
-<td>8.78 MB</td>
-<td>95%</td>
-<td>42.8 MB</td>
-<td>77%</td>
-</tr>
-<tr>
-<td><b>word_shared</b></td>
-<td>1.16 GB</td>
-<td>111 MB</td>
-<td>90%</td>
-<td>150 MB</td>
-<td>88%</td>
-</tr>
-</tbody>
-</table>
-<h2><span id="opportunity">Uncovering an Opportunity for Improvement</span></h2>
-<p>We were surprised to discover that storage system performance was the best predictor of build compile time improvement. We measured the size of the object files on disk, and found a sizable increase. The total disk space of all object files created for Word under header units was 1.22x the size on disk vs the total size of object files when consuming a PCH. The median increase per obj file was 1.25x and the largest was 8000x larger under header units.</p>
-<p>This was due to the compiler duplicating debug information into each of the object files due to Office&#8217;s use of the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170"><code>/Z7</code> compiler flag</a>. This is a change from the toolchain&#8217;s ability to look up many kinds of debug information directly from the PCH file. The biggest offenders in Word were a pair of large enums with 10,000 and 30,000 entries. The first is an enum of all command IDs for all Office applications. The other is to idenitfy performance data scenarios. Even when only one enum value was used, all values of corresponding enum was recorded in the obj file.</p>
-<p>After removing the include files that brought two enums into Word&#8217;s word_shared header, the object sizes on disk dropped by a measurable amount.</p>
-<table>
-<tbody>
-<tr>
-<td><b>PCH vs Header Units</b></td>
-<td><b>Default</b></td>
-<td><b>Large Enums Omitted</b></td>
-</tr>
-<tr>
-<td><b>Total .obj file size increase</b></td>
-<td>1.22x</td>
-<td>1.18x</td>
-</tr>
-<tr>
-<td><b>Median size increase</b></td>
-<td>1.25x</td>
-<td>1.22x</td>
-</tr>
-<tr>
-<td><b>Greatest obj size increase</b></td>
-<td>8000x</td>
-<td>1700x</td>
-</tr>
-</tbody>
-</table>
-<p>As the table demonstrates, removing the large enums improved the size of binaries on disk but also made us anxious for the upcoming work in the MSVC toolchain that would eliminate this duplicate data.</p>
-<h2><span id="upcoming">Upcoming improvements in MSVC</span></h2>
-<p>Office hit a recent bug where the linker can fail to perform an incremental link and it falls back to performing a full link. If you run into the same issue in your projects, please update to compiler version 17.8.10 or 17.10.0 for the fix.</p>
-<p>The other big item is to update the toolchain so that debug information can be gathered directly from an IFC file, and avoid creating huge obj files. Notably, this optimization benefits both named modules as well as header units.</p>
-<p>This is a more invasive change than fixes Office has needed for header units in the past as it will require changes to the compiler, linker, and PDB writer—essentially requiring the entire toolset to cooperate. We don&#8217;t have a release date for this work, but please stay tuned for an announcement when it&#8217;s ready for testing.</p>
-<h2><span id="what-next">What&#8217;s next for Office?</span></h2>
-<p>In Office we want to continue making low-level libraries into header units. As a prerequisite we need to remove Office&#8217;s global &#8216;inc&#8217; folder, our collection of headers that don&#8217;t share a single logical responsibility. Once all these headers are moved to new homes their component libraries can each have a header unit created for them.</p>
-<p>Once that&#8217;s done, we can migrate our shared PCH to become a header unit in the same way that was done for Word. The shared PCH is consumed by a huge percentage of our shared code, so we expect header unit creation and consumption to greatly accelerate once we reach this milestone.</p>
-<p>In addition, we have ongoing work to do to continue striving for consistent build flags, the same issue we&#8217;ve highlighted in each of these blog posts. We&#8217;ve done a lot of prep work to mark where there are deviations from the global defaults, but the work remains to perform the migration to the common settings. Once we achieve continuity, downstream libraries can also become header units.</p>
-<h2><span id="final-thoughts">Final Thoughts</span></h2>
-<p>Moving a part of the Office codebase to utilize header units has been an excellent learning experience and collaborative effort between the compiler team and the Office engineering team. Without a doubt, this experience has shown that not only can header units (and therefore C++ modules) scale to a multi-million-line codebase, but the technology is flexible enough to match that of preexisting technology with 30+ years of improvements and improve upon it for even more throughput.</p>
-<p>The MSVC implementation of modules is continuing to improve with each release and the more exposure the compiler gets to community feedback/usage the better the team can improve the overall quality and robustness. We recommend you go out and try to integrate C++ modules or header units into your code and tell us about your experiences. We’re eager to learn from and work with the community to elevate the implementation into something we are all happy to use!</p>
-<h4 id="closing">Closing</h4>
-<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
-<p>If you encounter other problems with MSVC in VS 2019/2022 please let us know via the <a href="https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019">Report
-a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us
-know through <a href="https://developercommunity.visualstudio.com/">DevComm.</a></p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/">Integrating C++ header units into Office using MSVC (3/n)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/integrating-c-header-units-into-office-using-msvc-3-n/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
