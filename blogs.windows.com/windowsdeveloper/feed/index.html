@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Tue, 06 Aug 2024 17:02:50 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 29 Aug 2024 21:19:09 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,154 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>DirectML expands NPU support to Copilot+ PCs and WebNN</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2024/08/29/directml-expands-npu-support-to-copilot-pcs-and-webnn/</link>
+		
+		<dc:creator><![CDATA[Adele Parsons]]></dc:creator>
+		<pubDate>Thu, 29 Aug 2024 21:19:09 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57084</guid>
+
+					<description><![CDATA[<p>AI is transforming the way we interact with technology, enabling new and improved experiences across a variety of scenarios. DirectML empowers developers to bring their AI innovations to Windows and utilize local hardware acceleration to scale across</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2024/08/29/directml-expands-npu-support-to-copilot-pcs-and-webnn/">DirectML expands NPU support to Copilot+ PCs and WebNN</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[AI is transforming the way we interact with technology, enabling new and improved experiences across a variety of scenarios. DirectML empowers developers to bring their AI innovations to Windows and utilize local hardware acceleration to scale across the breadth of Windows devices. Today, we are excited to share how DirectML continues to expand platform support for NPUs on Copilot+ PCs and WebNN.
+<h2>DirectML now supports Copilot+ PCs, powered by Snapdragon® X Elite Compute Platform</h2>
+We are thrilled to announce that DirectML now supports Copilot+ PCs, powered by Qualcomm® Hexagon NPU in the Snapdragon® X Elite Compute Platform. Copilot+ PCs bring exceptional performance and energy efficiency, enabling amazing AI experiences on Windows. With DirectML, the foundational component for the <a href="https://developer.microsoft.com/en-us/windows/ai/">Windows Copilot Runtime</a>, developers can now target these machines to scale AI across Windows.
+
+Upendra Kulkarni, Vice President - Compute Software Product Management at Qualcomm, echoes Microsoft’s sentiment: <em>“With Snapdragon X Elite, we introduced industry-leading NPU with 45 TOPS of AI performance at incredible power efficiency. DirectML is a developer friendly ML programming interface that uses familiar DirectX API structure. By supporting DirectML on our NPU, developers are now able to easily access its phenomenal capability easily and can port their models from GPU to NPU with minimal effort. We collaborated extensively with Microsoft to optimize DirectML for NPU to maximize hardware performance. We are excited to be co-announcing this developer preview program.”</em>
+<h2>Getting started with DirectML on Copilot+ PCs</h2>
+<h3>System Requirements</h3>
+Ensure you have the correct versions of DirectML, ONNX Runtime (ORT), Windows and the minimum versioned Qualcomm® Hexagon NPU driver.
+<ul>
+ 	<li><a href="https://www.nuget.org/packages/Microsoft.AI.DirectML/1.15.2">DirectML minimum version of 1.15.2 (ARM64)</a></li>
+ 	<li><a href="https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime.DirectML/1.18">ONNX Runtime minimum version of 1.18 (ARM64)</a></li>
+ 	<li>Windows 11, version 24H2 or newer</li>
+ 	<li>Qualcomm® Hexagon NPU Driver minimum version 30.0.31.250 or newer (instruction below)</li>
+</ul>
+<h3>Developer-environment set-up on your Copilot+ PC</h3>
+Let’s walk through how you can utilize DirectML and ONNX Runtime to leverage a set of models on the Copilot+ PC powered by Qualcomm® Hexagon NPU. First, you need to ensure you have the latest Qualcomm® Hexagon NPU driver package. Setting up a Qualcomm dev account is your very first step:
+<ol>
+ 	<li>Create an account at <a href="https://qpm.qualcomm.com/">https://qpm.qualcomm.com/</a></li>
+</ol>
+Now, log in with your account credentials and click the following link: <a href="https://qpm.qualcomm.com/#/main/tools/details/QHND">Qualcomm Package Manager 3</a> and download the <em><strong>latest driver</strong></em> available. Then, follow the steps below to download the Qualcomm® Hexagon NPU Driver Package for Windows:
+<ol>
+ 	<li>Change OS from "Windows" to "Windows (ARM64)"</li>
+ 	<li>Click Download (<em><strong>latest driver version available</strong></em>)</li>
+ 	<li>Extract QHND.Core.1.0.0.5.Windows-ARM64.zip</li>
+ 	<li>Run PreAlpha_QCHexagon_NPU_Driver installer</li>
+ 	<li>Verify that "Neural processors > Snapdragon® X Elite … NPU" has version 30.0.31.250 in device manager (see Release_Notes.pdf in the extracted ZIP file for details)</li>
+</ol>
+With the driver package installed and the minimum versions of DirectML, ORT and Windows enabled, try this <a href="https://github.com/microsoft/DirectML/tree/master/Samples/DirectML_ESRGAN">ESRGAN super-resolution model sample</a> to build a C++ application that runs on the new Copilot+ PCs!
+<h3>Current capabilities and limitations</h3>
+DirectML is rapidly expanding, and we are simplifying how developers can utilize the various local accelerators, hardware variations and frameworks across Windows. There are constraints with what is available today and they are highlighted below:
+<ul>
+ 	<li>C++ Developers need to depend on DirectML 1.15.2 as a redistributable package within their app (reference the <a href="https://github.com/microsoft/DirectML/tree/master/Samples/DirectML_ESRGAN">sample</a> above).</li>
+ 	<li>NPU selection through the Python API for ONNX Runtime is not available currently but is coming soon!</li>
+ 	<li>There are <a href="https://huggingface.co/microsoft/dml-ai-hub-models">specific models</a> that DirectML guarantees will work on Qualcomm® Hexagon NPU. Please leverage these exact ONNX versions during model sampling.
+<ul>
+ 	<li>Developers will experience error code DXGI_ERROR_UNSUPPORTED (0x887A0004) stating “The specified device interface or feature level is not supported on this system” when attempting to use models outside of <a href="https://huggingface.co/microsoft/dml-ai-hub-models">supported models</a>.</li>
+ 	<li>For testing any models outside of our supported list, developers may enable windows developer mode (settings/systems/for developers). Models that are run in this mode may have undefined behavior.</li>
+</ul>
+</li>
+</ul>
+We are excited for this initial release and the continued expansion of DirectML on Copilot+ PCs. Stay tuned for more capabilities and announcements as we continue our investment in this space.
+<h2>DirectML unlocks NPUs for web-based machine learning with WebNN NPU Developer Preview</h2>
+At Build, we launched the <a href="https://microsoft.github.io/webnn-developer-preview/">WebNN Developer Preview</a> across Windows GPUs, and showcased initial support for NPUs, powered by DirectML. We are excited to announce that web developers can now leverage the power of NPUs on Windows devices with the latest release of DirectML and WebNN Developer Preview. This release enables support for an initial set of models on Intel® Core™ Ultra processors with Intel® AI Boost and the Copilot+ PC, powered by Qualcomm® Hexagon™ NPUs that you can try out today on the <a href="https://microsoft.github.io/webnn-developer-preview/">WebNN Developer Preview</a> website.
+
+<img class="aligncenter wp-image-57090 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/08/Webnn-Preview-Pic.png" alt="WebNN Preview screen" width="936" height="586" />
+
+WebNN is an emerging web standard that defines how to run machine learning models in the browser and offers new possibilities for bringing AI innovations to the web. It defines how to interface with hardware acceleration APIs such as DirectML, enabling web sites to leverage the GPU or NPU on a user’s PC to run AI locally. DirectML, a key foundational component of the <a href="https://developer.microsoft.com/en-us/windows/ai/">Windows Copilot Runtime</a>, uniquely simplifies how developers can scale their AI innovations, through a single, cross-hardware DirectX API that provides a secure, consistent, performant experience across different hardware architectures. WebNN also supports integration with machine learning frameworks, like ONNX Runtime Web (ORT Web), which is part of the ONNX Runtime project. ORT Web is a JavaScript library that enables you to run ONNX models in the web browser and extends the Execution Provider (EP) framework to include WebNN as an EP.
+
+<img class="aligncenter wp-image-57089 size-full" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/08/WebNN-Framework-Pic.png" alt="Diagram of WebNN Framework" width="300" height="294" />
+
+Enabling DirectML across NPUs with WebNN is only possible with the support and close collaboration of hardware partners like Intel. Intel Fellow, Moh Haghighat, remarked: <em>“Intel is excited that WebNN and DirectML can now provide countless web developers the ability to harness the power and efficiency of Intel’s NPU for creating and executing innovative machine learning features in web applications on AI PCs. We eagerly look forward to the new possibilities that WebNN and DirectML bring to web developers and the web users around the world who will benefit from faster, smarter, and more engaging web applications.”</em>
+
+This is just the beginning of our journey to enable AI on the web with WebNN and DirectML. Stay tuned for upcoming releases that will include more functionality and broader model coverage, including generative AI models.
+<h3>Get started with the WebNN Developer Preview</h3>
+With the WebNN Developer Preview, powered by DirectML and ORT Web, you can run ONNX models in the browser with hardware acceleration and minimal code changes.
+
+To get started with WebNN on DirectML compatible devices you will need:
+<ul>
+ 	<li>Window 11, version 24H2 or newer</li>
+ 	<li>Insider version of Edge (exact instructions provided below)</li>
+ 	<li>The latest driver from our WebNN NPU Partners:
+<ul>
+ 	<li><a href="https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html">Intel® Core™ Ultra NPU Driver for Windows</a></li>
+ 	<li>Qualcomm® Hexagon NPU Driver Package for windows (see instruction set above)</li>
+</ul>
+</li>
+</ul>
+Now that you have the latest NPU driver installed, here are the exact steps required to sample models with the WebNN framework.
+<h3>Enabling Insider version of Edge for WebNN Dev Preview</h3>
+<ol>
+ 	<li><a href="https://www.microsoft.com/en-us/edge/download/insider?form=MA13FJ">Microsoft Edge Canary or Dev Channel</a> with WebNN flag enabled in about:flags
+<ol style="list-style: lower-alpha;">
+ 	<li>Download from <a href="https://www.microsoft.com/en-us/edge/download/insider">https://www.microsoft.com/en-us/edge/download/insider</a></li>
+ 	<li>Run installer</li>
+ 	<li>Navigate to about://flags</li>
+ 	<li>Search for "Enables WebNN API" and change it to "Enabled"</li>
+ 	<li>Exit browser</li>
+</ol>
+</li>
+ 	<li>Download DirectML redistributable:
+<ol style="list-style: lower-alpha;">
+ 	<li>Download DirectML from <a href="https://www.nuget.org/packages/Microsoft.AI.DirectML/1.15.2">https://www.nuget.org/packages/Microsoft.AI.DirectML/1.15.2</a></li>
+ 	<li>Rename microsoft.ai.directml.1.15.2.nupkg to microsoft.ai.directml.1.15.2.nupkg.zip and extract it</li>
+</ol>
+</li>
+ 	<li>Copy microsoft.ai.directml.1.15.2.nupkg.zip\bin\-win\directml.dll to the appropriate directory (replace with x64 on Intel devices and arm64 on Qualcomm devices):<
+<ol style="list-style: lower-alpha;">
+ 	<li>Edge Dev: “C:\Program Files (x86)\Microsoft\Edge Dev\Application\129.0.2779.0\”
+<ul>
+ 	<li>When the dialog asks for Administrator permission, choose “Continue"</li>
+</ul>
+</li>
+ 	<li>Edge Canary: “%LOCALAPPDATA%\Microsoft\Edge SxS\Application\129.0.2779.0\”</li>
+ 	<li>Note the following on copying Directml.dll to Edge directory:
+<ul>
+ 	<li>The version-specific directory (129.0.2779.0) may differ on your machine</li>
+ 	<li>New versions of Edge may require directml.dll to be recopied to the directory</li>
+</ul>
+</li>
+</ol>
+</li>
+ 	<li>Launch Edge insider:
+<ol style="list-style: lower-alpha;">
+ 	<li>Open terminal and change your working directory to the Edge Insider build:
+<ul>
+ 	<li>If using Edge Dev: “C:\Program Files (x86)\Microsoft\Edge Dev\Application”</li>
+ 	<li>If using Edge Canary: “%LOCALAPPDATA%\Microsoft\Edge SxS\Application”</li>
+</ul>
+</li>
+ 	<li>.\msedge.exe --use-redist-dml --disable_webnn_for_npu=0 --disable-gpu-sandbox</li>
+</ol>
+</li>
+</ol>
+Now, you can run samples with the WebNN Framework by navigating to <a href="http://aka.ms/webnn">aka.ms/webnn</a> and choosing either Image Classification or Whisper Base samples (and don’t forget to click the 'npu' button) or by directly linking here:
+
+<a href="https://microsoft.github.io/webnn-developer-preview/demos/image-classification/?provider=webnn&devicetype=npu&model=mobilenet-v2&run=5">MobilNetV2 NPU Selected</a> / <a href="https://microsoft.github.io/webnn-developer-preview/demos/image-classification/?provider=webnn&devicetype=npu&model=resnet-50&run=5">ResNet50 NPU Selected</a> / <a href="https://microsoft.github.io/webnn-developer-preview/demos/image-classification/?provider=webnn&devicetype=npu&model=efficientnet-lite4&run=5">EfficientNetV4 NPU Selected</a> / <a href="https://microsoft.github.io/webnn-developer-preview/demos/whisper-base/?devicetype=npu">Whisper Base NPU Selected</a>
+
+Note, model start up times may be >1 minute; NPUs are in a rapid optimization stage so compile times will improve as we move WebNN to production trials. For more instructions and information about supported models and operators, please visit our <a href="https://learn.microsoft.com/en-us/windows/ai/directml/webnn-overview">documentation</a>.
+<h2>Additional links</h2>
+To find out more information, we encourage you to visit these sites below:
+<ul>
+ 	<li><a href="https://learn.microsoft.com/en-us/windows/ai/directml/dml">aka.ms/directml</a></li>
+ 	<li><a href="https://github.com/microsoft/DirectML">DirectML GitHub</a></li>
+ 	<li><a href="https://microsoft.github.io/webnn-developer-preview/">WebNN Developer Preview samples</a></li>
+ 	<li><a href="https://learn.microsoft.com/en-us/windows/ai/directml/webnn-overview">WebNN Developer Preview documentation</a></li>
+ 	<li><a href="https://webmachinelearning.github.io/webnn-intro/">WebNN API</a></li>
+ 	<li><a href="https://developer.microsoft.com/en-us/windows/ai/">aka.ms/windowscopilotruntime</a></li>
+</ul>
+<h2>Looking ahead</h2>
+DirectML is excited to continue to expand support across Copliot+ PCs and frameworks like WebNN and the ONNX Runtime. Stay tuned for more exciting updates as we continue to innovate and bring cutting-edge AI capabilities that allow you to scale your AI innovations across Windows.
+
+As always, we appreciate your feedback and would like to learn from your experiences with NPU support in DirectML. To provide feedback and report issues, use the GitHub issues on the <a href="https://github.com/microsoft/DirectML">DirectML repository</a> or provide general feedback at <a href="https://www.microsoft.com/en-us/windowsinsider/feedbackhub/fb">aka.ms/directml feedback hub</a>. Make sure to include the details of your device, your Windows build, your DirectML application and your machine learning model when reporting an issue and/or feedback!]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Nominations for the 2024 Microsoft Store App Awards are now open </title>
 		<link>https://blogs.windows.com/windowsdeveloper/2024/08/06/nominations-for-the-2024-microsoft-store-app-awards-are-now-open/</link>
 		
@@ -546,23 +694,6 @@ Be sure to check out these sessions at Microsoft’s Build Conference to learn m
  	<li><a href="https://learn.microsoft.com/en-us/windows/ai/directml/webnn-overview">WebNN Developer Preview documentation</a></li>
  	<li><a href="https://webmachinelearning.github.io/webnn-intro/">WebNN API</a></li>
 </ul>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Use Machine Learning models in your Windows app</title>
-		<link>https://learn.microsoft.com/en-us/windows/ai/models</link>
-		
-		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
-		<pubDate>Tue, 21 May 2024 22:08:31 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57029</guid>
-
-					<description><![CDATA[<p>The post <a href="https://learn.microsoft.com/en-us/windows/ai/models">Use Machine Learning models in your Windows app</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The post <a href="https://learn.microsoft.com/en-us/windows/ai/models">Use Machine Learning models in your Windows app</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></content:encoded>
 					
 		
 		
