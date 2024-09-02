@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 22 Aug 2024 18:12:24 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 02 Sep 2024 14:52:50 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,172 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Announcing the Proxy 3 Library for Dynamic Polymorphism</title>
+		<link>https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/#respond</comments>
+		
+		<dc:creator><![CDATA[Mingxin Wang]]></dc:creator>
+		<pubDate>Mon, 02 Sep 2024 14:52:50 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34567</guid>
+
+					<description><![CDATA[<p>Next Generation Polymorphism in C++</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/">Announcing the Proxy 3 Library for Dynamic Polymorphism</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are thrilled to announce that <a href="https://github.com/microsoft/proxy">Proxy 3</a>, our latest and greatest solution for polymorphism in C++, is now <a href="https://github.com/microsoft/proxy/releases/tag/3.0.0-rc1">feature complete</a>! Since the library was <a href="https://devblogs.microsoft.com/cppblog/proxy-runtime-polymorphism-made-easier-than-ever/">initially open-sourced</a>, we have heard much positive feedback and received many brilliant feature requests. Big thanks to all of you who have contributed any code or idea that made the library better!</p>
+<h2 id="our-mission">Our Mission</h2>
+<p>&#8220;Proxy&#8221; is a modern C++ library that helps you use polymorphism (a way to use different types of objects interchangeably) without needing inheritance.</p>
+<p>&#8220;Proxy&#8221; was created by Microsoft engineers and has been used in the Windows operating system since 2022. For many years, using inheritance was the main way to achieve polymorphism in C++. However, new programming languages like <a href="https://doc.rust-lang.org/book/ch10-02-traits.html">Rust</a> offer better ways to do this. We have improved our understanding of object-oriented programming and decided to use <em>pointers</em> in C++ as the foundation for &#8220;Proxy&#8221;. Specifically, the &#8220;Proxy&#8221; library is designed to be:</p>
+<ul>
+<li><strong>Portable</strong>: &#8220;Proxy&#8221; was implemented as a single-header library in standard C++20. It can be used on any platform while the compiler supports C++20. The majority of the library is <a href="https://learn.microsoft.com/cpp/standard-library/cpp-standard-library-overview">freestanding</a>, making it feasible for embedded engineering or kernel design of an operating system.</li>
+<li><strong>Non-intrusive</strong>: An implementation type is no longer required to inherit from an abstract binding.</li>
+<li><strong>Well-managed</strong>: &#8220;Proxy&#8221; provides a <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)">GC</a>-like capability that manages the lifetimes of different objects efficiently without the need for an actual garbage collector.</li>
+<li><strong>Fast</strong>: With typical compiler optimizations, &#8220;Proxy&#8221; produces high-quality code that is as good as or better than hand-written code. In many cases, &#8220;Proxy&#8221; performs better than traditional inheritance-based approaches, especially in managing the lifetimes of objects.</li>
+<li><strong>Accessible</strong>: Learned from user feedback, accessibility has been significantly improved in &#8220;Proxy 3&#8221; with intuitive syntax, good IDE compatibility, and accurate diagnostics.</li>
+<li><strong>Flexible</strong>: Not only member functions, the &#8220;abstraction&#8221; of &#8220;Proxy&#8221; allows <em>any</em> expression to be polymorphic, including free functions, operators, conversions, etc. Different abstractions can be freely composed on demand. Performance tuning is supported for experts to balance between extensibility and performance.</li>
+</ul>
+<h2 id="the-new-look">The New Look</h2>
+<p>Comparing to our previous releases, there are some major improvements in the syntax and utilities. Let&#8217;s get started with some examples!</p>
+<h3 id="hello-world">Hello World</h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+#include "proxy.h"
+
+struct Streamable : pro::facade_builder
+    ::add_convention&lt;pro::operator_dispatch&lt;"&lt;&lt;", true&gt;, std::ostream&amp;(std::ostream&amp; out) const&gt;
+    ::build {};
+
+int main() {
+  std::string str = "Hello World";
+  pro::proxy&lt;Streamable&gt; p1 = &amp;str;
+  std::cout &lt;&lt; "p1 = " &lt;&lt; *p1 &lt;&lt; "\n";  // Prints: "p1 = Hello World"
+
+  pro::proxy&lt;Streamable&gt; p2 = std::make_unique&lt;int&gt;(123);
+  std::cout &lt;&lt; "p2 = " &lt;&lt; *p2 &lt;&lt; "\n";  // Prints: "p2 = 123"
+
+  pro::proxy&lt;Streamable&gt; p3 = pro::make_proxy&lt;Streamable&gt;(3.14);
+  std::cout &lt;&lt; "p3 = " &lt;&lt; *p3 &lt;&lt; "\n";  // Prints: "p3 = 3.14"
+}</code></pre>
+<p>Here is a step-by-step explanation:</p>
+<ul>
+<li><code>#include &lt;iostream&gt;</code>: For <a href="https://learn.microsoft.com/cpp/standard-library/iostream#cout"><code>std::cout</code></a>.</li>
+<li><code>#include &lt;string&gt;</code>: For <a href="https://learn.microsoft.com/cpp/standard-library/basic-string-class"><code>std::string</code></a>.</li>
+<li><code>#include "proxy.h"</code>: For the &#8220;Proxy&#8221; library. Most of the facilities of the library are defined in namespace <code>pro</code>. If the library is consumed via <a href="https://learn.microsoft.com/vcpkg/get_started/overview">vcpkg</a> or <a href="https://conan.io/">conan</a>, this line should be changed into <code>#include &lt;proxy/proxy.h&gt;</code>.</li>
+<li><code>struct Streamable : pro::facade_builder ... ::build {}</code>: Defines a facade type <code>Streamable</code>. The term &#8220;facade&#8221; is how the &#8220;Proxy&#8221; library models runtime abstraction. Specifically,
+<ul>
+<li><code>pro::facade_builder</code>: Provides capability to build a facade type at compile-time.</li>
+<li><code>add_convention</code>: Adds a generalized &#8220;calling convention&#8221;, defined by a &#8220;dispatch&#8221; and several &#8220;overloads&#8221;, to the build context.</li>
+<li><code>pro::operator_dispatch&lt;"&lt;&lt;", true&gt;</code>: Specifies a dispatch for operator <code>&lt;&lt;</code> expressions where the primary operand (<code>proxy</code>) is on the right-hand side (specified by the second template parameter <code>true</code>). Note that polymorphism in the &#8220;Proxy&#8221; library is defined by expressions rather than member functions, which is different from C++ virtual functions or other OOP languages.</li>
+<li><code>std::ostream&amp;(std::ostream&amp; out) const</code>: The signature of the calling convention, similar with <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html"><code>std::move_only_function</code></a>. <code>const</code> specifies that the primary operand is <code>const</code>.</li>
+<li><code>build</code>: Builds the context into a facade type.</li>
+</ul>
+</li>
+<li><code>pro::proxy&lt;Streamable&gt; p1 = &amp;str</code>: Creates a <code>proxy</code> object from a raw pointer of <code>std::string</code>. <code>p1</code> behaves like a raw pointer, and does not have ownership of the underlying <code>std::string</code>. If the lifetime of <code>str</code> ends before <code>p1</code>, <code>p1</code> becomes dangling.</li>
+<li><code>std::cout &lt;&lt; *p1</code>: This is how it works. It prints &#8220;Hello World&#8221; because the calling convention is defined in the facade <code>Streamable</code>, so it works as if by calling <code>std::cout &lt;&lt; str</code>.</li>
+<li><code>pro::proxy&lt;Streamable&gt; p2 =</code><a href="https://learn.microsoft.com/cpp/standard-library/memory-functions#make_unique"><code>std::make_unique</code></a><code>&lt;int&gt;(123)</code>: Creates a <a href="https://learn.microsoft.com/cpp/standard-library/unique-ptr-class"><code>std::unique_ptr</code></a><code>&lt;int&gt;</code> and converts to a <code>proxy</code>. Different from <code>p1</code>, <code>p2</code> has ownership of the underlying <code>int</code> because it is instantiated from a value of <code>std::unique_ptr</code>, and will call the destructor of <code>std::unique_ptr</code> when <code>p2</code> is destroyed, while <code>p1</code> does not have ownership of the underlying <code>int</code> because it is instantiated from a raw pointer. <code>p1</code> and <code>p2</code> are of the same type <code>pro::proxy&lt;Streamable&gt;</code>, which means you can have a function that returns <code>pro::proxy&lt;Streamable&gt;</code> without exposing any information about the implementation details to its caller.</li>
+<li><code>std::cout &lt;&lt; *p2</code>: Prints &#8220;123&#8221; with no surprise.</li>
+<li><code>pro::proxy&lt;Streamable&gt; p3 = pro::make_proxy&lt;Streamable&gt;(3.14)</code>: Creates a <code>proxy</code> from a <code>double</code> without specifying the underlying pointer type. Specifically,
+<ul>
+<li>Similar with <code>p2</code>, <code>p3</code> also has ownership of the underlying <code>double</code> value, but can effectively avoid heap allocation.</li>
+<li>Since the size of the underlying type (<code>double</code>) is known to be small (on major 32- or 64-bit platforms), <code>pro::make_proxy</code> realizes the fact at compile-time and guarantees no heap allocation.</li>
+<li>Library &#8220;Proxy&#8221; explicitly defines when heap allocation occurs or not to avoid users falling into performance hell, which is different from <a href="https://learn.microsoft.com/cpp/standard-library/function-class"><code>std::function</code></a> and other existing polymorphic wrappers in the standard.</li>
+</ul>
+</li>
+<li><code>std::cout &lt;&lt; *p3</code>: Prints &#8220;3.14&#8221; with no surprise.</li>
+<li>When <code>main</code> returns, <code>p2</code> and <code>p3</code> will destroy the underlying objects, while <code>p1</code> does nothing because it holds a raw pointer that does not have ownership of the underlying <code>std::string</code>.</li>
+</ul>
+<h3 id="more-expressions">More Expressions</h3>
+<p>In addition to the operator expressions demonstrated in the previous example, the library supports almost all forms of expressions in C++ and can make them polymorphic. Specifically,</p>
+<ul>
+<li>The <code>PRO_DEF_MEM_DISPATCH</code> macro: Defines a dispatch type for member function call expressions.</li>
+<li>The <code>PRO_DEF_FREE_DISPATCH</code> macro: Defines a dispatch type for free function call expressions.</li>
+<li>The <code>pro::operator_dispatch</code> class template: Dispatch type for operator expressions.</li>
+<li>The <code>pro::conversion_dispatch</code> class template: Dispatch type for conversion expressions.</li>
+</ul>
+<p>Note that some facilities are provided as macros, because C++ templates today do not support generating a function with an arbitrary name. Here is another example that makes member function call expressions polymorphic:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+
+#include "proxy.h"
+
+PRO_DEF_MEM_DISPATCH(MemDraw, Draw);
+PRO_DEF_MEM_DISPATCH(MemArea, Area);
+
+struct Drawable : pro::facade_builder
+    ::add_convention&lt;MemDraw, void(std::ostream&amp; output)&gt;
+    ::add_convention&lt;MemArea, double() noexcept&gt;
+    ::support_copy&lt;pro::constraint_level::nontrivial&gt;
+    ::build {};
+
+class Rectangle {
+ public:
+  Rectangle(double width, double height) : width_(width), height_(height) {}
+  Rectangle(const Rectangle&amp;) = default;
+
+  void Draw(std::ostream&amp; out) const {
+    out &lt;&lt; "{Rectangle: width = " &lt;&lt; width_ &lt;&lt; ", height = " &lt;&lt; height_ &lt;&lt; "}";
+  }
+  double Area() const noexcept { return width_ * height_; }
+
+ private:
+  double width_;
+  double height_;
+};
+
+std::string PrintDrawableToString(pro::proxy&lt;Drawable&gt; p) {
+  std::stringstream result;
+  result &lt;&lt; "entity = ";
+  p-&gt;Draw(result);
+  result &lt;&lt; ", area = " &lt;&lt; p-&gt;Area();
+  return std::move(result).str();
+}
+
+int main() {
+  pro::proxy&lt;Drawable&gt; p = pro::make_proxy&lt;Drawable, Rectangle&gt;(3, 5);
+  std::string str = PrintDrawableToString(p);
+  std::cout &lt;&lt; str &lt;&lt; "\n";  // Prints: "entity = {Rectangle: width = 3, height = 5}, area = 15"
+}</code></pre>
+<p>Here is a step-by-step explanation:</p>
+<ul>
+<li><code>#include &lt;iostream&gt;</code>: For <a href="https://learn.microsoft.com/cpp/standard-library/iostream#cout"><code>std::cout</code></a>.</li>
+<li><code>#include &lt;sstream&gt;</code>: For <a href="https://learn.microsoft.com/cpp/standard-library/basic-stringstream-class"><code>std::stringstream</code></a>.</li>
+<li><code>#include "proxy.h"</code>: For the &#8220;Proxy&#8221; library.</li>
+<li><code>PRO_DEF_MEM_DISPATCH(MemDraw, Draw)</code>: Defines a dispatch type <code>MemDraw</code> for expressions of calling member function <code>Draw</code>.</li>
+<li><code>PRO_DEF_MEM_DISPATCH(MemArea, Area)</code>: Defines a dispatch type <code>MemArea</code> for expressions of calling member function <code>Area</code>.</li>
+<li><code>struct Drawable : pro::facade_builder ... ::build {}</code>: Defines a facade type <code>Drawable</code>. Specifically,
+<ul>
+<li><code>add_convention</code>: Adds calling conventions to the build context.</li>
+<li><code>support_copy&lt;pro::constraint_level::nontrivial&gt;</code>: Specifies the underlying pointer type shall be copyable, which also makes the resulting <code>proxy</code> type copyable.</li>
+</ul>
+</li>
+<li><code>class Rectangle</code>: An implementation of <code>Drawable</code>.</li>
+<li>Function <code>PrintDrawableToString</code>: Converts a <code>Drawable</code> into a <code>std::string</code>. Note that this is a function rather than a function template, which means it can generate <a href="https://en.wikipedia.org/wiki/Application_binary_interface">ABI</a> in a larger build system.</li>
+<li><code>pro::proxy&lt;Drawable&gt; p = pro::make_proxy&lt;Drawable, Rectangle&gt;(3, 5)</code>: Creates a <code>proxy&lt;Drawable&gt;</code> object containing a <code>Rectangle</code>.</li>
+<li><code>std::string str = PrintDrawableToString(p)</code>: Converts <code>p</code> into a <code>std::string</code>, implicitly creates a copy of <code>p</code>.</li>
+<li><code>std::cout &lt;&lt; str</code>: Prints the string.</li>
+</ul>
+<h3 id="other-useful-features">Other Useful Features</h3>
+<p>In addition to the features mentioned above, here is a curated list of the most popular features based on user feedback:</p>
+<ul>
+<li><strong>Overloading</strong>: <code>facade_builder::add_convention</code> is more powerful than demonstrated above. It can take any number of overload types and perform standard overload resolution when invoking a <code>proxy</code>.</li>
+<li><strong>Facade composition</strong>: <code>facade_builder::add_facade</code> allows flexible composition of different abstractions.</li>
+<li><strong>Weak dispatch</strong>: When an object does not implement a convention, and we do not want it to trigger a hard compile error, it is allowed to define a &#8220;weak dispatch&#8221; with macro <code>PRO_DEF_WEAK_DISPATCH</code> from an existing dispatch type and a default implementation.</li>
+<li><strong>Allocator awareness</strong>: Function template <code>allocate_proxy</code> is able to create a <code>proxy</code> from a value with any custom allocator. In C++11, <a href="https://learn.microsoft.com/cpp/standard-library/function-class"><code>std::function</code></a> and <a href="https://learn.microsoft.com/cpp/standard-library/packaged-task-class"><code>std::packaged_task</code></a> had constructors that accepted custom allocators for performance tuning, but these were <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0302r1.html">removed in C++17</a> because &#8220;the semantics are unclear, and there are technical issues with storing an allocator in a type-erased context and then recovering that allocator later for any allocations needed during copy assignment&#8221;. These issues do not apply to <code>allocate_proxy</code>.</li>
+<li><strong>Configurable constraints</strong>: <code>facade_builder</code> provides full support for constraints configuration, including memory layout (by <code>restrict_layout</code>), copyability (by <code>support_copy</code>), relocatability (by <code>support_relocation</code>), and destructibility (by <code>support_destruction</code>).</li>
+<li><strong>Reflection</strong>: <code>proxy</code> supports type-based compile-time reflection for runtime queries, specifically with <code>facade_builder::add_reflection</code> and function template <code>proxy_reflect</code>.</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>We hope this library could empower more C++ users outside Microsoft to write polymorphic code easier. The full documentation of Proxy 3 will be published soon. Please stay tuned for more technical details. We are also actively working on several ISO C++ proposals for further standardization.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/">Announcing the Proxy 3 Library for Dynamic Polymorphism</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Prevent Critical Bugs with MSVC Code Analysis</title>
 		<link>https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/prevent-critical-bugs-with-msvc-code-analysis/#comments</comments>
@@ -857,80 +1023,6 @@ We are excited to announce that now when you hover over symbols in your codebase
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/understand-your-c-symbols-using-copilot-in-visual-studios-quick-info/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Bosch widely adopts Visual Studio 2022 after experiencing performance improvements for C++ Linux cross-compilation</title>
-		<link>https://devblogs.microsoft.com/cppblog/bosch-widely-adopts-visual-studio-2022-after-experiencing-performance-improvements-for-c-linux-cross-compilation/</link>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Mon, 10 Jun 2024 16:00:55 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Linux]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34323</guid>
-
-					<description><![CDATA[<p>Introduction</p>
-<p>The Bosch security camera team had been evaluating Visual Studio as a unified development setup for their team’s C++ development, which includes remote Linux C++ development for cross-compiling. <br />
-While evaluating Visual Studio 2022, the team had a positive experience of using Visual Studio for their C++ development due to notable improvements over the years.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/bosch-widely-adopts-visual-studio-2022-after-experiencing-performance-improvements-for-c-linux-cross-compilation/">Bosch widely adopts Visual Studio 2022 after experiencing performance improvements for C++ Linux cross-compilation</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<h3 id="introduction">Introduction</h3>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red.png"><img decoding="async" class="alignnone wp-image-34324" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red.png" alt="Bosch symbol logo black red" width="1172" height="468" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red.png 1920w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red-300x120.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red-1024x409.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red-768x307.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/Bosch_symbol_logo_black_red-1536x614.png 1536w" sizes="(max-width: 1172px) 100vw, 1172px" /></a></p>
-<p><span class="TextRun SCXW69896041 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW69896041 BCX8">The </span><span class="NormalTextRun CommentStart SCXW69896041 BCX8">Bosch</span><span class="NormalTextRun SCXW69896041 BCX8"> security camera</span><span class="NormalTextRun SCXW69896041 BCX8"> team</span><span class="NormalTextRun SCXW69896041 BCX8"> ha</span><span class="NormalTextRun SCXW69896041 BCX8">d been evaluating Visual Studio as a</span><span class="NormalTextRun SCXW69896041 BCX8"> unified development setup</span><span class="NormalTextRun SCXW69896041 BCX8"> for their </span><span class="NormalTextRun SCXW69896041 BCX8">team’s </span><span class="NormalTextRun SCXW69896041 BCX8">C++ development, </span><span class="NormalTextRun SCXW69896041 BCX8">which includes</span><span class="NormalTextRun SCXW69896041 BCX8"> remote Linux</span><span class="NormalTextRun SCXW69896041 BCX8"> C++</span><span class="NormalTextRun SCXW69896041 BCX8"> development for cross-compiling.</span> </span></p>
-<p><span data-contrast="auto">While evaluating Visual Studio 2022, the team had a positive experience of using Visual Studio for their C++ development due to notable improvements over the years. Specifically, compared to their experience with Visual Studio 2019, they noticed improvements such as:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<ol>
-<li data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559683&quot;:0,&quot;335559684&quot;:-1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0,46],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">More seamless integration with GDB and a quicker debug experience within the inner-dev-loop </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></li>
-<li data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559683&quot;:0,&quot;335559684&quot;:-1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0,46],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">Better integration with CMake and WSL2 to allow for stabilized build environments and easily transferrable dev environments. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></li>
-</ol>
-<p><span data-contrast="auto">In Visual Studio 2022, they migrated their project from CMake settings to </span><a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html"><span data-contrast="none">CMake presets</span></a><span data-contrast="auto"> to improve portability between Visual Studio and VS Code, compilation performance, and ease of maintaining multiple different configurations.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span class="TextRun SCXW262439761 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW262439761 BCX8">However, </span><span class="NormalTextRun SCXW262439761 BCX8">th</span><span class="NormalTextRun SCXW262439761 BCX8">e</span><span class="NormalTextRun SCXW262439761 BCX8"> Bosch team was still </span><span class="NormalTextRun SCXW262439761 BCX8">impacted</span><span class="NormalTextRun SCXW262439761 BCX8"> by</span> <span class="NormalTextRun SCXW262439761 BCX8">one issue with their Linux development</span><span class="NormalTextRun SCXW262439761 BCX8"> which was that there was a </span><span class="NormalTextRun SCXW262439761 BCX8">gap in the current </span><span class="NormalTextRun SCXW262439761 BCX8">sync mechanism when switching between code branches.</span><span class="NormalTextRun SCXW262439761 BCX8"> They had reached out to the </span><span class="NormalTextRun SCXW262439761 BCX8">Microsoft </span><span class="NormalTextRun SCXW262439761 BCX8">C++ team, who promptly resolved their issues</span><span class="NormalTextRun SCXW262439761 BCX8"> in </span><span class="NormalTextRun SCXW262439761 BCX8">Visual Studio 2022 version 17.10</span><span class="NormalTextRun SCXW262439761 BCX8">.</span></span> <span class="TextRun SCXW262439761 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW262439761 BCX8">As a result of this collaboration, the </span><span class="NormalTextRun CommentStart SCXW262439761 BCX8">C++</span><span class="NormalTextRun SCXW262439761 BCX8"> workload</span><span class="NormalTextRun SCXW262439761 BCX8"> has added new capabilities, which enable</span><span class="NormalTextRun SCXW262439761 BCX8"> finer grain</span><span class="NormalTextRun SCXW262439761 BCX8"> control of </span><span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">rsync</span><span class="NormalTextRun SCXW262439761 BCX8"> settings</span><span class="NormalTextRun SCXW262439761 BCX8"> when used with a remote </span><span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">rsync</span><span class="NormalTextRun SCXW262439761 BCX8"> daemon. This is </span><span class="NormalTextRun SCXW262439761 BCX8">accomplished</span><span class="NormalTextRun SCXW262439761 BCX8"> via a new </span><span class="NormalTextRun SCXW262439761 BCX8">CMake</span><span class="NormalTextRun SCXW262439761 BCX8"> presets property for the user specification of </span><span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">rsync</span><span class="NormalTextRun SCXW262439761 BCX8"> daemon parameters. The property supports explicit control over the copy. For example, the user can now explicitly turn on/off </span><span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">rsync’s</span> <span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">s</span><span class="NormalTextRun SpellingErrorV2Themed SCXW262439761 BCX8">ymlink</span><span class="NormalTextRun SCXW262439761 BCX8"> “munging” feature when copying.</span></span><span class="EOP SCXW262439761 BCX8" data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:0,&quot;335559737&quot;:0,&quot;335559738&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<blockquote><p><span data-contrast="auto">“This step significantly decreased our issues during CMake configure and the average time needed for a configure-compiler-debug- cycle, not only because of the omitted additional step, but also there is less effort in doing syncing as well, as the copy keeps untouched. </span><b><span data-contrast="auto">This overall increased our productivity and reduced the pain in cross-compiling for multiple targets.</span></b><span data-contrast="auto">” &#8211; Bosch</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p></blockquote>
-<p><span data-contrast="auto">This blog post was written in collaboration with Philipp Jeske and Rainer Bauereiss, a software engineer and a software engineering lead we worked with to deliver on these improvements, who shared their story and experience with C++ development while adopting Visual Studio 2022. Thank you both for your continued partnership over the years!</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<hr />
-<h5 id="what-does-your-team-do-what-technical-challenges-come-from-your-work"><strong>What does your team do? What technical challenges come from your work?</strong></h5>
-<p><span data-contrast="auto">We are developing the OS and the applications for the Bosch security cameras. Involved is an international team with multiple locations which are contributing software modules for those cameras on multiple layers. Scaling this firmware to multiple types of cameras is key. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">Our OS is based on Linux in different variants, that differ depending on the target. Each OS variant comes with its own SDK and toolchain for cross-compiling on a Linux host.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">For embedded application development, we must work with different SDKs and toolchains. Most development is Windows based, but we also have Linux based machines. The toolchain is either locally installed or inside a WSL2 or other virtual machines tools. For limitations of some SDKs, the SDKs files are checked in as part of our application repository, and there come the symbolic links from our issue in play. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<h5 id="what-was-the-process-of-re-evaluating-and-adopting-visual-studio-as-a-unified-ide-for-the-team-like"><strong>What was the process of re-evaluating and adopting Visual Studio as a unified IDE for the team like?</strong></h5>
-<p><span data-contrast="auto">Some months ago, there wasn’t anything such as a unified development setup, but we were striving for a unified way of building our code. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">We started a proof of concept using Visual Studio 2022 for cross-development on Windows Hosts, after previously evaluating Visual Studio 2019.  We started with WSL2 integration and CMakeSettings.json.  We noticed substantial improvements in how working with VS2022 looks and feels like after the substantial changes made in the year before. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559685&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span class="NormalTextRun SCXW195228984 BCX8">During the evaluation phase of Visual Studio 2019 we had good contact with the </span><span class="NormalTextRun CommentStart SCXW195228984 BCX8">Microsoft </span><span class="NormalTextRun SCXW195228984 BCX8">C++</span><span class="NormalTextRun SCXW195228984 BCX8"> team, but sadly the tooling did not provide the functionality we needed. The main issue with Visual Studio 2019 before was the unsatisfying debug experience (due to lack of performance while compiling), when working remotely on a Linux-based system. The seamless integration from GDB into Visual Studio makes it nowadays one of the <strong>best debugging experiences we have encountered so far</strong>. The Visual Studio and Visual Studio Code remote development experience, especially for Linux and CMake-based projects, has clearly increased a lot since the last evaluation.</span></p>
-<p><span data-contrast="auto">This setup already had some benefits by using Visual Studio as IDE and debugger interface, but it had its drawbacks, especially the lack of performance whilst compiling and the not-portable CMakeSettings.json configuration. Nevertheless, this setup has already convinced some of us and we have started out using this setup for our daily business.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">In parallel, we experimented a bit and finally encountered that </span><b><span data-contrast="auto">when we use CMake Presets, most of the drawbacks would be resolved.</span></b><span data-contrast="auto"> Therefore, we migrated from CMakeSettings.json to CMakePresets.json and with that setup our performance problem was gone, thanks to the rsync mechanism that removes the performance penalty that comes from compiling on a network share. Another advantage was that </span><b><span data-contrast="auto">the configuration made in CMakePresets is compatible between Visual Studio and VS Code.</span></b><span data-contrast="auto"> Additionally, it makes it easier for us to maintain multiple different build configurations.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<h5 id="after-migrating-to-cmake-presets-what-were-your-challenges-with-using-visual-studio"><strong>After migrating to CMake presets, what were your challenges with using Visual Studio?</strong></h5>
-<p><span class="TextRun SCXW231873589 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW231873589 BCX8">We were so positive about the overall experience of using Visual Studio</span><span class="NormalTextRun SCXW231873589 BCX8">. However, there was </span><span class="NormalTextRun SCXW231873589 BCX8">a flaw present in the </span><span class="NormalTextRun SpellingErrorV2Themed SCXW231873589 BCX8">rsync</span><span class="NormalTextRun SCXW231873589 BCX8"> mechanism</span><span class="NormalTextRun SCXW231873589 BCX8"> preventing us from increasing the acceptance of the VS2022 solution widely across the team</span><span class="NormalTextRun SCXW231873589 BCX8">. </span><span class="NormalTextRun SpellingErrorV2Themed SCXW231873589 BCX8">Symlinks</span> <span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW231873589 BCX8">were getting</span><span class="NormalTextRun SCXW231873589 BCX8"> munged when using </span><span class="NormalTextRun SpellingErrorV2Themed SCXW231873589 BCX8">rsync</span><span class="NormalTextRun SCXW231873589 BCX8"> for </span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW231873589 BCX8">cross-compiling</span><span class="NormalTextRun SCXW231873589 BCX8"> our WSL targets</span><span class="NormalTextRun SCXW231873589 BCX8">.</span><span class="NormalTextRun SCXW231873589 BCX8"> Because this was an issue for us and severity increased with the number of developers working with the new </span><span class="NormalTextRun SCXW231873589 BCX8">tool</span><span class="NormalTextRun SCXW231873589 BCX8">, we reached out to the Visual Studio C++ team </span><span class="NormalTextRun SCXW231873589 BCX8">with the hope of getting some </span><span class="NormalTextRun SCXW231873589 BCX8">additional</span><span class="NormalTextRun SCXW231873589 BCX8"> information. </span></span><span class="EOP SCXW231873589 BCX8" data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<h5 id="what-is-your-current-experience-with-visual-studio-now-that-the-fix-has-been-implemented"><strong>What is your current experience with Visual Studio now that the fix has been implemented?</strong></h5>
-<p><span class="NormalTextRun SCXW79827107 BCX8">Since the fix for our </span><span class="NormalTextRun SpellingErrorV2Themed SCXW79827107 BCX8">rsync</span><span class="NormalTextRun SCXW79827107 BCX8"> issue is available in the preview for the upcoming release, most of us switched to the prerelease version. This step significantly decreased our issues during </span><span class="NormalTextRun SCXW79827107 BCX8">CMake</span><span class="NormalTextRun SCXW79827107 BCX8"> configure and the average time needed for a configure-compile-debug-cycle decreased, not only because of the omitted </span><span class="NormalTextRun SCXW79827107 BCX8">additional</span><span class="NormalTextRun SCXW79827107 BCX8"> step,but also because there is less effort in doing the syncing as well, as the copy keeps the file names untouched. This overall increased our productivity and reduced the pain in cross-compiling for multiple targets.</span></p>
-<p><span data-contrast="auto">We are on the verge of migrating to MSVC as a mandatory toolchain for all our development. The portability between Visual Studio and Visual Studio Code makes both in our case a good tooling, because of our diverse environment. Furthermore, it enables the developers to choose the development environment that works for them. </span><b><span data-contrast="auto">This increases productivity and satisfaction across the team. </span></b><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">The experience working with the Microsoft C++ team was very pleasant and solution oriented. We hope that we were able to share our appreciation for the tooling with the team that develops it.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<hr />
-<p>You can adjust the value of munging symlinks via new rsync settings in the vendor block remote settings in CMake presets, as of Visual Studio 2022 version 17.10:</p>
-<p><code>"rsyncCommandArgs": ["-t", "--delete", <strong>"--no-munge-links"</strong>]</code></p>
-<p><code></code>
-<code>"rsyncDaemonOptions": ["read only = no", "list = True", <strong>"munge symlinks = no"</strong>]</code></p>
-<p>For example:</p>
-<pre>"configurePresets": [
-{
-"name": "windows-base",
-...
-"vendor": {
-"microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-"rsyncCommandArgs": ["--no-munge-links"],
-"rsyncDaemonOptions": ["list = True"]
-}
-}
-]</pre>
-<hr />
-<h3 id="conclusion">Conclusion</h3>
-<p><span data-contrast="auto">Bosch has successfully adopted Visual Studio 2022 as a unified IDE for their C++ Linux cross-compilation projects, thanks to migrating to CMake presets, overall improvements to the Linux experience in Visual Studio over the years and collaborating with the Microsoft C++ team to improve rsync mechanism issues. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><span data-contrast="auto">Any developer targeting Linux with their CMake projects can try out the updates to the remote Linux experience with Visual Studio, including improvements to the CMake presets support and added rsync settings.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:278}"> </span></p>
-<p><div style="text-align:center"><a class="cta_button_link" href="aka.ms/vs" style="text-transform: titlecase; display: inline-block; background-color: #0078D4; color: white; padding: 10px; margin:10px 0; text-decoration: none;" target="_blank">Download Visual Studio</a></div></p>
-<p><span data-contrast="auto">The Microsoft C++ team is continuously looking to improve the remote Linux experience with the IDE and would love to hear from any enterprises that work with Visual Studio. Please reach out to us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com.</a></span></p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/bosch-widely-adopts-visual-studio-2022-after-experiencing-performance-improvements-for-c-linux-cross-compilation/">Bosch widely adopts Visual Studio 2022 after experiencing performance improvements for C++ Linux cross-compilation</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
