@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 04 Sep 2024 18:05:41 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 05 Sep 2024 22:06:11 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,171 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New in vcpkg (August 2024)</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-august-2024/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-august-2024/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Thu, 05 Sep 2024 22:06:11 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34589</guid>
+
+					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2024.08.23 release, 2024-08-01 tool release, as well as changes to vcpkg documentation throughout August. This month’s release includes several notable changes as well as bug fixes and documentation improvements. The most notable changes were: The shell function used to run vcpkg [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-august-2024/">What’s New in vcpkg (August 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.08.23">2024.08.23 release</a>, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2024-08-01">2024-08-01 tool release</a>, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout August. This month’s release includes several notable changes as well as bug fixes and documentation improvements. The most notable changes were:</p>
+<ul>
+<li>The shell function used to run vcpkg artifacts commands has been renamed to vcpkg-shell. Artifacts users will need to update their commands to use this new identifier.</li>
+<li>A triplet variable called VCPKG_POST_PORTFILE_INCLUDES was added to allow users to specify a list of CMake files to include after the execution of portfile.cmake.</li>
+<li>Documentation articles were added for using vcpkg to target Windows with MSVC as well as Universal Windows Platform (UWP).</li>
+</ul>
+<p>Some stats for this period:</p>
+<ul>
+<li>There are now <strong>2,475 total ports </strong>available in the vcpkg public registry. A <a href="https://learn.microsoft.com/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
+<li><strong>20 new ports</strong> were added to the open-source registry.</li>
+<li><strong>267 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 13 main <a href="https://learn.microsoft.com/vcpkg/concepts/triplets">triplets</a>.</li>
+<li><strong>30 </strong>people contributed to this release.</li>
+<li>The main vcpkg repo has over <strong>6,300 forks</strong> and <strong>22,700 stars</strong> on GitHub.</li>
+</ul>
+<p>Lastly, it’s CppCon season, and I am giving a talk on <a href="https://cppcon2024.sched.com/event/1gZgU/10-problems-large-companies-have-with-managing-c-dependencies-and-how-to-solve-them">10 Problems Large Companies Have with Managing C++ Dependencies and How to Solve Them</a> on Tuesday, September 17, 2024, from 16:45-17:45 MDT. If you are coming to the conference, check it out! If you are unable to make it, the talk should go up on YouTube sometime after the event.</p>
+<h1>vcpkg changelog (2024.08.23 release)</h1>
+<p>The following notable changes were made in this release:</p>
+<ul>
+<li>The shell function used to run vcpkg artifacts commands has been renamed from vcpkg to vcpkg-shell. This addresses some issues when running vcpkg from a Visual Studio Developer Command Prompt. If you are an artifacts user, you will need to update your commands. For example: vcpkg activate should be changed to vcpkg-shell activate. Note: most vcpkg commands do not use the shell script, and you should still be able to run them as before (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1442">Microsoft/vcpkg-tool#1442</a>).</li>
+<li>Added <a href="https://learn.microsoft.com/vcpkg/users/triplets#vcpkg_post_portfile_includes">VCPKG_POST_PORTFILE_INCLUDES triplet variable</a>. Allows users to optionally specify a list of CMake files to include after the execution of portfile.cmake (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1417">Microsoft/vcpkg-tool#1417</a>, thanks @Neumann-A!).</li>
+<li>Bug fixes:
+<ul>
+<li>Fixed a crash if <code>"platform": "mips64"</code> is used (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1454">Microsoft/vcpkg-tool#1454</a>, thanks @autoantwort!).</li>
+<li>Added error checking for http binary caching when some incorrect URL formats are specified (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1459">Microsoft/vcpkg-tool#1459</a>, thanks @autoantwort!).</li>
+<li>Fixed several typos in console output (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1461">Microsoft/vcpkg-tool#1461</a>).</li>
+<li>Fixed JSON configuration schemas for vcpkg manifest files not correctly supporting ports with wildcards (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1429">Microsoft/vcpkg-tool#1429</a>).</li>
+<li>Fixed filesystem registry schema not including a <code>"baseline"</code> property (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1463">Microsoft/vcpkg-tool#1463</a>).</li>
+</ul>
+</li>
+</ul>
+<h1>Documentation changes</h1>
+<ul>
+<li>Updated the <a href="https://learn.microsoft.com/vcpkg/contributing/maintainer-guide">vcpkg Maintainer Guide</a> to elaborate on port naming guidelines and add a guideline about downloading patch files (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/371">Microsoft/vcpkg-docs#371</a>).</li>
+<li>Added <a href="https://learn.microsoft.com/vcpkg/maintainers/functions/vcpkg_msbuild_install">vcpkg_msbuild_install maintainer function</a> to Table of Contents (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/378">Microsoft/vcpkg-docs#378</a>, thanks @HNegus!).</li>
+<li>Added articles for using vcpkg to target <a href="https://learn.microsoft.com/vcpkg/users/platforms/windows">Windows with MSVC</a> and <a href="https://learn.microsoft.com/vcpkg/users/platforms/uwp">Universal Windows Platform</a> (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/77">Microsoft/vcpkg-docs#77</a>, thanks @walbourn!).</li>
+<li>Documented triplet naming requirements and usage of <code>VCPKG_CXX_FLAGS</code>, along with some additional typo fixes and clarifications (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/384">Microsoft/vcpkg-docs#384</a>, thanks @Thomas1664!).</li>
+<li>Formatting improvements to several deprecation warnings in documentation (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/380">Microsoft/vcpkg-docs#380</a>, thanks @Thomas1664!).</li>
+<li>Other typo, formatting, and bug fixes (thanks @Thomas1664, @HNegus!).</li>
+</ul>
+<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
+<p><img fetchpriority="high" decoding="async" class="wp-image-34591" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1.png" width="683" height="201" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1.png 1508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-768x226.png 768w" sizes="(max-width: 683px) 100vw, 683px" /></p>
+<h1>Total ports available for tested triplets</h1>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>2,337</td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>2,239</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>2,214</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>2,249</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>1,929</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1,293</td>
+</tr>
+<tr>
+<td>arm64-uwp</td>
+<td>1,263</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>2,306</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>2,185</td>
+</tr>
+<tr>
+<td>arm64-osx</td>
+<td>2,105</td>
+</tr>
+<tr>
+<td>arm-neon-android</td>
+<td>1,608</td>
+</tr>
+<tr>
+<td>x64-android</td>
+<td>1,683</td>
+</tr>
+<tr>
+<td>arm64-android</td>
+<td>1,657</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<h1>Thank you to our contributors</h1>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release (listed alphabetically by GitHub username):</p>
+<ul>
+<li>ADKaster</li>
+<li>agl-alexglopez</li>
+<li>autoantwort</li>
+<li>benjamin-hodgson</li>
+<li>BertalanD</li>
+<li>crhowell3</li>
+<li>derekcyruschow-catapult</li>
+<li>Gwaldron</li>
+<li>hermet</li>
+<li>HNegus</li>
+<li>LandryNorris</li>
+<li>matthieugleg</li>
+<li>medns</li>
+<li>mutptr</li>
+<li>Neumann-A</li>
+<li>oboukli</li>
+<li>plekakis</li>
+<li>RobbiE-Envista</li>
+<li>romanpauk</li>
+<li>rudchenkos</li>
+<li>sgoth</li>
+<li>tchaikov</li>
+<li>timkpaine</li>
+<li>Thomas1664</li>
+<li>TomieAi</li>
+<li>trflynn89</li>
+<li>vadi2</li>
+<li>walbourn</li>
+<li>westlicht</li>
+<li>xb284524239</li>
+<li>z4kn4fein</li>
+</ul>
+<h1>Learn more</h1>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.08.23">full 2024.08.23 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-august-2024/">What’s New in vcpkg (August 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-august-2024/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>MSVC Backend Updates in Visual Studio 2022 version 17.11</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-11/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/msvc-backend-updates-in-visual-studio-2022-version-17-11/#respond</comments>
@@ -827,7 +992,7 @@ public:
 <li data-leveltext="" data-font="Symbol" data-listid="33" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">Focuses on the files that are currently open in the editor, streamlining analysis during active development. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
 </ul>
 <p><span data-contrast="none">Background code analysis will automatically run after you open or save the file. The warning for uninitialized memory will be enabled by default, displaying a green squiggle in the editor and appearing in the error list, as demonstrated in the example below.</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png"><img fetchpriority="high" decoding="async" class="aligncenter size-full wp-image-34553" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png" alt="Image displaying background Code Analysis example" width="1395" height="775" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png 1395w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-1024x569.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-768x427.png 768w" sizes="(max-width: 1395px) 100vw, 1395px" /></a></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png"><img decoding="async" class="aligncenter size-full wp-image-34553" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png" alt="Image displaying background Code Analysis example" width="1395" height="775" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis.png 1395w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-300x167.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-1024x569.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/08/background-Code-Analysis-768x427.png 768w" sizes="(max-width: 1395px) 100vw, 1395px" /></a></p>
 <p><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">This feature is enabled by default; </span><span class="NormalTextRun CommentStart SCXW229980447 BCX8">however, you can</span> <span class="NormalTextRun SCXW229980447 BCX8">double check </span><span class="NormalTextRun SCXW229980447 BCX8">the setting by navigating to </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Tools </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Options </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Text Editor </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt;</span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> C/C++</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> &gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Advanced </span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">&gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Code Analysis</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8"> &gt; </span></span><strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">Disable Background Code Analysis</span></span></strong><span class="TextRun SCXW229980447 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW229980447 BCX8">: False.</span></span></p>
 <h3><span class="TrackedChange SCXW135980693 BCX8"><span class="TextRun SCXW135980693 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW135980693 BCX8" data-ccp-parastyle="heading 3">Manually Running Code Analysis</span></span></span><span class="EOP SCXW135980693 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
 <p><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">In addition to background code analysis</span><span class="NormalTextRun SCXW134682869 BCX8">,</span><span class="NormalTextRun SCXW134682869 BCX8"> you can also </span><span class="NormalTextRun CommentStart SCXW134682869 BCX8">manually run code analysis</span> <span class="NormalTextRun SCXW134682869 BCX8">as </span><span class="NormalTextRun SCXW134682869 BCX8">needed. </span><span class="NormalTextRun SCXW134682869 BCX8">You can start by </span><span class="NormalTextRun CommentStart SCXW134682869 BCX8">clearing</span><span class="NormalTextRun SCXW134682869 BCX8"> all warnings in the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">current file</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"> <span class="NormalTextRun SCXW134682869 BCX8">you’re</span><span class="NormalTextRun SCXW134682869 BCX8"> working on, then invoke Code Analysis for the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">current project</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">. Periodically, run Code Analysis for the </span></span><strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8">entire solution</span></span></strong><span class="TextRun SCXW134682869 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW134682869 BCX8"> to </span><span class="NormalTextRun SCXW134682869 BCX8">maintain</span><span class="NormalTextRun SCXW134682869 BCX8"> overall code quality</span><span class="NormalTextRun SCXW134682869 BCX8">.</span> <span class="NormalTextRun SCXW134682869 BCX8">You can also manually run code analysis for individual files.</span> <span class="NormalTextRun SCXW134682869 BCX8">There are several ways to manually run a code analysis. Following any of these steps will display the ‘Using uninitialized memory’ warning in the error list window for our example.</span></span><span class="EOP SCXW134682869 BCX8" data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:180,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
@@ -1391,152 +1556,6 @@ public:
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/improving-github-copilot-completions-in-vs-code-for-c-developers/feed/</wfw:commentRss>
 			<slash:comments>4</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>What&#8217;s New in vcpkg (June 2024)</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2024/</link>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Thu, 27 Jun 2024 00:35:53 +0000</pubDate>
-				<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34374</guid>
-
-					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2024.06.15 release, 2024-06-10 tool release, as well as changes to vcpkg documentation throughout June. This month’s release includes some error message improvements and bug fixes. Some stats for this period: There are now 2,441 total ports available in the vcpkg public [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2024/">What&#8217;s New in vcpkg (June 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.06.15">2024.06.15 release</a>, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2024-06-10">2024-06-10 tool release</a>, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout June. This month’s release includes some error message improvements and bug fixes.</p>
-<p>Some stats for this period:</p>
-<ul>
-<li>There are now <strong>2,441 total ports </strong>available in the vcpkg public registry. A <a href="https://learn.microsoft.com/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
-<li><strong>9 new ports</strong> were added to the open-source registry.</li>
-<li><strong>442 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 13 main <a href="https://learn.microsoft.com/vcpkg/concepts/triplets">triplets</a>.</li>
-<li><strong>26 contributors</strong> submitted PRs, issues, or participated in discussions in the main repo.</li>
-<li>The main vcpkg repo has over <strong>6,100 forks</strong> and <strong>22,000 stars</strong> on GitHub.</li>
-</ul>
-<p>&nbsp;</p>
-<h3>vcpkg changelog (2024.06.15 release)</h3>
-<p>The following meaningful changes were made in this release:</p>
-<ul>
-<li>Fixed version export in SPDX module (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1400">Microsoft/vcpkg-tool#1400</a>, thanks @xvitaly!).</li>
-<li>Added missing <code>--keep-going</code> switch to <code>x-set-installed</code> (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1407">Microsoft/vcpkg-tool#1407</a>, thanks @Neumann-A!).</li>
-<li>Fixed misleading/incorrect error message triggering on an AWS S3 binary cache miss (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1404">Microsoft/vcpkg-tool#1404</a>, thanks @petamas!).</li>
-<li>All post-build checks now have skip policies. Also made some error messages more consistent in format, improved their output, and removed some duplicate messages (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1405">Microsoft/vcpkg-tool#1405</a>).</li>
-</ul>
-<p>&nbsp;</p>
-<h3>Documentation changes</h3>
-<ul>
-<li>Made references to the vcpkg curated registry more consistent throughout the docs. The curated registry is the main registry that ships with vcpkg and consists of 2400+ open-source ports (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/333">Microsoft/vcpkg-docs#333</a>).</li>
-<li>Added clarification about why ports in the curated registry need to work simultaneously in the <a href="https://learn.microsoft.com/vcpkg/contributing/maintainer-guide">Maintainer guide</a> (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/332">Microsoft/vcpkg-docs#332</a>).</li>
-<li>Added mentions of IDEs/editors that officially support vcpkg in the <a href="https://learn.microsoft.com/vcpkg/concepts/build-system-integration">Build system integration</a> article (thanks @UnixY2K for providing the initial PR <a href="https://github.com/microsoft/vcpkg-docs/pull/325">Microsoft/vcpkg-docs#325</a> for this effort!).</li>
-<li>Added some recommended packages for pacman-based Linux distros (Article: <a href="https://learn.microsoft.com/vcpkg/concepts/supported-hosts">Supported hosts</a>; PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/326">Microsoft/vcpkg-docs#326</a>, thanks @UnixY2K!).</li>
-<li>Added some clarifications for binary caching ABI hashing (Article: <a href="https://learn.microsoft.com/vcpkg/reference/binarycaching">Binary caching reference</a>; PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/330">Microsoft/vcpkg-docs#330</a>, thanks @Thomas1664!)</li>
-<li>Removed some duplicate deprecation notices about CONTROL files in certain articles.</li>
-<li>Fixed some typos (thanks @Thomas1664, @c8ef, and @pzychotic!).</li>
-</ul>
-<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img decoding="async" class="wp-image-34376" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/word-image-34374-1.png" width="672" height="198" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/word-image-34374-1.png 1508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/word-image-34374-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/word-image-34374-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/06/word-image-34374-1-768x226.png 768w" sizes="(max-width: 672px) 100vw, 672px" /></p>
-<p>&nbsp;</p>
-<h3>Total ports available for tested triplets</h3>
-<table>
-<tbody>
-<tr>
-<td><strong>triplet</strong></td>
-<td><strong>ports available</strong></td>
-</tr>
-<tr>
-<td>x64-windows</td>
-<td>2,306</td>
-</tr>
-<tr>
-<td>x86-windows</td>
-<td>2,215</td>
-</tr>
-<tr>
-<td>x64-windows-static</td>
-<td>2,190</td>
-</tr>
-<tr>
-<td>x64-windows-static-md</td>
-<td>2,223</td>
-</tr>
-<tr>
-<td>arm64-windows</td>
-<td>1,873</td>
-</tr>
-<tr>
-<td>x64-uwp</td>
-<td>1,274</td>
-</tr>
-<tr>
-<td>arm64-uwp</td>
-<td>1,240</td>
-</tr>
-<tr>
-<td>x64-linux</td>
-<td>2,273</td>
-</tr>
-<tr>
-<td>x64-osx</td>
-<td>2,155</td>
-</tr>
-<tr>
-<td>arm64-osx</td>
-<td>2,074</td>
-</tr>
-<tr>
-<td>arm-neon-android</td>
-<td>1,578</td>
-</tr>
-<tr>
-<td>x64-android</td>
-<td>1,651</td>
-</tr>
-<tr>
-<td>arm64-android</td>
-<td>1,625</td>
-</tr>
-</tbody>
-</table>
-<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<p>&nbsp;</p>
-<h3>Thank you to our contributors</h3>
-<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release:</p>
-<ul>
-<li>dg0yt (35 commits)</li>
-<li>Neumann-A (8 commits)</li>
-<li>RT2Code (5 commits)</li>
-<li>AenBleidd (4 commits)</li>
-<li>Thomas1664 (4 commits)</li>
-<li>xiaozhuai (3 commits)</li>
-<li>MehdiChinoune (2 commits)</li>
-<li>UnixY2K (2 commits)</li>
-<li>kafeg (1 commit)</li>
-<li>omarhogni (1 commit)</li>
-<li>alagoutte (1 commit)</li>
-<li>miyanyan (1 commit)</li>
-<li>danielaparker (1 commit)</li>
-<li>an-tao (1 commit)</li>
-<li>yurybura (1 commit)</li>
-<li>talregev (1 commit)</li>
-<li>Osyotr (1 commit)</li>
-<li>traversaro (1 commit)</li>
-<li>chausner (1 commit)</li>
-<li>c8ef (1 commit)</li>
-<li>pzychotic (1 commit)</li>
-<li>xvitaly (1 commit)</li>
-<li>autoantwort (1 commit)</li>
-</ul>
-<p>&nbsp;</p>
-<h3>Learn more</h3>
-<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.06.15">full 2024.06.15 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io/en/index.html">vcpkg website – vcpkg.io</a>.</p>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2024/">What&#8217;s New in vcpkg (June 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
