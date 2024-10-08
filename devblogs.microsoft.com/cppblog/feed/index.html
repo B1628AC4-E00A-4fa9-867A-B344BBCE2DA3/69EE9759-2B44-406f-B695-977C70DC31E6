@@ -351,9 +351,9 @@
 										<content:encoded><![CDATA[<p><a href="https://learn.microsoft.com/vcpkg/get_started/overview">vcpkg is a free and open-source C/C++ package manager</a> maintained by Microsoft and the C++ community that runs on Windows, macOS, and Linux. Over the years we have heard from companies using vcpkg to manage dependencies at enterprise-scale. In this interview, I spoke to Dimitri Rochette, a lead developer at Askia, an Ipsos company, about vcpkg’s impact on their team.</p>
 <p><img decoding="async" class="wp-image-34603" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen.png" alt="A logo of a company Description automatically generated" width="564" height="167" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen.png 1586w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen-300x89.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen-1024x303.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen-768x228.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/a-logo-of-a-company-description-automatically-gen-1536x455.png 1536w" sizes="(max-width: 564px) 100vw, 564px" /></p>
 <p>After switching to vcpkg and CMake, Askia was able to <strong>reduce build times</strong> for their dependencies by using the vcpkg binary caching feature and <strong>reduce their code size by about 300,000 lines </strong>by eliminating project files, scripts, and copied dependencies. Switching to vcpkg also allowed them to ensure <strong>consistent and reproducible builds</strong> across multiple platforms, access a <strong>vast array of libraries</strong>, <strong>streamline their onboarding process</strong> as their development team grew, and <strong>standardize the use of microservices</strong> in a multi-repository environment.</p>
-<h1>Q: Can you tell us about your company and team?</h1>
+<h2>Q: Can you tell us about your company and team?</h2>
 <p>Askia, a software company with two decades of experience, specializes in the development of tools for survey creation, response collection, and data analysis. In 2020, Ipsos, a global leader in market research, acquired Askia with the aim of collaboratively developing a platform that aligns with their ambitious goals. At the time of acquisition, Askia was a team of 30. However, with substantial investment from Ipsos, the team expanded rapidly to 90 members within just two years.</p>
-<h1>Q: Can you tell us about your C++ development environment?</h1>
+<h2>Q: Can you tell us about your C++ development environment?</h2>
 <p>All our teams utilize the latest Visual Studio 2022. For C++ development, we employ two compilers: MSVC and GCC13. Our projects are all built with CMake and vcpkg. We’ve also implemented additional setup scripts in PowerShell 7 (PWSH) to ensure portability between Windows and Linux. These scripts handle the setup of developer and CI machines, GitHub tokens, NuGet caching, the initial cloning of vcpkg, and database creation for clusters or unit tests. We’re quite satisfied with CMake, despite the initial setup being challenging. The integration with Visual Studio continues to improve, and maintaining a single project for two platforms has been a significant advantage.</p>
 <p>Within our project scope, the majority of our code is written in C++. We initially started with C++17 and have now transitioned to C++23. We strive to stay updated with the latest stable compilers for MSVC and GCC. Occasionally, we face challenges waiting for implementations to be available on both compilers. C++ code is on our critical path, and we aim to minimize latency as much as possible. We also have numerous services in C#.Net8, which is the most commonly used language company wise. We have a significant amount of T-SQL code as we heavily rely on SQL Server for our C++ services. For the frontend, we took a chance on Svelte before its 1.0 release, and we are extremely satisfied with the outcome today.</p>
 <p>Our development environment is based on Windows, while our production target is Ubuntu 22.04, housed within Docker containers. Despite this, all our code is compatible with Windows and is compiled using MSVC. This allows us to exchange services between both platforms.</p>
@@ -373,11 +373,11 @@
 <p>We utilize the same images for both developers and CI, leveraging <a href="https://learn.microsoft.com/vcpkg/users/binarycaching"><strong>vcpkg binary caching</strong></a> (with GitHub serving as a NuGet server). This means that each build by a developer or CI either downloads or builds and uploads the result to the shared cache. We have <strong>274 packages</strong>, with the main ones being <strong>downloaded 300 times per month</strong>. The ability to save even a single compilation of packages like OpenSSL or Python is greatly appreciated by the team and reduces our CI build times and costs.</p>
 <p>Our current codebase is relatively compact, comprising approximately 40,000 lines of C++ code, which are divided across various repositories for services and components. Our legacy codebase is significantly larger, containing more than 2 million lines of C++ code. <strong>The introduction of CMake and vcpkg to our main repository resulted in a reduction of about 10% (or 300,000 lines)</strong>, which included project files, scripts, and copied dependencies.</p>
 <p>We utilize GitHub as our continuous integration system. Given that we have scripts to configure developer tools and machines, as well as standard Docker images, we leverage these in our CI environment. The same image used by developers for their work is also used in GitHub CI. Additionally, on GitHub, we employ the other layers of our Docker container for building our release version and executing unit tests.</p>
-<h1>Q: What kinds of C++ libraries do you consume?</h1>
+<h2>Q: What kinds of C++ libraries do you consume?</h2>
 <p>For first-party private/internal libraries, we have established a vcpkg registry with our shared library. Those packages are allowed to use any other library provided by vcpkg. This includes a wrapper for asynchronous messaging (librabbitmq), a wrapper for logging (spdlog), a configuration file with an override system (nlohmann-json), our HTTP server (boost-beast), plugins for our HTTP server (boost asio, curl, fmt), a JWT token checker (jwt-cpp, cppcodec, OpenSSL), and Python scripts (boost-python, python3). The most crucial package for us is our CMake scripts, which define all output folders, all parameters per platform (compiler, C++ version, debug/release, Windows SDK, UNICODE, _UNICODE, NOMINMAX, etc.), our CMake function for tagging versions with git hash and version files, branch name, scripts to create zip or NuGet as output of build, and scripts to copy dependency DLLs.</p>
 <p>As for open-source dependencies, we directly utilize boost, fmt, gtest, magic-enum, nanodbc, nlohmann-json, spdlog, pybind11, librabbitmq, openssl, and libcurl.</p>
 <p>We also have a significant amount of MFC and some third-party controls in our legacy codebase. In our new codebase, LaunchDarkly is used by C# projects, so it may be used in C++ in the future.</p>
-<h1>Q: How were you managing C++ dependencies before vcpkg?</h1>
+<h2>Q: How were you managing C++ dependencies before vcpkg?</h2>
 <p>In our legacy stack, which is based on the Windows GUI in MFC, we had a variety of methods for managing dependencies. These included:</p>
 <ul>
 <li>Including them as source</li>
@@ -386,7 +386,7 @@
 <li>Including them as pre-compiled binaries</li>
 </ul>
 <p>The system was functional, but it was challenging to keep track of what was used and in which version. The ABI break before 2015 served as a useful reminder to consider upgrading our NuGet packages. Our initial inventory of repository candidates for the CMake/vcpkg migration took some time, but all the standard ones were relatively easy to identify.</p>
-<h1>Q: When did your team move to vcpkg and why did you ultimately choose it?</h1>
+<h2>Q: When did your team move to vcpkg and why did you ultimately choose it?</h2>
 <p>I had previously used vcpkg at another company to develop a Windows/Linux Qt tool. The use of CMake/vcpkg was a lifesaver, eliminating the need to manage both Visual Studio and Xcode projects. When I joined the company in 2019, I found the build process to be quite cumbersome. We were heavily reliant on Jenkins, with numerous scripts and file copies pre/post-build. Many projects required relative builds of other projects. My first proof of concept was converting some projects to CMake, which involved converting NuGet dependencies to vcpkg. The integration of cmakeconfig.json into Visual Studio 2019 facilitated user acceptance. We maintained both sln + CMake in the repository for about a year in case we encountered any issues.</p>
 <p>The acquisition by Ipsos brought significant changes. The need for scalability necessitated major modifications. We had to develop new microservices, and as the team became more familiar with the advantages of CMake/vcpkg, we made vcpkg mandatory for all new projects. The primary goal at this stage was to expedite the onboarding of new developers. We aimed to minimize the steps required to launch and debug a unit test as much as possible. We have iteratively improved this process, and today, the steps take less than half a day.</p>
 <p>The steps include:</p>
@@ -398,9 +398,9 @@
 </ol>
 <p>With these steps, all our C++ projects could be cloned, compiled, and debugged in unit tests. If you install Docker and create the reference image, you can target both Windows and Linux.</p>
 <p>So, yes, <strong>vcpkg has been instrumental in our onboarding process</strong>. We have tripled the team size in a few years. Standardizing the tools helps developers working on one repository to easily transition to another.</p>
-<h1>Q: What is your overall impression of vcpkg?</h1>
+<h2>Q: What is your overall impression of vcpkg?</h2>
 <p><strong>vcpkg has been a game-changer in my 25 years of working with C++.</strong> It has revolutionized the way we manage dependencies by ensuring <strong>consistent and reproducible builds</strong> across multiple platforms. With a <strong>vast array of libraries at our disposal</strong>, we have the flexibility to create or extend libraries as needed. The <strong>caching feature significantly speeds up our build process</strong>. Moreover, vcpkg has <strong>streamlined our onboarding process</strong> and standardized the use of microservices in a multi-repository environment.</p>
-<h1>Learn More About vcpkg</h1>
+<h2>Learn More About vcpkg</h2>
 <p>If you want to learn more about vcpkg, check out <a href="https://vcpkg.io/en/">our website at vcpkg.io</a> and read the <a href="https://learn.microsoft.com/vcpkg/get_started/overview">vcpkg overview</a> in our documentation.</p>
 <p>If you have a story you would like to share with us about your experiences with vcpkg, feel free to contact us at <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a>. You can submit bug reports in our <a href="https://github.com/microsoft/vcpkg/issues">GitHub issue tracker</a> or <a href="https://github.com/microsoft/vcpkg/discussions/new?category=ideas">make feature requests</a> in our discussion forum.</p>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/askia-an-ipsos-company-achieved-faster-reproducible-builds-with-vcpkg/">Askia, an Ipsos company, achieved faster, reproducible builds with vcpkg</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
@@ -441,7 +441,7 @@
 <li>The main vcpkg repo has over <strong>6,300 forks</strong> and <strong>22,700 stars</strong> on GitHub.</li>
 </ul>
 <p>Lastly, it’s CppCon season, and I am giving a talk on <a href="https://cppcon2024.sched.com/event/1gZgU/10-problems-large-companies-have-with-managing-c-dependencies-and-how-to-solve-them">10 Problems Large Companies Have with Managing C++ Dependencies and How to Solve Them</a> on Tuesday, September 17, 2024, from 16:45-17:45 MDT. If you are coming to the conference, check it out! If you are unable to make it, the talk should go up on YouTube sometime after the event.</p>
-<h1>vcpkg changelog (2024.08.23 release)</h1>
+<h2>vcpkg changelog (2024.08.23 release)</h2>
 <p>The following notable changes were made in this release:</p>
 <ul>
 <li>The shell function used to run vcpkg artifacts commands has been renamed from vcpkg to vcpkg-shell. This addresses some issues when running vcpkg from a Visual Studio Developer Command Prompt. If you are an artifacts user, you will need to update your commands. For example: vcpkg activate should be changed to vcpkg-shell activate. Note: most vcpkg commands do not use the shell script, and you should still be able to run them as before (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1442">Microsoft/vcpkg-tool#1442</a>).</li>
@@ -456,7 +456,7 @@
 </ul>
 </li>
 </ul>
-<h1>Documentation changes</h1>
+<h2>Documentation changes</h2>
 <ul>
 <li>Updated the <a href="https://learn.microsoft.com/vcpkg/contributing/maintainer-guide">vcpkg Maintainer Guide</a> to elaborate on port naming guidelines and add a guideline about downloading patch files (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/371">Microsoft/vcpkg-docs#371</a>).</li>
 <li>Added <a href="https://learn.microsoft.com/vcpkg/maintainers/functions/vcpkg_msbuild_install">vcpkg_msbuild_install maintainer function</a> to Table of Contents (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/378">Microsoft/vcpkg-docs#378</a>, thanks @HNegus!).</li>
@@ -467,7 +467,7 @@
 </ul>
 <p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
 <p><img decoding="async" class="wp-image-34591" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1.png" width="683" height="201" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1.png 1508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/word-image-34589-1-768x226.png 768w" sizes="(max-width: 683px) 100vw, 683px" /></p>
-<h1>Total ports available for tested triplets</h1>
+<h2>Total ports available for tested triplets</h2>
 <table>
 <tbody>
 <tr>
@@ -529,7 +529,7 @@
 </tbody>
 </table>
 <p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<h1>Thank you to our contributors</h1>
+<h2>Thank you to our contributors</h2>
 <p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release (listed alphabetically by GitHub username):</p>
 <ul>
 <li>ADKaster</li>
@@ -564,7 +564,7 @@
 <li>xb284524239</li>
 <li>z4kn4fein</li>
 </ul>
-<h1>Learn more</h1>
+<h2>Learn more</h2>
 <p>You can find the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.08.23">full 2024.08.23 release notes on GitHub</a> for the main repo. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
 <p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
 <p>&nbsp;</p>
