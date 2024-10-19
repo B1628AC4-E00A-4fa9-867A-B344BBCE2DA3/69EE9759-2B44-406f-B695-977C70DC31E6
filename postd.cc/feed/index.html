@@ -1,4 +1,217 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Fri, 27 Sep 2024 01:08:19 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[React Compilerについて理解する]]></title><description><![CDATA[Reactのコアアーキテクチャは、与えられた関数（すなわちコンポーネント）を繰り返し呼び出します。この仕組みはReactのメンタルモデルを単純化し、その人気に一役を買いましたが、同時にパフォーマンス…]]></description><link>https://postd.cc/understanding-react-compiler/</link><guid isPermaLink="false">https://postd.cc/understanding-react-compiler/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Fri, 27 Sep 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>Reactのコアアーキテクチャは、与えられた関数（すなわちコンポーネント）を繰り返し呼び出します。この仕組みはReactのメンタルモデルを単純化し、その人気に一役を買いましたが、同時にパフォーマンスの問題が生じる原因にもなりました。関数のパフォーマンスコストが高いと、アプリの動作は総じて遅くなります。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Sat, 19 Oct 2024 09:22:50 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[ReactコードをCSSの:hasセレクタで置き換える]]></title><description><![CDATA[CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。  大昔、とは言ってもCSSが出てきた当初の話ですが、CSSはカスケードする仕…]]></description><link>https://postd.cc/replacing-react-with-css/</link><guid isPermaLink="false">https://postd.cc/replacing-react-with-css/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><category><![CDATA[CSS]]></category><pubDate>Sat, 19 Oct 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。</p>
+<p><img src="https://www.developerway.com/_next/image?url=%2Fassets%2Freplacing-react-with-css%2Fwelcome.png&#x26;w=1080&#x26;q=75"></p>
+<p>大昔、とは言ってもCSSが出てきた当初の話ですが、CSSはカスケードする仕組みになっていると教えられていました。それは、Cascading Style Sheetsという名前からも分かります。CSSでは、入れ子のように要素の中の要素を指定し、さらにその中に含まれる要素を指定していくことができます。しかし、その逆はできません。したがって、子要素が親要素にスタイルを適用するには、JavaScriptを使うしかありませんでした。</p>
+<p>今までは。</p>
+<p><a href="https://caniuse.com/css-has">すべての主要ブラウザ</a>がCSSの<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:has">:hasセレクタ</a>に対応したことで、親要素を指定できるようになりました。それだけではありません。これは世界が一変したと言えるほどの出来事です。筆者のように、要素の角を丸くするために透過GIFを使用していた時代からウェブ開発を行っている読者の方は、これによって広がる可能性に圧倒されるでしょう。</p>
+<p>これを使ってぜひ色々と遊んでみていただきたいと思いますが、Reactの世界では実際にどのような実用的用途があるのでしょうか。ここでは特に注目すべき用途を3つ紹介したいと思います。</p>
+<h2>:hasセレクタとは？</h2>
+<p>従来のCSSでは、以下のようなことができます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">.content .card</span> <span class="token punctuation">{</span>
+  <span class="token property">background</span><span class="token punctuation">:</span> #f0f0f0<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token selector">.content img</span> <span class="token punctuation">{</span>
+  <span class="token property">margin</span><span class="token punctuation">:</span> 1rem 0<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これにより、<code class="language-text">.content</code>要素に含まれる<code class="language-text">.card</code>要素の背景が薄いグレーに変わり、中の画像に余白が追加されます。そうすることで、画像とテキストが視覚的に区別されます。</p>
+<p>また、隣の兄弟を<code class="language-text">+</code>または<code class="language-text">~</code>結合子で指定することができます。例えば、上記の画像が<code class="language-text">.card</code>要素のすぐ後にくる場合、より見やすくするために余白をさらに追加するとよいでしょう。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// images that immediately follow a card element
+// will have bigger margins than other images
+.content .card + img</span> <span class="token punctuation">{</span>
+  <span class="token property">margin</span><span class="token punctuation">:</span> 2rem 0<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><a href="https://codesandbox.io/p/sandbox/xf6gsw?file=%2Fsrc%2Findex.tsx%3A6%2C30">コード例はこちらをご覧ください。</a></p>
+<p>しかし、最近まで「逆」方向に要素を指定することができませんでした。例えば、すぐ後に画像が続く<code class="language-text">.card</code>要素の背景を変えたい場合、JavaScriptを使うしか方法がありませんでした。同様に、中に画像が含まれる場合に<code class="language-text">.card</code>要素のスタイルを変えることもできませんでした。</p>
+<p>新しい<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:has">CSSセレクタ</a><code class="language-text">:has</code>は、この問題を解決します。</p>
+<p>例えば、中に画像が含まれる<code class="language-text">.card</code>要素にはピンク色の枠を使用し、それ以外の<code class="language-text">.card</code>要素にはグレーの枠を使用するといったことも簡単にできます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// all the cards will have grey top borders
+.card</span> <span class="token punctuation">{</span>
+  <span class="token property">border-top</span><span class="token punctuation">:</span> 10px solid #f6f7f6<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token selector">// cards with images inside will have pink borders
+.card:has(img)</span> <span class="token punctuation">{</span>
+  <span class="token property">border-top</span><span class="token punctuation">:</span> 10px solid #fee6ec<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">:has</code>セレクタを他のセレクタと組み合わせて使用することもできます。すぐ後に画像が続くカードには青い枠を付けてみましょう。その場合は<code class="language-text">+</code>結合子で条件を追加します。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// if a card has an image as a next element - give it a blue border
+.card:has(+ img)</span> <span class="token punctuation">{</span>
+  <span class="token property">border-top</span><span class="token punctuation">:</span> 10px solid #c4f4ff<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>もっと複雑なコードを書くこともできます。h3タグを含まず、<code class="language-text">img</code>タグを含み、別の<code class="language-text">.card</code>要素がすぐ後に続き、それより後に<code class="language-text">img</code>タグがある<code class="language-text">.card</code>要素の背景を、複数の画像を含むカードが後に続く場合に限り緑色にしてみましょう。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css">// have fun reading that <span class="token selector">;)
+.card:not(:has(h3)):has(img):has(+ .card):has(~ img):has(~ .card):has(> img:nth-child(1))</span> <span class="token punctuation">{</span>
+  <span class="token property">background-color</span><span class="token punctuation">:</span> #c3dcd0<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>以下が実装例になります。</p>
+<iframe src="https://codesandbox.io/embed/tmh8wk?codemirror=1&amp;hidedevtools=0&amp;view=preview" style="width:100%;height:500px;border:0;border-radius:4px" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"></iframe>
+<p>しかし、Reactアプリでこのようなことがしたいでしょうか。こうしたスタイルは、子セレクタと同様に要素の境界が曖昧になりがちです。ここ10年くらい、そうならないようにするための方法を色々と工夫して編み出してきたのではなかったでしょうか。BEM、SASS、CSS-in-JS、CSSモジュールなどなど。スタイルの適用範囲を意図した要素にのみ限定するために、私たちはあらゆる手段を講じます。</p>
+<p>では、突如その流れに逆行し、あらゆるベストプラクティスと逆のことをする理由はどこにあるのでしょうか。もちろん、Reactでは数年置きにそうした傾向が見られるのはありますが😅</p>
+<p>答えは、複雑なReactコードを不要にするためです。最高のReactコードは、Reactコードを一切使わないことである場合もあるのです。先ほどは極めて複雑なセレクタの例をお見せしましたが（まね 真似することはお勧めしません）、ReactをCSSに置き換えることでロジックを単純化することができ、若干パフォーマンスを改善できる場合もあります。</p>
+<p>ではいくつか実例を見てみましょう。</p>
+<h2>:hasセレクタと要素のフォーカス状態</h2>
+<p>タスクボードを実装したいとします。ボード上には多数のカードがあり、各カードにはそれぞれ「開く」と「削除」の2つのボタンがあります。「開く」ボタンをクリックすると、カードの内容がすべてモーダル上に開きます。「削除」をクリックするとカードが削除されます。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example1-cards.png"></p>
+<p>このカードのコードは非常にシンプルです。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>card<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+  Some text here
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>buttons<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Open</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Delete</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Tabキーを使ってボタンに移動するなど、キーボードで操作可能にしたいと思います。さらに、キーボードユーザーの利便性を改善するため、どのボタンが選択されているかが分かるようにしたいと思います。ユーザーがTabキーを使っていずれかのボタンに移動したら、カードが少し「飛び出す」ようにし、同じ列の他のカードはグレーアウトさせます。さらに、アクティブ状態のカードの枠の色を変え、現在アクティブな操作が分かるようにしたいと思います。「削除」ボタンには赤、「開く」ボタンには緑を使用します。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example1-5-cards-highlighted.png"></p>
+<p>Reactでこの機能を実装するには、focusイベントリスナーを追加し、現在アクティブなボタンを検知し、カード自体のclassNamesを変更できるようstateを維持し、他のカードも変更できるようそのstateをどうにかして親と共有する必要があります。そのためには、Contextなどの状態管理ソリューションを導入する必要があるでしょう。気が付けば、すべてのタブのすべてのカードを再レンダリングする本格的なフォーカスマネージャーを実装しなくてはならなくなっているでしょう。実際にこのような凝ったインタラクションを見かけないのも無理はありません。せいぜいボタンの輪郭線に一貫性をもたせることぐらいしか望めないでしょう。</p>
+<p>しかし、<code class="language-text">:has</code>セレクタを使えば今述べたようなことも比較的簡単に実装できます。</p>
+<p>ステップ1。<code class="language-text">className</code>に頼らなくても<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors">選択できる</a>よう、<code class="language-text">data-</code>属性をボタンに割り当てます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// add data-action attributes to the buttons</span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">data-action</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>open<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Open</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">data-action</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>delete<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Delete</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ステップ2。フォーカスされた「削除」ボタンを含むカードを見つけ、CSSを変えます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// make the card "pop" and change its border colors
+// if the "delete" button inside the card is focused
+.card:has([data-action='delete']:focus-visible)</span> <span class="token punctuation">{</span>
+  <span class="token property">border-top</span><span class="token punctuation">:</span> 10px solid #f7bccb<span class="token punctuation">;</span>
+  <span class="token property">box-shadow</span><span class="token punctuation">:</span> 0 0 0 2px #f7bccb<span class="token punctuation">;</span>
+  <span class="token property">transform</span><span class="token punctuation">:</span> <span class="token function">scale</span><span class="token punctuation">(</span>1.02<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ステップ3。フォーカスされた「開く」ボタンを含むカードを見つけ、CSSを変えます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// make the card "pop" and change its border colors
+// if the "open" button inside the card is focused
+.card:has([data-action='open']:focus-visible)</span> <span class="token punctuation">{</span>
+  <span class="token property">transform</span><span class="token punctuation">:</span> <span class="token function">scale</span><span class="token punctuation">(</span>1.02<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token property">border-top</span><span class="token punctuation">:</span> 10px solid #c3dccf<span class="token punctuation">;</span>
+  <span class="token property">box-shadow</span><span class="token punctuation">:</span> 0 0 0 2px #c3dccf<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ステップ4。これが一番難しい処理になります。フォーカスされた「開く」または「削除」ボタンを含むカードの「前後」のカードをすべて見つけ、グレーアウトする必要があります。魔法の種明かしはこちらです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">// all cards after the card with focused "open" button
+.card:has([data-action='open']:focus-visible) ~ .card,
+
+// all cards after the card with focused "delete" button
+.card:has([data-action='delete']:focus-visible) ~ .card,
+
+// all cards before the card with focused "open" button
+.card:has(~ .card [data-action='open']:focus-visible),
+
+// all cards before the card with focused "delete" button
+.card:has(~ .card [data-action='delete']:focus-visible)</span> <span class="token punctuation">{</span>
+  <span class="token property">filter</span><span class="token punctuation">:</span> <span class="token function">greyscale</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token property">background-color</span><span class="token punctuation">:</span> #f6f7f6<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>JavaScriptもReactの再レンダリングも一切必要としない、どのボードよりも美しいキーボード操作を実現できました。以下の実例を触ってみてください。</p>
+<p>in all the boards ever with zero JavaScript and zero React re-renders! A live example is below to play around with.</p></p>
+<iframe src="https://codesandbox.io/embed/rdqj6x?codemirror=1&amp;hidedevtools=0&amp;view=preview" style="width:100%;height:500px;border:0;border-radius:4px" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"></iframe>
+<p>:hasセレクタとカテゴリ分け</p>
+<p>もう一つ、<code class="language-text">:has</code>セレクタのユースケースとして筆者がシンプルで秀逸だと思うのが、データに基づいて要素を色分けできる点です。</p>
+<p>例えば、ショップで販売している商品を記載した表を実装してみましょう。これらの商品は、特定のカテゴリに分類されます。オンラインショップで事務用品、衣類、馬を販売しているとしましょう。表にはいくつかの列があり、最もシンプルな形にまとめたものが以下になります。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example2-table.png"></p>
+<p>これをコードにすると、以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token operator">...</span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">Socks</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">Created by...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">Inventory full</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>category<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      clothes
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">></span></span>
+<span class="token operator">...</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>では、表の左側境界線にカテゴリを示す色を付けることで、各行のカテゴリを色分けしたいと思います。また、在庫切れの商品については、行の背景を赤く色付けすることで目立たせたいと思います。これを実装したものが以下になります。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example3-table-colors.png"></p>
+<p>Reactでは、propsを使用し、カテゴリや在庫に関する情報を少なくとも<code class="language-text">row</code>タグ、あるいは最初のセルに渡す必要があります。さらに、バリエーションごとにクラス名や、場合によっては内部コンポーネントを作成する必要があります。この例では、こうした複雑な処理は一切不要です。</p>
+<p>では、一連の流れを見てみましょう。</p>
+<p>ステップ1。情報を格納した<code class="language-text">data-</code>属性を、すでにその情報を持っているセルに追加します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">Socks</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">Created by...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  &lt;!-- add data-inventory attribute here -->
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">data-inventory</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>full<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">Inventory full</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+    &lt;!-- add data-category attribute here -->
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>category<span class="token punctuation">"</span></span> <span class="token attr-name">data-category</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>clothes<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      clothes
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ステップ2。<code class="language-text">:has</code>を使用し、必要なカテゴリを色分けします。</p>
+<p><code class="language-text">data-category</code>を持つ要素を含む行の最初のセルに、カテゴリによって異なる色の境界線を追加します。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">.table tr:has([data-category='clothes']) td:first-child</span> <span class="token punctuation">{</span>
+  <span class="token property">border-left</span><span class="token punctuation">:</span> 6px solid #f7bccb<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token selector">.table tr:has([data-category='office']) td:first-child</span> <span class="token punctuation">{</span>
+  <span class="token property">border-left</span><span class="token punctuation">:</span> 6px solid #f4d592<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token selector">.table tr:has([data-category='animals']) td:first-child</span> <span class="token punctuation">{</span>
+  <span class="token property">border-left</span><span class="token punctuation">:</span> 6px solid #c4f4ff<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">data-inventory</code>の値が<code class="language-text">empty</code>の要素を含む行には、赤色の背景を追加します。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">.table tr:has([data-inventory='empty'])</span> <span class="token punctuation">{</span>
+  <span class="token property">background</span><span class="token punctuation">:</span> #f6d0ce<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>美しく色分けされた表の出来上がりです。この表で特に素晴らしいのが、動的な状態にあり頻繁に更新される属性であっても、行全体を再レンダリングして色を更新する必要がない点です。再レンダリングされるのは<code class="language-text">data-</code>属性を含むセルだけです。よりシンプルで洗練されたコードに加え、この点も若干パフォーマンスの向上に寄与する可能性があります。</p>
+<p>以下のインタラクティブな例をご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/z432ww?codemirror=1&amp;hidedevtools=0&amp;view=preview" style="width:100%;height:500px;border:0;border-radius:4px" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"></iframe>
+<h2>:hasセレクタとフォーム</h2>
+<p>次が今回紹介する<code class="language-text">:has</code>セレクタの最後のユースケースです。フォーム要素の状態に応じて要素のスタイリングを行うというものですが、これが大変効果的で筆者も非常に気に入っています。</p>
+<p>例えば、入力を無効にできるフォームにおいて、入力欄のラベル表示や説明も視覚的に「無効」にすることができます。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example4-disabled-input.png"></p>
+<p>このフォームを記述したコードが以下になります。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>form</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>fieldset</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">htmlFor</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-name<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Name<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>name<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-name<span class="token punctuation">"</span></span> <span class="token attr-name">disabled</span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Nadia<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>description<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Just your first name is fine<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>fieldset</span><span class="token punctuation">></span></span>
+
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>fieldset</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>label</span> <span class="token attr-name">htmlFor</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-email<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Email Address<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>label</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>email<span class="token punctuation">"</span></span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>email<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>form-email<span class="token punctuation">"</span></span> <span class="token attr-name">required</span> <span class="token punctuation">/></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>description<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>We don't accept gmail domains!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>fieldset</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>form</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>CSSでは、stateが<code class="language-text">:disabled</code>の入力を含む<code class="language-text">fieldset</code>を指定し、<code class="language-text">label</code>要素と<code class="language-text">.description</code>要素のスタイリングを行います。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">fieldset:has(input:disabled) label,
+fieldset:has(input:disabled) .description</span> <span class="token punctuation">{</span>
+  <span class="token property">color</span><span class="token punctuation">:</span> #d6d6d6<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>もちろん、フォーカスも使用できます。入力がフォーカスされると左側に線が表示されるようにしたい場合、</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example5-focused-input.png"></p>
+<p>次のようにするだけです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token selector">fieldset:has(input:focus-visible)</span> <span class="token punctuation">{</span>
+  <span class="token property">border-left</span><span class="token punctuation">:</span> 10px solid #c4f4ff<span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>もしくは、チェックボックス付きのリストを実装する場合、チェックされた行を強調表示するには通常ならチェックボックスのstateを格納し、<code class="language-text">.active</code>クラスを作成しますが、こうした処理を行うことなく簡単に強調表示することが可能です。</p>
+<p><img src="https://www.developerway.com/assets/replacing-react-with-css/example6-checkboxes.png"></p>
+<p>必要なのはCSSセレクタだけです。</p>
+<p>.list-with-checkboxes li:has(input:checked) {
+background: rgba(196, 244, 255, 0.3);
+}</p>
+<p>こちらのライブプレビューをご覧ください。</p>
+<iframe src="https://codesandbox.io/embed/m3dd7k?codemirror=1&amp;hidedevtools=0&amp;view=preview" style="width:100%;height:500px;border:0;border-radius:4px" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"></iframe>
+<hr>
+<p>素晴らしいと思いませんか？お気に入りの<code class="language-text">:has</code>の使い方がある方は、ぜひコメントで共有してください！</p>
+<p>もちろん、セレクタを使用してReactコードを単純化する方法は他にもたくさんあります。ここに挙げたのは、筆者が特に気に入っているごく一部の例にすぎません。<code class="language-text">:has</code>セレクタについてもっと学び、色んな実例を試してみたい方は、例が豊富で内容的にも良い記事を以下に挙げていますので、ぜひ参照してみてください。</p>
+<ul>
+<li><a href="https://ishadeed.com/article/css-has-parent-selector/">CSS :has Parent Selector</a></li>
+<li><a href="https://www.smashingmagazine.com/2021/06/has-native-css-parent-selector/">Meet :has, A Native CSS Parent Selector (And More) — Smashing Magazine</a></li>
+<li><a href="https://www.smashingmagazine.com/2023/01/level-up-css-skills-has-selector/">Level Up Your CSS Skills With The :has() Selector — Smashing Magazine</a></li>
+<li><a href="https://webkit.org/blog/13096/css-has-pseudo-class/">Using :has() as a CSS Parent Selector and much more</a></li>
+<li><a href="https://www.bram.us/2022/11/17/style-a-parent-element-based-on-its-number-of-children-using-css-has/">Style a parent element based on its number of children using CSS :has()</a></li>
+</ul>
+<p>ここ数年のCSSの進歩を考えると、5年後くらいにはReactが必要なくなっているかもしれません。🤯もしそうなれば面白いですね！</p>]]></content:encoded></item><item><title><![CDATA[React Compilerについて理解する]]></title><description><![CDATA[Reactのコアアーキテクチャは、与えられた関数（すなわちコンポーネント）を繰り返し呼び出します。この仕組みはReactのメンタルモデルを単純化し、その人気に一役を買いましたが、同時にパフォーマンス…]]></description><link>https://postd.cc/understanding-react-compiler/</link><guid isPermaLink="false">https://postd.cc/understanding-react-compiler/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Fri, 27 Sep 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>Reactのコアアーキテクチャは、与えられた関数（すなわちコンポーネント）を繰り返し呼び出します。この仕組みはReactのメンタルモデルを単純化し、その人気に一役を買いましたが、同時にパフォーマンスの問題が生じる原因にもなりました。関数のパフォーマンスコストが高いと、アプリの動作は総じて遅くなります。</p>
 <p>開発者はReactにどの関数をいつ再実行するか手動で指示しなくてはならなかったため、パフォーマンスチューニングが悩みの種になっていました。Reactチームが最近リリースしたReact Compilerというツールは、コードを書き直すことにより、開発者が手動で行っていたパフォーマンスチューニングの作業を自動化します。</p>
 <p>React Compilerはコードに何をするのでしょうか？裏ではどのような処理が行われるのでしょうか？使った方がいいのでしょうか？こうした疑問について詳しく見ていきたいと思います。</p>
 <div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>Reactの内部実装について詳しく学び、完全で正確なメンタルモデルを得たい方は、<a href="https://understandingreact.com/">Understanding React</a>という筆者の新しいコースでReactのソースコードを掘り下げて説明していますので、ぜひチェックしてみてください。Reactの使用経験が豊富な開発者でも、内部実装の理解を深めることは大いに役立ちます。</p></div></div>
@@ -2041,671 +2254,4 @@ AIが近い将来デザインの仕事を完全に置き換える可能性は極
 <li id="fn-3"><em>少なくとも、新しいページに移動するなど、ルーター上で何かが起こるまでは</em><a href="#fnref-3" class="footnote-backref">↩</a></li>
 <li id="fn-4"><em>HitCounterコンポーネント自体は、サーバー・コンポーネントにより他の場所にインポートされた場合、サーバー・コンポーネントとしてレンダリングされる可能性があります</em><a href="#fnref-4" class="footnote-backref">↩</a></li>
 </ol>
-</div>]]></content:encoded></item><item><title><![CDATA[Next.jsを4年間使用してたどりついた、エンタープライズアプリケーションのフロントエンド開発・構築手法]]></title><description><![CDATA[はじめに 目まぐるしく進化するフロントエンド開発の世界では、常に最新の知識や技術をいち早く取り入れることが、エンタープライズアプリケーションの開発を成功させる上で欠かせません。Tailwind CS…]]></description><link>https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</link><guid isPermaLink="false">https://postd.cc/how-i-approach-and-structure-enterprise-frontend-applications-after-4-years-of-using-nextjs/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><category><![CDATA[TypeScript]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[React]]></category><pubDate>Mon, 25 Dec 2023 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>はじめに</h2>
-<p>目まぐるしく進化するフロントエンド開発の世界では、常に最新の知識や技術をいち早く取り入れることが、エンタープライズアプリケーションの開発を成功させる上で欠かせません。Tailwind CSS、TypeScript、Turborepo、ESLint、React Queryなどを含む強力なツールキットとNext.jsを<strong>4</strong>年間使用してきた結果、開発に役立つさまざまな知見やベストプラクティスが得られました。この記事では、大企業向けフロントエンドアプリケーションのパフォーマンス、保守性、拡張性を最大限に高める設計・構築手法を紹介したいと思います。</p>
-<p><strong>注記</strong>：ここに記載する内容はあくまでも個人的な見解であり、筆者が推奨する手法が必ずしも適さない場合もあります。</p>
-<h2>効果的なエンタープライズ向けフロントエンドアーキテクチャの基本原則</h2>
-<p>エンタープライズ規模のアプリケーション向けにフロントエンドソリューションを設計する場合、基本原則を明確に定めておくことで開発作業の方向性を示すことができます。このセクションでは、エンタープライズ環境において筆者が実際にNext.jsを使用してきた経験を踏まえた基本原則を紹介します。</p>
-<h3>モジュール性とコンポーネント化</h3>
-<p><em>原則：分割統治</em></p>
-<p>大規模なエンタープライズアプリケーションでは、コードはすぐに肥大化し、手に負えなくなってしまいます。モジュール性を備えたフロントエンド設計により、コードを扱いやすい大きさのコンポーネントに分割しましょう。コンポーネントはブロック玩具のように、それぞれ特定の役割を担います。そのため、コンポーネント化することでコードを再利用しやすくなるだけでなく、保守や開発チーム内での連携が容易になります。また、アプリケーションを小さなコンポーネントに分割するだけでなく、独立した小さなアプリケーションに分割できないか検討しましょう。それには、Turborepoなどのツールが役立ちます。</p>
-<h3>関心の分離（SOC）</h3>
-<p><em>原則：コードベースを整理する</em></p>
-<p>コードの健全性を保つため、関心の分離（SoC）の原則に従いましょう。UIのレンダリング、ビジネスロジックの処理、状態（ステート）の管理といった各コンポーネントの役割を、それぞれ明確に分離します。そうすることで、コードが分かりやすくなるだけでなく、テストやデバッグを行いやすくなります。</p>
-<h3>スケーラブルな設計</h3>
-<p><em>原則：拡張に備える</em></p>
-<p>エンタープライズアプリケーションは静的ではなく、進化します。スケーラビリティを念頭に置きながらフロントエンドアーキテクチャを設計しましょう。これはつまり、トラフィックやデータ量の増大、機能の複雑化に対応できるパターンやツールを選ぶということです。Next.jsはスケーラビリティに対応可能な設計になっているため、その点においても有益です。</p>
-<h3>保守性とコード品質</h3>
-<p><em>原則：丁寧にコーディングする</em></p>
-<p>コードは製品の土台です。最初から保守性とコード品質を重視し、コーディング規約を定め、コードレビューを実施し、テスト自動化に投資しましょう。管理の行き届いたコードベースは作業しやすいだけでなく、バグやリグレッションが発生しにくくなります。筆者は最近、フロントエンドアプリケーションのコーディング規約を順守させるため、<a href="https://ui.fin.africa/?path=/docs/foundations-guidelines--docs">コンポーネントライブラリと簡単なスタイルガイド</a>を作成しました。ドキュメントはまだ完成していないので、あしからず😂.</p>
-<h2>アクセシビリティの標準化</h2>
-<p><em>原則：最初からインクルーシブデザイン</em></p>
-<p>モダンWeb開発において、アクセシビリティは絶対条件です。最初からアクセシビリティの高いWeb開発を実践しましょう。障がいの有無にかかわらず、誰もがアプリケーションを利用できるようにします。アクセシビリティの基準や、インクルーシブなユーザーエクスペリエンスを生み出すためのツールについては、Next.jsのサポートが役立ちます。筆者は、タブやドロップダウンなどアクセシビリティへの配慮が必要なコンポーネントには、<a href="https://www.radix-ui.com/">Radix UI</a>などのツールを使用します。</p>
-<h3>パフォーマンス重視の開発</h3>
-<p><em>原則：スピードは重要</em></p>
-<p>エンタープライズユーザーはスピードを求めています。あらゆる場面でパフォーマンスを重視しましょう。アセットを最適化し、不要なリクエストを最小限に減らし、自動コード分割、Suspenseを使ったストリーミング、画像最適化といったNext.jsのパフォーマンス機能を活用します。素早く動くアプリケーションはユーザーの満足度が高いだけでなく、SEOにも好影響を与えます。</p>
-<h3>セキュリティ第一</h3>
-<p><em>原則：城を守る</em></p>
-<p>フロントエンドアーキテクチャの構造の中にセキュリティを組み込み、クロスサイトスクリプティング（XSS）やクロスサイトリクエストフォージェリ（CSRF）などの一般的な脆弱性から守りましょう。セキュリティアップデートやベストプラクティスの実践を怠らず、Next.jsに組み込まれたセキュリティ機能は予備的な防御層とみなします。</p>
-<h3>国際化（i18n）と地域化（l10n）</h3>
-<p><em>原則：グローバルな視点で考える</em></p>
-<p>つながりあったこの世界では、グローバルな視点で考えることが不可欠です。多様なユーザーに対応するため、最初から国際化（i18n）と地域化（l10n）を実施しましょう。Next.jsはこれらの機能のサポートが充実しているため、多言語アプリケーションの作成を容易にします。</p>
-<p>これらの基本原則は、Next.jsを使用して効果的なエンタープライズ向けフロントエンドアーキテクチャを構築する上での土台を形成します。大規模アプリケーションの要求に沿って開発作業を進め、強固で保守性に優れ、使いやすいアプリケーションを開発できるよう、羅針盤の役割を果たします。以下のセクションでは、これらの原則を実践的な戦略やベストプラクティスに落とし込む方法を詳しく見ていきます。</p>
-<h2>フォルダとファイル構造</h2>
-<p>Reactでは、綿密に考えられたフォルダ構造によってプロジェクトを整理することが、保守性とスケーラビリティを実現する上で重要です。アプローチとしては、機能や目的に応じてファイルを整理する方法が一般的です。筆者が自分のアプリケーションでよく使用するフォルダ構造をサンプルとして紹介します。</p>
-<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">├─ src/
-│ ├─ components/
-│ │ ├─ ui/
-│ │ │ ├─ Button/
-│ │ │ ├─ Input/
-│ │ │ ├─ ...
-│ │ │ └─ index.tsx
-│ │ ├─ shared/
-│ │ │ ├─ Navbar/
-│ │ └─ charts/
-│ │ │ ├─ Bar/
-│ ├─ modules/
-│ │ ├─ HomePage/
-│ │ ├─ ProductAddPage/
-│ │ ├─ ProductPage/
-│ │ ├─ ProductsPage/
-│ │ │ ├─ api/
-│ │ │ │ └─ useGetProducts/
-│ │ │ ├─ components/
-│ │ │ │ ├─ ProductItem/
-│ │ │ │ ├─ ProductsStatistics/
-│ │ │ │ └─ ...
-│ │ │ ├─ utils/
-│ │ │ │ └─ filterProductsByType/
-│ │ │ └─ index.tsx
-│ │ ├─ hooks/
-│ │ ├─ consts/
-│ │ └─ types/
-│ │ └─ lib/
-| | └─ styles/
-│ │ │ ├─ global.css
-│ │ └─ ...
-│ ├─ public/
-│ │ ├─ ...
-│ │ └─ index.tsx
-│ ├─ eslintrc.js
-│ ├─ package.json
-│ └─ tsconfig.json
-└─ ...</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<ul>
-<li><strong>src/components</strong>: このディレクトリにはUIコンポーネントを格納します。さらに、一般的なUIコンポーネントを格納する<code class="language-text">ui</code>と、アプリケーションの他の部分で再利用する可能性のあるコンポーネントを格納する<code class="language-text">shared</code>に分かれています。</li>
-<li><strong>src/modules</strong>: このディレクトリには、アプリケーションのさまざまなモジュールやページを格納します。モジュールごとにフォルダが分かれ、APIコール、コンポーネント、ユーティリティ機能のためのサブディレクトリが含まれる場合があります。</li>
-<li><strong>src/pages</strong>: Next.jsを使用している場合、このフォルダはアプリケーションのエントリーポイントとしてのみ使用します。ここにはビジネスロジックは格納しません。pagesフォルダに格納されたコンポーネントは、必ずmodulesフォルダからページをレンダリングします。</li>
-<li><strong>src/modules/ProductsPage</strong>: このモジュールは製品に関連し、APIコール、コンポーネント（<code class="language-text">ProductItem</code>や<code class="language-text">ProductsStatistics</code>など）、ユーティリティ機能（<code class="language-text">filterProductsByType</code>）のサブディレクトリが含まれます。</li>
-<li><strong>src/lib</strong>: このフォルダには、後でパッケージに変換し、複数のアプリケーションで使用することができるユーティリティ機能を格納します。後でパッケージに変換することのないユーティリティ機能を格納する<strong>src/utils</strong>とは異なります。</li>
-<li><strong>src/styles</strong>: このディレクトリには、グローバルスタイル（<code class="language-text">global.css</code>）や、スタイルに関連するその他のファイルを格納します。</li>
-<li><strong>src/public</strong>: このフォルダには、ビルドプロセスで使用しない画像、フォント、<code class="language-text">index.html</code>ファイルなどの静的アセットを格納します。</li>
-<li><strong>src/consts, src/types</strong>: これらのディレクトリには、それぞれ定数とTypeScriptの型定義を格納します。</li>
-<li><strong>src/hooks</strong>: このディレクトリには、アプリケーション全体で使用するカスタムフックを格納します。</li>
-<li><strong>eslintrc.js</strong>: これは、よく知られたJavaScript用構文チェックツールであるESLintの設定ファイルです。コーディング規約を適用し、コードの間違いを見つけるために使用します。</li>
-</ul>
-<p><code class="language-text">tsconfig</code>ファイルは、例えば<code class="language-text">Button</code>コンポーネントをインポートしたい場合、<code class="language-text">import { Button } from '@/components/ui'</code>のように指定してインポートできるよう設定されています。これを<code class="language-text">tsconfig.json</code>から設定するためのコードスニペットを以下に示します。</p>
-<div class="gatsby-highlight" data-language="jsonc"><pre style="counter-reset: linenumber NaN" class="language-jsonc line-numbers"><code class="language-jsonc">{
-  ...
-  &quot;compilerOptions&quot;: {
-    &quot;baseUrl&quot;: &quot;.&quot;,
-    &quot;paths&quot;: {
-      &quot;@/*&quot;: [&quot;./src/*&quot;]
-    }
-  }
-}</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>TypeScriptのコーディング規約</h2>
-<p>筆者が使用する規約は<a href="https://mkosir.github.io/typescript-style-guide/">こちら</a>のガイドに基づいています。ぜひ一読してみてください。以下のコードスニペットはこのガイドからの抜粋です。</p>
-<h4>型は全て型エイリアスで定義する</h4>
-<div class="gatsby-highlight" data-language="typescript"><pre style="counter-reset: linenumber NaN" class="language-typescript line-numbers"><code class="language-typescript"><span class="token comment">// ❌ Avoid interface definitions unless you need to extend or implement them</span>
-
-<span class="token keyword">interface</span> <span class="token class-name">UserRole</span> <span class="token operator">=</span> <span class="token string">'admin'</span> <span class="token operator">|</span> <span class="token string">'guest'</span><span class="token punctuation">;</span> <span class="token comment">// invalid - interface can't define (commonly used) type unions</span>
-
-<span class="token keyword">interface</span> <span class="token class-name">UserInfo</span> <span class="token punctuation">{</span>
-  name<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
-  role<span class="token operator">:</span> <span class="token string">'admin'</span> <span class="token operator">|</span> <span class="token string">'guest'</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-
-<span class="token comment">// ✅ Use type definition</span>
-<span class="token keyword">type</span> <span class="token class-name">UserRole</span> <span class="token operator">=</span> <span class="token string">'admin'</span> <span class="token operator">|</span> <span class="token string">'guest'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">type</span> <span class="token class-name">UserInfo</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
-  name<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
-  role<span class="token operator">:</span> UserRole<span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h4>複数の引数の使用を避ける</h4>
-<div class="gatsby-highlight" data-language="typescript"><pre style="counter-reset: linenumber NaN" class="language-typescript line-numbers"><code class="language-typescript"><span class="token comment">// ❌ Avoid having multiple arguments</span>
-<span class="token function">transformUserInput</span><span class="token punctuation">(</span><span class="token string">'client'</span><span class="token punctuation">,</span> <span class="token boolean">false</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">,</span> <span class="token number">120</span><span class="token punctuation">,</span> <span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">,</span> <span class="token number">2000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">// ✅ Use options object as argument</span>
-<span class="token function">transformUserInput</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
-  method<span class="token operator">:</span> <span class="token string">'client'</span><span class="token punctuation">,</span>
-  isValidated<span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span>
-  minLines<span class="token operator">:</span> <span class="token number">60</span><span class="token punctuation">,</span>
-  maxLines<span class="token operator">:</span> <span class="token number">120</span><span class="token punctuation">,</span>
-  defaultInput<span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
-  shouldLog<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-  timeout<span class="token operator">:</span> <span class="token number">2000</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h4>命名規則</h4>
-<p>最適な名前を決めるのは難しいものですが、既定の規則に従い、今後作業する開発者のためにコードの可読性を高め、一貫性を保つよう努めましょう。</p>
-<h4>変数・定数</h4>
-<ul>
-<li><strong>ローカル変数</strong>　<code class="language-text">products</code>をキャメルケースで記述する（<code class="language-text">productsFiltered</code>）</li>
-<li><strong>ブール型変数</strong>　<code class="language-text">is</code>や<code class="language-text">has</code>などの接頭辞を先頭に付ける（<code class="language-text">isDisabled</code>、<code class="language-text">hasProduct</code>）</li>
-<li><strong>定数</strong>　大文字で記述（<code class="language-text">PRODUCT_ID</code>）</li>
-<li><strong>オブジェクト型の定数</strong></li>
-</ul>
-<p>単数形を使用し、大文字で記述します。constアサーション（as const）を使用し、任意でsatisfies演算子を使用して型（その型が存在する場合）にマッチするかチェックします。</p>
-<div class="gatsby-highlight" data-language="typescript"><pre style="counter-reset: linenumber NaN" class="language-typescript line-numbers"><code class="language-typescript">  <span class="token keyword">const</span> <span class="token constant">ORDER_STATUS</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
-    pending<span class="token operator">:</span> <span class="token string">'pending'</span><span class="token punctuation">,</span>
-    fulfilled<span class="token operator">:</span> <span class="token string">'fulfilled'</span><span class="token punctuation">,</span>
-    error<span class="token operator">:</span> <span class="token string">'error'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span> <span class="token keyword">as</span> <span class="token keyword">const</span> satisfies OrderStatus<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h4>関数</h4>
-<p>キャメルケース</p>
-<p><code class="language-text">filterProductsByType</code>, <code class="language-text">formatCurrency</code></p>
-<h4>ジェネリクス</h4>
-<p><code class="language-text">TRequest</code>、<code class="language-text">TFooBar</code>のように先頭に大文字のTが付きます（<a href="https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=net-5.0">.Netの内部</a>実装と同様)。</p>
-<p>よく使われる規約ではありますが、ジェネリクスを<code class="language-text">T</code>や<code class="language-text">K</code>など1文字で命名するのは避けましょう。変数が増えれば増えるほど、間違いやすくなります。</p>
-<div class="gatsby-highlight" data-language="typescript"><pre style="counter-reset: linenumber NaN" class="language-typescript line-numbers"><code class="language-typescript"><span class="token comment">// ❌ Avoid naming generics with one character</span>
-<span class="token keyword">const</span> createPair <span class="token operator">=</span> <span class="token operator">&lt;</span><span class="token constant">T</span><span class="token punctuation">,</span> <span class="token constant">K</span> <span class="token keyword">extends</span> <span class="token class-name"><span class="token builtin">string</span></span><span class="token operator">></span><span class="token punctuation">(</span>first<span class="token operator">:</span> <span class="token constant">T</span><span class="token punctuation">,</span> second<span class="token operator">:</span> <span class="token constant">K</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token constant">T</span><span class="token punctuation">,</span> <span class="token constant">K</span><span class="token punctuation">]</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">[</span>first<span class="token punctuation">,</span> second<span class="token punctuation">]</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> pair <span class="token operator">=</span> <span class="token function">createPair</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">// ✅ Name starts with the capital letter T</span>
-<span class="token keyword">const</span> createPair <span class="token operator">=</span> <span class="token operator">&lt;</span>TFirst<span class="token punctuation">,</span> TSecond <span class="token keyword">extends</span> <span class="token class-name"><span class="token builtin">string</span></span><span class="token operator">></span><span class="token punctuation">(</span>
-  first<span class="token operator">:</span> TFirst<span class="token punctuation">,</span>
-  second<span class="token operator">:</span> TSecond
-<span class="token punctuation">)</span><span class="token operator">:</span> <span class="token punctuation">[</span>TFirst<span class="token punctuation">,</span> TSecond<span class="token punctuation">]</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">[</span>first<span class="token punctuation">,</span> second<span class="token punctuation">]</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> pair <span class="token operator">=</span> <span class="token function">createPair</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>パッケージとツール</h2>
-<p>アプリケーションの開発では、作業の不要な重複を避けるため、一般的にサードパーティツールを活用します。筆者がスケーラブルなアプリケーションをビルドする際に使用するパッケージをいくつか紹介します。</p>
-<h4>React Query/TanStack Query</h4>
-<p>React Queryは、複雑なエンタープライズアプリケーションにおけるデータフェッチや同期化を管理するのに非常に便利です。APIからのデータフェッチやキャッシング、ミューテーション関数の処理へのアプローチを統一できます。エンタープライズ環境では、アプリケーションは複数のAPIやサービスと連携しなくてはならない場合が多くあります。React Queryは、データ管理を一元化し、ボイラープレートコードを減らすことで、このプロセスを効率化できます。</p>
-<h4>React Context</h4>
-<p>React Contextは、propsのバケツリレーを行うことなく、複数のコンポーネントにまたがるグローバルステートを管理するのに役立ちます。これは、アプリケーション全体でユーザー認証や環境設定などの共有ステートにアクセスする必要があるエンタープライズアプリケーションでは特に有益です。</p>
-<p>通常、筆者はReact Contextなどの状態管理ツールの使用は最後の手段として取っておきます。グローバルステートに頼るのは必要最低限にとどめておくのがよいでしょう。その代わり、ステートはなるべく必要な場所の近くに置いておきましょう。</p>
-<h4>Cypress</h4>
-<p>Cypressは、E2Eのテストに非常に役立つツールです。エンタープライズアプリケーションでは、重要なワークフローや機能が異なる画面やコンポーネント上で正常に機能するようにすることが何よりも重要です。Cypressはダントツで筆者が一番気に入っているツールです。テストに合格すれば、新たに導入したコードがアプリケーションに不具合をもたらすことはないと確信できます。エンタープライズアプリケーションが進化していく中で、コードに新たな変更を加えた際にリグレッションテストを実施し、意図せぬ副作用が生じていないか確認することが重要です。Cypressは、テストプロセスを自動化することで、この確認作業を容易にします。</p>
-<h4>React Testing Library:</h4>
-<p>React Testing Libraryは、Reactコンポーネントの単体テストと統合テストに欠かせません。エンタープライズアプリケーションでは、個々のコンポーネントが期待どおり動作するか検証することが、強固なアプリケーションを作る上で重要です。React Testing Libraryは、各コンポーネントを単体で、さらに他のコンポーネントと組み合わせて、入念にテストすることを可能にします。</p>
-<h4>NextAuth.js:</h4>
-<p>NextAuth.jsは、Next.jsアプリケーションにおける認証と認可の実装を容易にします。エンタープライズ環境では、ユーザー管理のセキュリティは絶対条件です。企業の間では、複数のアプリケーションをまたいだユーザー認証を効率化するためにシングルサインオン（SSO）ソリューションがしばしば採用されます。NextAuth.jsはさまざまなSSOプロバイダーに対応しているため、エンタープライズ認証のニーズに最適なツールです。また、NextAuth.jsではカスタム認証フローを柔軟に実装することもできます。</p>
-<p>NextAuth.jsでTypeScriptによるモジュール拡張を使用してデフォルトの<code class="language-text">User</code>モデルをカスタマイズする方法を説明した筆者の<a href="https://josemukorivo.com/blog/unlock-next-level-authentication-in-nextjs-with-next-auth-and-typescript-module-augmentation-1689">ブログ記事</a>もご覧ください。</p>
-<h4>Turborepo</h4>
-<p>これも筆者が気に入っているツールの1つです。Turborepoはモノレポの管理に役立ちます。大規模なエンタープライズアプリケーションでは、さまざまなモジュールやサービス、共有コードによりコードベースが膨大になる場合があります。Turborepoは、肥大化したコードベースを効率的に整理し、バージョン管理やデプロイメントを行いやすくします。エンタープライズ環境では、複数のチームやプロジェクトでコードを共有するのは一般的です。Turborepoは、効果的なコード共有を可能にし、共有ライブラリやコンポーネントを使用したチームコラボレーションをサポートします。</p>
-<h3>Storybook</h3>
-<p>Storybookを使用することで、開発者はUIコンポーネントを切り離し、制御された環境で動かすことができます。そのため、アプリケーション全体を操作することなく、個々のコンポーネントの外観や動作のデモを簡単に実施できます。大規模なエンタープライズアプリケーションでは、複数の開発者やチームがそれぞれUIの異なる部分を担当している場合があります。Storybookは、UIコンポーネントを披露して議論を交わすための一元的なプラットフォームを提供することで、コラボレーションの効率化を促し、デザイン言語の一貫性を確保します。<a href="https://ui.fin.africa/">こちら</a>は筆者がStorybookを使用して開発し、文書化したコンポーネントライブラリのサンプルです（まだ未完成ですが）。</p>
-<p><em>エンタープライズ環境では、これらのツールを組み合わせることで、大規模アプリケーションを構築、テスト、維持管理し、データ管理、状態管理、テスト、認証、コード整理などの重要な課題に対処できます。</em></p>
-<h2>再利用可能なコンポーネントのコーディングスタイル</h2>
-<p>筆者が入力やダイアログなどの再利用可能なコンポーネントを開発する際には、なるべくベストプラクティスに沿って作業するようにしています。</p>
-<p>では、<code class="language-text">Button</code>コンポーネントの開発を例にいくつかのベストプラクティスを紹介したいと思います。ベストプラクティスがビジュアルデザインだけにとどまらないことがお分かりいただけるかと思います。</p>
-<h4>コンポーネントの再利用性</h4>
-<p>ボタンコンポーネントはアプリケーションのさまざまな場所で再利用できるよう設計しましょう。さまざまなユースケースに対応可能な柔軟性が必要です。</p>
-<h4>カスタマイズのためのPROPS</h4>
-<p>サイズ、色、バリアント（1次、2次など）、無効化状態などの一般的なカスタマイズを行うためのpropsを用意しましょう。そうすることで、開発者はさまざまなUIコンテキストに合わせて容易にボタンを調整できます。</p>
-<h4>アクセシビリティへの配慮</h4>
-<p>aria-label属性やaria-disabled属性、フォーカス管理などの適切なアクセシビリティ機能を実装しましょう。そうすることで、アシスティブテクノロジー（支援技術）の利用者も効果的にボタンを使用できます。</p>
-<h4>セマンティックHTML</h4>
-<p>ボタンコンポーネントにセマンティックHTMLの要素を使用しましょう。そうすることで、アクセシビリティとSEOが向上し、異なるデバイス上でも適切な動作を確保できます。</p>
-<h4>ボタンのネイティブ要素の模倣</h4>
-<p>これらのベストプラクティスは全て、予測可能なコードを記述することにつながります。カスタムボタンコンポーネントを開発する場合、ボタンとして機能し、動作するようにしましょう。後述するコンポーネントの例では、ボタンのネイティブ要素を拡張することで、ボタンに追加できるあらゆるpropsを含めています。</p>
-<h4>エラーハンドリング</h4>
-<p>ボタンがエラー状態（フォームの送信など）につながる可能性がある場合、エラーを処理し、ユーザーに伝える方法を用意しましょう。</p>
-<h4>テスト</h4>
-<p>さまざまなシナリオでボタンコンポーネントが期待どおり動作することを検証するための単体テストを作成しましょう。テストケースはさまざまなpropsやイベントハンドラを網羅する必要があります。</p>
-<h4>ドキュメント化</h4>
-<p>利用可能なprops、イベントハンドラ、特定のユースケースなども含め、ボタンコンポーネントの使用方法をドキュメント化しましょう。開発者の参考になるような例やコードスニペットも記載します。これにはStorybookが役立ちます。</p>
-<h4>クロスブラウザ互換性:</h4>
-<p>異なるブラウザでボタンコンポーネントをテストし、動作や外観が一貫しているか確認しましょう。</p>
-<h4>バージョン管理と変更履歴</h4>
-<p>ボタンコンポーネントが共有ライブラリの一部である場合、バージョン管理を実施し、変更履歴を残すことで開発者に更新や変更について知らせましょう。</p>
-<h3>コーディング</h3>
-<p>筆者のコンポーネントには、大抵<code class="language-text">Button.tsx</code>、<code class="language-text">Button.stories.tsx</code>、<code class="language-text">Docs.mdx</code>、<code class="language-text">Button.test.ts</code>といったファイルが含まれます。CSSを使用している場合、<code class="language-text">Button.module.css</code>のようなファイルがあるかもしれません。</p>
-<p><code class="language-text">components/ui/Button.tsx</code></p>
-<p>これがメインのコンポーネントであり、<code class="language-text">cn</code>関数でクラスをマージし、コンフリクトに対処します。<code class="language-text">tw-merge</code>ライブラリのラッパーです。</p>
-<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span>
-  forwardRef<span class="token punctuation">,</span>
-  <span class="token keyword">type</span> <span class="token class-name">ButtonHTMLAttributes</span><span class="token punctuation">,</span>
-  <span class="token keyword">type</span> <span class="token class-name">JSXElementConstructor</span><span class="token punctuation">,</span>
-  <span class="token keyword">type</span> <span class="token class-name">ReactElement</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> AiOutlineLoading3Quarters <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-icons/ai'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token keyword">type</span> <span class="token punctuation">{</span> VariantProps <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'cva'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> cva <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'cva'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> Link <span class="token keyword">from</span> <span class="token string">'next/link'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> cn <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/lib'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">const</span> button <span class="token operator">=</span> <span class="token function">cva</span><span class="token punctuation">(</span>
-  <span class="token string">'flex w-max items-center border-[1.5px] gap-2 transition duration-200 ease-linear focus:outline-0 focus:ring ring-offset-1 dark:ring-offset-blue-dark'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">{</span>
-    variants<span class="token operator">:</span> <span class="token punctuation">{</span>
-      variant<span class="token operator">:</span> <span class="token punctuation">{</span>
-        outline<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        solid<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        naked<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      rounded<span class="token operator">:</span> <span class="token punctuation">{</span>
-        none<span class="token operator">:</span> <span class="token string">'rounded-none'</span><span class="token punctuation">,</span>
-        sm<span class="token operator">:</span> <span class="token string">'rounded'</span><span class="token punctuation">,</span>
-        md<span class="token operator">:</span> <span class="token string">'rounded-lg'</span><span class="token punctuation">,</span>
-        lg<span class="token operator">:</span> <span class="token string">'rounded-xl'</span><span class="token punctuation">,</span>
-        full<span class="token operator">:</span> <span class="token string">'rounded-full'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      color<span class="token operator">:</span> <span class="token punctuation">{</span>
-        primary<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        danger<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        info<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        warning<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        light<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        secondary<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      size<span class="token operator">:</span> <span class="token punctuation">{</span>
-        xs<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        sm<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        md<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        lg<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      disabled<span class="token operator">:</span> <span class="token punctuation">{</span>
-        <span class="token boolean">true</span><span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      active<span class="token operator">:</span> <span class="token punctuation">{</span>
-        <span class="token boolean">true</span><span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      loading<span class="token operator">:</span> <span class="token punctuation">{</span>
-        <span class="token boolean">true</span><span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      fullWidth<span class="token operator">:</span> <span class="token punctuation">{</span>
-        <span class="token boolean">true</span><span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      align<span class="token operator">:</span> <span class="token punctuation">{</span>
-        center<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        left<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        right<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-        between<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    compoundVariants<span class="token operator">:</span> <span class="token punctuation">[</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'solid'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'solid'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token string">'primary'</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'outline'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'primary'</span><span class="token punctuation">,</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'outline'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token string">'light'</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span>
-          <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'naked'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'primary'</span><span class="token punctuation">,</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span>
-          <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        disabled<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-        variant<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'solid'</span><span class="token punctuation">,</span> <span class="token string">'outline'</span><span class="token punctuation">,</span> <span class="token string">'naked'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'primary'</span><span class="token punctuation">,</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">,</span> <span class="token string">'light'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'outline'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'primary'</span><span class="token punctuation">,</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">,</span> <span class="token string">'light'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">{</span>
-        variant<span class="token operator">:</span> <span class="token string">'naked'</span><span class="token punctuation">,</span>
-        color<span class="token operator">:</span> <span class="token string">'primary'</span><span class="token punctuation">,</span>
-        className<span class="token operator">:</span> <span class="token string">'...'</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">]</span><span class="token punctuation">,</span>
-    defaultVariants<span class="token operator">:</span> <span class="token punctuation">{</span>
-      size<span class="token operator">:</span> <span class="token string">'md'</span><span class="token punctuation">,</span>
-      variant<span class="token operator">:</span> <span class="token string">'solid'</span><span class="token punctuation">,</span>
-      color<span class="token operator">:</span> <span class="token string">'primary'</span><span class="token punctuation">,</span>
-      rounded<span class="token operator">:</span> <span class="token string">'lg'</span><span class="token punctuation">,</span>
-      align<span class="token operator">:</span> <span class="token string">'center'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token keyword">interface</span> <span class="token class-name">BaseProps</span>
-  <span class="token keyword">extends</span> <span class="token class-name">Omit<span class="token operator">&lt;</span>
-      ButtonHTMLAttributes<span class="token operator">&lt;</span>HTMLButtonElement<span class="token operator">></span><span class="token punctuation">,</span>
-      <span class="token string">'color'</span> <span class="token operator">|</span> <span class="token string">'disabled'</span> <span class="token operator">|</span> <span class="token string">'active'</span>
-    <span class="token operator">></span></span><span class="token punctuation">,</span>
-    VariantProps<span class="token operator">&lt;</span><span class="token keyword">typeof</span> button<span class="token operator">></span> <span class="token punctuation">{</span>
-  href<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
-  loadingText<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
-  target<span class="token operator">?</span><span class="token operator">:</span> <span class="token string">'_blank'</span> <span class="token operator">|</span> <span class="token string">'_self'</span> <span class="token operator">|</span> <span class="token string">'_parent'</span> <span class="token operator">|</span> <span class="token string">'_top'</span><span class="token punctuation">;</span>
-  <span class="token keyword">as</span><span class="token operator">?</span><span class="token operator">:</span> <span class="token string">'button'</span> <span class="token operator">|</span> <span class="token string">'a'</span> <span class="token operator">|</span> JSXElementConstructor<span class="token operator">&lt;</span><span class="token builtin">any</span><span class="token operator">></span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">export</span> <span class="token keyword">type</span> <span class="token class-name">ButtonProps</span> <span class="token operator">=</span> BaseProps <span class="token operator">&amp;</span>
-  <span class="token punctuation">(</span>
-    <span class="token operator">|</span> <span class="token punctuation">{</span>
-        rightIcon<span class="token operator">?</span><span class="token operator">:</span> ReactElement<span class="token punctuation">;</span>
-        leftIcon<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">never</span><span class="token punctuation">;</span>
-      <span class="token punctuation">}</span>
-    <span class="token operator">|</span> <span class="token punctuation">{</span>
-        rightIcon<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">never</span><span class="token punctuation">;</span>
-        leftIcon<span class="token operator">?</span><span class="token operator">:</span> ReactElement<span class="token punctuation">;</span>
-      <span class="token punctuation">}</span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Button <span class="token operator">=</span> <span class="token generic-function"><span class="token function">forwardRef</span><span class="token generic class-name"><span class="token operator">&lt;</span>HTMLButtonElement<span class="token punctuation">,</span> ButtonProps<span class="token operator">></span></span></span><span class="token punctuation">(</span>
-  <span class="token punctuation">(</span>props<span class="token punctuation">,</span> ref<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-    <span class="token keyword">const</span> <span class="token punctuation">{</span>
-      <span class="token keyword">as</span><span class="token operator">:</span> Tag <span class="token operator">=</span> <span class="token string">'button'</span><span class="token punctuation">,</span>
-      variant<span class="token punctuation">,</span>
-      color<span class="token punctuation">,</span>
-      rounded<span class="token punctuation">,</span>
-      size<span class="token punctuation">,</span>
-      target <span class="token operator">=</span> <span class="token string">'_self'</span><span class="token punctuation">,</span>
-      loading<span class="token punctuation">,</span>
-      fullWidth<span class="token punctuation">,</span>
-      align<span class="token punctuation">,</span>
-      loadingText<span class="token punctuation">,</span>
-      href<span class="token punctuation">,</span>
-      active<span class="token punctuation">,</span>
-      rightIcon<span class="token punctuation">,</span>
-      leftIcon<span class="token punctuation">,</span>
-      className<span class="token punctuation">,</span>
-      disabled<span class="token punctuation">,</span>
-      children<span class="token punctuation">,</span>
-      <span class="token operator">...</span>rest
-    <span class="token punctuation">}</span> <span class="token operator">=</span> props<span class="token punctuation">;</span>
-
-    <span class="token keyword">const</span> classes <span class="token operator">=</span> <span class="token function">cn</span><span class="token punctuation">(</span>
-      <span class="token function">button</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
-        variant<span class="token punctuation">,</span>
-        color<span class="token punctuation">,</span>
-        size<span class="token punctuation">,</span>
-        disabled<span class="token punctuation">,</span>
-        loading<span class="token punctuation">,</span>
-        active<span class="token punctuation">,</span>
-        rounded<span class="token punctuation">,</span>
-        fullWidth<span class="token punctuation">,</span>
-        align<span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
-      className
-    <span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-    <span class="token keyword">return</span> <span class="token punctuation">(</span>
-      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-        </span><span class="token punctuation">{</span>href <span class="token operator">?</span> <span class="token punctuation">(</span>
-          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Link</span></span> <span class="token attr-name">className</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>classes<span class="token punctuation">}</span></span> <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>href<span class="token punctuation">}</span></span> <span class="token attr-name">target</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>target<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-            </span><span class="token punctuation">{</span>leftIcon<span class="token punctuation">}</span><span class="token plain-text">
-            </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
-            </span><span class="token punctuation">{</span>rightIcon<span class="token punctuation">}</span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Link</span></span><span class="token punctuation">></span></span>
-        <span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token punctuation">(</span>
-          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Tag</span></span> <span class="token attr-name">className</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>classes<span class="token punctuation">}</span></span> <span class="token attr-name">disabled</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>disabled<span class="token punctuation">}</span></span> <span class="token attr-name">ref</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>ref<span class="token punctuation">}</span></span> <span class="token spread"><span class="token punctuation">{</span><span class="token operator">...</span>rest<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-            </span><span class="token punctuation">{</span>loading <span class="token operator">?</span> <span class="token punctuation">(</span>
-              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-                </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">AiOutlineLoading3Quarters</span></span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>animate-spin<span class="token punctuation">'</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-                </span><span class="token punctuation">{</span>loadingText <span class="token operator">||</span> <span class="token string">'Loading...'</span><span class="token punctuation">}</span><span class="token plain-text">
-              </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-            <span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token punctuation">(</span>
-              <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-                </span><span class="token punctuation">{</span>leftIcon<span class="token punctuation">}</span><span class="token plain-text">
-                </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
-                </span><span class="token punctuation">{</span>rightIcon<span class="token punctuation">}</span><span class="token plain-text">
-              </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-            <span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Tag</span></span><span class="token punctuation">></span></span>
-        <span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-    <span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token punctuation">}</span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-Button<span class="token punctuation">.</span>displayName <span class="token operator">=</span> <span class="token string">'Button'</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">components/ui/Button.stories.tsx</code></p>
-<p>このファイルには、Storybook向けのボタンのストーリーが含まれます。</p>
-<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> Meta<span class="token punctuation">,</span> StoryObj <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@storybook/react'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> FaRegSmileWink<span class="token punctuation">,</span> FaThumbsUp<span class="token punctuation">,</span> FaYinYang <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-icons/fa'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> FiArrowUpRight <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-icons/fi'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> Button <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./Button'</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">{</span>
-  title<span class="token operator">:</span> <span class="token string">'Components/Button'</span><span class="token punctuation">,</span>
-  component<span class="token operator">:</span> Button<span class="token punctuation">,</span>
-  parameters<span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    children<span class="token operator">:</span> <span class="token string">'Click me!'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-  argTypes<span class="token operator">:</span> <span class="token punctuation">{</span>
-    children<span class="token operator">:</span> <span class="token punctuation">{</span>
-      description<span class="token operator">:</span> <span class="token string">'This is the text of the button, can be a node.'</span><span class="token punctuation">,</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'text'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    color<span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'primary'</span><span class="token punctuation">,</span> <span class="token string">'danger'</span><span class="token punctuation">,</span> <span class="token string">'info'</span><span class="token punctuation">,</span> <span class="token string">'warning'</span><span class="token punctuation">,</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span> <span class="token string">'light'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'select'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'This controls the color scheme of the button'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token string">'primary'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    variant<span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'solid'</span><span class="token punctuation">,</span> <span class="token string">'outline'</span><span class="token punctuation">,</span> <span class="token string">'naked'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'select'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'This controls the variant of the button'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token string">'solid'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    size<span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'sm'</span><span class="token punctuation">,</span> <span class="token string">'md'</span><span class="token punctuation">,</span> <span class="token string">'lg'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'radio'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'This controls the size of the button'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token string">'md'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    loading<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'boolean'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'This controls the loading state of the button'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token boolean">false</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    href<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'text'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If this is set, the button will be rendered as an anchor tag.'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    className<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'text'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'Classes to be applied to the button'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    disabled<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'boolean'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span> <span class="token string">'If true, the button will be disabled'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token boolean">false</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    rightIcon<span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'Smile'</span><span class="token punctuation">,</span> <span class="token string">'ThumbsUp'</span><span class="token punctuation">,</span> <span class="token string">'YinYang'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      mapping<span class="token operator">:</span> <span class="token punctuation">{</span>
-        Smile<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaRegSmileWink</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-        ThumbsUp<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaThumbsUp</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-        YinYang<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaYinYang</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If set, the icon will be rendered on the right side of the button'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    leftIcon<span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'Smile'</span><span class="token punctuation">,</span> <span class="token string">'ThumbsUp'</span><span class="token punctuation">,</span> <span class="token string">'YinYang'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      mapping<span class="token operator">:</span> <span class="token punctuation">{</span>
-        Smile<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaRegSmileWink</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-        ThumbsUp<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaThumbsUp</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-        YinYang<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FaYinYang</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If set, the icon will be rendered on the left side of the button'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    loadingText<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'text'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If set, the text will be rendered while the button is in the loading state'</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    target<span class="token operator">:</span> <span class="token punctuation">{</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'text'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If set, the target will be rendered as an attribute on the anchor tag'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token string">'_self'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token keyword">as</span><span class="token operator">:</span> <span class="token punctuation">{</span>
-      options<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'button'</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
-      control<span class="token operator">:</span> <span class="token punctuation">{</span> type<span class="token operator">:</span> <span class="token string">'select'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      description<span class="token operator">:</span>
-        <span class="token string">'If set, the button will be rendered as the specified element'</span><span class="token punctuation">,</span>
-      table<span class="token operator">:</span> <span class="token punctuation">{</span>
-        defaultValue<span class="token operator">:</span> <span class="token punctuation">{</span> summary<span class="token operator">:</span> <span class="token string">'button'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">,</span>
-    <span class="token punctuation">}</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span> <span class="token keyword">as</span> Meta<span class="token operator">&lt;</span><span class="token keyword">typeof</span> Button<span class="token operator">></span><span class="token punctuation">;</span>
-
-<span class="token keyword">type</span> <span class="token class-name">Story</span> <span class="token operator">=</span> StoryObj<span class="token operator">&lt;</span><span class="token keyword">typeof</span> Button<span class="token operator">></span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Primary<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Secondary<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    color<span class="token operator">:</span> <span class="token string">'secondary'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Danger<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    color<span class="token operator">:</span> <span class="token string">'danger'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Warning<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    color<span class="token operator">:</span> <span class="token string">'warning'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Light<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    color<span class="token operator">:</span> <span class="token string">'light'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Info<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    color<span class="token operator">:</span> <span class="token string">'info'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Custom<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    className<span class="token operator">:</span> <span class="token string">'bg-[yellow] text-[black] border-[orange]'</span><span class="token punctuation">,</span>
-    style<span class="token operator">:</span> <span class="token punctuation">{</span> borderRadius<span class="token operator">:</span> <span class="token string">'3.5rem'</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> WithRightIcon<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    rightIcon<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FiArrowUpRight</span></span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>h-5 w-auto<span class="token punctuation">'</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> WithLeftIcon<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    leftIcon<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FiArrowUpRight</span></span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>h-5 w-auto<span class="token punctuation">'</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Disabled<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    disabled<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> OutlineVariant<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    variant<span class="token operator">:</span> <span class="token string">'outline'</span><span class="token punctuation">,</span>
-    color<span class="token operator">:</span> <span class="token string">'danger'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> NakedVariant<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    variant<span class="token operator">:</span> <span class="token string">'naked'</span><span class="token punctuation">,</span>
-    color<span class="token operator">:</span> <span class="token string">'danger'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> Loading<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    loading<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> CustomLoadingText<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    loading<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-    loadingText<span class="token operator">:</span> <span class="token string">'Processing...'</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> AsLink<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    href<span class="token operator">:</span> <span class="token string">'https://fin.africa'</span><span class="token punctuation">,</span>
-    children<span class="token operator">:</span> <span class="token string">'Visit fin website'</span><span class="token punctuation">,</span>
-    rightIcon<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FiArrowUpRight</span></span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>h-5 w-auto<span class="token punctuation">'</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span>
-
-<span class="token keyword">export</span> <span class="token keyword">const</span> FullWidth<span class="token operator">:</span> Story <span class="token operator">=</span> <span class="token punctuation">{</span>
-  args<span class="token operator">:</span> <span class="token punctuation">{</span>
-    fullWidth<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
-    children<span class="token operator">:</span> <span class="token string">'Visit fin website'</span><span class="token punctuation">,</span>
-    rightIcon<span class="token operator">:</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">FiArrowUpRight</span></span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span>h-5 w-auto<span class="token punctuation">'</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">components/ui/Docs.mdx</code></p>
-<p>コンポーネントの仕組みをドキュメント化するのにストーリーファイルを使用することもできますが、Markdownファイルのほうがより詳細なドキュメント化が可能です。</p>
-<p><code class="language-text">Button</code>コンポーネントの開発に使用した規約は、筆者が全てのコンポーネントで実践している規約と同じものです。</p>
-<h2>重要なポイント</h2>
-<ul>
-<li>オープンソースソリューションであれ、自ら開発したものであれ、何らかのデザインシステムを用意しましょう。</li>
-<li>TypeScriptと仲良くなりましょう。TypeScriptをうまく活用し、コンポーネントの使い方を規定しましょう。ボタンコンポーネントが良い例です。<code class="language-text">leftIcon</code>と<code class="language-text">rightIcon</code>という2つのpropsがありますが、この記事ではTypeScriptを使用することでいずれか一方のみが設定されるようにし、両方設定された場合はエラーを返すようにしました。</li>
-</ul>
-<div class="gatsby-highlight" data-language="typescript"><pre style="counter-reset: linenumber NaN" class="language-typescript line-numbers"><code class="language-typescript"><span class="token keyword">export</span> <span class="token keyword">type</span> <span class="token class-name">ButtonProps</span> <span class="token operator">=</span> BaseProps <span class="token operator">&amp;</span>
-  <span class="token punctuation">(</span>
-    <span class="token operator">|</span> <span class="token punctuation">{</span>
-        rightIcon<span class="token operator">?</span><span class="token operator">:</span> ReactElement<span class="token punctuation">;</span>
-        leftIcon<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">never</span><span class="token punctuation">;</span>
-      <span class="token punctuation">}</span>
-    <span class="token operator">|</span> <span class="token punctuation">{</span>
-        rightIcon<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">never</span><span class="token punctuation">;</span>
-        leftIcon<span class="token operator">?</span><span class="token operator">:</span> ReactElement<span class="token punctuation">;</span>
-      <span class="token punctuation">}</span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<ul>
-<li>コードとコンポーネントをドキュメント化しましょう。Storybookなどのツールを使用するとよいでしょう。</li>
-<li>何らかのスタイルガイドを用意し、チームと共通のデザイン言語を使用しましょう。</li>
-<li>分かりやすいコードを書きましょう。コードベースは簡単で分かりやすいものにし、焦点を絞ります。それぞれのコードには単一の明確な目的が必要です。</li>
-<li>内部の仕組みを理解しましょう。Reactがどのようにして2つの値が同一であるかを確認するのかについて、筆者が調べた内容をこちらの記事にまとめています。</li>
-</ul>
-<h2>おわりに</h2>
-<p>この記事では、筆者が使用している手法やツールの一部を紹介しました。手元にあるツールを全て網羅してはいませんが、ご自身のニーズに合ったものが見つかると幸いです。全く新しいものを採用するよりも、熟知している技術を使い続けるのが賢明でしょう。</p>
-<p>つまるところ、クライアントが最も重視するのは最終製品であって、どのような技術を使用したかではないのです。Reactであれ、Vueであれ、あるいはその他のツールであれ、素早くデプロイでき、ユーザーにメリットがあるようなツールやワークフローを優先的に使用しましょう。</p>
-<h2>Resources</h2>
-<ul>
-<li><a href="https://mkosir.github.io/typescript-style-guide/">TypeScript Style Guide</a></li>
-<li><a href="https://turbo.build/">Turborepo</a></li>
-<li><a href="https://nextjs.org/">Next.js</a></li>
-<li><a href="https://tailwindcss.com/">Tailwind CSS</a></li>
-<li><a href="https://prettier.io/">Prettier</a></li>
-<li><a href="https://josemukorivo.com/">My website</a></li>
-</ul>]]></content:encoded></item></channel></rss>
+</div>]]></content:encoded></item></channel></rss>
