@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 30 Oct 2024 06:24:55 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 01 Nov 2024 11:09:05 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,180 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Analyzing the Performance of the &#8220;Proxy&#8221; Library</title>
+		<link>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/#respond</comments>
+		
+		<dc:creator><![CDATA[Mingxin Wang]]></dc:creator>
+		<pubDate>Fri, 01 Nov 2024 16:06:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Experimental]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34833</guid>
+
+					<description><![CDATA[<p>This article analyzes the performance of the "Proxy" library in various scenarios, demonstrating its significant advantages in indirect invocations and lifetime management across different platforms.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/">Analyzing the Performance of the &#8220;Proxy&#8221; Library</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Since the <a href="https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/">recent announcement of the Proxy 3 library</a>, we have received much positive feedback, and there have been numerous inquiries regarding the library&#8217;s actual performance. Although the &#8220;Proxy&#8221; library is designed to be <strong>fast</strong>, fulfilling one of our six core missions, it is not immediately clear how fast &#8220;Proxy&#8221; can be across different platforms and scenarios.</p>
+<p>To better understand the performance of the &#8220;Proxy&#8221; library, we designed <a href="https://github.com/microsoft/proxy/tree/main/benchmarks">15 benchmarks</a>, tested in four different environments, and automated them in <a href="https://github.com/microsoft/proxy/actions/workflows/pipeline-ci.yml">our GitHub pipeline</a> to generate benchmarking reports for every code change in the future. Everyone can download the reports and raw benchmarking data attached to each build. The rest of this article delves into the benchmarking details. The numbers shown below were generated from <a href="https://github.com/microsoft/proxy/actions/runs/11550031482#artifacts">a recent CI build</a>.</p>
+<h2>Indirect Invocation</h2>
+<p>Both <a href="https://microsoft.github.io/proxy/docs/proxy.html"><code>proxy</code></a> objects and virtual functions can perform indirect invocations. However, since they have different semantics and memory layout, it should be interesting to see how they compare to each other.</p>
+<p>Because <a href="https://microsoft.github.io/proxy/docs/make_proxy.html"><code>make_proxy</code></a> can effectively place a small object alongside metadata (similar to &#8220;small buffer optimization&#8221; in some other C++ libraries), the benchmarks are divided into two categories: invocation on small objects (4 bytes) and on large objects (48 bytes). By invoking 1,000,000 object of 100 different types, we got the first two rows of the report:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MSVC on Windows Server 2022 (x64)</th>
+<th>GCC on Ubuntu 24.04 (x64)</th>
+<th>Clang on Ubuntu 24.04 (x64)</th>
+<th>Apple Clang on macOS 15 (ARM64)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Indirect invocation on small objects via <code>proxy</code> vs. virtual functions</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>261.7% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>44.6% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>71.6% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>4.0% faster</strong></td>
+</tr>
+<tr>
+<td>Indirect invocation on large objects via <code>proxy</code> vs. virtual functions</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>186.1% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>15.5% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>17.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>10.5% faster</strong></td>
+</tr>
+</tbody>
+</table>
+<p>From the report, <code>proxy</code> is faster in all four environments, especially on Windows Server. This result is expected because the implementation of <code>proxy</code> directly stores the metadata of the underlying object, making it more cache-friendly.</p>
+<h2>Lifetime Management</h2>
+<p>In many applications, lifetime management of various objects can become a performance hotspot compared to indirect invocations. We benchmarked this scenario by creating 600,000 small or large objects within a single <code>std::vector</code> (with reserved space).</p>
+<p>Besides <code>proxy</code>, there are three typical standard options for storing arbitrary types: <code>std::unique_ptr</code>, <code>std::shared_ptr</code>, and <code>std::any</code>. <code>std::variant</code> is not included because it is essentially a <a href="https://en.wikipedia.org/wiki/Tagged_union">tagged union</a> and can only provide storage for a known set of types (though useful in data context management).</p>
+<p>For small objects, <code>proxy</code> and <code>std::any</code> usually won&#8217;t allocate additional storage. For large objects, <code>proxy</code> and <code>std::shared_ptr</code> offer allocator support (via <a href="https://microsoft.github.io/proxy/docs/allocate_proxy.html"><code>pro::allocate_proxy</code></a> and <a href="https://learn.microsoft.com/cpp/standard-library/memory-functions?view=msvc-170#allocate_shared"><code>std::allocate_shared</code></a>) to improve performance, while there is no direct API to customize <code>std::unique_ptr</code> or <code>std::any</code>.</p>
+<p>Here are the types we used in the benchmarks:</p>
+<table>
+<thead>
+<tr>
+<th>Small types</th>
+<th>Large types</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int</code></td>
+<td><code>std::array&lt;char, 100&gt;</code></td>
+</tr>
+<tr>
+<td><code>std::shared_ptr&lt;int&gt;</code></td>
+<td><code>std::array&lt;std::string, 3&gt;</code></td>
+</tr>
+<tr>
+<td><code>std::unique_lock&lt;std::mutex&gt;</code></td>
+<td><code>std::unique_lock&lt;std::mutex&gt;</code> + <code>void*[15]</code></td>
+</tr>
+</tbody>
+</table>
+<p>By comparing <code>proxy</code> with other solutions, we got the following numbers:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MSVC on Windows Server 2022 (x64)</th>
+<th>GCC on Ubuntu 24.04 (x64)</th>
+<th>Clang on Ubuntu 24.04 (x64)</th>
+<th>Apple Clang on macOS 15 (ARM64)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::unique_ptr</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>467.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>413.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>430.1% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>341.1% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (without memory pool)</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>639.2% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>509.3% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>492.5% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>484.2% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (with memory pool)</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>198.4% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>696.1% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>660.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>188.5% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::any</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>55.3% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>311.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>323.0% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>18.3% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> (without memory pool) vs. <code>std::unique_ptr</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>17.4% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>14.8% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>29.7% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f534.png" alt="🔴" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.3% slower</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> (with memory pool) vs. <code>std::unique_ptr</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>283.6% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>109.6% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>204.6% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>88.6% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (both without memory pool)</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>29.2% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.4% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.5% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>4.8% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (both with memory pool)</td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>10.8% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>9.9% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>8.3% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>53.2% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> (without memory pool) vs. <code>std::any</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>13.4% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>1.3% slower</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>0.9% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>9.5% faster</strong></td>
+</tr>
+<tr>
+<td>Basic lifetime management for large objects with <code>proxy</code> (with memory pool) vs. <code>std::any</code></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>270.7% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>80.1% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>136.9% faster</strong></td>
+<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>120.4% faster</strong></td>
+</tr>
+</tbody>
+</table>
+<p>From the benchmarking results:</p>
+<ul>
+<li><code>proxy</code> is much faster than any other 3 when the underlying object is small, or managed with memory pools.</li>
+<li><code>proxy</code> is slightly slower than <code>std::unique_ptr</code> when the underlying object is large and not managed with a memory pool.</li>
+<li>The performance of <code>std::any</code> varies in different environments, but is generally slower than <code>proxy</code>.</li>
+</ul>
+<h2>Summary</h2>
+<p>Although the test environments (<a href="https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners">GitHub-hosted runners</a>) may differ from actual production environments, the test results show significant performance advantages of <code>proxy</code> in both indirect invocations and lifetime management. If you have more ideas for benchmarking the &#8220;Proxy&#8221; library, we welcome contributions to <a href="https://github.com/microsoft/proxy">our GitHub repository</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/">Analyzing the Performance of the &#8220;Proxy&#8221; Library</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Enhanced Breakpoint Expressions for C++ Debugging in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/enhanced-breakpoint-expressions-for-c-debugging-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/enhanced-breakpoint-expressions-for-c-debugging-in-visual-studio/#comments</comments>
@@ -540,51 +714,6 @@
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2024/feed/</wfw:commentRss>
 			<slash:comments>6</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Fix C++ warnings and errors with Copilot: Introducing AI-Assisted Code Fixes in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/#comments</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Wed, 11 Sep 2024 10:00:41 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34627</guid>
-
-					<description><![CDATA[<p>Stuck on an unfamiliar build error? Want to resolve your code errors quickly? Copilot is now integrated into Visual Studio error workflows to assist you with understanding and resolving C++ errors and warnings. To access this new feature, you will need an active Copilot subscription and the latest 17.11 GA version of Visual Studio. How [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/">Fix C++ warnings and errors with Copilot: Introducing AI-Assisted Code Fixes in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Stuck on an unfamiliar build error? Want to resolve your code errors quickly? Copilot is now integrated into Visual Studio error workflows to assist you with understanding and resolving C++ errors and warnings.</p>
-<p>To access this new feature, you will need an <a href="https://github.com/features/copilot?utm_source=vscom&amp;utm_medium=hero&amp;utm_campaign=cta-get#pricing">active Copilot subscription</a> and the <a href="https://visualstudio.microsoft.com/">latest 17.11 GA version of Visual Studio</a>.</p>
-<h3>How does it work?</h3>
-<p>There are two different entry points to accommodate where you are at in your error workflow:</p>
-<ul>
-<li>The <strong>Quick Action lightbulb proposes a fix</strong> of a given error inline in your code window.</li>
-<li>The <strong>Error List Integration</strong> invokes Copilot in the chat window to <strong>explain the error code and showcase a proposed fix</strong>.</li>
-</ul>
-<p>Semantically relevant code snippets from your active file and related files are automatically included as context to increase the relevant of the proposed fix.</p>
-<h3>Fix with Copilot in the Quick Action Lightbulb</h3>
-<p>Copilot is integrated into the Quick Action lightbulb in your code editor, so that you can invoke Copilot and view proposed fixes inline with a few simple clicks. Just <strong>hover over the diagnostic squiggle</strong> or <strong>double-click on a diagnostic message in your Error List </strong>to access Fix with Copilot via Quick Action Lightbulb.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/fix-with-copilot-lightbulb.png"><img decoding="async" class="size-full wp-image-34628 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/fix-with-copilot-lightbulb.png" alt="Option to fix with Copilot over an error in the light bulb." width="1006" height="366" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/fix-with-copilot-lightbulb.png 1006w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/fix-with-copilot-lightbulb-300x109.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/fix-with-copilot-lightbulb-768x279.png 768w" sizes="(max-width: 1006px) 100vw, 1006px" /></a>From here, Copilot will invoke the /fix command with semantically relevant C++ code snippets to propose a fix for your code.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix.png"><img decoding="async" class="alignnone size-full wp-image-34629" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix.png" alt="VS diff viewer showing the implementation of a proposed fix." width="1795" height="553" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix.png 1795w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix-300x92.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix-1024x315.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix-768x237.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/diff-viewer-fix-1536x473.png 1536w" sizes="(max-width: 1795px) 100vw, 1795px" /></a></p>
-<p>You can edit the proposed code, accept any changes inline, or ask any follow-up questions in the inline Copilot Chat pane, without having to navigate away from the code editor.</p>
-<h3>Explain and Fix with Copilot in the Error List</h3>
-<p>If you want to learn more about the error itself, Copilot is integrated in the Error List to invoke by <strong>selecting the Copilot icon to the left of a code warning or error</strong> to provide an explanation alongside a proposed fix through the Chat pane. This can be beneficial for more complex fixes, as it can provide multiple code snippets across several files and a deeper understanding of the error itself.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list.png"><img decoding="async" class="alignnone size-full wp-image-34630" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list.png" alt="Copilot icon in the error list to ask copilot for an explanation and a fix," width="1858" height="355" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list.png 1858w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list-300x57.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list-1024x196.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list-768x147.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-error-list-1536x293.png 1536w" sizes="(max-width: 1858px) 100vw, 1858px" /></a></p>
-<p>Given the same relevant C++ context, it will help you more deeply understand the error code and propose a fix for the code. You also can ask follow-up questions or add any additional details via the Chat pane to probe further.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error.png"><img decoding="async" class="alignnone size-full wp-image-34631" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error.png" alt="Copilot Chat pane proposing an explanation and how to fix an error." width="813" height="1165" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error.png 813w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error-209x300.png 209w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error-715x1024.png 715w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/copilot-chat-error-768x1101.png 768w" sizes="(max-width: 813px) 100vw, 813px" /></a></p>
-<h3>What do you think?</h3>
-<p>Please let us know anything you’d like to see added to this feature or your experiences with this fixing experience. We have a survey available for any feedback here: <a href="https://www.surveymonkey.com/r/RKG68YN">https://www.surveymonkey.com/r/RKG68YN</a>. You’ll need an active <a href="https://github.com/features/copilot?utm_source=vscom&amp;utm_medium=hero&amp;utm_campaign=cta-get#pricing">GitHub Copilot</a> subscription. Download the <a href="http://aka.ms/vs">latest version of Visual Studio</a> and give it a try.</p>
-<p>In addition, our team is working hard on improving C++ integrations with Copilot Chat, so please let us know any other enhancements you’d like to see to your C++ workflows and content you’d like to see.</p>
-<p>We welcome all types of feedback on your experience with the product. Comment below, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via X at <a href="https://x.com/visualc">@VisualC</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/">Fix C++ warnings and errors with Copilot: Introducing AI-Assisted Code Fixes in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
