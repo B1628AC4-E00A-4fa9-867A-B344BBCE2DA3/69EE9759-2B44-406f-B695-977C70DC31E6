@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 07 Nov 2024 06:06:57 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 12 Nov 2024 20:58:48 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,144 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New for C++ Developers in Visual Studio 2022 17.12</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 12 Nov 2024 20:58:48 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34893</guid>
+
+					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.12 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page. Standard Library and MSVC [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/">What’s New for C++ Developers in Visual Studio 2022 17.12</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.12 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022">Update Visual Studio Learn page</a>.</p>
+<h2>Standard Library and MSVC Compiler</h2>
+<p>As always, you can find all the details about our STL work in the <a href="https://github.com/microsoft/STL/wiki/Changelog">changelog on GitHub</a>. Thanks to everyone who contributed changes for this release!</p>
+<p>On the conformance side, we have finished the implementation of C++23’s <a href="https://wg21.link/P2286R8">P2286R8</a> Formatting Ranges by implementing:</p>
+<ul>
+<li>Formatters for the container adaptors <code>stack</code>, <code>queue</code>, and <code>priority_queue</code>. <a href="https://github.com/microsoft/STL/pull/4825">#4825</a></li>
+<li><em>range-default-formatter</em>. <a href="https://github.com/microsoft/STL/pull/4716">#4716</a></li>
+<li style="list-style-type: none;"></li>
+</ul>
+<p>We implemented multidimensional subscript operators in the compiler, which supports our existing <code>&lt;mdspan&gt;</code> implementation. For example, you can use the <code>my_mdspan[i,j]</code> syntax to index multidimensional spans. Here’s a full example:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;mdspan&gt;
+#include &lt;print&gt;
+
+using namespace std;
+int main() {
+    const char* const str{"CatDogElkFox"};
+    //Defines a multidimensional view of str
+    mdspan&lt;const char, extents&lt;int, 4, 3&gt;&gt; m{str, 4, 3};
+
+    for (int i = 0; i &lt; m.extents().extent(0); ++i) {
+        for (int j = 0; j &lt; m.extents().extent(1); ++j) {
+            //Note the m[i, j] syntax
+            print("m[{}, {}]: '{}'; ", i, j, m[i, j]);
+        }
+        println();
+    }
+}</code></pre>
+<p>This release also comes with some new C++26 features:</p>
+<ul>
+<li><a href="https://wg21.link/P2997R1">P2997R1</a> Removing The Common Reference Requirement From The Indirectly Invocable Concepts</li>
+<li><a href="https://wg21.link/P0952R2">P0952R2</a> A New Specification For <code>generate_canonical()</code></li>
+<li><a href="https://wg21.link/P2968R2">P2968R2</a> Make <code>std::ignore</code> A First-Class Object</li>
+</ul>
+<p>You’ll find improvements to several debug visualizers, including those for <code>mutex</code>/<code>recursive_mutex</code> and <code>move_iterator</code>.</p>
+<p>We added <code>lifetimebound</code> attributes to <code>min</code>, <code>max</code>, <code>clamp</code>, <code>ranges::min</code>, <code>ranges::max</code>, and <code>ranges::clamp</code>, allowing MSVC code analysis and Clang <code>-Wdangling</code> to detect dangling references in improper usage. See the documentation for <a href="https://learn.microsoft.com/cpp/code-quality/c26815">warnings C26815</a> and <a href="https://learn.microsoft.com/cpp/code-quality/c26816">C26816</a> for more information about <code>lifetimebound</code> annotations.</p>
+<p>Finally, we improved the performance of several types and algorithms. The <code>popcount()</code> function now uses a compiler intrinsic on ARM64. We further improved the vectorized implementations of the <code>minmax_element()</code> and <code>minmax()</code> algorithm families, and optimized the <code>search()</code> and <code>find_end()</code> algorithms. We also overhauled the implementations of <code>condition_variable</code> and <code>condition_variable_any</code>, which has knock-on effects on the <code>timed_mutex</code> and <code>recursive_timed_mutex</code> types.</p>
+<h2>C++ Productivity</h2>
+<h3>Set Command Line Arguments</h3>
+<p>For Unreal Engine projects, you can now set the command line arguments to pass to your application directly from the toolbar. This toolbar component will show up by default if you have the <strong>Game development with C++</strong> workload installed. If you don&#8217;t see it, you can add it by right-clicking on the toolbar and selecting <strong>Set Arguments</strong>.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/5y29l8fr.png"><img fetchpriority="high" decoding="async" class="wp-image-34921 size-full alignnone" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/5y29l8fr.png" alt="Set command line arguments box" width="600" height="171" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/5y29l8fr.png 600w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/5y29l8fr-300x86.png 300w" sizes="(max-width: 600px) 100vw, 600px" /></a></p>
+<p>We’ll be adding support for this feature to non-UE projects in the future. See <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/specify-command-line-arguments?view=vs-2022">Pass command-line arguments while debugging</a> on Microsoft Learn for documentation.</p>
+<h3>Open Folder for Unreal Engine uproject</h3>
+<p>We have added an additional entry point to open your Unreal Engine uproject with Visual Studio&#8217;s uproject support. You can now open your uproject directly from the <strong>File</strong> menu by selecting <strong>Open &gt; Folder&#8230;</strong>. This will open your Unreal Engine project in Visual Studio.</p>
+<p>For more information on how to use this feature, see the <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/specify-command-line-arguments?view=vs-2022">documentation on Microsoft Learn</a> and our <a href="https://aka.ms/DirectUnrealSupport">announcement blog post</a>.</p>
+<p><img decoding="async" width="800" height="450" class="wp-image-34895" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-2.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-2.png 800w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-2-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-2-768x432.png 768w" sizes="(max-width: 800px) 100vw, 800px" /></p>
+<h3>Change Signature Improvements</h3>
+<p>We have updated the <strong>Change Signature</strong> interface, allowing you to add, remove, and rearrange parameters in the parameter configuration section. Additionally, you can change their order by selecting and dragging them to a new position.</p>
+<p>The access methods remain the same: press Ctrl+. to trigger the <em>Quick Actions and Refactorings</em> menu and select <strong>Change Signature</strong>.</p>
+<p><img decoding="async" width="1680" height="1009" class="wp-image-34896" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3.png 1680w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3-300x180.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3-1024x615.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3-768x461.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-3-1536x923.png 1536w" sizes="(max-width: 1680px) 100vw, 1680px" /></p>
+<h2>Build Insights</h2>
+<h3>Run Build Insights on Selected Files</h3>
+<p>You can select a few files, run Build Insights on them, and see exactly how these files impact build performance.</p>
+<p><img decoding="async" width="700" height="393" class="wp-image-34897" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/run-build-insights-on-file-selection-file-selectio.png" alt="Run Build Insights on File Selection File Selection Command in contextual menu of selected files." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/run-build-insights-on-file-selection-file-selectio.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/run-build-insights-on-file-selection-file-selectio-300x168.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<h3>Filter Projects</h3>
+<p>You can now filter results based on projects. Simply click the filter button on the filter column header and select the projects you want to filter.</p>
+<p><img decoding="async" width="801" height="667" class="wp-image-34898" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/project-filter-under-the-project-header.png" alt="Project Filter under the project header" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/project-filter-under-the-project-header.png 801w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/project-filter-under-the-project-header-300x250.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/project-filter-under-the-project-header-768x640.png 768w" sizes="(max-width: 801px) 100vw, 801px" /></p>
+<h3>Glob Patterns to Filter Files</h3>
+<p>The File Path Filter is incredibly useful for narrowing down your analysis to specific directories or excluding paths that aren’t relevant to your task.</p>
+<p><img decoding="async" width="447" height="347" class="wp-image-34899" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/file-path-filter.png" alt="File Path Filter" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/file-path-filter.png 447w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/file-path-filter-300x233.png 300w" sizes="(max-width: 447px) 100vw, 447px" /></p>
+<h3>Enhanced Save Experience</h3>
+<p>Now you can designate a folder to automatically store the reports so you can easily access them during your investigation.</p>
+<p><img decoding="async" width="846" height="570" class="wp-image-34900" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/setting-to-save-traces-in-custom-location.png" alt="Setting to save traces in custom location" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/setting-to-save-traces-in-custom-location.png 846w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/setting-to-save-traces-in-custom-location-300x202.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/setting-to-save-traces-in-custom-location-768x517.png 768w" sizes="(max-width: 846px) 100vw, 846px" /></p>
+<h3>View Explanations</h3>
+<p>You can now see a short description on how each tab of <a href="https://learn.microsoft.com/en-us/cpp/build-insights/?view=msvc-170">Build Insights</a> can be used, along with a link to the documentation for a detailed explanation.</p>
+<p><img decoding="async" width="700" height="394" class="wp-image-34901" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-8.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-8.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-8-300x169.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<h3>Path Adjustments</h3>
+<p>We have hidden full and relative paths to reduce clutter. To see full paths, simply hover over the file. You will also see a new <em>File Name</em> column for both files and translation units, displayed by default to help you quickly identify files without parsing lengthy paths.</p>
+<p><img decoding="async" width="700" height="394" class="wp-image-34902" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-9.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-9.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-9-300x169.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<h2>General Productivity</h2>
+<h3>Copy from the Error List</h3>
+<p>When you copy an error from the <strong>Error List</strong> using Ctrl+C, now only the description is copied to the clipboard. This makes it easier to search for the error online or share it with others.</p>
+<p>You can still copy the entire row by right-clicking the error and selecting <strong>Copy Row</strong> from the context menu or hitting Ctrl+Shift+C.</p>
+<p>If what you wanted to do with the error description was to do a web search, then just hit Ctrl+F1 to search for information about the error online.</p>
+<p><img decoding="async" width="510" height="261" class="wp-image-34903" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica.png 510w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica-300x154.png 300w" sizes="(max-width: 510px) 100vw, 510px" /></p>
+<h3>Dock the Code Search window</h3>
+<p>If you need <strong>Code</strong> or <strong>Feature Search</strong> to stay out of your way, you now have more control over the behavior of the search window.</p>
+<p>You can now dock the search window and perform tool window actions with it, like <strong>Solution Explorer</strong> and others.</p>
+<p><img decoding="async" width="1200" height="662" class="wp-image-34904" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/search-docked-to-the-bottom.png" alt="Search docked to the bottom" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/search-docked-to-the-bottom.png 1200w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/search-docked-to-the-bottom-300x166.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/search-docked-to-the-bottom-1024x565.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/search-docked-to-the-bottom-768x424.png 768w" sizes="(max-width: 1200px) 100vw, 1200px" /></p>
+<p>After opening <strong>Code Search</strong> or <strong>Feature Search</strong>, click on the box icon at the top right to convert it into a tool window. You may choose to dock it elsewhere, pop it out, auto-hide, etc. You can revert to the dismissible window by closing the tool window and reopening search.</p>
+<p><img decoding="async" width="700" height="235" class="wp-image-34905" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-second-icon-is-the-tool-windo.png" alt="Top right of window, second icon is the tool window icon" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-second-icon-is-the-tool-windo.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-second-icon-is-the-tool-windo-300x101.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<p>We&#8217;ve also simplified and cleaned up the previewing experience in search. There is now one button, indicated with an eye icon, to toggle the preview on and off.</p>
+<p><img decoding="async" width="700" height="235" class="wp-image-34906" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-first-icon-is-the-preview-pan.png" alt="Top right of window, first icon is the preview panel icon" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-first-icon-is-the-preview-pan.png 700w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/top-right-of-window-first-icon-is-the-preview-pan-300x101.png 300w" sizes="(max-width: 700px) 100vw, 700px" /></p>
+<h3>Refresh your Find results</h3>
+<p>We heard from a lot of users that it&#8217;s frustrating having to reopen the <strong>Find</strong> window and go through the motions of redoing a search to get updated results. Maybe you just refactored some code and want to confirm everything has been changed as expected, or you pulled some recent changes and need your recent Find operation to reflect those updates.</p>
+<p>After completing <strong>Find in Files</strong>, you will now have the option to refresh the results in the window. You&#8217;ll get your updated results without having to redo the search.</p>
+<p><img decoding="async" width="857" height="292" class="wp-image-34907" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-14.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-14.png 857w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-14-300x102.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-14-768x262.png 768w" sizes="(max-width: 857px) 100vw, 857px" /></p>
+<h3>Non-blocking Code Cleanup on save</h3>
+<p>Previously when a Code Cleanup action was run on save, you couldn&#8217;t perform any actions in the IDE. We&#8217;ve now enhanced this to operate in a non-blocking manner. The cleanup process will run in the background and can be automatically cancelled if you resume typing.</p>
+<h2>Git</h2>
+<h3>Manage file renaming</h3>
+<p>When you rename files from the <strong>Solution Explorer</strong>, you&#8217;ll now be reminded to stage your changes to see the renames in Git.</p>
+<p><img decoding="async" width="900" height="505" class="wp-image-34908" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/git-mv-notification.png" alt="Git mv notification" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/git-mv-notification.png 900w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/git-mv-notification-300x168.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/git-mv-notification-768x431.png 768w" sizes="(max-width: 900px) 100vw, 900px" /></p>
+<h3>Copy Git link</h3>
+<p>You can now get a GitHub or Azure DevOps link to a specific line of code to make it easy to share with your colleagues. Access this option by right-clicking on some code and selecting <strong>Git &gt; Copy GitHub/Azure DevOps Permalink</strong>.</p>
+<p><img decoding="async" width="594" height="137" class="wp-image-34909" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica-1.png" alt="A screenshot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica-1.png 594w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-description-automatica-1-300x69.png 300w" sizes="(max-width: 594px) 100vw, 594px" /></p>
+<h2>Debugging</h2>
+<h3>Inline Return Values</h3>
+<p>The debugger now displays return values inline, making it much easier to see the return value of functions that have complex return statements.</p>
+<p><img decoding="async" width="869" height="256" class="wp-image-34910" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-computer-screen-with-numbers-and-symbols-descri.png" alt="A computer screen with numbers and symbols Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-computer-screen-with-numbers-and-symbols-descri.png 869w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-computer-screen-with-numbers-and-symbols-descri-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-computer-screen-with-numbers-and-symbols-descri-768x226.png 768w" sizes="(max-width: 869px) 100vw, 869px" /></p>
+<h2>GitHub Copilot</h2>
+<h3>Smart Variable Inspection</h3>
+<p>You can now click on <strong>Ask Copilot</strong> next to the value of a variable to get AI-driven insights into what led to your current program state. For example, the following program has an off-by-one error in its loop condition, resulting in undefined behavior:</p>
+<p><img decoding="async" width="940" height="443" class="wp-image-34911" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-18.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-18.png 940w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-18-300x141.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-18-768x362.png 768w" sizes="(max-width: 940px) 100vw, 940px" /></p>
+<p>If you click <strong>Ask Copilot</strong>, it tells you what went wrong:</p>
+<p><img decoding="async" width="309" height="327" class="wp-image-34912" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-code-description-autom.png" alt="A screenshot of a computer code Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-code-description-autom.png 309w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-code-description-autom-283x300.png 283w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-code-description-autom-24x24.png 24w" sizes="(max-width: 309px) 100vw, 309px" /></p>
+<h3>Fix my Code</h3>
+<p>For errors in the Visual Studio Error List, you can click <strong>Ask Copilot for an explanation and a fix </strong>to get suggestions on how to rectify your errors. For example, if we try to fix the code from the previous section by introducing a range based for loop, we might get the following error:</p>
+<p><img decoding="async" width="940" height="552" class="wp-image-34913" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-20.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-20.png 940w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-20-300x176.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34893-20-768x451.png 768w" sizes="(max-width: 940px) 100vw, 940px" /></p>
+<p>Copilot suggests the following:</p>
+<p><img decoding="async" width="356" height="175" class="wp-image-34914" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screen-shot-of-a-computer-description-automatic.png" alt="A screen shot of a computer Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screen-shot-of-a-computer-description-automatic.png 356w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screen-shot-of-a-computer-description-automatic-300x147.png 300w" sizes="(max-width: 356px) 100vw, 356px" /></p>
+<h3>Debug Failed Tests</h3>
+<p>We might fix the above issue and write a test case to ensure the function works, but then have a cat sit on our keyboard and accidentally initialize <code>n_cats</code> to <code>1</code> instead of <code>0</code>. Fortunately, GitHub Copilot now comes with options to help debug the test failure:</p>
+<p><img decoding="async" width="488" height="126" class="wp-image-34915" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-error-description-auto.png" alt="A screenshot of a computer error Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-error-description-auto.png 488w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-error-description-auto-300x77.png 300w" sizes="(max-width: 488px) 100vw, 488px" /></p>
+<p>Selecting this option may give something like the following:</p>
+<p><img decoding="async" width="364" height="236" class="wp-image-34916" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-program-description-au.png" alt="A screenshot of a computer program Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-program-description-au.png 364w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/a-screenshot-of-a-computer-program-description-au-300x195.png 300w" sizes="(max-width: 364px) 100vw, 364px" /></p>
+<h2>Send us your feedback</h2>
+<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us on Twitter (<a href="https://twitter.com/visualc" target="_blank" rel="noopener">@VisualC</a>), or via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/">What’s New for C++ Developers in Visual Studio 2022 17.12</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New in vcpkg (October 2024)</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-october-2024/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-october-2024/#respond</comments>
@@ -77,7 +215,7 @@
 <li>Fixed <code>nuget</code> command for <code>setapikey</code> in <a href="https://learn.microsoft.com/vcpkg/consume/binary-caching-nuget">Set up a vcpkg binary cache using a NuGet feed</a> tutorial (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/381">Microsoft/vcpkg-docs#381</a>, thanks @Thomas1664!).</li>
 </ul>
 <p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img fetchpriority="high" decoding="async" class="wp-image-34879" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1.png" width="735" height="216" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-768x226.png 768w" sizes="(max-width: 735px) 100vw, 735px" /></p>
+<p><img decoding="async" class="wp-image-34879" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1.png" width="735" height="216" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34878-1-768x226.png 768w" sizes="(max-width: 735px) 100vw, 735px" /></p>
 <h1>Total ports available for tested triplets</h1>
 <table>
 <tbody>
@@ -865,38 +1003,6 @@
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Tailored Code Completions for C++ Developers: Fine-tuned models are now in limited public beta for GitHub Copilot Enterprise</title>
-		<link>https://devblogs.microsoft.com/cppblog/tailored-code-completions-for-c-developers-fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/tailored-code-completions-for-c-developers-fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/#respond</comments>
-		
-		<dc:creator><![CDATA[Erika Sweet]]></dc:creator>
-		<pubDate>Thu, 26 Sep 2024 15:27:37 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34687</guid>
-
-					<description><![CDATA[<p>GitHub recently announced that custom models are available for GitHub Copilot Enterprise users in limited public beta. Custom models are fine-tuned on your organization’s proprietary codebases and coding practices to provide more contextually relevant and consistent inline suggestions. How It Works: Security and Privacy in Custom Models The data used to train your organization’s custom [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/tailored-code-completions-for-c-developers-fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/">Tailored Code Completions for C++ Developers: Fine-tuned models are now in limited public beta for GitHub Copilot Enterprise</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>GitHub recently announced that <a href="https://docs.github.com/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/customizing-copilot-for-your-organization/creating-a-custom-model-for-github-copilot">custom models</a> are available for GitHub Copilot Enterprise users in limited public beta. Custom models are fine-tuned on your organization’s proprietary codebases and coding practices to provide more contextually relevant and consistent inline suggestions.</p>
-<h4>How It Works: Security and Privacy in Custom Models</h4>
-<p>The data used to train your organization’s custom model is never used to train another customer’s model, and your custom model is never shared. You can learn more about the fine-tuning process in GitHub’s <a href="https://github.blog/news-insights/product-news/fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/#how-we-fine-tune-custom-models-for-github-copilot">announcement post</a> and <a href="https://docs.github.com/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/customizing-copilot-for-your-organization/creating-a-custom-model-for-github-copilot#about-copilot-custom-models">documentation</a>.</p>
-<h4>C and C++ Case Study: Microsoft Office</h4>
-<p>Custom models can be particularly valuable for repositories that rely on internal APIs, specialized frameworks, or strict coding styles. As a case study, GitHub partnered with the Microsoft Office organization to fine-tune a custom model on Office’s C and C++ code. After switching to the custom model, Office developers observed code completions that were more consistent with their unique C++ dialect (e.g., macros, strict naming conventions), coding practices (e.g., use of feature gates), and specific needs.</p>
-<blockquote><p>“Code completion is much better than before. It seems to generate functions quite well, given arguments, return type and a comment explaining what the function does. I personally used it to write a block of authentication code where a pop-up would be shown only if silent login fails.” – Office developer</p></blockquote>
-<h4>Join the Waitlist</h4>
-<p>The code on which you want to train a custom model must be hosted in repositories owned by your organization on GitHub.com. If you meet this requirement and are interested in joining the waitlist, you can <a href="https://github.com/github-copilot/fine_tuning_waitlist_signup/join">sign-up here</a>. Note that custom models for GitHub Copilot Enterprise are currently in limited public beta and subject to change. If you’re interested in learning more, check out the <a href="https://docs.github.com/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/customizing-copilot-for-your-organization/creating-a-custom-model-for-github-copilot">custom model documentation</a>.</p>
-<p>If you have feedback on Copilot for C++ in Visual Studio or VS Code, we’d love to learn more. You can reach us via email (<a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>) or X (<a href="https://x.com/visualc">@VisualC</a>).</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/tailored-code-completions-for-c-developers-fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/">Tailored Code Completions for C++ Developers: Fine-tuned models are now in limited public beta for GitHub Copilot Enterprise</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/tailored-code-completions-for-c-developers-fine-tuned-models-are-now-in-limited-public-beta-for-github-copilot-enterprise/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
