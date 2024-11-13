@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 12 Nov 2024 20:58:48 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 12 Nov 2024 23:10:37 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,9 +28,54 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Siemens Healthineers manages C++ libraries with vcpkg in an offline build environment</title>
+		<link>https://devblogs.microsoft.com/cppblog/siemens-healthineers-manages-c-libraries-with-vcpkg-in-an-offline-build-environment/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/siemens-healthineers-manages-c-libraries-with-vcpkg-in-an-offline-build-environment/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Tue, 12 Nov 2024 23:10:37 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[CPP]]></category>
+		<category><![CDATA[vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34928</guid>
+
+					<description><![CDATA[<p>vcpkg is a free and open-source C/C++ package manager maintained by Microsoft and the C++ community that runs on Windows, macOS, and Linux. Over the years we have heard from companies using vcpkg to manage dependencies at enterprise-scale. For this blog post, I spoke to Shrey Chauhan, a Senior DevOps Engineer with Siemens Healthineers. Siemens [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/siemens-healthineers-manages-c-libraries-with-vcpkg-in-an-offline-build-environment/">Siemens Healthineers manages C++ libraries with vcpkg in an offline build environment</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><a href="https://learn.microsoft.com/vcpkg/get_started/overview">vcpkg is a free and open-source C/C++ package manager</a> maintained by Microsoft and the C++ community that runs on Windows, macOS, and Linux. Over the years we have heard from companies using vcpkg to manage dependencies at enterprise-scale. For this blog post, I spoke to Shrey Chauhan, a Senior DevOps Engineer with Siemens Healthineers.</p>
+<p>Siemens Healthineers adopted vcpkg in late 2023 after a successful proof of concept. Their main motivation was to improve their <strong>versioning</strong> and overall dependency management for C++ libraries in their <strong>offline, air-gapped build environment</strong>. They also like vcpkg’s integration with the Visual Studio IDE, extensive and evolving library support, and automatic dependency resolution.</p>
+<h1>About Siemens Healthineers and development team</h1>
+<p><strong>Shrey:</strong> The Ultrasound business area is an integral part of Siemens Healthineers. This advanced medical device features a comprehensive hardware layer and a full-stack windows-based software layer. Ultrasound Software teams handle the development of the entire software stack, while the DevOps team manages CI/CD processes, including building, packaging, deployment, and related tools.</p>
+<h1>C++ development environment</h1>
+<p>Siemens Healthineers develops on Windows and targets Windows x64. They use Visual Studio 2022 with MSBuild projects, and their project is a combination of C#, C++/CLI, and C++. They have around 300 developers maintaining over 6 million lines of code. In addition, they use Azure DevOps as their continuous integration system.</p>
+<h1>How they were managing C++ dependencies before vcpkg</h1>
+<p>Their team mostly consumes open-source dependencies. They were previously packaging the C++ dependencies in individual .zip packages, which were being downloaded from a JFrog Artifactory repository. This is a tedious process because the path to each .dll or .lib needs to be correct and could vary based on the package.</p>
+<h1>Q: When did your team move to vcpkg and why did you ultimately choose to move to vcpkg?</h1>
+<p><strong>Shrey:</strong> We moved to vcpkg around September or October 2023 with the main reasoning being <strong>improved versioning and dependency management</strong> of C++ libraries. We did a proof of concept to determine if it suited our needs with respect to our <strong>air-gapped build environment</strong>, which was successful after a little help from vcpkg team. Additional features we benefitted from:</p>
+<ol>
+<li>vcpkg is <strong>well integrated with Visual Studio IDE</strong></li>
+<li>Has <strong>extensive library support</strong>, which is still evolving</li>
+<li><strong>Automatic dependency resolution</strong></li>
+</ol>
+<p>In Siemens Ultrasound, our builds/CI are on a protected network with restricted access to the Internet. By default, vcpkg downloads packages from source repositories (Internet) which did not work for us because of access restrictions. We were able to work with the vcpkg team to integrate custom <strong>Asset Caching</strong> (which was later documented under: <a href="https://learn.microsoft.com/vcpkg/examples/asset-caching-source-nuget">How to create a x-script Asset Caching source for NuGet | Microsoft Learn</a>) to use our own Azure DevOps NuGet feed as a source to upload &amp; restore packages. This addressed our issue with the air-gapped environment and allowed us to reuse existing cached packages, making the process more efficient.</p>
+<h1>Q: What is your overall impression of vcpkg?</h1>
+<p><strong>Shrey:</strong> Overall, the feedback has been good so far. vcpkg does a great job of caching the built libraries, making the developers’ workflow efficient. It has also been easily accepted by developers because of its ease of use (i.e. no extra steps or setup was required).</p>
+<h1>Learn More About vcpkg</h1>
+<p>If you want to learn more about vcpkg, check out <a href="https://vcpkg.io/en/">our website at vcpkg.io</a> and read the <a href="https://learn.microsoft.com/vcpkg/get_started/overview">vcpkg overview</a> in our documentation.</p>
+<p>If you have a story you would like to share with us about your experiences with vcpkg, feel free to contact us at <a href="mailto:vcpkg@microsoft.com">vcpkg@microsoft.com</a>. You can submit bug reports in our <a href="https://github.com/microsoft/vcpkg/issues">GitHub issue tracker</a> or <a href="https://github.com/microsoft/vcpkg/discussions/new?category=ideas">make feature requests</a> in our discussion forum.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/siemens-healthineers-manages-c-libraries-with-vcpkg-in-an-offline-build-environment/">Siemens Healthineers manages C++ libraries with vcpkg in an offline build environment</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/siemens-healthineers-manages-c-libraries-with-vcpkg-in-an-offline-build-environment/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New for C++ Developers in Visual Studio 2022 17.12</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/#respond</comments>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/#comments</comments>
 		
 		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
 		<pubDate>Tue, 12 Nov 2024 20:58:48 +0000</pubDate>
@@ -161,7 +206,7 @@ int main() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-12/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
+			<slash:comments>1</slash:comments>
 		
 		
 			</item>
@@ -974,34 +1019,6 @@ int main() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/latest-enhancements-to-copilot-workflows-in-visual-studio-move-seamlessly-from-copilot-in-quick-info-and-more/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio at Unreal Fest Seattle 2024</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/#comments</comments>
-		
-		<dc:creator><![CDATA[David Li]]></dc:creator>
-		<pubDate>Mon, 30 Sep 2024 17:01:09 +0000</pubDate>
-				<category><![CDATA[Game Development]]></category>
-		<category><![CDATA[CPP]]></category>
-		<category><![CDATA[unreal engine]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34694</guid>
-
-					<description><![CDATA[<p>Join us in-person at Unreal Fest Seattle 2024 with an in-depth look at how Visual Studio and GitHub Copilot can help modernize your Unreal Engine game development. Session Title: Modernizing Game Development with Visual Studio and AI Session Info: October 3rd, 2024, 2:00 PM-3:00 PM Pacific Time &#124; Room 445 Abstract: Join Microsoft to learn [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/">Visual Studio at Unreal Fest Seattle 2024</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024.png"><img decoding="async" class="aligncenter size-full wp-image-34695" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024.png" alt="Image UEFest2024 Modernizing Game Development with Visual Studio and AI" width="1200" height="675" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024.png 1200w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024-1024x576.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/09/UEFest2024-768x432.png 768w" sizes="(max-width: 1200px) 100vw, 1200px" /></a>Join us in-person at <a href="https://unrealfest.unrealengine.com/event/a3d80deb-8bf5-4261-b083-52dccbce1f47/summary">Unreal Fest Seattle 2024</a> with an in-depth look at how Visual Studio and GitHub Copilot can help modernize your Unreal Engine game development.</p>
-<p><strong>Session Title:</strong> Modernizing Game Development with Visual Studio and AI</p>
-<p><strong>Session Info:</strong> October 3rd, 2024, 2:00 PM-3:00 PM Pacific Time | Room 445</p>
-<p><strong>Abstract: </strong>Join Microsoft to learn how Visual Studio can speed up your iteration cycle from start to finish. Discover productivity tools for optimizing class structure memory layout; identify and rectify build issues with Build Insights integration; and explore performance enhancements. We&#8217;ll also cover advanced Unreal Engine integrations such as Blueprint references and directly editing your uproject. Lastly, get an in-depth look at the latest advancements of GitHub Copilot, regardless of your source control system. In this session, you will discover how Visual Studio can enhance your productivity and efficiency throughout your development process.</p>
-<p>We look forward to seeing you at Unreal Fest Seattle 2024.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/">Visual Studio at Unreal Fest Seattle 2024</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-at-unreal-fest-seattle-2024/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
 		
 		
