@@ -1,4 +1,193 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Sat, 19 Oct 2024 09:22:50 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[ReactコードをCSSの:hasセレクタで置き換える]]></title><description><![CDATA[CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。  大昔、とは言ってもCSSが出てきた当初の話ですが、CSSはカスケードする仕…]]></description><link>https://postd.cc/replacing-react-with-css/</link><guid isPermaLink="false">https://postd.cc/replacing-react-with-css/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><category><![CDATA[CSS]]></category><pubDate>Sat, 19 Oct 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 28 Nov 2024 01:26:12 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[アルゴリズムのパフォーマンスを段階的に改善する]]></title><description><![CDATA[最近、筆者はRaBitQという新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでにC++実装を提供しており、実行速度はかなり速いです。筆…]]></description><link>https://postd.cc/rabitq-bench/</link><guid isPermaLink="false">https://postd.cc/rabitq-bench/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><category><![CDATA[アルゴリズム]]></category><category><![CDATA[Rust]]></category><pubDate>Thu, 28 Nov 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>最近、筆者は<a href="https://arxiv.org/abs/2405.12497">RaBitQ</a>という新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでに<a href="https://github.com/gaoj0017/RaBitQ">C++実装</a>を提供しており、実行速度はかなり速いです。筆者はこれを<a href="https://github.com/kemingy/rabitq">Rustに書き換えようとしました</a>（いわゆるRiiR（Rewrite it in Rust）です）が、実装結果は元のアルゴリズムよりも大幅に遅いことが判明しました。この記事では、アルゴリズムのパフォーマンスを段階的に改善する方法をご紹介します。</p>
+<h2>環境の準備</h2>
+<h3>データセット</h3>
+<p>最も重要なのは、適当なデータセットをいくつか用意することです。前述の論文では、<code class="language-text">sift_dim128_1m_l2</code>と<code class="language-text">gist_dim960_1m_l2</code>という2つのデータセットについての結果が示されています。このデータセットでは、128項目と960項目というのがよく使われるサイズであり、1,000,000個のデータポイント（ベクトル）があれば性能を測るのに十分だということです。つまり、これらのデータセットを使うことで、アルゴリズムの性能をしっかりと評価できるということです。データセットは<a href="http://corpus-texmex.irisa.fr/">こちら</a>からダウンロードできます。（こちらのサイトはTLSに対応しておらず、FTPダウンロードしか提供していません。）</p>
+<p>これらのデータセットは、一般的なベクトル形式である<code class="language-text">fvecs/ivecs</code>を使用しています。</p>
+<div class="gatsby-highlight" data-language="python"><pre style="counter-reset: linenumber NaN" class="language-python line-numbers"><code class="language-python"><span class="token operator">|</span> dim <span class="token punctuation">(</span><span class="token number">4</span> <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span> vector <span class="token punctuation">(</span><span class="token number">4</span> <span class="token operator">*</span> dim <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span>
+<span class="token operator">|</span> dim <span class="token punctuation">(</span><span class="token number">4</span> <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span> vector <span class="token punctuation">(</span><span class="token number">4</span> <span class="token operator">*</span> dim <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token operator">|</span> dim <span class="token punctuation">(</span><span class="token number">4</span> <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span> vector <span class="token punctuation">(</span><span class="token number">4</span> <span class="token operator">*</span> dim <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">|</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>読み取り／書き込み用のスクリプトは筆者の<a href="https://gist.github.com/kemingy/2f503fcfff86b9e0197e975c02359157">Gist</a>から取得できます。</p>
+<h3>プロファイリングツール</h3>
+<p>Rustコードのプロファイリングには<a href="https://blog.mapotofu.org/blogs/rabitq-bench/#:~:text=I%20use-,samply,-to%20profile%20the">samply</a>を使用しています。このツールは<a href="https://profiler.firefox.com/">Firefox Profiler</a>に追加して使用できます。プロファイリングの結果は、クラウドにアップロードすることで他者と共有することもできます。こちらは<a href="https://share.firefox.dev/3Y4Hppz">Gistで公開されているC++版のプロファイリング例</a>です。ビューはFlameGraphとCallTreeが最も一般的です。パフォーマンスイベント権限を付与し、mlockの上限を増やす必要があります。</p>
+<div class="gatsby-highlight" data-language="bash"><pre style="counter-reset: linenumber NaN" class="language-bash line-numbers"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">'1'</span> <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /proc/sys/kernel/perf_event_paranoid
+<span class="token function">sudo</span> <span class="token function">sysctl</span> <span class="token assign-left variable">kernel.perf_event_mlock_kb</span><span class="token operator">=</span><span class="token number">2048</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<p><a href="https://godbolt.org/">GodBolt</a>のCompiler Explorerも、C++とRustの関数のアセンブリコードを比較するのに役立ちます。</p>
+<h3>Cargoプロファイル</h3>
+<p>リリースビルドにデバッグ情報を含めるには、<code class="language-text">Cargo.toml</code>に新たなプロファイルを追加します。</p>
+<div class="gatsby-highlight" data-language="toml"><pre style="counter-reset: linenumber NaN" class="language-toml line-numbers"><code class="language-toml"><span class="token punctuation">[</span><span class="token table class-name">profile.perf</span><span class="token punctuation">]</span>
+<span class="token key property">inherits</span> <span class="token punctuation">=</span> <span class="token string">"release"</span>
+<span class="token key property">debug</span> <span class="token punctuation">=</span> <span class="token boolean">true</span>
+<span class="token key property">codegen-units</span> <span class="token punctuation">=</span> <span class="token number">16</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>コンパイルコストとランタイム速度は、プロファイリングにおけるユーザーエクスペリエンスを大きく左右します。</p>
+<ul>
+<li><code class="language-text">cargo build</code>はコンパイル速度は速いものの、Pythonよりもコードの実行速度は遅い場合がある</li>
+<li><code class="language-text">cargo build --release</code>は、コードの実行速度は速いものの、コンパイルには時間がかかる場合がある
+ベンチマーキングには<code class="language-text">opt-level = 3</code>を使用することを推奨します。
+以下の設定の使用が推奨されているのを目にしましたが、筆者の場合はコンパイル速度が遅くなり、パフォーマンスの改善は全く見られませんでした。</li>
+</ul>
+<div class="gatsby-highlight" data-language="toml"><pre style="counter-reset: linenumber NaN" class="language-toml line-numbers"><code class="language-toml"><span class="token key property">codegen-units</span> <span class="token punctuation">=</span> <span class="token number">1</span>
+<span class="token key property">lto</span> <span class="token punctuation">=</span> <span class="token string">"fat"</span>
+<span class="token key property">panic</span> <span class="token punctuation">=</span> <span class="token string">"abort"</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<h3>ベンチマークツール</h3>
+<p><a href="https://github.com/bheisler/criterion.rs">Criterion</a>は、統計に基づく優れたベンチマークツールです。関連するベンチマークコードをすべて格納するために、新たな<a href="https://github.com/kemingy/rs_bench">リポジトリ</a>を作成しました。ベンチマークコードは同じリポジトリに入れる必要があるようです。</p>
+<p>注目すべき点として、ベンチマークの結果はあまり安定していません。筆者の場合はコードに手を加えていない状態で<code class="language-text">±10%</code>の差異が見られました。ノートパソコンを使用している場合、高温によりCPUがアンダークロックし、さらに差異が広がる可能性があります。</p>
+<p>関数のベンチマークには、いくつかの異なるパラメータを使用することをおすすめします。この場合、筆者は異なる項目のベクトルを使用します。すべての項目の結果がプラスであれば、通常は改善が効果的であることを意味します。</p>
+<h3>指標</h3>
+<p>最初からいくつかの指標を追加しましょう。指標をチェックすることで、多くのバグやパフォーマンスの問題を見つけることができます。筆者は、現行の要件が単純であるため直接<code class="language-text">AtomicU64</code>を使用していますが、後で<a href="https://github.com/prometheus/client_rust">Prometheusを使った指標</a>に移行するかもしれません。
+指標／ロギング／トレースが多すぎるとパフォーマンスに影響が出る可能性があるため、これらを追加する際には注意してください。</p>
+<h3>リソース</h3>
+<p>ベンチマークの際に、筆者はエンドツーエンドのQPSが極めて不安定であることに気がつきました。コードを再コンパイルしていなくても、翌朝にはベンチマークの結果に<strong>15</strong>%の改善または悪化が見られる場合もあります。また、筆者はVSCodeの拡張機能「rust-analyzer」を使用しているため、CPUが完全にアイドル状態ではなく、CPUの使用率は低いもののベンチマークの結果に大きな影響を及ぼすことが分かりました。ちなみに、筆者は8つの高性能コアと8つの高効率コアで構成された<a href="https://www.intel.com/content/www/us/en/products/sku/230500/intel-core-i713700k-processor-30m-cache-up-to-5-40-ghz/specifications.html">Intel Core i7-13700K</a>を使用しており、プログラムはシングルスレッドです。</p>
+<p>筆者は<code class="language-text">taskset</code>を使用してプロセスを実行するCPUを指定しています。そうすることで、種類の異なるコアのスケジューリングの影響を受けることはありません。</p>
+<p>第13〜14世代のIntel Core CPUは電圧が非常に高いため不安定です。筆者はこの問題をBIOSで修正しました。</p>
+<p>クラウドの仮想マシンはCPU温度の影響を受けないかもしれませんが、クラウドプロバイダーにはCPUのスロットリングやオーバーコミットに関する独自のポリシーがある場合があります。</p>
+<h2>段階的な改善</h2>
+<h3>単純な実装から始める</h3>
+<p>筆者の<a href="https://github.com/kemingy/rabitq/tree/dbfd54bd5d739b0729dc28e6fbd8d5413b019561">最初のリリース</a>は、<a href="https://docs.rs/nalgebra">nalgebra</a>という代数ライブラリをベースにRaBitQアルゴリズムを実装しました。主な理由は、RaBitQアルゴリズムにおいて重要なステップである直交行列を取得するためにQR分解を使う必要があるからです。また、成熟した線形代数ライブラリは行列やベクトルを操作するのに役立つ関数を多く提供するため、アルゴリズムを実装しやすいという利点もあります。Pythonで<code class="language-text">numpy</code>を使わずに行列の乗算、射影、分解に関するアルゴリズムを実装することを考えてみてください。まさに悪夢です。</p>
+<p><code class="language-text">nalgebra</code>はこのようなシナリオ向けに最適化されているため、パフォーマンスは良いはずだと考えました。しかし、ベンチマークは筆者の予想よりもかなり遅い結果となりました。<code class="language-text">numpy</code>で再実装した方がはるかに速いでしょう:(</p>
+<p><a href="https://share.firefox.dev/3AwiVNR">プロファイリング</a>によると、<code class="language-text">f32::clone()</code>の呼び出しが多数あります。全体の時間の約33%を占めており、<code class="language-text">query_one</code>関数に注目すると44%となります。この結果から、一部のベクトルについてメモリを事前に割り当て、同じイテレーション内で再利用するという非常に一般的な裏技が使えることが分かります。したがって、<code class="language-text">(x - y).norm_squared()</code>を使う代わりに、<code class="language-text">(x - y)</code>の結果を格納する別のベクトルをあらかじめ宣言する必要があり、結果的に<code class="language-text">x.sub_to(y, &amp;mut z); z.norm_squared()</code>となります。<a href="https://github.com/kemingy/rabitq/commit/23f9aff4c8b3303c0a03ac9a7472ada8cc915a3b">コミット23f9aff</a>をご覧ください。</p>
+<p>ほとんどの代数ライブラリと同様に、このベクトルは列優先で行列を格納するため、行よりも列に対して処理を順番に繰り返し実行した方が速いことを意味します。イテレーションの前に行列を転置しなくてはならないのは少し面倒であり、ベクトルと行列の乗算がすべてコンパイル時に項目のミスマッチエラー（<code class="language-text">1 x dyn</code>または<code class="language-text">dyn x 1</code>）を検出できるとは限りません。</p>
+<h3>CPUターゲット</h3>
+<p>RaBitQは、バイナリの内積距離を用いておおよその距離を推定します。距離は以下により計算します。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token keyword">fn</span> <span class="token function-definition function">binary_dot_product</span><span class="token punctuation">(</span>x<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token punctuation">[</span><span class="token keyword">u64</span><span class="token punctuation">]</span><span class="token punctuation">,</span> y<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token punctuation">[</span><span class="token keyword">u64</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">-></span> <span class="token keyword">u32</span> <span class="token punctuation">{</span>
+    <span class="token macro property">assert_eq!</span><span class="token punctuation">(</span>x<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> y<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> res <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token number">0</span><span class="token punctuation">..</span>x<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        res <span class="token operator">+=</span> <span class="token punctuation">(</span>x<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;</span> y<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">count_ones</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    res
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ここでは、<code class="language-text">u64::count_ones()</code>は組み込み関数であるため、通常は特別な設定なしで使用できると考えましたが、実際にはコンパイル時にpopcnt機能を有効化する必要があります。<code class="language-text">RUSTFLAGS="-C target-feature=+popcnt"</code>を使うことで有効化できますが、筆者は<code class="language-text">RUSTFLAGS="-C target-cpu=native"</code>を好みます。後者は現在のCPUが対応するすべてのCPU機能を有効化しますが、バイナリ互換性が失われます。現時点では、特定の環境でのみ使用するため問題ではないと考えています。以下のセクションでも、AVX2機能を有効化するためにこの環境変数が必要になります。</p>
+<p>CPUの機能は以下のコマンドを使用することで確認できます。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust">rustc <span class="token operator">-</span><span class="token operator">-</span>print<span class="token operator">=</span>cfg <span class="token operator">-</span><span class="token class-name">C</span> target<span class="token operator">-</span>cpu<span class="token operator">=</span>native <span class="token operator">|</span> rg target_feature</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<h3>SIMD</h3>
+<p>最近傍探索において重要な関数は距離関数であり、この場合はユークリッド距離です。通常は、平方根の計算を避けるためにL2二乗距離を使用します。単純な実装は以下のようになります。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token punctuation">{</span>
+    y<span class="token punctuation">.</span><span class="token function">sub_to</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> <span class="token operator">&amp;</span><span class="token keyword">mut</span> residual<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    residual<span class="token punctuation">.</span><span class="token function">norm_squared</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>プロファイリングの後、<code class="language-text">f32::clone()</code>がまだ残っていることに気づきました。<code class="language-text">nalgebra</code>のソースコードを確認してみると、何らかの理由により多数の<code class="language-text">clone</code>がありました。そこで、SIMDを手書きすることにしました。幸い、<a href="https://github.com/nmslib/hnswlib">hnswlib</a>（人気のHNSW実装）がすでに<a href="https://github.com/nmslib/hnswlib/blob/master/hnswlib/space_l2.h">これ</a>を実装しています。</p>
+<p>これにより、距離の計算において<code class="language-text">f32::clone()</code>がなくなり、SIFTでQPSが<strong>28</strong>%改善します。<a href="https://github.com/kemingy/rabitq/commit/5f82fccf8b39964ef1f66e9927fb126fd6886765">コミット5f82fcc</a>をご覧ください。</p>
+<p>筆者のCPUはAVX512に対応していないため、AVX2バージョンを使用しています。<a href="https://store.steampowered.com/hwsurvey/">Steamでハードウェアの統計データ</a>を確認できますが、「<em>Other Settings</em>」にSIMDのサポートが記載されています。<em>100</em>%のユーザーがSSE3に対応し、<em>94.61</em>%のユーザーがAVX2に対応していますが、AVX512Fに対応しているユーザーは<em>13.06</em>%に過ぎません。当然この統計データは偏っており、ほとんどのクラウドIntel CPUはAVX512に対応しています。ゲームプレイヤーがすべてのユーザーを代表することはできません。</p>
+<p>SIMDを使用する上で非常に役立つガイドとして<a href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#">Intel Intrinsics Guide</a>が挙げられます。オンラインだと使い勝手が良くないため、サイトをダウンロードすることをおすすめします。組み込み関数の「<strong>レイテンシ</strong>」と「<strong>スループット</strong>」は必ず確認してください。そうしないと、通常のバージョンよりもコードが遅くなる場合があります。</p>
+<p><a href="https://db.in.tum.de/~finis/x86%20intrinsics%20cheat%20sheet%20v1.0.pdf">x86 Intrinsics Cheat Sheet</a>というリソースもあります。こちらは筆者のような初心者が使いやすい内容になっています。</p>
+<p><a href="https://github.com/ashvardanian">@ashvardanian</a>が、テール要素問題を解決する「マスクロード」（AVX512が必要）に関する記事を<a href="https://ashvardanian.com/posts/simsimd-faster-scipy/#tails-of-the-past-the-significance-of-masked-loads">投稿</a>しています。</p>
+<p>コードを他のプラットフォームでも実行できるようにするには、以下を行います。
+<code class="language-text">rust
+#[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+{
+    if is_x86_feature_detected!("avx2") {
+        // AVX2 version
+    } else {
+        // normal version
+    }
+}
+</code></p>
+<p>SIMD向けにより良いcfgを書くのに役立つクレートがいくつかありますが、今のところは複雑にせず、シンプルにしておきましょう。</p>
+<h3>SIMDに関する補足</h3>
+<p>SIMDは金槌のようなものなので、今度はコードの中の「釘」をもっと見つける必要があります。</p>
+<p><a href="https://github.com/kemingy/rabitq/commit/f114fc1ec58686596ade0df02a96fcf04b0bf828">コミットf114fc1</a>でAVX2を使用して<code class="language-text">binarize_vector</code>関数を書き換えたところ、GistのQPSが<strong>32</strong>%改善した</p>
+<p><del>元のC++版に比べて、この実装も分岐がありません</del>。<code class="language-text">opt-level=3</code>を有効化すると、コンパイラによってこれを最適化することができます。<a href="https://godbolt.org/z/hjP5qjabz">アセンブリ</a>をご覧ください。</p>
+<div class="gatsby-highlight" data-language="diff"><pre style="counter-reset: linenumber NaN" class="language-diff line-numbers"><code class="language-diff">@andrewaylett pointed out that opt-level=3 can optimize this</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><em>opt-level=3でこれを最適化できると@andrewaylettが指摘</em></p>
+<div class="gatsby-highlight" data-language="diff"><pre style="counter-reset: linenumber NaN" class="language-diff line-numbers"><code class="language-diff"><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span> let shift = if (i / 32) % 2 == 0 { 32 } else { 0 };
+</span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span> let shift = ((i >> 5) &amp; 1) &lt;&lt; 5;  // opposite version because I store the binary in u64 with different endian from the C++ version</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<p>-<em>let shift = if (i / 32) % 2 == 0 { 32 } else { 0 };</em></p>
+<p>+<em>let shift = ((i >> 5) &#x26; 1) &#x3C;&#x3C; 5;  // C++版とは異なるエンディアンを使用してバイナリをu64に格納するため、逆バージョン</em></p>
+<div class="gatsby-highlight" data-language="diff"><pre style="counter-reset: linenumber NaN" class="language-diff line-numbers"><code class="language-diff">@NovaX first pointed out that it's equivalent to i &amp; 32, which is more readable.</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><em>より可読性に優れたi &#x26; 32と同等であると、@NovaXが最初に指摘</em></p>
+<h3>スカラー量子化</h3>
+<p>コード内の<code class="language-text">f32::clone()</code>を減らすため、筆者はもっと多くの<code class="language-text">nalgebra</code>関数を手動で実装することにしました。<code class="language-text">min</code>および<code class="language-text">max</code>関数が最も一般的なものです。<code class="language-text">nalgebra</code>バージョンは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token keyword">let</span> lower_bound <span class="token operator">=</span> residual<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> upper_bound <span class="token operator">=</span> residual<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<p>これは以下により行います。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token keyword">fn</span> <span class="token function-definition function">min_max</span><span class="token punctuation">(</span>vec<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token punctuation">[</span><span class="token keyword">f32</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">-></span> <span class="token punctuation">(</span><span class="token keyword">f32</span><span class="token punctuation">,</span> <span class="token keyword">f32</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> min <span class="token operator">=</span> <span class="token keyword">f32</span><span class="token punctuation">::</span><span class="token constant">MAX</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> max <span class="token operator">=</span> <span class="token keyword">f32</span><span class="token punctuation">::</span><span class="token constant">MIN</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> v <span class="token keyword">in</span> vec<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span> <span class="token operator">*</span>v <span class="token operator">&lt;</span> min <span class="token punctuation">{</span>
+            min <span class="token operator">=</span> <span class="token operator">*</span>v<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token operator">*</span>v <span class="token operator">></span> max <span class="token punctuation">{</span>
+            max <span class="token operator">=</span> <span class="token operator">*</span>v<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token punctuation">(</span>min<span class="token punctuation">,</span> max<span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>以前は便利なので<code class="language-text">f32::min()</code>と<code class="language-text">f32::max()</code>を使用していましたが、昇順／降順以外のベクトルについては<code class="language-text">if</code>の方がパフォーマンスが優れています。</p>
+<p>次のようにメソッドチェーンでベクトルに対して処理を数回繰り返し実行し、複数のイテレーションでの集計によりスカラー量子化を計算する代わりに、</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token keyword">let</span> y_scaled <span class="token operator">=</span> residual<span class="token punctuation">.</span><span class="token function">add_scalar</span><span class="token punctuation">(</span><span class="token operator">-</span>lower_bound<span class="token punctuation">)</span> <span class="token operator">*</span> one_over_delta <span class="token operator">+</span> <span class="token operator">&amp;</span><span class="token keyword">self</span><span class="token punctuation">.</span>rand_bias<span class="token punctuation">;</span>
+<span class="token keyword">let</span> y_quantized <span class="token operator">=</span> y_scaled<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>v<span class="token closure-punctuation punctuation">|</span></span> v<span class="token punctuation">.</span><span class="token function">to_u8</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">"convert to u8 error"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> scalar_sum <span class="token operator">=</span> y_quantized<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fold</span><span class="token punctuation">(</span><span class="token number">0u32</span><span class="token punctuation">,</span> <span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>acc<span class="token punctuation">,</span> <span class="token operator">&amp;</span>v<span class="token closure-punctuation punctuation">|</span></span> acc <span class="token operator">+</span> v <span class="token keyword">as</span> <span class="token keyword">u32</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>1回のループでこれを実行できます。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token punctuation">{</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> sum <span class="token operator">=</span> <span class="token number">0u32</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token number">0</span><span class="token punctuation">..</span>vec<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">let</span> q <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>vec<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> lower_bound<span class="token punctuation">)</span> <span class="token operator">*</span> multiplier <span class="token operator">+</span> bias<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token keyword">u8</span><span class="token punctuation">;</span>
+        quantized<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> q<span class="token punctuation">;</span>
+        sum <span class="token operator">+=</span> q <span class="token keyword">as</span> <span class="token keyword">u32</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    sum
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>スカラー量子化については、<code class="language-text">f32</code>を<code class="language-text">u8</code>に変換できることは分かっているため、<code class="language-text">to_u8().unwrap()</code>の代わりに<code class="language-text">as u8</code>を使用できます。
+<a href="https://github.com/kemingy/rabitq/commit/af39c1ce47eb8ea32e11f47b99548e77846397ea">コミットaf39c1c</a>および<a href="https://github.com/kemingy/rabitq/commit/d2d51b0785f0234df4d83a60eea96a36486a1120">コミットd2d51b0</a>は、GistのQPSを<strong>31</strong>%改善しました。
+以下の部分もSIMDで書き換えることができ、これによりGistのQPSが12%改善します。</p>
+<ul>
+<li>最小／最大：<a href="https://github.com/kemingy/rabitq/commit/c97be68c13c7b4498b564afe3de2a1f6d8bca5ce">コミットc97be68</a>および<a href="https://github.com/kemingy/rabitq/commit/e5a4af05433bf724da6902d34a745b4b2bdefd8d">コミットe5a4af0</a></li>
+<li>スカラー量子化：<a href="https://github.com/kemingy/rabitq/commit/28efe097a46696bb1a5469db22e500bafdc04514">コミット28efe09</a></li>
+</ul>
+<p>tr_mulをベクトル射影であるSIMDに置き換えることも試してみました。ここでは、<code class="language-text">nalgebra</code>がBLASを使用することが判明したため、パフォーマンスは変わりません。</p>
+<h3>新たな代数クレート：faer</h3>
+<p><code class="language-text">f32::clone()</code>の問題について調べている際に、<a href="https://github.com/sarah-quinones/faer-rs">faer</a>という新たなRust代数クレートを見つけました。多数のSIMDにより最適化されており、行と列のイテレーションパフォーマンスを向上させます。QR分解もnalgebraよりかなり高速です。こちらの<a href="https://github.com/kemingy/rabitq/commit/04118219d28bd0d43594c98c71e752faa81ff79d">コミット0411821</a>はトレーニング部分を高速化します。</p>
+<p>また、<a href="https://github.com/kemingy/rabitq/commit/0d969bdcfb331f87e938e043e01acc648e1cf963">コミット0d969bd</a>以降は<code class="language-text">ColRef</code>や<code class="language-text">RowRef</code>ラッパーなしでこれらのベクトルを通常のスライスとして使用できます。</p>
+<p>最初からfaerを使っていれば、多くのトラブルを回避できていたでしょう。いずれにせよ、この経験から多くを学びました。</p>
+<h3>バイナリ内積</h3>
+<p>バイナリ内積についてはpopcntがすでに解決済みと思っていましたが、<a href="https://share.firefox.dev/3Yk3Ok8">FlameGraph</a>によると、<code class="language-text">count_ones()</code>の呼び出しが<code class="language-text">binary_dot_product</code>の実行時間に占める割合は7%にすぎないようです。AVX512には<code class="language-text">vpopcntq</code>命令がありますが、AVX2シミュレーションの方が一般的なので、筆者はこちらを使用しています。</p>
+<p><a href="https://github.com/komrad36/popcount/blob/master/popcnt.h">こちら</a>はAVX2を用いたpopcnt実装の良い参考になります。<a href="https://github.com/kemingy/rabitq/commit/edabd4a64c5b8ea2637b5332105638edf16afa7c">コミットedabd4a</a>はこれをRustで再実装したもので、GistのQPSを<strong>11</strong>%改善します。この裏技は、ベクトルに256以上の項目がある場合しかうまくいきません。つまり、バイナリ表現に256ビット必要ということです。</p>
+<h3>インライン</h3>
+<p><a href="https://doc.rust-lang.org/reference/attributes/codegen.html#the-inline-attribute">#[inline]</a>属性は慎重に使う必要があります。この属性をすべてのSIMD関数に追加することで、GistのQPSが<strong>5</strong>%改善します。</p>
+<h3>IO</h3>
+<p>ここで少し背景情報を追加する必要があります。</p>
+<p>現行の実装は、<a href="https://en.wikipedia.org/wiki/K-means_clustering">k平均法</a>を用いてベクトルのクラスタリングを行い、セントロイドをメモリに格納するIVFアルゴリズムがベースになっています。クエリベクトルは、<code class="language-text">l2_squared_distance(query, centroid)</code>がより小さいクラスタとしか比較されません。</p>
+<p>探索する最近傍クラスタの数を制御する<code class="language-text">n_probe</code>というパラメータがあります。<code class="language-text">n_probe</code>の値が大きいと再現率は上がりますが、QPSは下がります。</p>
+<p>RaBitQは、バイナリ内積を使用しておおよその距離を推定します。しきい値よりも小さい場合は元のL2二乗距離と同じランキングにリランキングし、それとともにしきい値を更新します。</p>
+<p>筆者は以前、n最近傍を選択するだけで並べ替えを行わない<code class="language-text">slice::select_nth_unstable</code>を使用していました。クエリから遠いクラスタを探索するとリランキング率が上がり、L2二乗距離の計算が増えます。選択したn番目のクラスタを並べ替えることで、GistのQPSが<strong>4</strong>%改善しました。</p>
+<p>別の裏技として、各クラスタのベクトルをセントロイドまでの距離順に並び替える方法もあります。<a href="https://github.com/kemingy/rabitq/commit/ea13ebca46257d7c2e22250fe02a481e7681f0a9">こちらのコミットea13ebc</a>も、GistのQPSを<strong>4</strong>%改善しました。</p>
+<p>各ベクトルのおおよその距離の推定に使用するメタデータがいくつかあります。</p>
+<ul>
+<li>factor_ip: f32</li>
+<li>factor_ppc: f32</li>
+<li>error: f32</li>
+<li>x_c_distance_square: f32</li>
+</ul>
+<p>以前、筆者は4つの<code class="language-text">Vec&lt;f32></code>を使用してこれらのメタデータを格納していましたが、計算を行う際にはそれぞれに<code class="language-text">vector[i]</code>が必要なため、IOには適していませんでした。<a href="https://github.com/kemingy/rabitq/commit/bb440e3e8b150f590523eaa77e7c62165a5ee764">コミットbb440e3</a>でこれらを一つのstructに組み合わせることで、GistのQPSが<strong>2.5</strong>%改善しました。これは4xf32であるためうまく行き、そのためC表現を直接使用することができます。</p>
+<div class="gatsby-highlight" data-language="rust"><pre style="counter-reset: linenumber NaN" class="language-rust line-numbers"><code class="language-rust"><span class="token attribute attr-name">#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]</span>
+<span class="token attribute attr-name">#[repr(C)]</span>
+<span class="token keyword">struct</span> <span class="token type-definition class-name">Factor</span> <span class="token punctuation">{</span>
+    factor_ip<span class="token punctuation">:</span> <span class="token keyword">f32</span><span class="token punctuation">,</span>
+    factor_ppc<span class="token punctuation">:</span> <span class="token keyword">f32</span><span class="token punctuation">,</span>
+    error_bound<span class="token punctuation">:</span> <span class="token keyword">f32</span><span class="token punctuation">,</span>
+    center_distance_square<span class="token punctuation">:</span> <span class="token keyword">f32</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>残念ながら、<code class="language-text">faer</code>はu64ベクトルに対応していません。したがって、ベクトルのバイナリ表現を<code class="language-text">Vec&lt;Vec&lt;u64>></code>に格納する必要があります。<a href="https://github.com/kemingy/rabitq/commit/48236b23069db92bdb741fc6693e126b52c397ce">コミット48236b2</a>でこれを<code class="language-text">Vec&lt;u64></code>に変更することで、GistのQPSが<strong>2</strong>%改善しました。</p>
+<h3>const generics</h3>
+<p>C++版は、テンプレートを使用して異なる項目のコードを生成します。この機能はRustにもありますが、異なる項目用のコードの再コンパイルは、少数の固定された項目しかない会社の中など、特定のユースケースでしか行えない可能性があるため、筆者は試してみませんでした。公開ライブラリでは、ユーザーが自ら再コンパイルする必要がないよう、一般解を提供する方が良いでしょう。</p>
+<h3>その他のツール</h3>
+<p><a href="https://github.com/Shnatsel/bounds-check-cookbook/">bounds-check-cookbook</a>では、safe Rustで境界チェックを無くす方法の例をいくつか紹介しています。</p>
+<p>筆者は<a href="https://doc.rust-lang.org/rustc/profile-guided-optimization.html">PGO</a>と<a href="https://github.com/llvm/llvm-project/tree/main/bolt">BOLT</a>を試してみましたが、改善は得られませんでした。</p>
+<p><a href="https://github.com/tikv/jemallocator">jemalloc</a>や<a href="https://github.com/microsoft/mimalloc">mimalloc</a>に変えてもパフォーマンスは改善しません。</p>
+<h2>まとめ</h2>
+<ul>
+<li>SIMDは適切に使用すれば素晴らしい</li>
+<li>特に大きなデータセットではIOも重要</li>
+</ul>
+<p>データセットGistを使用したパフォーマンスは、現時点ではC++版と同じです。筆者はSIMDをより頻繁に使用しますが、C++版はconst genericsを使用しています。</p>
+<h2>参考文献</h2>
+<ul>
+<li><a href="https://en.algorithmica.org/hpc/algorithms/matmul/">Algorithmica / HPC</a></li>
+</ul>
+<p><img src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" style="width: initial"> <br>
+この著作物のライセンスは、<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>に基づいて付与されています。</p>]]></content:encoded></item><item><title><![CDATA[ReactコードをCSSの:hasセレクタで置き換える]]></title><description><![CDATA[CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。  大昔、とは言ってもCSSが出てきた当初の話ですが、CSSはカスケードする仕…]]></description><link>https://postd.cc/replacing-react-with-css/</link><guid isPermaLink="false">https://postd.cc/replacing-react-with-css/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><category><![CDATA[CSS]]></category><pubDate>Sat, 19 Oct 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>CSSの新しい:hasセレクタと、これを使用したReactコードの改善方法について説明します。実用的で美しい例とともに。</p>
 <p><img src="https://www.developerway.com/_next/image?url=%2Fassets%2Freplacing-react-with-css%2Fwelcome.png&#x26;w=1080&#x26;q=75"></p>
 <p>大昔、とは言ってもCSSが出てきた当初の話ですが、CSSはカスケードする仕組みになっていると教えられていました。それは、Cascading Style Sheetsという名前からも分かります。CSSでは、入れ子のように要素の中の要素を指定し、さらにその中に含まれる要素を指定していくことができます。しかし、その逆はできません。したがって、子要素が親要素にスタイルを適用するには、JavaScriptを使うしかありませんでした。</p>
 <p>今までは。</p>
@@ -1883,375 +2072,4 @@ AIが近い将来デザインの仕事を完全に置き換える可能性は極
 <li>“<a href="https://kentcdodds.com/blog/write-tests">Write tests. Not too many. Mostly integration,</a>” Kent C. Dodds</li>
 <li>“<a href="https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications">The Testing Trophy and Testing Classifications,</a>” Kent C. Dodds</li>
 <li>“<a href="https://kentcdodds.com/blog/static-vs-unit-vs-integration-vs-e2e-tests">Static vs Unit vs Integration vs E2E Testing for Frontend Apps,</a>” Kent C. Dodds</li>
-</ul>]]></content:encoded></item><item><title><![CDATA[React Server Componentsを理解する]]></title><description><![CDATA[私も年を取ったと感じるのは、今年Reactが10年目を迎えたからです。 混乱していた開発コミュニティにReactが初めて紹介されてから10年、以来いくつもの進化を遂げてきました。Reactチームは、…]]></description><link>https://postd.cc/server-components/</link><guid isPermaLink="false">https://postd.cc/server-components/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Mon, 29 Jan 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>私も年を取ったと感じるのは、今年Reactが10年目を迎えたからです。</p>
-<p>混乱していた開発コミュニティにReactが初めて紹介されてから10年、以来いくつもの進化を遂げてきました。Reactチームは、急進的な改革ということに関しては躊躇しませんでした。問題に対して、より良い解決策が見つかれば、それを実行してきました。</p>
-<p>数か月前、Reactチームは最新のパラダイム・シフトであるReact Server Componentsを発表しました。史上初めて、Reactコンポーネントがサーバーでのみ実行できるようになったのです。</p>
-<p>このことに関連してオンライン上では、<em>きわめて大きな混乱</em>が起きています。それが何なのか、どのように機能するのか、利点は何か、そしてSSR（Server Side Rendering）などとどのように連携するのか、多くの人が多くの疑問を抱いています。</p>
-<p>私はReact Server Componentsに関する数多くの実験を行ってきており、私自身が持っていた多くの疑問に対する回答を得てきました。正直に言うと、この技術に関して私は予想していたよりもはるかに興奮しています。<em>本当に素晴らしい技術です！</em></p>
-<p>そこで今日の私の目標は、このことを分かりやすく解説し、React Server Componentsについて皆さんが持っている多くの疑問に答えることです。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>対象読者</h3><p>このチュートリアルは主として、すでにReactを使用していて、React Server Componentsに関心がある開発者の方々を対象として書かれています。Reactの専門家である必要はありませんが、Reactを使い始めたばかりの場合はだいぶ混乱するかもしれません。</p></div></div>
-<h2>Server Side Renderingの簡単解説</h2>
-<p>React Server Componentsを理解するうえで、SSRがどのように機能するかを理解することが役立ちます。すでにSSRについて理解している場合は、次の見出しに進んでください。
-私が2015年にReactを使い始めたとき、ほとんどのReactセットアップでClient Side Rendering（CSR）戦略が用いられていました。ユーザーが受け取るのは次のようなHTMLファイルでした。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token doctype"><span class="token punctuation">&lt;!</span><span class="token doctype-tag">DOCTYPE</span> <span class="token name">html</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>root<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/static/js/bundle.js<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>この<code class="language-text">bundle.js</code>スクリプトには、Reactや他のサードパーティの依存関係、自分たちが作成したすべてのコードなど、アプリケーションをマウントして実行するために必要なものがすべて含まれています。</p>
-<p>JSがダウンロードされて解析されると、Reactが動作し始め、アプリケーション全体のすべてのDOMノードを呼び出し、それを空の<code class="language-text">&lt;div id="root"></code>に格納します。</p>
-<p>このアプローチの問題点は、すべての作業を実行するのに時間がかかることです。しかもその作業中、ユーザーは何も表示されていない白い画面を見つめ続けることになります。この問題は時間の経過につれて悪化する傾向があります。新しい機能がリリースされるたびに、JavaScriptバンドルに新たに多くのキロバイトが追加され、ユーザーが座って待つ時間が長くなっていきます。<sup id="fnref-1"><a href="#fn-1" class="footnote-ref">1</a></sup></p>
-<p>サーバー・サイド・レンダリングは、こうした状況を改善するために設計されました。空のHTMLファイルを送信する代わりに、サーバーはアプリケーションをレンダリングして実際のHTMLを生成します。ユーザーは完全に形成されたHTMLドキュメントを受け取ることになります。</p>
-<p>双方向性の処理には、引き続きクライアント上でReactが動作することが必要なため、そのHTMLファイルには従来通り<code class="language-text">&lt;script></code>タグが含まれています。ただし、ブラウザ内で若干異なる動作をするようReactを構成します。最初からすべてのDOMノードを呼び出す代わりに、既存のHTMLを採用するのです。このプロセスは<em>ハイドレーション</em>と呼ばれています。</p>
-<p>このことに関しては、ReactのコアチームメンバーであるDan Abramovによる次の説明が気に入っています。</p>
-<blockquote>
-<p><em>Hydration is like watering the “dry” HTML with the “water” of interactivity and event handlers.（ハイドレーションとは、「乾いた」HTMLに双方向性とイベント・ハンドラーの「水」を注ぐようなものである。）</em></p>
-</blockquote>
-<p>JSバンドルがダウンロードされると、Reactはアプリケーション全体を素早く実行して、UIの仮想スケッチを構築し、それを実際のDOMに「フィット」させ、イベント・ハンドラーをアタッチし、エフェクトを発火させるなどの機能を実行します。</p>
-<p>それが、つまりSSRです。サーバーが最初のHTMLを生成するため、JSバンドルがダウンロードされ解析されている間、ユーザーは真っ白なページを見つめている必要がなくなります。次に、サーバー・サイドのReactが中断したところからクライアントサイドのReactが引き継ぎ、DOMを採用し、双方向性を散りばめます。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>包括的な用語</h3><p>サーバー・サイド・レンダリングについて話しをするとき、私たちは通常、次のようなフローを想像します。</p><ol>
-<li>
-<p>ユーザーが<em>myWebsite.com</em>にアクセスする。</p>
-</li>
-<li>
-<p>Node.jsサーバーがリクエストを受け取り、すぐにReactアプリケーションをレンダリングして、HTMLを生成する。</p>
-</li>
-<li>
-<p>その生成されたばかりのHTMLがクライアントに送信される。</p>
-</li>
-</ol><p>これはサーバー・サイド・レンダリングを実装することを可能にする<em>1つ</em>の方法ですが、これが唯一の方法ではありません。もう1つのオプションとして、<em>アプリケーションの構築時</em>にHTMLを生成する方法があります。</p><p>通常、Reactアプリケーションはコンパイルして、JSXをプレーンでなじみのあるJavaScriptに変換し、すべてのモジュールをバンドルする必要があります。同じプロセス中に、異なるルートのすべてでHTMLを全部「事前レンダリング」した場合はどうなるでしょうか？</p><p>これが一般に、「静的サイト生成（SSG）」として知られているものです。これはサーバー・サイド・レンダリングの派生型です。</p><p>私の考えでは、「サーバー・サイド・レンダリング」は、いくつかの異なるレンダリング戦略を含む包括的な用語です。これらのすべてには、1つの共通点があります。それは、最初のレンダリングが<code class="language-text">ReactDOMServer</code> APIを使用して、Node.jsなどのサーバーランタイムで行われることです。実際には、これが<em>いつ</em>発生するのか、オンデマンドなのかコンパイル時点なのかは問題になりません。いずれにせよ、それはサーバー・サイド・レンダリングなのです。</p></div></div>
-<h2>前後に跳ねる</h2>
-<p>Reactでのデータフェッチについてお話ししましょう。通常、ネットワーク経由で通信するアプリケーションには次の2種類があります。</p>
-<ul>
-<li>クライアント側のReactアプリ</li>
-<li>サーバー側のREST API</li>
-</ul>
-<p>React QueryやSWR、Apolloなどを使用して、クライアントはバックエンドにネットワーク・リクエストを送信し、バックエンドはデータベースからデータを取得し、そのデータをネットワーク経由で送り返します。</p>
-<p>そのフローは、グラフを使って可視化できます。</p>
-<p><img src="/article-assets/server-components/server-components01.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>グラフに関する注記</h3><p>このブログ記事には、こうした「ネットワーク・リクエスト・グラフ」がいくつか含まれています。これらは、いくつかの異なるレンダリング戦略において、クライアント（ブラウザ）とサーバー（バックエンドAPI）の間でデータがどのように移動されるのかを可視化するためのものです。</p><p>下辺の数字は、仮想の時間単位を表しています。分でも秒でもありません。実際には、数値はさまざまな要因により、大きく変化します。このブログで取り上げているグラフは、概念の概要を理解することを目的としたもので、実際のデータをモデル化したものではありません。</p></div></div>
-<p>この最初のグラフは、CSR戦略を使用したフローを表しています。始まりはクライアントによるHTMLファイルの受信です。このファイルにはコンテンツはありませんが、1つ以上の<code class="language-text">&lt;script></code>タグがあります。</p>
-<p>JSがダウンロードされ、解析されると、Reactアプリが起動し、数多くのDOMノードが作成され、UIが構築されます。ただし、最初は実際のデータがないため、読み込み状態でシェル（ヘッダー、フッター、一般的なレイアウト）をレンダリングすることしかできません。</p>
-<p>このようなパターンは、これまでにたくさん見たことがあるのではないでしょうか。たとえば、UberEatsではシェルのレンダリングから始まり、実際のレストランを表示するために必要なデータをフェッチします。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/images/server-components/ubereats-loading.mp4"></video></p>
-<p>ネットワーク・リクエストが解決され、Reactが再レンダリングを実行し、読み込み中のUIが実際のコンテンツに置き換えられるまで、この読み込み状態が表示され続けます。</p>
-<p><strong>別の構築方法を見てみましょう。</strong>次のグラフは、同じ一般的なデータ・フェッチ・パターンを維持していますが、CSRではなく<em>サーバー</em>・サイド・レンダリングを使用しています。</p>
-<p><img src="/article-assets/server-components/server-components02.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>この新しいフローでは、最初のレンダリングはサーバー上で実行されます。それは、ユーザーが受け取るのは完全には空でないHTMLファイルであることを意味します。</p>
-<p>（白紙のページよりもシェルの方が優れているという意味で）これは進歩ですが、結局のところ、目立って大きな変化を引き起こすものではありません。ユーザーは読み込み画面を見るためにアプリにアクセスしているのではなく、コンテンツ（レストラン、ホテルのリスト、検索結果、メッセージなど）を見るためにアクセスしているのです。</p>
-<p>ユーザー・エクスペリエンスの違いを真に理解するため、いくつかのWeb性能測定基準をグラフに追加してみることにしましょう。この2つのフローを交互に切り替えて、フラグに何が起こるかを注意して見ていてください。</p>
-<p><img src="/article-assets/server-components/server-components03.png">
-<img src="/article-assets/server-components/server-components04.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>これらのフラグはそれぞれが、一般的に使用されているWeb性能測定基準を表します。以下がその説明です。</p>
-<ul>
-<li>
-<p><strong>ファースト・ペイント</strong>—ユーザーは、何も映っていない真っ白な画面を見つめる必要がなくなります。全体的なレイアウトはレンダリングされましたが、コンテンツはまだ表示されません。FCP（First Contentful Paint）とも呼ばれています。</p>
-</li>
-<li>
-<p><strong>ページ・インタラクティブ</strong>— Reactがダウンロードされ、アプリケーションがレンダリングされ、ハイドレーションが行われました。インタラクティブな要素は完全に応答するようになっています。TTI（Time To Interactive）とも呼ばれています。</p>
-</li>
-<li>
-<p><strong>コンテンツ・ペイント</strong>—ページに、ユーザーが関心のあるコンテンツが含まれるようになっています。データベースからデータを取得し、UIにレンダリングしました。LCP（Largest Contentful Paint）とも呼ばれています。</p>
-</li>
-</ul>
-<p>サーバー上で最初のレンダリングを行うことで、最初の「シェル」をより素早く描画することが可能になります。そのため、前に進んでいる感覚が得られ、読み込みエクスペリエンスが多少速く感じられるようになります。</p>
-<p>また状況によっては、これは有意義な改善になります。たとえばユーザーが、ナビゲーション・リンクをクリックできるよう、ヘッダーが読み込まれるのを待っているだけということがあるでしょう。</p>
-<p><strong>しかし、この流れは少々バカげていると思えませんか</strong>？SSRのグラフを見れば、リクエストがサーバー上で始まっていることは一目瞭然です。2つ目のラウンドトリップ・ネットワーク・リクエストを求める代わりに、<em>最初のリクエスト中</em>にデータベース作業を実行してみてはどうでしょうか。</p>
-<p>つまり、<strong>次のようなことをしてみるのはどうでしょう</strong>ということです。</p>
-<p><img src="/article-assets/server-components/server-components05.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>クライアントとサーバーの間を行ったり来たりする代わりに、最初のリクエストの一部としてデータベース・クエリーを実行し、完全に構築されたUIをユーザーに直接送信します。</p>
-<p>しかし、うーん、厳密にはどうすればいいのでしょう？</p>
-<p>これが機能するためには、データベース・クエリーを実行するために、サーバー上で排他的に実行される大量のコードをReactに提供できなければなりません。しかし、Reactではそれを選択することができませんでした。サーバー・サイド・レンダリングの場合でも、コンポーネントのすべてがサーバーとクライアントの両方でレンダリングされることになります。</p>
-<p><strong>エコシステムは、この問題に対する数多くの解決策を考え出しました</strong>。Next.jsやGatsbyなどのメタフレームワーク <sup id="fnref-2"><a href="#fn-2" class="footnote-ref">2</a></sup> では、サーバー上でのみコードを実行する独自の方法を編み出しました。</p>
-<p>たとえば、（従来の「Pages」ルーターを使用する）Next.jsを使用する場合は次のようになります。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> db <span class="token keyword">from</span> <span class="token string">'imaginary-db'</span><span class="token punctuation">;</span>
-<span class="token comment">// This code only runs on the server:</span>
-<span class="token keyword">export</span> <span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">getServerSideProps</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> link <span class="token operator">=</span> db<span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'passw0rd'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span><span class="token function">query</span><span class="token punctuation">(</span>link<span class="token punctuation">,</span> <span class="token string">'SELECT * FROM products'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">{</span>
-    <span class="token literal-property property">props</span><span class="token operator">:</span> <span class="token punctuation">{</span> data <span class="token punctuation">}</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-<span class="token comment">// This code runs on the server + on the client</span>
-<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> data <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Trending Products</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token punctuation">{</span>data<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
-        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span> <span class="token attr-name">key</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>id<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>title<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>description<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
-        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
-      <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><strong>これを分析してみましょう</strong>。サーバーがリクエストを受け取ると、<code class="language-text">getServerSideProps</code>関数が呼び出されます。それが、propsオブジェクトを返します。これらのpropsはコンポーネントに取り込まれ、そのコンポーネントが最初にサーバー上でレンダリングされ、次にクライアント上でハイドレーションされます。</p>
-<p>ここで、優れている点は、<code class="language-text">getServerSideProps</code>がクライアント上で再実行されないことです。実際、この関数はJavaScriptバンドルにも含まれません。</p>
-<p>このアプローチは時代のはるか先をいくものでした。正直に言って、それは驚くほどすごいことでした。ただし、これにはいくつかの問題点があります。</p>
-<ol>
-<li>
-<p>この戦略は、ツリーの最上位にあるコンポーネントに関して、ルート・レベルでしか機能しません。どんなコンポーネントでも行うことができるものではないのです。</p>
-</li>
-<li>
-<p>各メタフレームワークには独自のアプローチがあります。Next.jsには1つのアプローチがあり、Gatsbyには別のアプローチがあり、Remixにはさらに別のアプローチがあります。これまでのところ、標準化されていません。</p>
-</li>
-<li>
-<p>すべてのReactコンポーネントは、たとえ不要な場合でも、クライアント上で<em>常に</em>ハイドレーションを行います。</p>
-</li>
-</ol>
-<p>何年もの間、Reactチームは正式な解決方法を考案するために、この問題に密かに取り組んできました。その解決策こそ、今<strong>React Server Components</strong>と呼ばれているものです。</p>
-<h2>React Server Componentsの紹介</h2>
-<p>高いレベルでは、<em>React Server Components</em>はまったく新しいパラダイムの名称です。その新しい世界では、<em>サーバー上で排他的に実行される</em>コンポーネントを作成できます。そのため、Reactコンポーネント内でデータベース・クエリーを直接記述することが可能になります！</p>
-<p>次に、「サーバー・コンポーネント」の簡単な例を示します。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> db <span class="token keyword">from</span> <span class="token string">'imaginary-db'</span><span class="token punctuation">;</span>
-<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> link <span class="token operator">=</span> db<span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'passw0rd'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span><span class="token function">query</span><span class="token punctuation">(</span>link<span class="token punctuation">,</span> <span class="token string">'SELECT * FROM products'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Trending Products</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token punctuation">{</span>data<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
-        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span> <span class="token attr-name">key</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>id<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>title<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span><span class="token plain-text">
-          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>item<span class="token punctuation">.</span>description<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
-        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
-      <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-<span class="token keyword">export</span> <span class="token keyword">default</span> Homepage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>長年Reactを使用してきた私には、最初このコードは<em>きわめて突飛なもの</em>に思えました。😅</p>
-<p>「ちょっと待て！」と本能が叫びました。「関数コンポーネントは非同期になることはできないぞ！そして、そのようなレンダリングで直接副作用を発生させることは許されない！」</p>
-<p><strong>キーとなるのは、次のことを理解することです</strong>。サーバー・コンポーネントが再レンダリングされることは決してありません。サーバー・コンポーネントはサーバー上で1回だけ実行され、UIを生成します。レンダリングされた値はクライアントに送信され、所定の場所にロックされます。Reactに関しては、この出力は変更不能であり、決して変わりません <sup id="fnref-3"><a href="#fn-3" class="footnote-ref">3</a></sup>。</p>
-<p>つまり、ReactのAPIの<em>大部分</em>は、サーバー・コンポーネントと互換性がないことを意味します。たとえば、stateは変化する可能性がありますが、サーバー・コンポーネントは再レンダリングできないため、stateは使用できません。また、effectはクライアント上でレンダリング後にのみ実行され、サーバー・コンポーネントがクライアントに到達することはないため、effectを使用することはできません。</p>
-<p>これはまた、ルールに関してもう少し柔軟性があることも意味しています。たとえば、従来のReactでは、レンダリングのたびに副作用が繰り返されることがないよう、<code class="language-text">useEffect</code>コールバックやイベント・ハンドラーなどの中に副作用を配置する必要がありました。しかし、コンポーネントが<em>1回</em>しか実行されないのであれば、そのことについて心配する必要はなくなります。</p>
-<p>サーバー・コンポーネント自体は驚くほど単純ですが、「React Server Components」パラダイムは非常に複雑です。その理由は、通常の古いコンポーネントが<em>まだ残っていて</em>、それらを組み合わせる方法が非常に入り組んだものである可能性があるためです。</p>
-<p>この新しいパラダイムでは、私たちがよく知っている「従来の」Reactコンポーネントは<em>クライアント・コンポーネント</em>（Client Component）と呼ばれています。率直に言って、私はこの名称が好きではありません。😅</p>
-<p>「クライアント・コンポーネント」という名称は、これらのコンポーネントがクライアント上でのみレンダリングされるかのような意味に取れますが、実際にはそうではありません。クライアント・コンポーネントは<strong>クライアントとサーバーの<em>両方</em>でレンダリングできます</strong>。</p>
-<p><img src="/article-assets/server-components/server-components06.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>これらの用語は非常に分かりにくいので、次のように要約してみました。</p>
-<ul>
-<li>
-<p><em>React Server Components</em>とは、この新しいパラダイムの名称です。</p>
-</li>
-<li>
-<p>この新しいパラダイムでは、私たちがよく知っていて好んで使用してきた「標準」Reactコンポーネントが、<em>クライアント・コンポーネント</em>へと名称変更されました。古いものに新しい名前が付けられたのです。</p>
-</li>
-<li>
-<p>この新しいパラダイムでは、<em>サーバー・コンポーネント</em>という新しいタイプのコンポーネントが導入されました。この新しいコンポーネントはサーバー上でのみレンダリングされます。サーバー・コンポーネントのコードは、JSバンドルに含まれていないため、ハイドレーションや再レンダリングが行われることはありません。</p>
-</li>
-</ul>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>React Server Components vs.サーバー・サイド・レンダリング</h3><p>もう1つ別の一般的な混乱を解消しましょう。React Server Componentsはサーバー・サイド・レンダリングに代わるものでは<em>ありません</em>。React Server Componentsを「SSRバージョン2.0」とは考えないでください。</p><p>代わりに、私はこれを完全に一致する2つのパズル・ピース、または互いに補完し合う2つのフレーバーだと考えたいのです。</p><p>依然、最初のHTMLの生成にはサーバー・サイド・レンダリングが必要です。React Server Componentsはその上に構築されるため、クライアント側のJavaScriptバンドルから特定のコンポーネントを除外し、それらのコンポーネントがサーバー上でのみ実行されるようにできます。</p><p>確かに、React Server Componentsは、サーバー・サイド・レンダリング<em>なし</em>に使うことは可能ですが、実際は両方を一緒に使用するとより良い結果が得られます。ReactチームがSSRを使用しない<a href="https://github.com/reactjs/server-components-demo">最小限のRSCデモ</a>を作成していますので、こちらでその例を見ることができます。</p></div></div>
-<p>##互換性のある環境</p>
-<p>したがって通常は、新しいReact機能が出てきた場合、Reactの依存関係を最新バージョンに更新することで、既存のプロジェクトでその機能を使い始めることが可能になります。迅速な<code class="language-text">npm install react@latest</code>によって、すぐに開始できます。</p>
-<p>残念ながら、React Server Componentsはそのようには機能しません。</p>
-<p>私が理解しているところでは、React Server Componentsは、バンドラーやサーバー、ルーターなど、Reactの外部にある多くのものと緊密に統合する必要があります。</p>
-<p>この文を書いている時点で、React Server Componentsの使用を開始する方法は1つだけであり、それはNext.js 13.4以降で、最新の再設計された「App Router」を使用することです。</p>
-<p>願わくは今後、より多くのReactベースのフレームワークに、React Server Componentsが組み込まれることを期待しています。Reactのコア機能が特定の1つのツールでしか利用できないことについては抵抗を感じます。Reactドキュメントには<a href="https://react.dev/learn/start-a-new-react-project#bleeding-edge-react-frameworks">「最先端のフレームワーク」セクション</a>があり、React Server Componentsをサポートするフレームワークがリストされています。新しいオプションが利用可能になったかどうかを確認するため、このページを時々チェックする予定です。</p>
-<h2>クライアント・コンポーネントの指定</h2>
-<p>この新しい「React Server Components」パラダイムでは、<strong>すべてのコンポーネントが、デフォルトで、サーバー・コンポーネントとみなされます</strong>。クライアント・コンポーネントについては、「オプトイン」する必要があります。</p>
-<p>それを行うために、まったく新しい<em>ディレクティブ</em>を指定します。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token string">'use client'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
-<span class="token keyword">function</span> <span class="token function">Counter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      Current value: </span><span class="token punctuation">{</span>count<span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-<span class="token keyword">export</span> <span class="token keyword">default</span> Counter<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>先頭の<code class="language-text">'use client'</code>ディレクティブは、このファイル内のコンポーネントがクライアント・コンポーネントであることや、クライアントで再レンダリングできるようJSバンドルに含める必要があることをReactに知らせます。</p>
-<p>これは、作成しているコンポーネントのタイプを指定する方法として非常に奇妙に<em>見える</em>かもしれませんが、これには前例があります。それは、JavaScriptで「Strict Mode」を選択する<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode">"use strict"</a>ディレクティブです。</p>
-<p>サーバー・コンポーネントでは、<code class="language-text">'use server'</code>ディレクティブを指定しません。React Server Componentsパラダイムでは、コンポーネントは、デフォルトで、サーバー・コンポーネントとして扱われます。事実、<code class="language-text">'use server'</code>はサーバー・アクションに使用されますが、それはまったく異なる機能であり、このブログ記事の範囲を外れています。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>クライアント・コンポーネントにすべきコンポーネントはどれでしょうか？</h3><p>「特定のコンポーネントをサーバー・コンポーネントにするかクライアント・コンポーネントにするかをどのように決定すればよいのか？」と疑問に思われるかもしれません。</p><p>一般則としては、コンポーネントがサーバー・コンポーネントになれるのであれば、サーバー・コンポーネントにするべきです。サーバー・コンポーネントはよりシンプルであり、推測が容易になる傾向があります。パフォーマンス上の利点もあります。サーバー・コンポーネントはクライアント上では実行されないため、そのコードはJavaScriptバンドルに含まれません。React Server Componentsパラダイムの利点の1つは、<em>ページ・インタラクティブ</em>（TTI）メトリックを改善できる可能性があることです。</p><p>とはいえ、できるだけ多くのクライアント・コンポーネントを排除することを目指すべきではありません。最も少ない数のクライアント・コンポーネントに合わせて最適化を試みるべきではありません。これまでは、<em>すべて</em>のReactアプリのすべてのReactコンポーネントがクライアント・コンポーネントであったことは覚えておくべきです。</p><p>React Server Componentsを使い始めれば、それが非常に直感的なものであることが分かるでしょう。一部のコンポーネントはstate変数またはeffectを使用することから、クライアント上で実行する必要があります。そうしたコンポーネントでは、<code class="language-text">'use client'</code>ディレクティブを実行できます。それ以外の場合は、サーバー・コンポーネントのままにしておくことができます。</p></div></div>
-<h2>クライアント・バウンダリ</h2>
-<p>React Server Componentsに慣れ始めた頃、私が最初に抱いた疑問の1つが、<strong><em>propsが変更されるとどうなるのか</em></strong>？というものでした。</p>
-<p>たとえば、次のようなサーバー・コンポーネントがあったとします。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">HitCounter</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> hits <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
-      Number of hits: </span><span class="token punctuation">{</span>hits<span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>最初のサーバー・サイド・レンダリングで、<code class="language-text">hits</code>が<code class="language-text">0</code>だったと仮定します。このコンポーネントは次に、以下のマークアップを生成します。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span>
-  Number of hits: 0
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>しかし、<code class="language-text">hits</code>の値が変化したらどうなるでしょうか？これがstate変数で、<code class="language-text">0</code>から<code class="language-text">1</code>に変化するとします。<code class="language-text">HitCounter</code>は再レンダリングする必要がありますが、サーバー・コンポーネントであるため再レンダリングは<em>できません</em>。</p>
-<p><strong>問題は、サーバー・コンポーネントは単独では、事実上意味がないということです</strong>。より全体的なビューを取り上げ、アプリケーションの構造を検討するには、ズームアウトする必要があります。</p>
-<p>仮に、次のようなコンポーネント・ツリーを考えてみましょう。</p>
-<p><img src="/article-assets/server-components/server-components07.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>これらのコンポーネントがすべてサーバー・コンポーネントであれば、完全に意味が通じます。いずれのコンポーネントも再レンダリングされないため、どのpropsも変化しません。</p>
-<p>ただし、<code class="language-text">Article</code>コンポーネントが<code class="language-text">hits</code>というstate変数を持っていると仮定します。stateを使用するには、それをクライアント・コンポーネントに変換する必要があります。</p>
-<p><img src="/article-assets/server-components/server-components08.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>ここでの問題が分かりましたか？<code class="language-text">Article</code>が再レンダリングされると、<code class="language-text">HitCounter</code>や<code class="language-text">Discussion</code>など、所有していたコンポーネントも再レンダリングされます。ところが、これがサーバー・コンポーネントの場合には、再レンダリング<em>できません</em>。</p>
-<p>このあり得ない状況を防ぐために、Reactチームは次のルールを追加しました。<strong>クライアント・コンポーネントがインポートできるのは他のクライアント・コンポーネントのみである</strong>。その<code class="language-text">'use client'</code>ディレクティブは、<code class="language-text">HitCounter</code>や<code class="language-text">Discussion</code>のインスタンスがクライアント・コンポーネントにならなければならないことを意味します。</p>
-<p>React Server Componentsに関連して私が経験した最大の「なるほど」の瞬間の1つは、この新しいパラダイムは<em>クライアント・バウンダリ</em>の作成に関するものであると認識したときでした。実際には、次のようになります。</p>
-<p><img src="/article-assets/server-components/server-components09.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p><code class="language-text">'use client'</code>ディレクティブを<code class="language-text">Article</code>コンポーネントに追加すると、「クライアント・バウンダリ」が作成されます。このバウンダリ内のコンポーネントはすべて、<em>暗黙的</em>にクライアント・コンポーネントに変換されます。<code class="language-text">HitCounter</code>などのコンポーネントには<code class="language-text">'use client'</code>ディレクティブがありませんが、この特定の状況ではクライアント上でハイドレーション/レンダリングが行われます <sup id="fnref-4"><a href="#fn-4" class="footnote-ref">4</a></sup>。</p>
-<p>つまり、クライアント上で実行する必要があるすべてのファイルに<code class="language-text">'use client'</code>を追加する必要はないということです。実際に、追加する必要があるのは、新しいクライアント・バウンダリを作成する場合だけです。</p>
-<h2>対処法</h2>
-<p>クライアント・コンポーネントはサーバー・コンポーネントをレンダリングできないということを初めて知ったとき、私はかなり制約がきついなと感じました。アプリケーションの上の方でstateを使用しなければならない場合、どうすればよいのでしょうか？それは、<em>すべて</em>がクライアント・コンポーネントになる必要があるということでしょうか？？</p>
-<p>多くの場合において、アプリケーションを再構築して、レンダリング<em>元</em>となるコンポーネントを工夫することで、この制約を回避できることが分かりました。</p>
-<p>これを説明するのは難しいので、例を使って説明します。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token string">'use client'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">,</span> <span class="token constant">LIGHT_COLORS</span> <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/constants.js'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> Header <span class="token keyword">from</span> <span class="token string">'./Header'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> MainContent <span class="token keyword">from</span> <span class="token string">'./MainContent'</span><span class="token punctuation">;</span>
-<span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>colorTheme<span class="token punctuation">,</span> setColorTheme<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">'light'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> colorVariables <span class="token operator">=</span> colorTheme <span class="token operator">===</span> <span class="token string">'light'</span>
-    <span class="token operator">?</span> <span class="token constant">LIGHT_COLORS</span>
-    <span class="token operator">:</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span> <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>colorVariables<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Header</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">MainContent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>この設定では、React stateを使用して、ユーザーがダーク・モードとライト・モードを切り替えられるようにする必要があります。このことは、CSS変数トークンを<code class="language-text">&lt;body></code>タグに適用できるようにするため、アプリケーション・ツリーの上部で行う必要があります。</p>
-<p>stateを使用するには、<code class="language-text">Homepage</code>をクライアント・コンポーネントにする必要があります。これはアプリケーションの最上部にあるため、他のすべてのコンポーネント（<code class="language-text">Header</code>および<code class="language-text">MainContent</code>）も暗黙的にクライアント・コンポーネントになることを意味します。</p>
-<p>これを修正するには、カラー管理要素を独自のコンポーネントに引き込み、独自のファイルに移します。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// /components/ColorProvider.js</span>
-<span class="token string">'use client'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> <span class="token punctuation">{</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">,</span> <span class="token constant">LIGHT_COLORS</span> <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/constants.js'</span><span class="token punctuation">;</span>
-<span class="token keyword">function</span> <span class="token function">ColorProvider</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> children <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>colorTheme<span class="token punctuation">,</span> setColorTheme<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">'light'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> colorVariables <span class="token operator">=</span> colorTheme <span class="token operator">===</span> <span class="token string">'light'</span>
-    <span class="token operator">?</span> <span class="token constant">LIGHT_COLORS</span>
-    <span class="token operator">:</span> <span class="token constant">DARK_COLORS</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span> <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>colorVariables<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">Homepage</code>に戻り、この新しいコンポーネントを次のように使用します。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// /components/Homepage.js</span>
-<span class="token keyword">import</span> Header <span class="token keyword">from</span> <span class="token string">'./Header'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> MainContent <span class="token keyword">from</span> <span class="token string">'./MainContent'</span><span class="token punctuation">;</span>
-<span class="token keyword">import</span> ColorProvider <span class="token keyword">from</span> <span class="token string">'./ColorProvider'</span><span class="token punctuation">;</span>
-<span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ColorProvider</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Header</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">MainContent</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ColorProvider</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">'use client'</code>ディレクティブは、stateやその他のクライアント側React機能を使用しなくなることから、<code class="language-text">Homepage</code>から削除できます。これは、<code class="language-text">Header</code>と<code class="language-text">MainConten</code>tが暗黙的にクライアント・コンポーネントに変換されなくなることを意味します。</p>
-<p><strong>しかし、ちょっと待ってください</strong>。クライアント・コンポーネントである<code class="language-text">ColorProvider</code>は、HeaderとMainContentの<em>親</em>です。いずれにせよ、まだツリーでは上位にありますね。</p>
-<p>ただし、クライアント・バウンダリに関しては、親子関係は重要ではありません。<code class="language-text">Homepage</code>は、<code class="language-text">Header</code>と<code class="language-text">MainContent</code>をインポートし、レンダリングするものです。これは、<code class="language-text">Homepage</code>が、これらのコンポーネントの<em>propsが何であるか</em>を決定することを意味します。</p>
-<p>覚えておいてください。私たちが解決しようとしている問題は、サーバー・コンポーネントは再レンダリングができないため、どのpropsにも新しい値を与えることができないということです。この新しい設定では、<code class="language-text">Homepage</code>が、<code class="language-text">Header</code>と<code class="language-text">MainContent</code>のpropsを決定し、また<code class="language-text">Homepage</code>はサーバー・コンポーネントであることから、問題はありません。</p>
-<p>これは頭を悩ませる事柄です。何年もReactを経験した後の今でも、このことはきわめて分かりにくいと思っています😅。これに対する直感を養うためには、かなりの練習を必要としました。</p>
-<p>より正確に言えば、<code class="language-text">'use client'</code>ディレクティブはファイル/モジュール・レベルで機能します。クライアント・コンポーネント・ファイルに<em>インポート</em>されたモジュールもクライアント・コンポーネントでなければなりません。結局のところ、バンドラーがコードをバンドルすると、これらのインポートに追随することになります。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>カラー・テーマを変更するか？</h3><p>上記の例には、カラー・テーマを変更する方法がないことに気付いたかもしれません。<code class="language-text">setColorTheme</code>が呼び出されることは決してありません。
-可能な限り最小限度に留めたかったので、いくつか省略したものがあります。完全な形の例では、Reactコンテキストを使用して、任意の子孫がsetter関数を使用できるようにします。コンテキストを使用するコンポーネントがクライアント・コンポーネントである限り、すべてうまくいきます。</p></div></div>
-<h2>内部で何が起きているのか</h2>
-<p>これを、もう少し深く見てみましょう。サーバー・コンポーネントを使用する場合、その出力はどのようなものになるでしょうか？実際に生成されるのは何でしょうか？</p>
-<p>ここで、超シンプルなReactアプリケーションから始めることにしましょう。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">Homepage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
-      Hello world!
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>React Server Componentsパラダイムでは、デフォルトですべてのコンポーネントがサーバー・コンポーネントです。このコンポーネントをクライアント・コンポーネントとして明示的にマーク付けしていないため（またはクライアント・バウンダリ内でレンダリングしていないため）、サーバー上でのみレンダリングされます。</p>
-<p>ブラウザでこのアプリにアクセスすると、次のようなHTMLドキュメントを受け取ることになります。</p>
-<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token doctype"><span class="token punctuation">&lt;!</span><span class="token doctype-tag">DOCTYPE</span> <span class="token name">html</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>Hello world!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/static/js/bundle.js<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript">
-      self<span class="token punctuation">.</span>__next<span class="token punctuation">[</span><span class="token string">'$Homepage-1'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
-        <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'p'</span><span class="token punctuation">,</span>
-        <span class="token literal-property property">props</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
-        <span class="token literal-property property">children</span><span class="token operator">:</span> <span class="token string">"Hello world!"</span><span class="token punctuation">,</span>
-      <span class="token punctuation">}</span><span class="token punctuation">;</span>
-    </span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>勝手な変更</h3><p>分かりやすくするため、ここであえて再構成を実施しました。たとえば、RSCコンテキストで生成された真のJSは、このHTMLドキュメントのファイル・サイズを削減するための最適化として、文字列化されたJSON配列を使用します。</p><p>また、HTMLの重要でない部分（<code class="language-text">&lt;head></code>など）もすべて削除しました。</p></div></div>
-<p>HTMLドキュメントには、Reactアプリケーションによって生成されたUI、「Hello world!」パラグラフが含まれていることが分かります。これはサーバー・サイド・レンダリングのおかげであり、React Server Componentsに直接起因するものではありません。</p>
-<p>その下には、JSバンドルをロードする<code class="language-text">&lt;script></code>タグがあります。このバンドルには、Reactなどの依存関係と、アプリケーションで使用されるクライアント・コンポーネントが含まれています。また、<code class="language-text">Homepage</code>コンポーネントはサーバー・コンポーネントであるため、そのコンポーネントのコードはこのバンドルには含まれていません。</p>
-<p>最後に、いくつかのインラインJSを含む2番目の<code class="language-text">&lt;script></code>タグがあります。</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js">self<span class="token punctuation">.</span>__next<span class="token punctuation">[</span><span class="token string">'$Homepage-1'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
-  <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'p'</span><span class="token punctuation">,</span>
-  <span class="token literal-property property">props</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
-  <span class="token literal-property property">children</span><span class="token operator">:</span> <span class="token string">"Hello world!"</span><span class="token punctuation">,</span>
-<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>これは本当に興味深い点です。本質的には、ここで行っているのは、Reactに対して、「<code class="language-text">Homepage</code>コンポーネント・コードが足りないことは分かっていますが、心配しないでください。ここにレンダリングされたものがあります」と伝えることです。</p>
-<p>通常、Reactがクライアント上でハイドレーションを行うと、すべてのコンポーネントが素早くレンダリングされ、アプリケーションの仮想DOMが構築されます。サーバー・コンポーネントの場合、コードがJSバンドルに含まれていないため、これを行うことができません。</p>
-<p>したがって、レンダリングされた値と共に、サーバーによって生成された仮想DOMを送信します。Reactがクライアントにロードされると、そのディスクリプションを再生成する代わりに再利用します。</p>
-<p>これにより、上記の<code class="language-text">ColorProvider</code>の例が機能するようになります。<code class="language-text">Header</code>と<code class="language-text">MainContent</code>からの出力は、<code class="language-text">children</code>というpropsを通じて<code class="language-text">ColorProvider</code>コンポーネントに送られます。<code class="language-text">ColorProvider</code>は必要なだけ再レンダリングを行えますが、このデータは静的であり、サーバーによってロックされています。</p>
-<p>サーバー・コンポーネントがどのようにシリアル化され、ネットワーク経由で送信されるかの現実的表現を見たい場合は、開発者であるAlvar Lagerlöfによる<a href="https://www.alvar.dev/blog/creating-devtools-for-react-server-components">RSC Devtools</a>をチェックしてください。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>サーバー・コンポーネントはサーバーを必要としない</h3><p>この記事の始めで、サーバー・サイド・レンダリングは、次のようなさまざまなレンダリング戦略についての「包括的な用語」であると述べました。</p><ul>
-<li><strong>静的</strong>：HTMLは、展開プロセス中に、アプリケーションのビルド時に生成されます。</li>
-<li><strong>動的</strong>：ユーザーがページをリクエストすると、HTMLは「オンデマンド」で生成されます。</li>
-</ul><p><strong>React Server Componentsは、これらのレンダリング戦略のいずれとも互換性があります</strong>。サーバー・コンポーネントがNode.jsランタイム中にレンダリングされると、それらが返すJavaScriptオブジェクトが作成されます。それは、オンデマンドまたはビルド中のいずれかで発生する可能性があります。</p><p>つまり、React Server Componentsをサーバーなしで使用できるということです。大量の静的HTMLファイルを生成し、必要な場所にホストすることができます。事実、これがNext.jsのApp Routerにおいて、<em>デフォルト</em>で行われることです。本当に「オンデマンド」で行う必要がない場合、この作業はすべて事前に、ビルド中に実行されます。</p></div></div>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><h3>Reactがまったくない場合？</h3><p>アプリケーションにクライアント・コンポーネントを含めない場合、本当にReactをダウンロードすることが必要なのかという疑問を持つかもしれません。React Server Componentsを使用して、<em>真に</em>静的な非JSウェブサイトを構築できるでしょうか？</p><p>問題は、React Server ComponentsはNext.jsフレームワーク内でのみ利用可能であり、そのフレームワークにはルーティングなどを管理するためにクライアント上で実行する必要のあるコードが多数含まれていることです。</p><p>ただし直感とは逆に、このことで実際には<em>より良い</em>ユーザー・エクスペリエンスが実現する傾向があります。たとえば、Nextのルーターは、新しいHTMLドキュメント全体を読み込む必要がないため、典型的な<code class="language-text">&lt;a></code>タグよりも速くリンク・クリックを処理できます。</p><p>適切に構造化されたNext.jsアプリケーションは、JSのダウンロード中も動作しますが、JSが読み込まれるとさらに速く/良くなります。</p></div></div>
-<h2>利点</h2>
-<p>React Server Componentsは、Reactでサーバー専用コードを実行することを目的とした最初の「公式」ツールです。ただし、すでに述べたように、より広範なReactエコシステムにおいては、これは<em>決して</em>新しいことではありません。2016年から、Next.jsではサーバー専用コードを実行できるようになっていました。</p>
-<p>大きく異なるのは、これまで<em>コンポーネント内</em>でサーバー専用コードを実行する手段がなかった点です。</p>
-<p>最も明白な利点はパフォーマンスです。JSバンドルにはサーバー・コンポーネントが含まれていないため、ダウンロードすべきJavaScriptの量と、ハイドレーションを必要とするコンポーネントの数が減ることになります。</p>
-<p><img src="/article-assets/server-components/server-components10.png">
-<img src="/article-assets/server-components/server-components11.png">
-<em>（訳注：イメージは原文サイトの表示のキャプチャー画像です）</em></p>
-<p>ただし、このことは私にとっては最も興味を感じられないものかもしれません。正直なところ、「ページ・インタラクティブ」のタイミングに関しては、ほとんどのNext.jsアプリが<em>すでに</em>十分な高速度を実現しています。</p>
-<p>セマンティックHTMLの原則に従えば、Reactのハイドレーション前でも大半のアプリが動作するはずです。リンクをたどったり、フォームを送信したり、（<code class="language-text">&lt;details></code>や<code class="language-text">&lt;summary></code>を使用して）アコーディオンを展開したり折りたたんだりできます。ほとんどのプロジェクトで、Reactのハイドレーションに数秒かかっても、問題はありません。</p>
-<p><strong>ただし、私が本当にすごいと思うのは</strong>、機能とバンドル・サイズという点で、同じ妥協をする必要がなくなったことです。</p>
-<p>たとえば、ほとんどの技術系ブログでは、ある種のシンタックス・ハイライティング・ライブラリが必要となります。このブログでは、Prismを使用します。コード・スニペットは次のようになります。</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">function</span> <span class="token function">exampleJavaScriptFunction</span><span class="token punctuation">(</span><span class="token parameter">param</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token string">"Hello world!"</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>一般的なプログラミング言語のすべてをサポートする適切なシンタックス・ハイライティング・ライブラリは数メガバイトになり、JSバンドルに組み込むには大きすぎます。そのため、ミッションクリティカルでない言語や機能を削除するという妥協が必要になります。</p>
-<p>ただし、シンタックス・ハイライティングを行うのは<em>サーバー・コンポーネントにおいて</em>であると仮定しています。その場合、実際にはライブラリ・コードはJSバンドルに含まれません。その結果、妥協する必要が一切なくなり、オプション機能のすべてを利用できるようになります。</p>
-<p>これが、React Server Componentsで動作するよう設計された最新のシンタックス・ハイライティング・パッケージである<a href="https://bright.codehike.org/">Bright</a>の背後にある卓越したアイデアです。</p>
-<p><img src="https://www.joshwcomeau.com/images/server-components/bright.png"></p>
-<p>これこそが、React Server Componentsについて私が興味をそそられる点です。JSバンドルに含めるにはコストがかかりすぎることが、サーバー上で、<em>無料で</em>実行できるようになり、バンドルに追加される容量は0キロバイトで、これまで以上に優れたユーザー・エクスペリエンスを得ることができます。</p>
-<p>単にパフォーマンスの問題でもUXの問題でもありません。RSCをしばらく使ったことで、私はサーバー・コンポーネントがどれほど簡単であるかを真に理解するようになりました。ディペンデンシー・アレイ、古くなったクロージャ、メモ化、<em>状況の変化</em>によって引き起こされるその他の複雑な事柄について心配する必要はありません。</p>
-<p>結局のところ、それはまだきわめて初期の段階にあります。React Server Componentsは数か月前に、ベータ版が完了して正式リリースになったばかりです。コミュニティがこの新しいパラダイムを活用して、Brightなどの新しいソリューションのイノベーションを続けていることから、今後数年間でどのように進化するかを見るのが本当に楽しみです。React開発者にとって今は、エキサイティングな時です。</p>
-<h2>全体像</h2>
-<p>React Server Componentsはエキサイティングな発展ですが、実際には「Modern React」パズルの一部にすぎません。</p>
-<p>事態が<em>真に</em>興味深いものになるのは、React Server ComponentsをSuspenseや新しいStreaming SSRアーキテクチャと組み合わせたときです。その結果、次のような驚くべきことが可能になります。</p>
-<p><img src="/article-assets/server-components/server-components12.png"></p>
-<p>このチュートリアルの対象範囲を超えていますが、このアーキテクチャの詳細については、<a href="https://github.com/reactwg/react-18/discussions/37">Githubで</a>確認することができます。</p>
-<p>また、私の新しいコース<a href="https://joyofreact.com/">The Joy of React</a>でも詳しく取り上げます。よろしければ、もう少し詳しく説明させていただきたいと思います！❤️</p>
-<p>The Joy of Reactは初心者向けのインタラクティブ・コースで、Reactがどのように機能するかについての知識を得られる設定になっています。初歩段階からスタートし（Reactの経験は必要ありません）、Reactの悪名の高いトリッキーな側面を取り上げていきます。</p>
-<p>これは私が約2年間、フルタイムで取り組んできたコースであり、8年以上の経験の中でReactについて学んだ最も重要な事柄のすべてが含まれています。</p>
-<p>お伝えたしたいことが満載のコースです。React本体と、このブログ記事で暗に取り上げた最先端の機能に加えて、Reactエコシステムの中で私が気に入っている部分についても学ぶことができます。たとえば、Framer Motionを使用して、次のレベルのレイアウト・アニメーションを作成する方法を学べます。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/images/server-components/reading-list-blog-demo.mp4"></video></p>
-<p>このコースについてさらに詳しく学び、Reactを使ったビルドの楽しさを発見してください。</p>
-<ul>
-<li><a href="https://joyofreact.com/">The Joy of React</a></li>
-</ul>
-<hr>
-<p>React Server Componentsは重要なパラダイム・シフトです。個人的には、Reactエコシステムにおいて、サーバー・コンポーネントを利用するBrightのようなツールがさらに構築されるにつれて、今後数年間で状況がどのように展開していくかに関してきわめて強い関心があります。</p>
-<p>Reactでの構築がさらにすごいことになると感じています。😄</p>
-<div class="footnotes">
-<hr>
-<ol>
-<li id="fn-1"><em>特定のモジュールをレイジーロードしたり、ルートに基づいて分割したりするような最適化もありますが、一般的なルールとして、JSバンドルはどんどん大きくなる傾向があります</em><a href="#fnref-1" class="footnote-backref">↩</a></li>
-<li id="fn-2"><em>メタフレームワークとは、Reactの上に構築し、ルーティングやデータ管理のような機能を追加するフレームワークを意味する</em><a href="#fnref-2" class="footnote-backref">↩</a></li>
-<li id="fn-3"><em>少なくとも、新しいページに移動するなど、ルーター上で何かが起こるまでは</em><a href="#fnref-3" class="footnote-backref">↩</a></li>
-<li id="fn-4"><em>HitCounterコンポーネント自体は、サーバー・コンポーネントにより他の場所にインポートされた場合、サーバー・コンポーネントとしてレンダリングされる可能性があります</em><a href="#fnref-4" class="footnote-backref">↩</a></li>
-</ol>
-</div>]]></content:encoded></item></channel></rss>
+</ul>]]></content:encoded></item></channel></rss>
