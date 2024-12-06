@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Sat, 23 Nov 2024 19:40:27 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 06 Dec 2024 17:35:35 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,155 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Compiler Language Updates in Visual Studio 2022 version 17.12</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Fri, 06 Dec 2024 17:32:53 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Frontend]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[compiler]]></category>
+		<category><![CDATA[VC++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34976</guid>
+
+					<description><![CDATA[<p>Introduction In alignment with the Visual Studio 2022 version 17.12 release, and based upon feedback received from the community, the MSVC compiler team would like to provide greater visibility into the C++ language-level fixes for customer-reported issues that made it into the release. This is similar to how the standard library team publishes regular changelogs [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/">MSVC Compiler Language Updates in Visual Studio 2022 version 17.12</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2>Introduction</h2>
+<p>In alignment with the Visual Studio 2022 version 17.12 release, and based upon feedback received from the community, the MSVC compiler team would like to provide greater visibility into the C++ language-level fixes for customer-reported issues that made it into the release. This is similar to how the standard library team publishes regular changelogs (see <a href="https://github.com/microsoft/STL/wiki/Changelog#vs-2022-1712">VS 2022 17.12</a> for reference). The focus for Visual Studio 2022 version 17.12 is primarily to address bugs reported through <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a>.</p>
+<h3>C++23 Features:</h3>
+<p>While our overall focus has been on fixing bugs reported via Developer Community, we implemented a C++23 feature to address one ticket.</p>
+<ul>
+<li style="list-style-type: none;">
+<ul>
+<li><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2128r6.pdf">P2128R6</a> Multidimensional subscript operator. This paper enables code such as:</li>
+</ul>
+</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="language-cpp">struct Array {
+    int arr[2][2];
+    int operator[](int x, int y) const {
+        return arr[x][y];
+    }
+};
+int main() {
+    Array arr = { {
+        { 1, 2 },
+        { 3, 4 }
+    } };
+    return arr[1, 1]; // Returns 4.
+}</code></pre>
+<ul>
+<li style="list-style-type: none;">
+<ul>
+<li>This resolved the following Developer Community ticket. <a href="https://developercommunity.visualstudio.com/t/std::mdspan-not--working-with--operato/10516870">std::mdspan not working with [] operator &#8211; Developer Community</a></li>
+</ul>
+</li>
+</ul>
+<p>Over the next few MSVC toolset update releases, the compiler team is dramatically shifting towards improving C++23 conformance.</p>
+<h3>Developer Community Feedback:</h3>
+<p>First of all, thank you all for taking the time to report issues on MSVC compiler on Developer Community portal. We take your reports with utmost importance and seriousness. We know that we don&#8217;t respond to all issues in timely manner and as a result some bug reports stay there for multiple releases without resolution. We will do better here and will strive to maximize our developer capacity as much as possible. We really appreciate your patience and understanding while we work through these issues.</p>
+<h3>Fixes</h3>
+<ul>
+<li><a href="https://developercommunity2.visualstudio.com/t/C-copy-elision-not-performed-when-usin/489863">C++ copy elision not performed when using ternary operator in return statement</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Access-to-invalid-memory-when-using-an-e/663060">Access to invalid memory when using an explicitly created initializer list in a for loop with /permissive-</a></li>
+<li><a href="https://developercommunity.visualstudio.com/content/problem/1100992/c4388-signedunsigned-mismatch-not-triggering-for-s.html">&#8220;C4388 &#8211; signed/unsigned mismatch&#8221; not triggering for sizeof</a></li>
+<li><a href="https://developercommunity.visualstudio.com/content/problem/1176546/error-message-predefined-c-types-compiler-internal.html">Error message &#8220;predefined C++ types (compiler internal), continuing without source annotations&#8221;&#8221;</a></li>
+<li><a href="https://developercommunity2.visualstudio.com/t/Regression-in-MSVC-168:-C-multiple-/1309267">Regression in MSVC++ 16.8: C++ multiple inheritance incorrectly allows operator() of private base classes to be accessible</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::invoke-with-a-constexpr-function-is/1457457">std::invoke with a constexpr function is falsely noexcept with /permissive</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/error-C7608:-atomic-constraint-should-be/1667000">error C7608: atomic constraint should be a constant expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/constant-evaluation-with-do-not-works-wi/10058244">constant evaluation with do not works with msvc 19 latest</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Using-std::format-in-a-module-requires-i/10313766">Using std::format in a module requires including format header in .cpp files using that module</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/msvc::no_unique_address-nonconforman/10504173">[[msvc::no_unique_address]] nonconformant class layout for nested non-unique-address empty classes</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Partial-specialization-of-std::formatter/10506520">Partial specialization of std::formatter in module is not found in other module.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::mdspan-not--working-with--operato/10516870">std::mdspan not working with [] operator</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/explicit-template-instantiation-wrongly-/10576924">explicit template instantiation wrongly checks private base class accessibility</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-with-C-Modules/10584743">Internal compiler error with C++ Modules and Coroutine</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVCs-__declspecempty_bases-and-msv/10588147">MSVC&#8217;s __declspec(empty_bases) and [[msvc::no_unique_address]] don&#8217;t work together</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-hang-when-when-code-below-is-co/10632273">Compiler hang when when code below is compiled with /std:c++20</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-with-malformed-concepts-code/10638895">ICE in stdexec metaprogramming</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C4061-and-C4062-not-triggering-with-W4/10643332">False branch of if constexpr is evaluated in alias template, in lambda</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-incorrectly-considers-a-trivial-but/10646917">MSVC incorrectly considers a trivial but noexcept(false) destructor to be non-throwing</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-incorrectly-considers-reference-to-/10648215">MSVC incorrectly considers reference to a cv-/ref-qualified function type to be valid in a requires-expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-modules:-Internal-compiler-error-whe/10652168">C++ modules: Internal compiler error when using std::stacktrace</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Class-derived-from-std::expected-cant-b/10655311">Class derived from std::expected can&#8217;t be constructed with bool value type</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-with-template-code-and-friend/10662720">ICE with template code and friend</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-caused-by-unpare/10664169">Internal compiler error caused by unparenthesized &#8220;sizeof&#8221; within requires-expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-wrong-recursive-alias-error/10666090">MSVC wrong recursive alias error</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Bogus-C4716-when-explicitly-instantiatin/10667510">Bogus C4716 when explicitly instantiating auto member function with /Gv</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/regression-Bogus-static_assert-failu/10672307">[regression] Bogus <code>static_assert</code> failure in VS 2022 17.11 Preview 1.0</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Code-compiles-in-GCC-and-Clang-but-fail/10673264">Code compiles in GCC and Clang, but fails in MSVC</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-on-invalid-requires-clause/10674362">ICE on invalid requires clause</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-requires-requires-parsing-error/10675127">C++ <code>requires requires</code> parsing error?</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Fatal-error-C1001-with-simple-code-only-/10675249">Fatal error C1001 with simple code only with VS2022 17.10</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/internal-compilator-error/10677754">internal compilator error</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-compiler-regression-constexpr-constr/10677725">C++ compiler regression constexpr constructors</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-compiler-bug-in-17101:-std::enable/10678691">C++ compiler bug in 17.10.1: std::enable_if_t SFINAE fails to resolve template function</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-20-header-unit-problem/10678672">C++ 20 header unit problem</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/__builtin_bit_cast-Internal-compiler-err/10680632">__builtin_bit_cast Internal compiler error</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/A-capture-in-lambda-expression-of-consta/10681486">A capture in lambda expression of constant bit-fields by reference with initializer is totally broken</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-related-to-requ/10672826">Internal compiler error related to &#8220;requires&#8221;</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VS-2022-17110-Preview-2:-intellisense-/10683643">VS 2022 17.11.0 Preview 2: intellisense or compiler bug: type is not a class template</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C7576-produces-Unhandled-Exceptio/10683550">Error C7576 produces &#8216;Unhandled Exception&#8217; error in cl.exe when building 32-bit x86 code</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Reject-valid-auto-with-braced-initialize/10685936">Reject valid auto with braced initializer in new-expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/__is_nothrow_assignable-Builtin-Produces/10685747">__is_nothrow_assignable Builtin Produces Incorrect Value</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/tab-completec4023:-fatal-error-C1001:/10685868">tab-complete.c(4023): fatal error C1001: Internal compiler error. (compiler file &#8216;msc1.cpp&#8217;, line 1611)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/No-warning-about-deprecated-enum-usage/10686672">No warning about deprecated enum usage</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-with-STD-Module-usage-compiler-file/10686667">ICE with STD Module usage (compiler file &#8216;msc1.cpp&#8217;, line 1587)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Friendship-to-a-function-through-a-templ/10690615">Friendship to a function through a template class is giving an internal error.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Regression:-constexpr-capture-required-i/10694174">Regression: constexpr capture required in nested lambda with inferred argument</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Expansion-of-a-nested-template-pack-insi/10695518">Expansion of a nested template pack inside a template lambda</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-when-initializin/10696412">Internal compiler error when initializing std::function member via default argument depending on parameter pack</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/implicitly-generated-special-member-func/10697306">implicitly generated special member functions do not properly inherit noexcept specification from base classes</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::is_constructible_v-incorrectly-ev/10698292"><code>std::is_constructible_v</code> incorrectly evaluates to false with aggregate class and a member containing an array</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/fatal--error-C1001:-Internal-compiler-er/10697857">fatal error C1001: Internal compiler error.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C26493-false-positive-initializing-a-bas/10700572">C26493 false positive initializing a base class</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Apparently-False-C-C2385-error/10700227">Apparently False C++ C2385 error</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Mismatched-pack-expansion-in-requires-ex/10701406">Mismatched pack expansion in requires expression is incorrectly treated as expansion of empty pack </a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C26493-false-positive-initializing-a-bas/10700572">C26493 false positive initializing a base class</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-for-C20-design/10702475">Internal compiler error for C++20 designated initializers in non-type template parameter</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VisualStudio-v17103-wont-compile-my-C/10698059">VisualStudio v17.10.3 won&#8217;t compile my C code</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/initializing-capture-clause-does-not-wor/10703144">initializing capture clause does not work with access into this</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Unary--on-a-function-is-incorrectly-con/10705456">Unary + on a function is incorrectly considered not to be a constant expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/constexpr-call-to-nttp-in-requires/10705420">Reject valid constexpr variable in lambda in requires-expression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Bug-erroneous-error-C3865:-__thiscall/10705227">Bug? (erroneous error C3865: &#8216;__thiscall&#8217;: can only be used on native member functions)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Instantianizing-a-concept-with-a-nested-/10707442">Instantianizing a concept with a nested type of a struct template instantiated with a variadic function causes errors: C2923 and C2065.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-with-operator-inside-virtual-destru/10707673">ICE with operator&amp; inside virtual destructor</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C26493-false-positive-initializing-a-bas/10710542">C26493 false positive initializing a base class</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-errror-when-__declspec/10712154">False compilation error when unpacking a template parameter pack into a template with more than one parameter</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-Compiler-Error-VS1710-Regressi/10715185">Internal Compiler Error VS17.10 Regression</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Incorrect-C5245-firing-in-1611/1528215">Regression in 19.40 when using co_await in a lambda capture</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-in-treesc-line/10717976">Internal compiler error in trees.c, line 12009</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/The-discarded-std::basic_format_string-c/10719632">The discarded std::basic_format_string causes C1001: Internal compiler error.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/1711-Preview-3-and-later:-seemingly-bog/10722706">17.11 Preview 3 and later: seemingly bogus static_assert failure</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-1711-regression:-RWTH-OpenMesh-I/10722603">MSVC 17.11 regression: &#8220;RWTH OpenMesh&#8221; ICE in msc1.cpp, line 1611</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-Syntax-Error-after-upgrading-to-Visu/10724553">C++ Syntax Error after upgrading to Visual Studio 17.11.0</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Visual-Studio-C-version-17110-cannot/10724987">Visual Studio C++ version 17.11.0 cannot perform constexpr evaluation in certain contexts</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/this-keyword-is-not-evaluated-appropri/10724997">&#8216;this&#8217; keyword is not evaluated appropriately in some context evaluations</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VS2022-17110-GA-Internal-Compiler-Erro/10722445">VS2022 17.11.0 GA Internal Compiler Error building C++ code</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Incorrect-if-constexpr-usage-in-lambad-c/10726344">Incorrect if constexpr usage in lambad causes ICE</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-requires-expression-name-shadowing-i/10726925">C++ requires expression name shadowing in const-evaluated context </a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-failed-to-compile-this-caputures-in/10725128">C++ failed to compile, this caputures in lambda as __this, and incorrect return type detection</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VS-17111:-Compiler-fails-to-match-defi/10728187">VS 17.11.1: Compiler fails to match definition to declaration when /permissive- is specified</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-C1001-with-lates/10728016">Internal compiler error C1001 with latest version of VS2022</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/1711-fails-to-compile-templated-code-un/10730785">17.11 fails to compile templated code under C++20</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Unresolved-token-for-TypeForwardedToAttr/10728484">Unresolved token for TypeForwardedToAttribute in C++/CLI</a></li>
+</ul>
+<h4>Closing</h4>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2022 please let us know via the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">Developer Community.</a></p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/">MSVC Compiler Language Updates in Visual Studio 2022 version 17.12</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New in vcpkg (November 2024)</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-november-2024/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-november-2024/#respond</comments>
@@ -1137,52 +1286,6 @@ int main() {
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2024/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Configure GitHub Copilot Access via Content Exclusion</title>
-		<link>https://devblogs.microsoft.com/cppblog/configure-github-copilot-access-via-content-exclusion/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/configure-github-copilot-access-via-content-exclusion/#respond</comments>
-		
-		<dc:creator><![CDATA[Alexandra Kemper]]></dc:creator>
-		<pubDate>Mon, 07 Oct 2024 23:51:04 +0000</pubDate>
-				<category><![CDATA[Copilot]]></category>
-		<category><![CDATA[GitHub]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34717</guid>
-
-					<description><![CDATA[<p>Have you ever wanted greater control over the sensitive content AI-powered tools can access in your repositories? You can now customize Copilot’s access to your files with the newly announced GitHub Copilot Content Exclusion in both Visual Studio and Visual Studio Code. Through this new process you can configure Copilot to ignore certain files in your [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/configure-github-copilot-access-via-content-exclusion/">Configure GitHub Copilot Access via Content Exclusion</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">Have you ever wanted greater control over the sensitive content AI-powered tools can access in your repositories? You can now customize Copilot’s access to your files with the newly announced <a href="https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot">GitHub Copilot Content Exclusion</a> in both Visual Studio and Visual Studio Code. Through this new process you can configure Copilot to ignore certain files in your repository – such as sensitive files or information &#8211; when generating responses. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">Once content has been excluded from Copilot: </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<ul>
-<li><span data-contrast="none">Code completion will not be available in the affected files.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">The content in affected files will not inform code completion suggestions in other files.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
-<li data-leveltext="" data-font="Symbol" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="none">The content in affected files will not inform GitHub Copilot Chat&#8217;s responses.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></li>
-</ul>
-<p><span data-contrast="auto">GitHub Copilot’s granular control over content exclusion gives you the flexibility to enact company-wide security policies in your organization and prevent unauthorized access to sensitive information so developers can still benefit from Copilot across every step of the developer workflow.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="none">For further details, limitations, and the latest information, refer to the </span><a href="https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot#about-content-exclusions-for-copilot"><span data-contrast="none">content exclusion documentation</span></a><span data-contrast="none">.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335557856&quot;:16777215,&quot;335559739&quot;:0,&quot;335559740&quot;:279}"> </span></p>
-<h3 aria-level="2"><span data-contrast="none">Example: Excluding Content in the C++ STL</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
-<p><span data-contrast="auto">For example, imagine you are customizing </span><a href="https://github.com/microsoft/STL"><span data-contrast="none">Microsoft&#8217;s implementation of the C++ Standard Library.</span></a><span data-contrast="auto"> You rewrite the validation logic and add your own tools, which are specific for your codebase and include proprietary information. You can exclude these changes from Copilot by excluding the entire tools folder:  </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643.png"><img decoding="async" class="wp-image-34726 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643.png" alt="A screenshot of a file that includes the line &quot;/tools/**/*&quot; and says &quot;paths to exclude in this repository&quot; at the top" width="621" height="296" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643.png 1322w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643-300x143.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643-1024x488.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/Screenshot-2024-10-07-141643-768x366.png 768w" sizes="(max-width: 621px) 100vw, 621px" /></a></p>
-<p><span data-contrast="auto">When you open any of the excluded files in your IDE, you can now determine that Copilot is disabled from the GitHub Copilot indicator in your status bar. For example, when opening tools/validate/validate.cpp in VS Code and hovering over the GitHub icon, you’ll notice that the file has been excluded:  </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file.png"><img decoding="async" class="aligncenter wp-image-34728" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file.png" alt="Image of a mouse hovering over the Copilot Icon in the status bar of VS Code. The icon has a line over it and text that appears when it hovers states &quot;Your repository &quot;STL&quot; has disabled copilot for this file&quot;" width="717" height="167" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file.png 1614w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file-300x70.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file-1024x239.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file-768x179.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/disabled_copilot_for_file-1536x358.png 1536w" sizes="(max-width: 717px) 100vw, 717px" /></a></p>
-<p><span data-contrast="auto">Now, when you make a request to Copilot, any excluded content will be ignored. This applies to both in line code completions and GitHub Copilot Chat, and is indicated by a note at the end of each response: </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image.png"><img decoding="async" class="wp-image-34729 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image.png" alt="Screenshot of a code completion in VS Code. It has been cropped to show that the bottom of the inline suggestion shows the text &quot;note: some files were excluded from the context due to content exclusion rules&quot;" width="442" height="322" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image.png 1951w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-300x219.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-1024x747.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-768x561.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-1536x1121.png 1536w" sizes="(max-width: 442px) 100vw, 442px" /></a></p>
-<p><img decoding="async" class="wp-image-34730 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2.png" alt="A screenshot of the copilot chat response in VS Code. It shows that at the bottom of the reponse there is the same note as for inline suggestions whenever a file is referenced that has been excluded. " width="338" height="503" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2.png 1173w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2-202x300.png 202w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2-688x1024.png 688w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2-768x1143.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/image-2-1033x1536.png 1033w" sizes="(max-width: 338px) 100vw, 338px" /></p>
-<p><span data-contrast="none">For further information and the latest details, please reference the </span><a href="https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot"><span data-contrast="none">content exclusion documentation.</span></a><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<h3 aria-level="2"><span data-contrast="none">Excluding Files Not in Git?</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
-<p><span data-contrast="none">A new addition, currently in public beta, is that content exclusion is not only limited to files that are tracked through Git. Any exclusions added </span><a href="https://github.blog/changelog/2024-08-19-content-exclusion-beta-now-supports-non-git-files/"><span data-contrast="none">apply to any non-git files that are a part of your repository</span></a><span data-contrast="none"> as well. For example, as a game developer, indicating a wildcard scope like “*.exe” from the previous section would automatically apply to any files in your repository, even if these .exe files are tracked through Azure DevOps, Perforce, or stored locally.  </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:0,&quot;335559737&quot;:0,&quot;335559738&quot;:0,&quot;335559739&quot;:160,&quot;335559740&quot;:279}"> </span></p>
-<h3 aria-level="2"><span data-contrast="none">What do you think? </span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;201341983&quot;:0,&quot;335559738&quot;:160,&quot;335559739&quot;:80,&quot;335559740&quot;:279}"> </span></h3>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=GitHub.copilot"><span data-contrast="none">Download the GitHub Copilot Extension for Visual Studio Code </span></a><span data-contrast="none"> today to try content exclusion and let us know what you think. Note that the GitHub Copilot extension comes bundled with the GitHub Copilot Chat extension. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="none">If you have any questions, comments, or feedback please reach out via the comments below, per email at  </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com,</span></a><span data-contrast="none"> or through our team on X/Twitter at  </span><a href="https://twitter.com/visualc"><span data-contrast="none">@</span></a><a href="https://twitter.com/visualc"><span data-contrast="none">VisualC.</span></a><span data-contrast="auto"> If you experience any issues, please report them in </span><a href="https://github.com/microsoft/vscode-copilot-release/issues/new/choose"><span data-contrast="none">our GitHub repo</span></a><span data-contrast="auto">. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/configure-github-copilot-access-via-content-exclusion/">Configure GitHub Copilot Access via Content Exclusion</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/configure-github-copilot-access-via-content-exclusion/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
