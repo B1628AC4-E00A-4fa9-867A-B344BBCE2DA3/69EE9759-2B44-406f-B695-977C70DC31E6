@@ -1,4 +1,209 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 28 Nov 2024 01:26:12 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[アルゴリズムのパフォーマンスを段階的に改善する]]></title><description><![CDATA[最近、筆者はRaBitQという新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでにC++実装を提供しており、実行速度はかなり速いです。筆…]]></description><link>https://postd.cc/rabitq-bench/</link><guid isPermaLink="false">https://postd.cc/rabitq-bench/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><category><![CDATA[アルゴリズム]]></category><category><![CDATA[Rust]]></category><pubDate>Thu, 28 Nov 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>最近、筆者は<a href="https://arxiv.org/abs/2405.12497">RaBitQ</a>という新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでに<a href="https://github.com/gaoj0017/RaBitQ">C++実装</a>を提供しており、実行速度はかなり速いです。筆者はこれを<a href="https://github.com/kemingy/rabitq">Rustに書き換えようとしました</a>（いわゆるRiiR（Rewrite it in Rust）です）が、実装結果は元のアルゴリズムよりも大幅に遅いことが判明しました。この記事では、アルゴリズムのパフォーマンスを段階的に改善する方法をご紹介します。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 12 Dec 2024 02:05:37 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[進化した正規表現：JavaScriptの正規表現の歴史と未来]]></title><description><![CDATA[クイックサマリー：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steve…]]></description><link>https://postd.cc/history-future-regular-expressions-javascript/</link><guid isPermaLink="false">https://postd.cc/history-future-regular-expressions-javascript/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[正規表現]]></category><pubDate>Thu, 12 Dec 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steven Levithan氏がJavaScriptの正規表現の歴史と現状を評価し、より読みやすく、保守性とレジリエンスに優れた正規表現の書き方をアドバイスします。</p>
+<hr>
+<p>モダンJavaScriptの正規表現は、皆さんがよく知っている従来の正規表現と比べると随分進化しました。正規表現は<strong>テキストを検索して置き換えるツールとして非常に優れている</strong>一方で、書くのも理解するのも難しいという根強い評判があります（しかし今から説明するように、この認識は時代遅れかもしれません）。</p>
+<p>正規表現に関するこの認識は、JavaScriptに特に当てはまります。PCREやPerl、.NET、Java、Ruby、C++、Pythonといったよりモダンな言語の正規表現に比べてパフォーマンスが劣るJavaScriptの正規表現は、長年人気が低迷していました。しかしそれはもはや過去の話です。</p>
+<p>この記事では、JavaScriptの正規表現が経てきた改良の歴史を説明し（ネタバレ：ES2018とES2024が大きな転機となりました）、モダンな正規表現の機能を実例とともに紹介します。さらに、JavaScriptの正規表現を他のモダンな言語の正規表現に匹敵する、あるいは勝るものにした軽量な<a href="https://github.com/slevithan/regex">JavaScriptライブラリ</a>について紹介し、最後にJavaScriptの今後のバージョンで正規表現を改良し続けるために現在検討されている提案をいくつかお見せします（中には現在お使いのブラウザにすでに実装されているものもあります）。</p>
+<h2>JavaScriptにおける正規表現の歴史 <a href="#JavaScriptにおける正規表現の歴史略の目的">#</a><a name="JavaScriptにおける正規表現の歴史"></a></h2>
+<p>1999年に標準化されたECMAScript 3は、Perl由来の正規表現をJavaScriptに導入しました。大幅な改良が加わり、正規表現はかなり便利になりましたが（他のほとんどのPerl由来の正規表現とも互換性を得ました）、それでもいくつか大きな漏れがありました。JavaScriptの次に標準化されたバージョンであるES5が登場するまで10年かかりましたが、その間に他のプログラミング言語と正規表現の実装にいくつか便利な機能が新たに追加され、それらの正規表現はより強力で読みやすくなりました。</p>
+<p>しかしそれは当時の話です。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>JavaScriptの新しいバージョンが出ると、ほぼ毎回正規表現に何らかの改良が行われていたことをご存知でしたか？</p></div></div>
+<p>では実際に見てみましょう。</p>
+<p>以下の機能の中には理解しにくいものもあるかもしれませんが、ご心配なく。主要な機能のいくつかは後で詳しく説明します。</p>
+<ul>
+<li>ES5（2009）では、正規表現のリテラル文字が評価されるたびに新しいオブジェクトが作成されるようにすることで、直感的でない振る舞いが修正され、正規表現のリテラル文字が文字クラス内でスラッシュをエスケープせずに使用できるようになりました（<code class="language-text">/[/]/</code>）。</li>
+<li>ES6/ES2015では2つの正規表現フラグが新たに追加されました。パーサーで正規表現を使いやすくした<code class="language-text">y</code>（<code class="language-text">sticky</code>）と、厳格なエラーとともにUnicode関連のいくつかの重要な改良を追加した<code class="language-text">u</code>（<code class="language-text">unicode</code>）です。また、<code class="language-text">RegExp.prototype.flags</code>ゲッター、<code class="language-text">RegExp</code>のサブクラス化対応、フラグを変更しながら正規表現をコピーする機能も追加されました。</li>
+<li>ES2018で、JavaScriptの正規表現はかなり改良されました。<code class="language-text">s</code>（<code class="language-text">dotAll</code>）フラグ、後読み、名前付きキャプチャ、Unicodeプロパティ（ES6の<code class="language-text">u</code>フラグを必要とする<code class="language-text">\p{...}</code>と<code class="language-text">\P{...}</code>により指定）が追加されました。後で説明するように、これらはすべて極めて便利な機能です。</li>
+<li>ES2020では、文字列メソッドの<code class="language-text">matchAll</code>が追加されました。これについても後ほど説明します。</li>
+<li>ES2022では、マッチしたサブ文字列が開始と終了のインデックスを取得できるようにする<code class="language-text">d</code>（<code class="language-text">hasIndices</code>）フラグが追加されました。</li>
+<li>最後に、ES2024ではES6で実装された<code class="language-text">u</code>フラグのアップグレードとして<code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグが追加されました。<code class="language-text">v</code>フラグは、複数文字による一連の「文字列プロパティ」を<code class="language-text">\p{...}</code>に追加し、<code class="language-text">\p{...}</code>と<code class="language-text">\q{...}</code>を使用して文字クラス内に複数文字のエレメントを追加するほか、ネストした文字クラス、差集合<code class="language-text">[A--B]</code>、積集合<code class="language-text">[A&amp;&amp;B]</code>を追加し、文字クラス内に異なるエスケープ規則を追加します。また、否定集合<code class="language-text">[^...]</code>内におけるUnicodeプロパティの大文字と小文字を区別しないマッチングも修正されました。</li>
+</ul>
+<p>これらの機能は、現時点で安全にコードに組み込むことが可能です。これらの中で最新の機能である<code class="language-text">v</code>フラグは、Node.js 20および<a href="https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets">2023年世代</a>のブラウザでサポートされています。その他の機能は2021年以前のブラウザでサポートされています。</p>
+<p>ES2019からES2023までの各エディションでは、<code class="language-text">\p{...}</code>と<code class="language-text">\P{...}</code>により指定可能なUnicodeプロパティも新たに追加されています。さらに、ES2021では文字列メソッド<code class="language-text">replaceAll</code>も追加されました。ただし、正規表現を渡された際の挙動でES3の<code class="language-text">replace</code>と唯一異なる点は、<code class="language-text">g</code>フラグを使用していない場合に例外をスローすることです。</p>
+<h2>余談：正規表現の良し悪しは何で決まる？ <a href="#余談：正規表現の良し悪しは何で決まる？">#</a><a name="余談：正規表現の良し悪しは何で決まる？"></a></h2>
+<p>これらの変更が実装された今、JavaScriptの正規表現は他の正規表現と比べてどうなのでしょうか。考え方は色々ありますが、主な要素を以下に挙げます。</p>
+<ul>
+<li>
+<p><strong>パフォーマンス</strong><br>
+これは重要な要素ではありますが、成熟した正規表現の実装は概ねかなり速いので、最も重要ではないかもしれません。JavaScriptは正規表現のパフォーマンスは強力ですが（少なくとも、Node.js、Chromiumベースのブラウザ、<a href="https://hacks.mozilla.org/2020/06/a-new-regexp-engine-in-spidermonkey/">さらにはFirefox</a>で採用されているV8のIrregexpエンジンや、Safariで使われているJavaScriptCoreでは優れています）、バックトラッキングを制御する構文を一切持たないバックトラッキングエンジンを使用している点が大きな制約であり、ReDoSの脆弱性が広がる要因になっています。</p>
+</li>
+<li>
+<p><strong>一般的または重要なユースケースを扱う先進機能への対応</strong><br>
+JavaScriptはES2018とES2024で先進機能への対応が大きく進みました。後読み（無限の長さに対応）やUnicodeプロパティ（複数文字による「文字列プロパティ」、差集合、積集合、スクリプト拡張機能に対応）など一部の機能において、JavaScriptは今やクラス最高レベルです。これらの機能は、他の多くの正規表現でサポートされていないか、堅牢性が劣ります。</p>
+</li>
+<li>
+<p><strong>読みやすく保守性に優れたパターンを書ける</strong><br>
+ネイティブのJavaScriptは、この点で長年主要な言語の中で最低の評価を受けてきました。その理由は、ちょっとした空白やコメントを入力できるようにする<code class="language-text">x</code>（拡張）フラグが欠けているからです。正規表現のサブルーチンとサブルーチン定義グループ（PCREとPerlの機能）は、文法的に正しい正規表現を書き、合成により複雑なパターンを構築することを可能にする強力な機能ですが、これらもありません。</p>
+</li>
+</ul>
+<p>つまり、良い面も悪い面もあるということです。</p>
+<blockquote class=pull-quote><p><a class=pull-quote__link aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aJavaScript%20regexes%20have%20become%20exceptionally%20powerful,%20but%20they%e2%80%99re%20still%20missing%20key%20features%20that%20could%20make%20regexes%20safer,%20more%20readable,%20and%20more%20maintainable%20%28all%20of%20which%20hold%20some%20people%20back%20from%20using%20this%20power%29.%0a&url=https://smashingmagazine.com%2f2024%2f08%2fhistory-future-regular-expressions-javascript%2f">JavaScriptの正規表現は極めて強力になりましたが、正規表現をより安全で、読みやすく、保守しやすくできる重要な機能がまだ欠けています（これは、その力を利用するのをためらう理由にもなっています）</a></p></blockquote>
+<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
+<p>幸い、これらの穴はすべてJavaScriptライブラリによって埋めることができます。それについては後ほど説明します。</p>
+<h2>JavaScriptのモダンな正規表現機能を使用する <a href="#JavaScriptのモダンな正規表現機能を使用する">#</a><a name="JavaScriptのモダンな正規表現機能を使用する"></a></h2>
+<p>皆さんがあまり知らないかもしれない、もっと便利なモダン正規表現機能をいくつかご紹介します。先に言っておきますが、<strong>これはやや上級者向けのガイドです</strong>。正規表現を使い始めてまだ日が浅い方は、手始めに以下の素晴らしいチュートリアルをご覧いただくといいかもしれません。</p>
+<ul>
+<li><a href="https://regexlearn.com/">RegexLearn</a>と<a href="https://regexone.com/">RegexOne</a>はインタラクティブなチュートリアルで、練習問題もあります。</li>
+<li>JavaScript.infoの<a href="https://javascript.info/regular-expressions">正規表現の章</a>は、JavaScriptに特化した詳細なガイドです。</li>
+<li><a href="https://www.youtube.com/watch?v=M7vDtxaD7ZU">Demystifying Regular Expressions</a>（動画）は、Lea Verou氏がHolyJS 2017で行った、初心者向けの素晴らしい講演です。</li>
+<li><a href="https://www.youtube.com/watch?v=rhzKDrUiJVk">Learn Regular Expressions In 20 Minutes</a>は、実際に正規表現テスターを動かしながら構文を説明する動画です。</li>
+</ul>
+<h2>名前付きキャプチャ <a href="#名前付きキャプチャ">#</a><a name="名前付きキャプチャ"></a></h2>
+<p>正規表現が一致するかどうかを確認するだけでなく、一致する文字列からサブ文字列を抽出し、コード上で何らかの操作を行いたい場合も多いでしょう。名前付きキャプチャグループを使うことで、正規表現とコードが<strong>より読みやすく</strong>なり、<strong>自己文書化</strong>するような方法でそれを行うことができます。</p>
+<p>以下の例では、2つの日付を持つレコードをマッチングさせ、値を取得します。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> record <span class="token operator">=</span> <span class="token string">'Admitted: 2024-01-01\nReleased: 2024-01-03'</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">^Admitted: (?&lt;admitted>\d{4}-\d{2}-\d{2})\nReleased: (?&lt;released>\d{4}-\d{2}-\d{2})$</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> match <span class="token operator">=</span> record<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>groups<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">/* → {
+  admitted: '2024-01-01',
+  released: '2024-01-03'
+} */</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この正規表現を理解できなくても大丈夫です。これをもっと読みやすくする方法を後で説明します。ここで重要なのは、名前付きキャプチャグループが<code class="language-text">(?&lt;name>...)</code>構文を使用し、マッチした文字列の<code class="language-text">groups</code>オブジェクト上にその結果が格納されるということです。</p>
+<p>また、名前付き後方参照を使用して、名前付きキャプチャグループが<code class="language-text">\k&lt;name></code>によりマッチングした文字列を再度マッチングすることもでき、検索や置換の中でそれらの値を以下のように使用することができます。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Change 'FirstName LastName' to 'LastName, FirstName'</span>
+<span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'Shaquille Oatmeal'</span><span class="token punctuation">;</span>
+name<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;first>\w+) (?&lt;last>\w+)</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">,</span> <span class="token string">'$&lt;last>, $&lt;first>'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// → 'Oatmeal, Shaquille'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>置換コールバック関数内で名前付き後方参照を使用したい上級者は、最後の引数として<code class="language-text">groups</code>オブジェクトを指定します。以下に例を挙げます。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token parameter">str</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;degrees>-?\d+(\.\d+)?)F\b</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> str<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token operator">...</span>args</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> groups <span class="token operator">=</span> args<span class="token punctuation">.</span><span class="token function">at</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> Math<span class="token punctuation">.</span><span class="token function">round</span><span class="token punctuation">(</span><span class="token punctuation">(</span>groups<span class="token punctuation">.</span>degrees <span class="token operator">-</span> <span class="token number">32</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">5</span><span class="token operator">/</span><span class="token number">9</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'C'</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token string">'98.6F'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// → '37C'</span>
+<span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token string">'May 9 high is 40F and low is 21F'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// → 'May 9 high is 4C and low is -6C'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>後読み <a href="#後読み">#</a><a name="後読み"></a></h2>
+<p>後読み（ES2018で導入）は、JavaScriptの正規表現で以前からサポートされていた先読みを補完する機能です。先読みと後読みはアサーション（文字列の始まりを示す<code class="language-text">^</code>や、単語の境界を示す<code class="language-text">\b</code>と似ています）であり、マッチの過程で文字を一切消費しません。後読みは、サブパターンが現在のマッチ位置の直前に見つかるかどうかで成否が決まります。</p>
+<p>例えば、以下の正規表現は後読み<code class="language-text">(?&lt;=...)</code>を使用して、「fat」の後に続く「cat」という単語（「cat」という単語のみ）をマッチングします。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;=fat )cat</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
+<span class="token string">'cat, fat cat, brat cat'</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token string">'pigeon'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// → 'cat, fat pigeon, brat cat'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>また、否定後読み<code class="language-text">(?&lt;!...)</code>を使用してアサーションを反転させることもできます。そうすることで、正規表現は前に「fat」が付かないすべての「cat」をマッチングするようになります。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;!fat )cat</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
+<span class="token string">'cat, fat cat, brat cat'</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token string">'pigeon'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// → 'pigeon, fat cat, brat pigeon'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>後読みの実装はJavaScriptのものが最も優れています（匹敵するのは.NETだけです）。他の正規表現は後読みの中に可変長パターンを認めるかどうか、いつ認めるかについて一貫性のない複雑な規則を設けていますが、JavaScriptはあらゆるサブパターンについて後読みを認めています。</p>
+<h2><code class="language-text">matchAll</code>メソッド <a href="#matchAllメソッド">#</a><a name="matchAllメソッド"></a></h2>
+<p>ES2020ではJavaScriptの<code class="language-text">String.prototype.matchAll</code>が追加され、詳細なマッチ情報が必要な場合に正規表現マッチをループで実行しやすくなりました。以前は他の方法も利用できましたが、<code class="language-text">matchAll</code>の方が容易な場合が多く、長さゼロのマッチを返す可能性がある正規表現の結果に対してループ実行する際に無限ループに陥らないようにするなど、落とし穴も回避します。</p>
+<p><code class="language-text">matchAll</code>はイテレータ（配列ではなく）を返すため、<code class="language-text">for...of</code>ループにおいて使いやすいという利点があります。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;char1>\w)(?&lt;char2>\w)</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> match <span class="token keyword">of</span> str<span class="token punctuation">.</span><span class="token function">matchAll</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span>char1<span class="token punctuation">,</span> char2<span class="token punctuation">}</span> <span class="token operator">=</span> match<span class="token punctuation">.</span>groups<span class="token punctuation">;</span>
+  <span class="token comment">// Print each complete match and matched subpatterns</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Matched "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>match<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">" with "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>char1<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">" and "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>char2<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">"</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><strong>注</strong>：正規表現で<code class="language-text">matchAll</code>を使用する場合、<code class="language-text">g</code>フラグ（<code class="language-text">global</code>）が必須となります。また、他のイテレータと同様に<code class="language-text">Array.from</code>または配列スプレッドを使用してすべての結果を配列として受け取ることも可能です。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> matches <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">...</span>str<span class="token punctuation">.</span><span class="token function">matchAll</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">.</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<h2>Unicodeプロパティ <a href="#Unicodeプロパティ">#</a><a name="Unicodeプロパティ"></a></h2>
+<p>Unicodeプロパティ（ES2018で追加）は、<code class="language-text">\p{...}</code>構文とその否定形である`P{...}`を使用することで多言語テキストを強力に制御することを可能にします。マッチングできるプロパティは数百に及び、多岐にわたるUnicodeのカテゴリ、スクリプト、スクリプト拡張機能、バイナリプロパティを網羅します。</p>
+<p>注：詳細については<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape">MDNのドキュメント</a>をご覧ください。</p>
+<p>Unicodeプロパティでは<code class="language-text">u</code>（<code class="language-text">unicode</code>）または<code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグの使用が必須です。</p>
+<h2><code class="language-text">v</code>フラグ <a href="#vフラグ">#</a><a name="vフラグ"></a></h2>
+<p><code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグは、<code class="language-text">u</code>フラグのアップグレードとしてES2024で追加されました。これらのフラグを同時に使用することはできません。デフォルトのUnicode非対応モードでひそかにバグが紛れ込まないよう、ベストプラクティスとしていずれかのフラグを常に使用することが推奨されます。どちらを使用するかの判断は極めて単純です。<code class="language-text">v</code>フラグの環境（Node.js 20および2023年世代のブラウザ）のみのサポートで問題なければ<code class="language-text">v</code>フラグを使用し、それ以外の場合は<code class="language-text">u</code>フラグを使用します。</p>
+<p><code class="language-text">v</code>フラグが実装されたことで、いくつかの新しい正規表現機能が追加されました。中でも特筆すべきなのが差集合と積集合です。これにより、<code class="language-text">A--B</code>（文字クラス内）を使用してAの文字列はマッチングし、Bの文字列はマッチングしないとか、<code class="language-text">A&amp;&amp;B</code>を使用してAとB両方の文字列をマッチングすることが可能になります。以下の例をご覧ください。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Matches all Greek symbols except the letter 'π'</span>
+<span class="token operator">/</span><span class="token punctuation">[</span>\p<span class="token punctuation">{</span>Script_Extensions<span class="token operator">=</span>Greek<span class="token punctuation">}</span><span class="token operator">--</span>π<span class="token punctuation">]</span><span class="token operator">/</span>v
+
+<span class="token comment">// Matches only Greek letters</span>
+<span class="token operator">/</span><span class="token punctuation">[</span>\p<span class="token punctuation">{</span>Script_Extensions<span class="token operator">=</span>Greek<span class="token punctuation">}</span><span class="token operator">&amp;&amp;</span>\p<span class="token punctuation">{</span>Letter<span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token operator">/</span>v</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">v</code>フラグに関する詳細や、vフラグの他の新機能については、Google Chromeチームによるこちらの<a href="https://v8.dev/features/regexp-v-flag">説明</a>をご覧ください。</p>
+<h2>絵文字のマッチングについて <a href="#絵文字のマッチングについて">#</a><a name="絵文字のマッチングについて"></a></h2>
+<p>絵文字とは🤩🔥😎👌などのことですが、絵文字がテキスト上で符号化される方法は複雑です。正規表現で絵文字をマッチングしたい場合、<strong>1つの絵文字が1つのUnicodeコードポイントで構成されることもあれば、多くのUnicodeコードポイントで構成されることもある</strong>ことを認識しておくことが重要です。絵文字の正規表現を独自に展開する多くの人（ライブラリもです！）がこの点を見落とし（あるいは適切に実装しておらず）、バグを発生させてしまっています。</p>
+<p>「👩🏻‍🏫」（女性教師：明るい肌の色）の絵文字に関する以下の詳細は、絵文字がいかに複雑になり得るかを示しています。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Code unit length</span>
+<span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+<span class="token comment">// → 7</span>
+<span class="token comment">// Each astral code point (above \uFFFF) is divided into high and low surrogates</span>
+
+<span class="token comment">// Code point length</span>
+<span class="token punctuation">[</span><span class="token operator">...</span><span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+<span class="token comment">// → 4</span>
+<span class="token comment">// These four code points are: \u{1F469} \u{1F3FB} \u{200D} \u{1F3EB}</span>
+<span class="token comment">// \u{1F469} combined with \u{1F3FB} is '👩🏻'</span>
+<span class="token comment">// \u{200D} is a Zero-Width Joiner</span>
+<span class="token comment">// \u{1F3EB} is '🏫'</span>
+
+<span class="token comment">// Grapheme cluster length (user-perceived characters)</span>
+<span class="token punctuation">[</span><span class="token operator">...</span><span class="token keyword">new</span> <span class="token class-name">Intl<span class="token punctuation">.</span>Segmenter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">segment</span><span class="token punctuation">(</span><span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+<span class="token comment">// → 1</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>幸い、JavaScriptは<code class="language-text">\p{RGI_Emoji}</code>により任意の完全な絵文字を個別にマッチングできる簡単な方法を追加しました。これは一度に複数のコードポイントをマッチングできる高度な「文字列プロパティ」のため、ES2024の<code class="language-text">v</code>フラグが必要になります。</p>
+<p><code class="language-text">v</code>フラグに対応していない環境で絵文字のマッチングを行いたい場合は、<a href="https://github.com/mathiasbynens/emoji-regex">emoji-regex</a>と<a href="https://github.com/slevithan/emoji-regex-xs">emoji-regex-xs</a>の2つの素晴らしいライブラリをチェックしてみてください。</p>
+<h2>より読みやすく、保守性とレジリエンスに優れた正規表現を書く <a href="#より読みやすく、保守性とレジリエンスに優れた正規表現を書く">#</a><a name="より読みやすく、保守性とレジリエンスに優れた正規表現を書く"></a></h2>
+<p>正規表現機能は長年にわたり改良を重ねてきましたが、ネイティブのJavaScriptの正規表現は、複雑なものになると読むにしろ保守するにしろ、まだ難しい場合があります。</p>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Regular Expressions are SO EASY!!!! <a href="https://t.co/q4GSpbJRbZ">pic.twitter.com/q4GSpbJRbZ</a></p>&mdash; Garabato Kid (@garabatokid) <a href="https://twitter.com/garabatokid/status/1147063121678389253?ref_src=twsrc%5Etfw">July 5, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>ES2018で追加された名前付きキャプチャは、正規表現の自己文書化を推し進めた素晴らしい機能であり、ES6の<code class="language-text">String.raw</code>タグにより、<code class="language-text">RegExp</code>コンストラクタを使用する際にバックスラッシュをすべてエスケープ処理する必要がなくなりました。可読性に関する主な改良はそれくらいです。</p>
+<p>しかし、<code class="language-text">regex</code>という名前の軽量で高性能な<a href="https://github.com/slevithan/regex">JavaScriptライブラリ</a>（筆者作）があり、これを使用することで正規表現が劇的に読みやすくなります。このライブラリは、欠けている主な機能をPCRE（Perl-Compatible Regular Expressions）から追加し、ネイティブのJavaScriptの正規表現を出力することで可読性の向上を実現しています。Babelのプラグインとして使用することもできるため、ビルド時に<code class="language-text">regex</code>の呼び出しがトランスパイルされます。したがって、デベロッパーエクスペリエンスが改善され、ユーザーにランタイムコストがかかることもありません。</p>
+<p><a href="https://github.com/PCRE2Project/pcre2">PCRE</a>は、PHPが正規表現のサポートに使用している人気のCライブラリで、他の無数のプログラミング言語やツールで使用されています。</p>
+<p><code class="language-text">regex</code>という名前のタグ付きテンプレートリレラルを提供するregexライブラリが、どのようにしてわかりやすく保守しやすい複雑な正規表現を書く手助けをするのか、簡単に説明します。以下で説明する新しい構文は、すべてPCREで同様に機能します。</p>
+<h2>ちょっとした空白とコメント <a href="#ちょっとした空白とコメント">#</a><a name="ちょっとした空白とコメント"></a></h2>
+<p><code class="language-text">regex</code>は、デフォルトで空白や行コメント（<code class="language-text">#</code>で始まる）を自由に正規表現に追加できるようにすることで、可読性を改善しています。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>regex<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'regex'</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> date <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
+  # Match a date in YYYY-MM-DD format
+  (?&lt;year>  \d{4}) - # Year part
+  (?&lt;month> \d{2}) - # Month part
+  (?&lt;day>   \d{2})   # Day part
+</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これは、PCREの<code class="language-text">xx</code>フラグを使用するのと同じです。</p>
+<h2>サブルーチンとサブルーチン定義グループ <a href="#サブルーチンとサブルーチン定義グループ">#</a><a name="サブルーチンとサブルーチン定義グループ"></a></h2>
+<p>サブルーチンは<code class="language-text">\g&lt;name></code>（nameは名前付きグループを指します）のように書き、参照されたグループを独立したサブパターンとして扱い、現在の位置でマッチしようとします。これにより、サブパターンの合成と再利用が可能になり、可読性と保守性が改善されます。</p>
+<p>例えば、以下の正規表現は「192.168.12.123」のようなIPv4のアドレスとマッチします。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>regex<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'regex'</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> ipv4 <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\b
+  (?&lt;byte> 25[0-5] | 2[0-4]\d | 1\d\d | [1-9]?\d)
+  # Match the remaining 3 dot-separated bytes
+  (\. \g&lt;byte>){3}
+\b</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>さらに、サブルーチン定義グループを通じて参照のみで使用するサブパターンを定義することができます。こちらは先ほど見た名前付きキャプチャの項目の正規表現の改善例です。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> record <span class="token operator">=</span> <span class="token string">'Admitted: 2024-01-01\nReleased: 2024-01-03'</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> re <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
+  ^ Admitted:\ (?&lt;admitted> \g&lt;date>) \n
+    Released:\ (?&lt;released> \g&lt;date>) $
+
+  (?(DEFINE)
+    (?&lt;date>  \g&lt;year>-\g&lt;month>-\g&lt;day>)
+    (?&lt;year>  \d{4})
+    (?&lt;month> \d{2})
+    (?&lt;day>   \d{2})
+  )
+</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> match <span class="token operator">=</span> record<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>groups<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">/* → {
+  admitted: '2024-01-01',
+  released: '2024-01-03'
+} */</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>モダンな正規表現のベースライン <a href="#モダンな正規表現のベースライン">#</a><a name="モダンな正規表現のベースライン"></a></h2>
+<p><code class="language-text">regex</code>にはデフォルトで<code class="language-text">v</code>フラグが含まれているため、有効化し忘れることがありません。また、ネイティブの<code class="language-text">v</code>フラグをサポートしていない環境では、自動的に<code class="language-text">u</code>フラグに切り替わりつつも、<code class="language-text">v</code>フラグのエスケープ規則を適用し、正規表現の前方互換性と後方互換性を確保します。</p>
+<p>また、エミュレートされた<code class="language-text">x</code>（ちょっとした空白とコメント）および<code class="language-text">n</code>（「名前付きキャプチャのみ」モード）フラグをデフォルトで暗黙的に有効化するため、毎回これらの上位モードを選択する必要がありません。さらに、タグ付きテンプレートリテラルであるため、<code class="language-text">RegExp</code>コンストラクタの場合のようにバックスラッシュ<code class="language-text">\\\\</code>をエスケープ処理する必要がありません。</p>
+<h2>アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる <a href="#アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる">#</a><a name="アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる"></a></h2>
+<p>アトミックグループと絶対最大量指定子も、<code class="language-text">regex</code>ライブラリで追加された強力な機能です。これらは主にパフォーマンスと破壊的なバックトラック（ReDoSとも呼ばれ、特定の正規表現が特定の、あまり一致しない文字列を検索する際に膨大な時間がかかる深刻な問題）に対するレジリエンスに関する機能ですが、より単純なパターンを書けるようにすることで可読性も改善します。</p>
+<p><strong>注</strong>：詳しくは<code class="language-text">regex</code>の<a href="https://github.com/slevithan/regex#atomic-groups">ドキュメント</a>をご覧ください。</p>
+<h2>今後実装されそうなJavaScript正規表現の改良 <a href="#今後実装されそうなJavaScript正規表現の改良">#</a><a name="今後実装されそうなJavaScript正規表現の改良"></a></h2>
+<p>JavaScriptの正規表現を改良するための様々な提案が現在検討されています。JavaScriptの将来バージョンに組み込まれる見込みの高い3つの提案について以下にご紹介します。</p>
+<h2>重複する名前付きキャプチャグループ <a href="#重複する名前付きキャプチャグループ">#</a><a name="重複する名前付きキャプチャグループ"></a></h2>
+<p>これはステージ3（最終化間近）の<a href="https://github.com/tc39/proposal-duplicate-named-capturing-groups">改良案</a>です。さらに良いことに、直近の情報によるとこの改良はすべての主要ブラウザで機能します。</p>
+<p>名前付きキャプチャが最初に導入された際、すべての<code class="language-text">(?&lt;name>...)</code>キャプチャで一意の名前を使用することが求められました。しかし、正規表現には複数の代替パスがある場合もあり、それぞれのパスで同じグループ名を使用した方がコードを単純化できます。</p>
+<p>以下の例をご覧ください。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;year>\d{4})-\d\d|\d\d-(?&lt;year>\d{4})</span><span class="token regex-delimiter">/</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>この改良案は、まさにこの例の構文を可能にするもので、このような構文で「重複するキャプチャグループ名」エラーが発生するのを防ぎます。ただし、各代替パスの中では引き続き一意の名前を使用する必要があります。</p>
+<h2>パターン修飾子（別名：フラググループ） <a href="#パターン修飾子（別名：フラググループ）">#</a><a name="パターン修飾子（別名：フラググループ）"></a></h2>
+<p>こちらもステージ3の<a href="https://github.com/tc39/proposal-regexp-modifiers">改良案</a>です。Chrome/Edge 125およびOpera 111ではすでにサポートされており、<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1899813">近々</a>Firefoxでもサポートされる予定です。Safariについては<a href="https://bugs.webkit.org/show_bug.cgi?id=275672">今のところ</a>不明です。</p>
+<p>パターン修飾子は<code class="language-text">(?ims:...)</code>、<code class="language-text">(?-ims:...)</code>、<code class="language-text">(?im-s:...)</code>のいずれかを使用し、正規表現の特定の部分のみについて<code class="language-text">i</code>、<code class="language-text">m</code>、<code class="language-text">s</code>フラグのオンとオフを切り替えます。</p>
+<p>以下の例をご覧ください。</p>
+<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">hello-(?i:world)</span><span class="token regex-delimiter">/</span></span>
+<span class="token comment">// Matches 'hello-WORLD' but not 'HELLO-WORLD'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
+<h2><code class="language-text">RegExp.escape</code>による正規表現の特殊文字のエスケープ処理 <a href="#RegExp.escapeによる正規表現の特殊文字のエスケープ処理">#</a><a name="RegExp.escapeによる正規表現の特殊文字のエスケープ処理"></a></h2>
+<p>この<a href="https://github.com/tc39/proposal-regex-escaping">改良案</a>は、長い時間を経てようやく最近ステージ3に到達しました。まだどの主要ブラウザも対応していません。謳い文句どおり<code class="language-text">RegExp.escape(str)</code>関数を提供することで、正規表現の特殊文字がすべてエスケープ処理された状態で文字列を返し、リテラル文字列としてマッチングすることを可能にします。</p>
+<p>この機能がすぐに必要な場合、<a href="https://github.com/sindresorhus/escape-string-regexp">escape-string-regexp</a>が最も広く使われているパッケージです（毎月5億回以上ダウンロードされています）。このnpmパッケージは、最低限のエスケープ処理を行う超軽量の専用ユーティリティです。ほとんどのケースではこれで十分ですが、エスケープ処理を行った文字列が正規表現内のどの位置でも安全に使用できることを確認する必要がある場合、<code class="language-text">escape-string-regexp</code>はこの記事ですでに紹介した<code class="language-text">regex</code>ライブラリを推奨しています。<code class="language-text">regex</code>ライブラリは、埋め込み文字列のエスケープ処理を補間により、<a href="https://github.com/slevithan/regex#interpolating-escaped-strings">コンテクストを意識した方法</a>で行います。</p>
+<h2>まとめ <a href="#まとめ">#</a><a name="まとめ"></a></h2>
+<p>この記事では、JavaScriptの正規表現の過去、現在、そして未来についてお話しました。</p>
+<p>正規表現についてさらに詳しく学びたい方は、<a href="https://github.com/slevithan/awesome-regex">Awesome Regex</a>に優れた正規表現テスター、チュートリアル、ライブラリ、その他のリソースが紹介されているのでぜひご覧ください。正規表現のクロスワードパズルに挑戦してみたい方は、<a href="https://regexle.com/">regexle</a>をお試しください。</p>
+<p>皆さんの実りある構文解析と正規表現の可読性向上の一助になれば幸いです。</p>]]></content:encoded></item><item><title><![CDATA[アルゴリズムのパフォーマンスを段階的に改善する]]></title><description><![CDATA[最近、筆者はRaBitQという新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでにC++実装を提供しており、実行速度はかなり速いです。筆…]]></description><link>https://postd.cc/rabitq-bench/</link><guid isPermaLink="false">https://postd.cc/rabitq-bench/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[パフォーマンス]]></category><category><![CDATA[アルゴリズム]]></category><category><![CDATA[Rust]]></category><pubDate>Thu, 28 Nov 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>最近、筆者は<a href="https://arxiv.org/abs/2405.12497">RaBitQ</a>という新しい近似最近傍探索アルゴリズムを使ったさまざまな試みを行っています。このアルゴリズムを提案した論文の著者はすでに<a href="https://github.com/gaoj0017/RaBitQ">C++実装</a>を提供しており、実行速度はかなり速いです。筆者はこれを<a href="https://github.com/kemingy/rabitq">Rustに書き換えようとしました</a>（いわゆるRiiR（Rewrite it in Rust）です）が、実装結果は元のアルゴリズムよりも大幅に遅いことが判明しました。この記事では、アルゴリズムのパフォーマンスを段階的に改善する方法をご紹介します。</p>
 <h2>環境の準備</h2>
 <h3>データセット</h3>
 <p>最も重要なのは、適当なデータセットをいくつか用意することです。前述の論文では、<code class="language-text">sift_dim128_1m_l2</code>と<code class="language-text">gist_dim960_1m_l2</code>という2つのデータセットについての結果が示されています。このデータセットでは、128項目と960項目というのがよく使われるサイズであり、1,000,000個のデータポイント（ベクトル）があれば性能を測るのに十分だということです。つまり、これらのデータセットを使うことで、アルゴリズムの性能をしっかりと評価できるということです。データセットは<a href="http://corpus-texmex.irisa.fr/">こちら</a>からダウンロードできます。（こちらのサイトはTLSに対応しておらず、FTPダウンロードしか提供していません。）</p>
@@ -1948,128 +2153,4 @@ e. 設定<br></p>
 <p>ドラムロール…
 AIが近い将来デザインの仕事を完全に置き換える可能性は極めて低いと思います（ただし、反復作業や自動化できる作業は除きます）。なぜでしょうか。それは、あらゆるビジネスは個別化されたケースであり、ユーザーグループやその他さまざまな要素についても同じことが言えるからです。デザインは、視覚対象物の創出にとどまらず、共感性や創造性、人間中心のアプローチによる問題解決なども関わる仕事です。これらのスキルは、AIが容易に再現できるものではありません。</p>
 <p>したがって、ChatGPTはAIのパーソナルアシスタントと見なすことができるでしょう。そのようなものであれば、誰もが欲しいと思うのではないでしょうか。現にこのようなツールがすでに存在するので、使い方を学ぼうではありませんか。</p>
-<p>それでは最後のコメントです。<strong>AIがデザイナーに取って代わることはないでしょう。しかし、AIを利用しなければ、AIを使うデザイナーに淘汰されるかもしれません</strong>。</p>]]></content:encoded></item><item><title><![CDATA[テストピラミッド万歳]]></title><description><![CDATA[クイックサマリー：「テストピラミッド」は、自動テストをUI、サービス、ユニット単位に整理することで、開発に自動テストを組み込む方法を示すために作成されました。2012年に定義されて以降、このモデルは…]]></description><link>https://postd.cc/long-live-test-pyramid/</link><guid isPermaLink="false">https://postd.cc/long-live-test-pyramid/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[テスト]]></category><category><![CDATA[テストツール]]></category><pubDate>Wed, 28 Feb 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：<a href="https://martinfowler.com/bliki/TestPyramid.html">「テストピラミッド」</a>は、自動テストをUI、サービス、ユニット単位に整理することで、開発に自動テストを組み込む方法を示すために作成されました。2012年に定義されて以降、このモデルは次第に使われなくなってきたように思いますが、本当に廃れてしまったのでしょうか。この記事では、最新のテスト戦略を紹介するとともに、今日のソフトウェア開発におけるテストピラミッドの関連性を検討します。</p>
-<hr>
-<p>筆者の同僚である<a href="http://www.jpietrzyk.de/">ジャン・フィリップ・ピエトルチェク</a>が、かつてコードを書く開発者の責任について、次のように述べました。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>「我々の仕事の成果を最終的に使用する人々は、（中略）我々がただ最善を尽くすだけでなく、実際に機能するものを作ることを期待しているのです。」</p><p>— ジャン・フィリップ・ピエトルチェク</p></div></div>
-<p>彼の言葉は、私たちが書くコードをそれに依存する人々の観点からとらえている点で非常に印象に残りました。目まぐるしく変化するこの世界では、ユーザーは私たちが可能な限り最高のコードを記述し、開発したソフトウェアが実際に機能することを期待しています。このレベルの期待に応えるのは当然容易ではなく、だからこそ、開発スタックにおいてはテストが重要な要素になるのです。テストでは、仕事の質を評価し、さまざまなシナリオに照らして検証を行うことで、顕在化する前に問題を特定します。</p>
-<p>テストピラミッドは数あるテスト戦略の内の一つです。2012年に紹介されて以降、おそらく10年近くは主要なテストモデルとして利用されてきましたが、最近は以前ほど参照されなくなっています。テストピラミッドは今でも定番のテスト手法なのでしょうか。それとも、他の手法も多数台頭してきている中、昨今の開発事情により適した最新のモデルの影に隠れ、埋もれてしまっているのでしょうか。</p>
-<p>この記事ではその点を探っていきたいと思います。</p>
-<h2>テスト戦略の目的 <a href="#テスト戦略の目的">#</a><a name="テスト戦略の目的"></a></h2>
-<p>ユーザーの信頼を得るためには、書いたコードによって製品がユーザーの期待どおり確実に機能するよう、強固なテスト戦略が求められます。優れたテストコードを書くためには、まず何から始めればよいのでしょうか。テストコードはいくつ必要でしょうか。これまで多くの人がこれらの問いへの答えを見つけようと取り組んできました。しかし、求めていた気づきを私に与えてくれたのは、ケント・C・ドッズの次の一言でした。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>「最大の問題は、何をテストするのかということと、実装に関する詳細をテストすることで得られる偽りの自信ではなく、真の自信が得られるような方法でテストを行うにはどうすればよいかを見極めることです。」</p><p>— ケント・C・ドッズ</p></div></div>
-<p>これが出発点です。<strong>テストの目標を決めることが、テスト戦略を策定する上で最も重要な作業になります</strong>。ネット上には誤った判断を揶揄したミームが溢れていますが、そうした判断の多くは、単にテストの目的や、いくつテストを行えば確信が得られるのかが不明であったことに起因します。テストには、コードを適切に検証し、コードが期待どおり機能することを確認するための「最適な比率」があります。</p>
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">2 unit tests. 0 integration tests. <a href="https://t.co/K2MZKwr8JT">pic.twitter.com/K2MZKwr8JT</a></p>&mdash; DEV Community (@ThePracticalDev) <a href="https://twitter.com/ThePracticalDev/status/892788721350836225?ref_src=twsrc%5Etfw">August 2, 2017</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-<p><em>2つの単体テスト統合テストなし</em></p>
-<p>問題は、さまざまなユニットを結合してどう連動させるのかについての戦略を持たず、1種類のテスト（多くの場合は単体テスト）にのみ重点を置く開発者が多いことです。例えば、洗面台のテストを行う際、蛇口と排水口を別々にテストしても、両者が正常に連動するのかは分かりません。単体テストでは蛇口が問題なく機能していても、排水口が詰まっているにも関わらず蛇口から水が流れ続ければ、洗面台として正常に機能しているとは言えません。</p>
-<p>テスト手法について説明する際、ピラミッドモデルの例のようにしばしば「形」が用いられます。この記事では、筆者が見てきた形をいくつか紹介し、それぞれの形を実際のテストに当てはめるとどうなのか、結論としてどのテスト戦略が、筆者の考える今日の開発に適した包括的テストの基準を満たすのかを考察したいと思います。</p>
-<h2>基本に戻る <a href="#基本に戻る">#</a><a name="基本に戻る"></a></h2>
-<p>その前に、各種テストの一般的な定義をおさらいしましょう。</p>
-<h3>手動テスト</h3>
-<ul>
-<li>人の手によって行われるテストです。実際のユーザーがユースケースに従ってアプリ内をクリックして回り、場合によってはユースケースに記述されていない方法で予期しないシナリオでのアプリの動作を検証します。多くの場合、このテストは製品チームが観察する中、ユーザーとのリアルタイムでの対面もしくはリモートインタビューの形式で行われます。</li>
-</ul>
-<h3>単体テスト</h3>
-<ul>
-<li>このタイプのテストでは、アプリを「ユニット」と呼ばれるテスト可能で独立した小さな構成要素に分け、各ユニットを個別にテストし、正常に動作することを確認します。</li>
-</ul>
-<h3>統合テスト</h3>
-<ul>
-<li>コンポーネントまたはシステム間の連携に重点を置いたテストです。各ユニットを組み合わせてテストし、統合された状態で全体として正常に機能することを確認します。</li>
-</ul>
-<h3>E2E（エンドツーエンド）テスト</h3>
-<ul>
-<li>このタイプのテストでは、コンピューターが実際のユーザーとのやり取りをシミュレーションします。一定の手順に従うことが求められる作業をユーザーが完遂できるのか、期待する結果が得られるのかなど、ユーザーの視点に立って検証を行うためのテストと考えてください。インプットに対して適切なアウトプットが得られるのか確認することで、ユーザー体験全体を検証します。</li>
-</ul>
-<p>では、これらのテストをどう組み合わせればよいでしょうか。従来アプリケーションを問わず定番として用いられてきたのが、各テストを包括的なテストスイートとしてまとめたテストピラミッドです。</p>
-<h2>偉大なるテストピラミッド万歳 <a href="#偉大なるテストピラミッド万歳">#</a><a name="偉大なるテストピラミッド万歳"></a></h2>
-<p>マイク・コーンが著書<a href="https://www.mountaingoatsoftware.com/books/succeeding-with-agile-software-development-using-scrum">『Succeeding with Agile』</a>で最初に紹介し、マーチン・ファウラーが<a href="https://martinfowler.com/articles/practical-test-pyramid.html">「実用的なテストピラミッド」</a>という記事でさらに発展させたテストピラミッドは、パフォーマンスとコストに基づいてテストを優先順位付けしています。異なる粒度のテストを記述し、高位レベルのテストは少なく、素早く安価で実施できる信頼性の高い単体テストは多くするよう推奨しています。テストの順序としては、素早く低コストで実施できるものから、時間とコストのかかるものの順に行うよう推奨しています。ピラミッドの最下部には多くの単体テストが位置し、次にサービス（統合テスト）が真ん中に来ます。そして最上部に、E2Eテストを含むより具体的で少数のUIテストが位置します。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/long-live-test-pyramid/test-pyramid.jpg">
-<em>3層に分かれたピラミッドの手書きイラスト</em>（<a href="https://www.smashingmagazine.com/2023/09/long-live-test-pyramid/#:~:text=into%20three%20tiers.%20(-,Large%20preview,-)">拡大プレビュー</a>）</p>
-<p>関係者の間では、テストピラミッドはテスト構造のあるべき姿を単純化しすぎているとの声が高まっています。約10年前にテストピラミッドについての記事を執筆したマーチン・ファウラーは、<a href="https://martinfowler.com/articles/2021-test-shapes.html">この問題について最近ブログ記事を書いています</a>。筆者のチームでは、このモデルは私たちの仕事をエンドユーザーに近づけるものなのか、それとも遠ざけるものなのかという問いも出ています。ピラミッドの高位層は単体テストの信頼性を高め、より優れた価値をもたらしますが、各構成要素がどう連動するのかという大局的な視点に欠けるように思われます。少なくとも私たちには、テストピラミッドが時代遅れになりつつあるように感じられました。</p>
-<h2>ピラミッドからダイヤモンドへ <a href="#ピラミッドからダイヤモンドへ">#</a><a name="ピラミッドからダイヤモンドへ"></a></h2>
-<p>筆者のチーム内で議論された論点の1つが、ピラミッドが<strong>単体テストに重点を置きすぎている</strong>ということです。ピラミッドは、単体テストの性質と対象範囲を説明する形としては非常に優れています。しかし、単体テストとは何かと4人に問えば、おそらく4通りの回答が返ってくるでしょう。明確化のため、ピラミッドの形を少し変える必要があるかもしれません。</p>
-<p>筆者のチームが最も明確化する必要があったのは、単体テストを「いつ」「どこで」で止めるかということです。ピラミッドの形は、単体テストがテストプロセスの大部分を占めることを示唆しますが、私たちはそれが間違っているように感じました。結局のところ、単体テストをまとめるのは統合テストなので。</p>
-<p>したがって、テスト戦略を表すピラミッドの見方を変えてみると、ダイヤモンドの形に変化します。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/long-live-test-pyramid/testing-diamond-illustration.png">
-<em>4層に分かれたピラミッドの手書きイラスト</em>（<a href="https://www.smashingmagazine.com/2023/09/long-live-test-pyramid/#:~:text=pyramid%20split%20into%20four%20tiers.%20(-,Large%20preview,-)">拡大プレビュー</a>）</p>
-<p>統合テストは、単体テストには複雑すぎる場合があるため、テストピラミッドの「忘れられた層」と呼ばれることがあります。しかし、テストダイヤモンド（しばしば2つの特定の層に分けられる）ではより重視されます。</p>
-<ol>
-<li>
-<p><strong>統合テスト層</strong>
-この層は、テストピラミッドの場合とほぼ同じですが、「単体テストとして行うには規模が大きすぎる」と見なされるテストが割り当てられます。つまり、単体テストの層と統合テストの層の中間に位置します。この層には、特定のコンポーネントなどのテストが適しています。</p>
-</li>
-<li>
-<p><strong>システム統合テスト層</strong>
-この層は、APIから取得したデータなどの「実際の」統合テストを中心に扱います。</p>
-</li>
-</ol>
-<p>したがって、ダイヤモンドの形は統合テストを行った直後に単体テストを行うプロセスを示唆しますが、それらの単体テストはピラミッドモデルの場合ほど重視されません。そのため、単体テストが重視されなくなった分、統合テスト層に相応の予算が割り当てられます。</p>
-<h2>手動テストの位置付けは？ <a href="#自動テストの位置づけは？">#</a><a name="自動テストの位置づけは？"></a></h2>
-<p>テスト戦略が「ピラミッド型」であれ「ダイヤモンド型」であれ、重要な手動テストが依然としてプロセスに欠けています。自動テストは確かに重要ですが、手動テストが不要になるほどではありません。</p>
-<p>自動テストと手動テストは互いに欠かせないものだと思います。自動テストは定型的な共通作業を不要にし、人間がより注力すべき部分にテスターが集中できるようにする必要があります。自動化は手動テストを置き換えるのではなく、補完すべきなのです。</p>
-<p>この点を加味した場合、ダイヤモンドやピラミッドの形はどうなるでしょうか。手動テストはどの層にも含まれていませんが、どこかに入れるべきです。自動テストは効率的にバグを検出してくれますが、より包括的なテストを行うためには手動テストが必要です。とは言え、主に自動テストに重点を置いたテスト戦略が理想的であるのも事実です。</p>
-<p>これをテスト戦略の形に当てはめると、ピラミッドやダイヤモンドというよりアイスクリームコーンのような形になります。</p>
-<p><img src="https://files.smashing.media/articles/long-live-test-pyramid/testing-ice-cream-cone.png">
-<em>4層に分かれた、アイスクリームコーンに似た逆ピラミッドの手書きイラスト</em>（<a href="https://files.smashing.media/articles/long-live-test-pyramid/testing-ice-cream-cone.png">拡大プレビュー</a>）</p>
-<p>これは実際に「アイスクリームコーン」と呼ばれる手法です。実装までの時間は長くかかりますが、より確かな自信が得られ、より多くのバグを検出できます。2015年に発表された記事で、<a href="https://saeedgatson.com/the-software-testing-ice-cream-cone/">サイード・ガトソンが簡潔に説明しています</a>。</p>
-<p>しかし、ピザのような形で実際にテストの内容を説明しきれるのでしょうか。この概念はグレブ・バームトフによって突き詰められ、彼が<a href="https://changelog.com/posts/the-testing-pyramid-should-look-more-like-a-crab">「Testing crab（蟹）」</a>モデルと呼ぶ形に集約されました。この手法では、スクリーンショットを比較し、人間が差異を検証します。目視テストと機能テストは蟹の胴体部分を構成し、その他のテストは蟹の手足を構成します。テストの際に実装前と実装後のスナップショットを撮影できるツールがあり、撮影したスナップショットを重ね合わせることで、視覚的なリグレッションを確認できます。</p>
-<h2>テストトロフィー <a href="#テストトロフィー">#</a><a name="テストトロフィー"></a></h2>
-<p>どのテスト手法もコストがかさみますが、テストピラミッドはその点を適切に表しています。ただ、その形自体が現実的ではないか、テストの内容全体と、各テスト層に置かれた重点を考慮するのに効果的ではない可能性があります。したがって、各テスト層と、それぞれどの程度重視すべきかを正確に表した<strong>これらすべての手法の間に妥協点を見つける</strong>必要があります。</p>
-<p>ギレルモ・ローチが2016年にこの点を簡潔に表現した次の言葉を筆者は気に入っています。</p>
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Write tests. Not too many. Mostly integration.</p>&mdash; Guillermo Rauch (@rauchg) <a href="https://twitter.com/rauchg/status/807626710350839808?ref_src=twsrc%5Etfw">December 10, 2016</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-<p><em>テストを書こう。ただし書きすぎないこと。主に統合テスト。</em></p>
-<p>少し掘り下げてみましょう。</p>
-<ul>
-<li><strong>テストを書こう</strong>
-信頼を築くためだけではなく、メンテナンス時間を節約できるため。</li>
-</ul>
-<ul>
-<li><strong>書きすぎないこと</strong>
-100%の網羅率は、聞こえは良いですが必ずしも得策ではありません。アプリの詳細をすべて漏れなくテストした場合、少なくとも一部のテストはエンドユーザー体験にとって重要ではなく、テストを実行することが目的化しており、維持コストが増えることを意味します。</li>
-</ul>
-<ul>
-<li><strong>主に統合テスト</strong>
-統合テストに重点が置かれています。合理的な実行時間を維持しつつ、高いレベルの確信が得られるため、最も事業価値のあるテストです。</li>
-</ul>
-<p>ケント・C・ドッズの記事を読んでいる人ならば、以下の概念をご存知かもしれません。彼が提唱する<a href="https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications">「テストトロフィー」</a>手法では、統合テストの優先度が従来のテストピラミッドよりも高く設定されており、ギレルモ・ローチの主張とも完全に一致しています。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/long-live-test-pyramid/testing-trophy-illustration.png">
-<em>4つの層に分かれた薄い金色のトロフィーの手書きイラスト</em>（<a href="https://files.smashing.media/articles/long-live-test-pyramid/testing-trophy-illustration.png">拡大プレビュー</a>）</p>
-<p>ケントは、包括的なテストが製品の成功において果たす重要な役割について説明しています。彼は、単体テストよりも、<strong>製品のコア機能と評価される挙動について理解を深められる統合テストの価値を重視</strong>しています。また、彼はモックアップテストの数を減らし、統合テストの数を増やすことを提案しています。テストトロフィーは、テストの粒度を従来とは少し異なる方法で表した比喩であり、テストを以下の種類に分類しています。</p>
-<ol>
-<li>
-<p><strong>静的分析</strong>：これらのテストはデバッグの手順を実行することで、素早くタイプミスを特定します。</p>
-</li>
-<li>
-<p><strong>単体テスト</strong>：テストトロフィーでは、テストピラミッドほど重視されません。</p>
-</li>
-<li>
-<p><strong>統合テスト</strong>：テストトロフィーで最も重視されるテストです。</p>
-</li>
-<li>
-<p><strong>ユーザーインタフェース（UI）</strong>：E2Eテストや目視テストを含み、テストピラミッドと同様にテストトロフィーでも重要な役割を担います。</p>
-</li>
-</ol>
-<p>「テストトロフィー」はユーザーの視点を重視しており、費用対効果に優れています。では、テストトロフィーが最も推奨される手法なのでしょうか。テスト戦略としては最も理にかなっていますが、問題もあります。単体テストには依然として有益な利点がありますが、統合テストやE2Eテストには、ランタイムが長いことや信頼性が低いことなどの欠点があります。単体テストの利点は妥当であり、筆者は今でも好んで使用しています。</p>
-<h2>テストピラミッドは古いのか？<a href="#テストピラミッドは古いのか？">#</a><a name="テストピラミッドは古いのか？"></a></h2>
-<p>テストピラミッドは、ソフトウェア開発においてアプリケーションが正常に機能することを確認するのに役立つテストモデルとして、今でも人気があります。しかし、どんなモデルでもそうであるように、欠点もあります。最大の問題は、単体テストの定義を明確化しなくてはならないことです。</p>
-<p>筆者のチームは、テストパイプラインでダイヤモンドの形に改良を加えたものを使用しました。その結果、完全に間違ってはおらず、単に不完全なだけであることが判明しました。特に各種テストの優先順位を決める上で、今でも貴重な知見を得ています。</p>
-<p>ジャスティン・サールズがうまく言い表しているように、開発チームが教科書通りのテストパターンに従うことはほとんどありません。</p>
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">People love debating what percentage of which type of tests to write, but it&#39;s a distraction. Nearly zero teams write expressive tests that establish clear boundaries, run quickly &amp; reliably, and only fail for useful reasons. Focus on that instead.<a href="https://t.co/xLceALKrWe">https://t.co/xLceALKrWe</a></p>&mdash; Justin Searls (@searls) <a href="https://twitter.com/searls/status/1393385209089990659?ref_src=twsrc%5Etfw">May 15, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-<p><em>どのタイプのテストを何割書くかということについて盛んに議論されていますが、本質からずれていると思います。境界を明確に定め、素早く確実に実行され、失敗する際には必ず有益な理由がある表現豊かなテストを書いているチームはほとんどありません。重視すべきはそちらでしょう。</em></p>
-<p><em>@MartinFowlerのテストピラミッドはもう古い。
-統合テスト＞単体テストが新常識でしょう</em></p>
-<p><em>フロントエンドでは、@rauchgと@kentcdoddsが提唱する「テストトロフィー」があります</em></p>
-<p><em>バックエンドでは、@theburningmonkのコースで@SpotifyEngの「テストハニカム」が提唱されています</em></p>
-<p>これは、筆者のチームの経験上でも言えることで、テストを切り分けたり定義したりするのは難しい場合が多いです。それは別に悪いことではありません。マーチン・ファウラーでさえ、異なるテストモデルがテストの対象範囲に対する見方にプラスの影響を与えていることを強調しています。</p>
-<p>したがって、テストピラミッドが古いとは決して考えません。むしろ、今も昔と変わらず知っておくべきものだと思います。しかし、ポイントはテストモデルの「形」にこだわりすぎないことです。覚えておくべき最も重要なことは、<strong>テストは素早く確実に実行されるべきであり、実際に問題があるとき以外は失敗してはいけない</strong>ということです。単に網羅的なテストを目指すのではなく、ユーザーの役に立つことが重要です。最も重要な作業は、テストの設計段階でこれらの要素の優先順位を決めた際にすでに終えているのです。</p>
-<h2>参考文献 <a href="#参考文献">#</a><a name="参考文献"></a></h2>
-<ul>
-<li>“<a href="https://martinfowler.com/articles/practical-test-pyramid.html">The Practical Test Pyramid</a>,” Ham Vocke</li>
-<li>“<a href="https://martinfowler.com/articles/2021-test-shapes.html">On the Diverse And Fantastical Shapes of Testing,</a>” Martin Fowler</li>
-<li>“<a href="https://changelog.com/posts/the-testing-pyramid-should-look-more-like-a-crab">The Testing Pyramid Should Look More Like A Crab,</a>” Gleb Bahmutov</li>
-<li>“<a href="https://saeedgatson.com/the-software-testing-ice-cream-cone/">The Software Testing Ice Cream Cone,</a>” Saeed Gatson</li>
-<li>“<a href="https://kentcdodds.com/blog/write-tests">Write tests. Not too many. Mostly integration,</a>” Kent C. Dodds</li>
-<li>“<a href="https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications">The Testing Trophy and Testing Classifications,</a>” Kent C. Dodds</li>
-<li>“<a href="https://kentcdodds.com/blog/static-vs-unit-vs-integration-vs-e2e-tests">Static vs Unit vs Integration vs E2E Testing for Frontend Apps,</a>” Kent C. Dodds</li>
-</ul>]]></content:encoded></item></channel></rss>
+<p>それでは最後のコメントです。<strong>AIがデザイナーに取って代わることはないでしょう。しかし、AIを利用しなければ、AIを使うデザイナーに淘汰されるかもしれません</strong>。</p>]]></content:encoded></item></channel></rss>
