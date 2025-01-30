@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 30 Jan 2025 01:11:30 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 30 Jan 2025 01:23:34 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -47,7 +47,7 @@ The <a href="https://support.microsoft.com/en-us/windows/all-about-neural-proces
 
 First things first…let’s give it a whirl.
 
-To see DeepSeek in action on your Copilot+ PC, when available, simply download the AI Toolkit VS Code extension. The DeepSeek model optimized in the ONNX QDQ format will soon be available in AI Toolkit’s model catalog, pulled directly from Azure AI Foundry. You can download it locally by clicking the “Download” button. Once downloaded, experimenting with the model is as simple as opening the Playground, loading the “ deepseek_r1_1_5” model, and sending it prompts.
+To see DeepSeek in action on your Copilot+ PC, simply download the AI Toolkit VS Code extension. The DeepSeek model optimized in the ONNX QDQ format will soon be available in AI Toolkit’s model catalog, pulled directly from Azure AI Foundry. You can download it locally by clicking the “Download” button. Once downloaded, experimenting with the model is as simple as opening the Playground, loading the “ deepseek_r1_1_5” model, and sending it prompts.
 
 In addition to the ONNX model optimized for Copilot+ PC, you can also try the cloud-hosted source model in Azure Foundry by clicking on the “Try in Playground” button under “ DeepSeek R1”.
 
@@ -61,7 +61,7 @@ We use 4-bit block wise quantization for the embeddings and language model head 
 
 While the Qwen 1.5B release from DeepSeek does have an int4 variant, it does not directly map to the NPU due to presence of dynamic input shapes and behavior – all of which needed optimizations to make compatible and extract the best efficiency. Additionally, we use the <a href="https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html">ONNX QDQ</a> format to enable scaling across a variety of NPUs we have in the Windows ecosystem. We work out an optimal operator layout between the CPU and NPU for maximum power-efficiency and speed.
 
-To achieve the dual goals of low memory footprint and fast inference, much like Phi Silica, we make two key changes: First, we leverage a sliding window design that unlocks super-fast time to first token and long context support despite not having dynamic tensor support in the hardware stack. Second, we use the 4-bit <a href="https://www.microsoft.com/en-us/research/publication/quarot-outlier-free-4-bit-inference-in-rotated-llms/">QuaRot</a> quantization scheme to truly take advantage of low bit processing. QuaRot employs Hadamard rotations to remove outliers in weights and activations, making the model easier to quantize. QuaRot significantly improves quantization accuracy, compared to existing methods, such as GPTQ, particularly for low granularity settings such as per-channel quantization. The combination of low-bit quantization and hardware optimizations such the sliding window design help deliver the behavior of a larger model within the memory footprint of a compact model. With these optimizations in place, the model is capable of a time to first token of 130 ms and a throughput rate of 16 tokens/s for short prompts (&lt;64 tokens). Stay tuned to learn more about instructions to get the model.
+To achieve the dual goals of low memory footprint and fast inference, much like Phi Silica, we make two key changes: First, we leverage a sliding window design that unlocks super-fast time to first token and long context support despite not having dynamic tensor support in the hardware stack. Second, we use the 4-bit <a href="https://www.microsoft.com/en-us/research/publication/quarot-outlier-free-4-bit-inference-in-rotated-llms/">QuaRot</a> quantization scheme to truly take advantage of low bit processing. QuaRot employs Hadamard rotations to remove outliers in weights and activations, making the model easier to quantize. QuaRot significantly improves quantization accuracy, compared to existing methods, such as GPTQ, particularly for low granularity settings such as per-channel quantization. The combination of low-bit quantization and hardware optimizations such the sliding window design help deliver the behavior of a larger model within the memory footprint of a compact model. With these optimizations in place, the model is capable of a time to first token of 130 ms and a throughput rate of 16 tokens/s for short prompts (&lt;64 tokens).
 
 We include examples of the original and quantized model responses below to show the minor differences between the two variants, with the latter being both fast and power-efficient:
 
