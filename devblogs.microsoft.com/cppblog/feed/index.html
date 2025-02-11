@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 30 Jan 2025 18:29:00 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 11 Feb 2025 19:00:52 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,325 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>MSVC Compiler Updates in Visual Studio 2022 version 17.13</title>
+		<link>https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Tue, 11 Feb 2025 19:00:52 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Frontend]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[compiler]]></category>
+		<category><![CDATA[VC++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35069</guid>
+
+					<description><![CDATA[<p>Introduction For this update, we have changed things up a little bit. We now have more distinct buckets of fixes/implemented features. This is to help guide readers who care about specific features to more easily see how the compiler front-end team is making progress on the things you care about. 17.12 notes for reference. C++23 [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/">MSVC Compiler Updates in Visual Studio 2022 version 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>For this update, we have changed things up a little bit. We now have more distinct buckets of fixes/implemented features. This is to help guide readers who care about specific features to more easily see how the compiler front-end team is making progress on the things <em>you</em> care about.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/">17.12 notes for reference.</a></p>
+<h2 id="c-23-features-">C++23 Features</h2>
+<p>As part of our continuing ramp-up on C++23 conformance, the team has implemented the following features. In future releases customers can expect to see continued acceleration towards C++23 conformance.</p>
+<p><strong>Note:</strong> C++23 features can be used by either adding <code>/std:c++latest</code> or <code>/std:c++23preview</code> to the command line. In addition, features used from unfinished standards may not have full IntelliSense support.</p>
+<ul>
+<li><a href="https://wg21.link/p0330r8">Implement P0330R8</a></li>
+</ul>
+<p>Adds a new literal suffix which enables a literal to deduce to a form of <code>size_t</code>.</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">constexpr auto x = 10zu; // Deduces to 'size_t'
+constexpr auto y = 10z;  // Deduces to signed form of 'size_t' (i.e. 'ptrdiff_t')</code></pre>
+<ul>
+<li><a href="https://wg21.link/p2242r3">Implement P2242R3</a></li>
+</ul>
+<p>Relaxes <code>constexpr</code> restrictions around labels, <code>goto</code>, and non-literal user-defined types.</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">constexpr bool f() {
+  if (std::is_constant_evaluated()) {
+    return true;
+  }
+  goto label;
+label:
+  return false;
+}
+static_assert(f()); // OK - constant evaluation never reaches the 'goto' statement.</code></pre>
+<h2 id="compiler-improvements-for-17-13">Compiler improvements for 17.13</h2>
+<p>The categories below are some areas that the team has identified as high impact feature areas of the compiler toolset for customers. The team is dedicated to ensuring the areas below continue to be developed and improved over time, and we thank you all for filing bugs and being patient as our team works through issues.</p>
+<h3 id="c-cli">C++/CLI</h3>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-HangInternal-Error-compiling-S/10778106">Compiler Hang/Internal Error compiling String::Format in CPP/CLR</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Variable-Argument-Lists--CCLI-/10778739">Variable Argument Lists (&#8230;) (C++/CLI) no longer compile in .NET preview 9 (17.12.0 Preview)</a></li>
+</ul>
+<h3 id="diagnostics">Diagnostics</h3>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Insufficient-error-information-reported-/10773228">Insufficient error information reported with /std:c++17 or /std:c++20</a></li>
+</ul>
+<h3 id="-constexpr-"><code>constexpr</code></h3>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/decltypeauto-function-returning-compou/10751229">decltype(auto) function returning compound assignment cannot be constexpr</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Discrepancy-in-Behavior-of-operator-an/10732445">Discrepancy in Behavior of operator<em>= and operator</em> for Multiplying int and double at compile time </a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/constexpr-initializer_list-has-wrong-val/1494572">constexpr initializer_list has wrong values</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/static-constexpr-std::initializer_list-a/10137741">static constexpr std::initializer_list always zero-inits regardless of actual values</a></li>
+</ul>
+<h3 id="c-modules">C++ modules</h3>
+<ul>
+<li>Fixed issue where SEH statements were not persisted in the IFC.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Using-__try-in-an-inline-function-in-a-h/10186252">Using __try in an inline function in a header unit module results in &#8220;note: sorry: &#8216;inline&#8217; function definition for &#8216;&#8230;&#8217; could not be written&#8230;&#8221;</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Header-unit-does-not-recognize-__try/10232019">Header unit does not recognize __try</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/scanDependencies-does-not-take-into-acc/10029154">/scanDependencies does not take into account macros exported by header units</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Linker-error-caused-by-mix-of-modules-an/10761605">Linker error caused by mix of modules and formatter specialization</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-modules-C2504-when-nested-class-de/10702515">[C++ modules] C2504 when nested class derives from a templated nested class</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/module-cant-handle-CRTP-within-a-struct/10646505">module can&#8217;t handle CRTP within a struct on 17.10.0 Preview 5</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C-modules-code-not-compiling-anymore-w/10724998">C++ modules code not compiling anymore with Visual Studio version 17.10+</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-when-using-explicit-this-parameterD/10236618">ICE when using explicit this parameter(Deducing this) in a export{}</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C2139-when-using-nested-template-c/10652203">Error C2139 when using nested template classes in modules and type traits</a></li>
+</ul>
+<h3 id="reliability">Reliability</h3>
+<ul>
+<li>Fix a compiler crash when evaluating a default argument to a static function.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-calling-static-function-for-default-/10785885">ICE calling static function for default argument</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/LINK-:-fatal-error-LNK1000:-Internal-err/10117188">LINK : fatal error LNK1000: Internal error during IMAGE::BuildImage</a></li>
+<li><a href="https://developercommunity2.visualstudio.com/t/Schwarz-counter-vs-precompiled-header/1256884?preview=true">Schwarz counter vs. precompiled header</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VS-2022-17112:-Internal-Compiler-Error/10736199">VS 2022 17.11.2: Internal Compiler Error When Using Structured Bindings &amp; Explicit Object Member Function</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-with-conditional/10751968">Internal compiler error with conditionally defaulted special member function and nested expression sfinae</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-crashes-for-custom-implementati/10741077">Compiler crashes for custom implementation of is_destructible</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C1001-with-Address-Sanitizervs202/10734553">Error C1001 with Address Sanitizer(vs2022 17.11.2), when a public member of a temporary object is bound to a reference</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/internal-compiler-error-while-trying-to-/10682573">internal compiler error while trying to overload bitwise operator</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/fatal-error-C1001:-Internal-compiler-err/10756129">fatal error C1001: Internal compiler error. (compiler file &#8216;D:\a_work\1\s\src\vctools\Compiler\Utc\src\p2\main.c&#8217;, line 247)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VS-2022-C20-internal-compiler-error-w/10731700">VS 2022 C++20 internal compiler error w/example</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-on-class-templates-with-several-spec/10752268">ICE on class templates with several specialisations and simultaneous pack expansion</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE---potentially-related-to-concepts/10764877">ICE &#8211; potentially related to concepts</a></li>
+</ul>
+<h3 id="correctness">Correctness</h3>
+<ul>
+<li>Fix an issue with processing a mixture of nested and anonymous namespaces.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C3083-After-Upgrade-to-1711/10789148">Error C3083 After Upgrade to 17.11</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/regression-lambda-evaluation-in-uneval/10782170">[regression] lambda evaluation in unevaluated context in if constexpr condition fails from VS17.6 onwards</a></li>
+<li>Fix bogus printf format specifier warnings when the format string has a cast
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/printf-format-specifier-checking-doesnt/10644350">printf format specifier checking doesn&#8217;t work when the format is cast</a></li>
+</ul>
+</li>
+<li>Fix C2938 when a lambda is used as an alias template argument.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Failed-to-specialize-alias-template/10767384">Failed to specialize alias template</a></li>
+</ul>
+</li>
+<li>Fix an issue with <code>requires</code> expressions that fail to resolve sometimes resulting in syntax errors.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Default-assigned-bool-template-argument-/10793043">Default assigned bool template argument with requires using invoke_result_t with an incorrect type being typenamed causes fatal error C1075 and C2760</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-will-succeed-compilation-when-a-var/10762220">MSVC will succeed compilation when a variadic parameter, that is defined by a templated type alias that is evaluated using decltype, is ill-formed</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C:-data-is-not-a-member-of-std::basi/10756647">C++: &#8216;data&#8217; is not a member of std::basic_string_view</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Wrong-code-generation-when-initializing-/10754777">Wrong code generation when initializing a variable of class type that contains multiple instances of the same empty class in its layout</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Simultaneous-expansion-of-two-non-type-p/10784345">Simultaneous expansion of two non-type parameter packs inside a class template argument list works incorrectly</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C1XXs-__is_convertible_to-intrinsic-mis/1627396">C1XX&#8217;s __is_convertible_to intrinsic mis-handles volatile array lvalues</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Enum-in-struct-in-template-function-is-b/10049058">Enum in struct in template function is broken</a></li>
+<li><a href="https://developercommunity.visualstudio.com/content/problem/1147235/wrong-codegen-copy-constructor-not-elided-when-the.html">wrong codegen: copy constructor not elided when the type is trivially copyiable but not trivially destroyable.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Bogus-error-when-using-SFINAE-with-an-ov/10752128">Bogus error when using SFINAE with an overload set</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Alias-template-CTAD-failure-with-initial/10767435">Alias template CTAD failure with initializer list</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/False-instance-of-warning-4189-in-1712-/10769159">False instance of warning 4189 in 17.12 Preview 3</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/name-lookup-bug-with-nested-lambda-temp/10765891">name lookup bug with nested lambda, template operator (), user defined literal operator</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Incorrect-values-in-global-initializer_l/1543903">Incorrect values in global initializer_list</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-rejects-valid-program-involving-usi/10745880">MSVC rejects valid program involving using declaration for alias used in mem-initializer-list</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::invocable-test-fails-for-a-function/10770164">std::invocable test fails for a function object with decltype(fold expression) in trailing return type </a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Incorrect-Microsoft-Analyzer-warning-C26/10782219">Incorrect Microsoft Analyzer warning C26818 triggered</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::is_nothrow_default_constructible-re/10733565">std::is_nothrow_default_constructible returns true even though class inherits noexcept(false) default constructor</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C20-coroutine-variables-are-not-proper/10049371">C++20 coroutine variables are not properly aligned</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Partial-template-specialization-failed-w/10745840">Partial template specialization failed with non-type template argument</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/coroutines-Incorrect-alignment-of-stru/10755078">[coroutines] Incorrect alignment of structure arguments</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Regression-Reject-valid-Wrong-concep/10736602">[Regression] [Rejects valid] Wrong concept evaluation in member function (C7601)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/__declspecdllexport-makes-class-inheri/10754934">__declspec(dllexport) makes class inherited from view_interface not a range</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Structured-binding-ambiguity-with-non-AD/10730438">Structured binding ambiguity with non-ADL functions</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/newstd::nothrowint-may-be-identified/10730120">{new(std::nothrow)int} may be identified as placement new</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/BUG-for-C-covariant-return-type-and-mu/10765832">BUG for C++ covariant return type and multiple inheritance</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-error-when-an-instance-of-a-str/10750329">Compiler error when an instance of a struct defined in a lambda, is used as a parameter and that parameter is captured in another lambda</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/No-deprecation-warning-for-class-alias/10775187">No deprecation warning for class alias</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/deducing-lvalue-reference-for-non-type-t/10757240">deducing lvalue reference for non-type template parameter</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/unnamed-concept-using-context-variable-w/10747068">unnamed concept using context variable will give incorrect result</a></li>
+</ul>
+<h2>Closing</h2>
+<p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
+<p>If you encounter other problems with MSVC in VS 2022 please let us know via the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">Developer Community.</a></p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/">MSVC Compiler Updates in Visual Studio 2022 version 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>What’s New for C++ Developers in Visual Studio 2022 17.13</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 11 Feb 2025 18:58:57 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35102</guid>
+
+					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.13 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page. Standard Library and Compiler [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/">What’s New for C++ Developers in Visual Studio 2022 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.13 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
+<h2>Standard Library and Compiler</h2>
+<p>On the compiler side, we’ve implemented C++23’s <code>size_t</code> literal suffix. The suffix <code>uz</code> or <code>UZ</code> (or any permutation of these) will help you avoid sneaky truncations or signed comparison mismatches, especially when writing loops. For example:</p>
+<pre class="prettyprint language-default"><code class="language-cpp">//Infinite loop if v.size &gt; max unsigned int
+for (auto i = 0u; i &lt; v.size(); ++i) {
+    //Use v and v[i]
+}
+
+//Fine due to uz literal
+for (auto i = 0uz; i &lt; v.size(); ++i) {
+    //Use v and v[i]
+}</code></pre>
+<p>Note that, while this feature is available in our MSVC compiler, it is not yet supported in the EDG compiler that powers IntelliSense, so you may see red squiggles in your editor until support is added.</p>
+<p>For all of the compiler improvements shipped in VS 2022 17.13, see <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13">MSVC Compiler Updates in Visual Studio 2022 version 17.13</a>.</p>
+<p>Our standard library has too many improvements to list in this blog post, so check out the <a href="https://github.com/microsoft/STL/wiki/Changelog#vs-2022-1713">changelog</a> for all the details. Thanks to everyone in the community who contributed to this release! I’ve picked out some highlights below.</p>
+<p>The feature I’m most excited about is <code>std::generator</code>. This brings some long-awaited standard library support for coroutines. A little example from <a href="https://wg21.link/p2502r2">the paper</a>:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int&gt; fib() {
+    auto a = 0, b = 1;
+    while (true) {
+        co_yield std::exchange(a, std::exchange(b, a + b));
+    }
+}
+
+int answer_to_the_universe() {
+    auto rng = fib() | std::views::drop(6) | std::views::take(3);
+    return std::ranges::fold_left(std::move(rng), 0, std::plus{});
+}</code></pre>
+<p>The <code>fib</code> function is a coroutine (because it uses the <code>co_yield</code> keyword). Whenever the <code>co_yield</code> statement is executed, <code>fib</code> is suspended and the value is returned to the caller. The <code>fib</code> coroutine can then be resumed later to produce more values, without requiring any manual state handling from the programmer. As you can see from the next function, <code>std::generator</code> is compatible with ranges, so we can pipe it into some range adaptors from the standard library.</p>
+<p>Also in the area of conformance, we implemented two papers that improve the performance of <code>std::print</code>: <a href="https://wg21.link/p3107r5">P3107R5</a> and <a href="https://wg21.link/P3235R3">P3235R3</a>.</p>
+<p>We’ve improved the build throughput of <code>&lt;queue&gt;</code>, <code>&lt;stack&gt;</code>,<code> &lt;stacktrace&gt;</code>, and <code>&lt;thread&gt;</code> by not including all of <code>&lt;format&gt;</code>. For the same reason, we’ve moved <code>system_clock</code>, <code>high_resolution_clock</code>, and <code>chrono_literals</code> from a commonly-included internal header to <code>&lt;chrono&gt;</code>. This has source-breaking impact. If you see compiler errors complaining that it doesn&#8217;t recognize chrono types like <code>system_clock</code> or UDLs like <code>1729ms</code>, you need to include <code>&lt;chrono&gt;</code> specifically, instead of assuming that headers like <code>&lt;thread&gt;</code> will drag it in.</p>
+<p>We have also continued our work in improving vectorization across the standard library. This release comes with improvements for the following types and functions:</p>
+<ul>
+<li><code>(ranges::)find_end</code></li>
+<li><code>basic_string::(r)find</code></li>
+<li><code>adjacent_difference</code></li>
+<li><code>bitset</code></li>
+<li><code>basic_string::find_last_of</code></li>
+<li><code>(ranges::)remove</code></li>
+</ul>
+<h2>C++ Productivity</h2>
+<h3>Unreal Engine integration updates</h3>
+<p>We have made a series of updates for the Unreal Engine integration in Visual Studio:</p>
+<ul>
+<li>We added two new options in <strong>Tools &gt; Options</strong> that allow you to specify Code Analysis with Unreal Header Tool for both header and source files. To enhance performance, analysis of source files is disabled by default.</li>
+<li>You can now specify <em>Public</em> and <em>Private</em> folders when using the <em>Add Class</em> wizard, ensuring that your classes are created in the correct folder structure.</li>
+</ul>
+<p>If you want to learn more about the Visual Studio support for Unreal Engine, check out our <a href="https://learn.microsoft.com/en-us/visualstudio/gamedev/unreal/get-started/vs-tools-unreal-overview">Unreal Engine Overview</a> page.</p>
+<h3>C++23 Preview Project Setting</h3>
+<p>You can now enable a <strong>preview</strong> of our C++23 implementation in Visual C++ directly from your project settings! This new setting unlocks access to the latest features we&#8217;ve implemented of the C++23 standard. As this is a preview of C++23 features, those new features will have limited support and may change in future releases.</p>
+<p><img fetchpriority="high" decoding="async" width="784" height="547" class="wp-image-35103" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m.png 784w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-300x209.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-768x536.png 768w" sizes="(max-width: 784px) 100vw, 784px" /></p>
+<p>For more details and instructions, check out <a href="https://learn.microsoft.com/cpp/build/reference/std-specify-language-standard-version">our documentation</a>.</p>
+<h3>New Code Generation Property Page Settings for x86 and x64</h3>
+<p>Vector Length Property: Configure vector lengths for code generation on x86 and x64 directly in your C++ project settings by going to <strong>Configuration</strong> <strong>Properties &gt; C/C++ &gt; Code Generation</strong>.</p>
+<p><img decoding="async" width="778" height="511" class="wp-image-35104" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1.png 778w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1-300x197.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1-768x504.png 768w" sizes="(max-width: 778px) 100vw, 778px" /></p>
+<p>AVX10.1 Support: Unlock the power of AVX10.1 with a new entry in Enable Enhanced Instruction Set, adding the /arch:AVX10.1 flag to your builds.</p>
+<p><img decoding="async" width="784" height="511" class="wp-image-35105" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c.png" alt="A screenshot of a computer program AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c.png 784w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c-300x196.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c-768x501.png 768w" sizes="(max-width: 784px) 100vw, 784px" /></p>
+<p>Check out the <a href="https://learn.microsoft.com/cpp/build/reference/vlen">documentation</a> for details.</p>
+<h3>Support for CMake Presets v9</h3>
+<p>Visual Studio now supports CMake Presets v9. This latest version of CMake presets introduces several documented versions of macro expansions in the include field of a preset. Read more at the <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#macro-expansion">official CMake documentation</a>.</p>
+<h3>Specify Linux timeout settings for C++</h3>
+<p>We have added support for specifying a minimum timeout period for your remote machines that you are connected to via the Connection Manager in Visual Studio. To learn more about adding a remote connection in Visual Studio, please see <a href="https://learn.microsoft.com/cpp/linux/connect-to-your-remote-linux-computer">our C++ Linux documentation</a>.</p>
+<p>You can specify the timeout period in the Command Prompt in Visual Studio, using the new property <code>MinTimeoutSeconds</code>. For example, to set the timeout period to 1 minute, you can use the following command:</p>
+<pre class="prettyprint language-default"><code class="language-default">ConnectionManager modify &lt;connection-id&gt; --property MinTimeoutSeconds=60</code></pre>
+<h2>General Productivity</h2>
+<h3>Set Default File Encoding</h3>
+<p>Visual Studio now allows you to set the default file encoding for saving files. This feature ensures that your preferred encoding is used whenever possible.</p>
+<p>To set the default encoding, navigate to <strong>Tools &gt; Options &gt; Environment &gt; Documents</strong>. There, you will find an option titled <strong>Save files with the following encoding</strong>.</p>
+<p><img decoding="async" width="500" height="165" class="wp-image-35106" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4.png 500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4-300x99.png 300w" sizes="(max-width: 500px) 100vw, 500px" /></p>
+<h3>Horizontal Scrollbar Visibility Improvements</h3>
+<p>The horizontal scrollbar in the editor now repositions itself to always be accessible, even when space is limited. You can customize this behavior with the <strong>Tools &gt; Options &gt; Text Editor &gt; Advanced &gt; Editor horizontal scrollbar location</strong> option.</p>
+<p><img decoding="async" width="570" height="115" class="wp-image-35107" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5.png 570w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5-300x61.png 300w" sizes="(max-width: 570px) 100vw, 570px" /></p>
+<h3>Word Wrap Indentation</h3>
+<p>You can now specify whether lines that wrap in the editor should be indented. Enable this with the <strong>Tools &gt; Options &gt; Text Editor &gt; General &gt;</strong> <strong>Automatically indent when word wrap is enabled </strong>option.</p>
+<p><strong><img decoding="async" width="615" height="139" class="wp-image-35108" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6.png 615w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6-300x68.png 300w" sizes="(max-width: 615px) 100vw, 615px" /></strong></p>
+<h3>Recent Files in Code Search</h3>
+<p>When you open Code Search without a query, you&#8217;ll see a list of your recently navigated files. These include the files you opened through Code Search, but also any other files you opened in the solution. This makes it easy to jump back to a file you were recently working on without having to remember or type the file name.</p>
+<p><img decoding="async" width="793" height="499" class="wp-image-35109" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content.png" alt="A screen shot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content.png 793w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-300x189.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-768x483.png 768w" sizes="(max-width: 793px) 100vw, 793px" /></p>
+<h3>Enhanced Line and Column Navigation</h3>
+<p>In Code Search, we&#8217;ve significantly enhanced line navigation capabilities. The following formats are now supported:</p>
+<ul>
+<li>:line to navigate to a specific line in the active document</li>
+<li>:line,col to navigate to a specific line and column in the active document</li>
+<li>file:line to navigate to a specific line in a specified file</li>
+<li>file:line,col to navigate to a specific line and column in a specified file</li>
+<li>file(line) to navigate to a specific line in a specified file</li>
+<li>file(line,col) to navigate to a specific line and column in a specified file</li>
+</ul>
+<p><img decoding="async" width="648" height="496" class="wp-image-35110" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2.png 648w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2-300x230.png 300w" sizes="(max-width: 648px) 100vw, 648px" /></p>
+<h2>Debugging &amp; Diagnostics</h2>
+<h3>Targeted Instrumentation</h3>
+<p>The Visual Studio profiler&#8217;s instrumentation tool now supports targeted instrumentation for native code, allowing you to select specific classes and functions for detailed analysis.</p>
+<p>To access this tool, select <strong>Debug &gt; Performance Profiler… &gt; Instrumentation</strong>.</p>
+<p><strong><img decoding="async" width="392" height="399" class="wp-image-35111" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3.png 392w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-295x300.png 295w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-48x48.png 48w" sizes="(max-width: 392px) 100vw, 392px" /></strong></p>
+<h3>Color-Coded Swim Lanes for CPU Profiling</h3>
+<p>The Visual Studio profiler&#8217;s CPU Usage tool now supports multi-process analysis, displaying performance graphs with distinct color coding for each process in swim lanes.</p>
+<p>The graphs are displayed as stacked area charts. You also have the option to filter processes using a dropdown on the top left, enabling focused analysis.</p>
+<p><strong><img decoding="async" width="1142" height="189" class="wp-image-35112" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10.png 1142w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-300x50.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-1024x169.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-768x127.png 768w" sizes="(max-width: 1142px) 100vw, 1142px" /></strong></p>
+<h2>Git tooling</h2>
+<h3>Add comments on pull requests</h3>
+<p>You can now add new comments to pull request files on the checked-out branch. This was a top request for the pull request experience and is the latest in a series of improvements to the pull request experience in Visual Studio.</p>
+<p>Enable the feature flags <strong>Pull Request Comments</strong> and <strong>Pull Request Add Comment</strong> in <strong>Tools &gt; Options &gt; Environment &gt; Preview Features</strong>, check out any branch with an active pull request, and select <strong>Show comments in files</strong> in the info bar. This will activate the pull request comments experience in the editor.</p>
+<p><strong><img decoding="async" width="798" height="172" class="wp-image-35113" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4.png 798w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4-300x65.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4-768x166.png 768w" sizes="(max-width: 798px) 100vw, 798px" /></strong></p>
+<h3>Review Changes with Copilot</h3>
+<p>You can now request a code review from GitHub Copilot from the Git Changes window.</p>
+<p><img decoding="async" width="323" height="108" class="wp-image-35114" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5.png 323w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5-300x100.png 300w" sizes="(max-width: 323px) 100vw, 323px" /></p>
+<p>The model will look for potential issues and create comments for them:</p>
+<p><strong><img decoding="async" width="676" height="176" class="wp-image-35115" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1.png" alt="A screen shot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1.png 676w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1-300x78.png 300w" sizes="(max-width: 676px) 100vw, 676px" /></strong></p>
+<p>To use this feature, ensure you have the following feature flags turned on:</p>
+<ul>
+<li><strong>Tools</strong> &gt; <strong>Options</strong> &gt; <strong>Preview Features</strong> &gt; <strong>Pull Request Comments</strong></li>
+<li><strong>Tools</strong> &gt; <strong>Options</strong> &gt; <strong>GitHub</strong> &gt; <strong>Copilot</strong> &gt; <strong>Source Control Integration</strong> &gt; <strong>Enable Git preview features</strong>.</li>
+</ul>
+<h3>View and Manage Git Tags</h3>
+<p>You can now view and manage Git tags directly from the Git Repository window.</p>
+<p><img decoding="async" width="398" height="414" class="wp-image-35116" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6.png 398w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6-288x300.png 288w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6-24x24.png 24w" sizes="(max-width: 398px) 100vw, 398px" /></p>
+<h2>IDE</h2>
+<h3>Preserve Font Preferences Across Themes</h3>
+<p>Your font face and size choices are now retained when switching themes in Visual Studio. The colors of your fonts remain linked to the theme.</p>
+<p>This feature is enabled by default. If you prefer the previous behavior, toggle the <strong>Tools &gt; Manage Preview Features &gt; Separate font settings from color theme selection </strong>option.</p>
+<h3>New Ways to Sign In With GitHub</h3>
+<p>You can now sign in to your GitHub account either from the first launch configuration dialog, or the “Sign in” button in Visual Studio.</p>
+<p><img decoding="async" width="500" height="281" class="wp-image-35117" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15.png 500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15-300x169.png 300w" sizes="(max-width: 500px) 100vw, 500px" /></p>
+<h3>Manage multiple GitHub accounts</h3>
+<p>You can now manage multiple GitHub accounts from Visual Studio. To do so, click <strong>Add another account</strong> in either the profile card menu accessible near the window controls of Visual Studio, or in <strong>File &gt; Account Settings</strong>. If you have multiple GitHub accounts, Visual Studio will default to the one marked as <em>active</em> for GitHub-aware features, such as version control and GitHub Copilot.</p>
+<p><img decoding="async" width="374" height="353" class="wp-image-35118" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7.png 374w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7-300x283.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7-24x24.png 24w" sizes="(max-width: 374px) 100vw, 374px" /></p>
+<h2>GitHub Copilot</h2>
+<h3>GitHub Copilot Free</h3>
+<p>GitHub Copilot Free is now available. You get 2,000 code completions and 50 chat requests per month at no cost. Go to <a href="https://learn.microsoft.com/visualstudio/ide/copilot-free-plan">Microsoft Learn</a> to find out all the details.</p>
+<h3>Better AI code completions for C++</h3>
+<p>GitHub Copilot code completions provide autocomplete suggestions inline as you code. To enhance the experience of C++ developers, we&#8217;ve updated GitHub Copilot to include other relevant files as context. This improvement helps reduce hallucinations while offering more relevant and accurate suggestions and is aligned with the current GitHub Copilot experience for C++ in VS Code.</p>
+<h3>GitHub Copilot Edits for Working Across Files</h3>
+<p>GitHub Copilot Edits is a new feature that helps make changes that touch multiple files in your project. To start a new Edits session, click the <strong>Create new edit session</strong> at the top of the GitHub Copilot Chat window:</p>
+<p><img decoding="async" width="501" height="87" class="wp-image-35119" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8.png 501w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8-300x52.png 300w" sizes="(max-width: 501px) 100vw, 501px" /></p>
+<p>Describe the changes you want to make, and Copilot will suggest the relevant edits. You can then preview them one-by-one and accept the ones you want or make corrections.</p>
+<p><strong><img decoding="async" width="490" height="548" class="wp-image-35120" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9.png 490w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9-268x300.png 268w" sizes="(max-width: 490px) 100vw, 490px" /></strong></p>
+<h2>Send us your feedback</h2>
+<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/">What’s New for C++ Developers in Visual Studio 2022 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Document build instructions and more with enhanced C++ awareness from Copilot Chat in Visual Studio</title>
 		<link>https://devblogs.microsoft.com/cppblog/document-build-instructions-and-more-with-enhanced-c-awareness-from-copilot-chat-in-visual-studio/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/document-build-instructions-and-more-with-enhanced-c-awareness-from-copilot-chat-in-visual-studio/#comments</comments>
@@ -55,7 +374,7 @@
 <h4>Documenting Build Instructions</h4>
 <p>C++ projects can sometimes require developers to undergo several steps to be able to configure a project for development before they are even able to begin coding. Due to these requirements, it is important to document relevant instructions for onboarding developers thoroughly.</p>
 <p>We asked Copilot Chat to improve documentation in the <a href="https://github.com/endless-sky/endless-sky">open-source project Endless Sk</a>y&#8217;s README. Copilot was able to include relevant context, such as dependencies like Ninja, to enhance Chat suggestions for improving documentation specific to this project’s needs, minimizing manual toil to onboard developers onto a project.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png"><img fetchpriority="high" decoding="async" class="alignnone wp-image-35055" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png" alt="Copilot providing suggestions to add relevant configuration instructions to endless sky's readme file" width="1935" height="969" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png 2166w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-300x150.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-1024x513.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-768x385.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-1536x769.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-2048x1026.png 2048w" sizes="(max-width: 1935px) 100vw, 1935px" /></a></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png"><img decoding="async" class="alignnone wp-image-35055" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png" alt="Copilot providing suggestions to add relevant configuration instructions to endless sky's readme file" width="1935" height="969" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2.png 2166w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-300x150.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-1024x513.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-768x385.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-1536x769.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/01/endless-sky-readme2-2048x1026.png 2048w" sizes="(max-width: 1935px) 100vw, 1935px" /></a></p>
 <h4>Generating Additional Tests</h4>
 <p>Writing unit tests for C++ can be cumbersome and painstaking. With the <strong>/tests</strong> command, Copilot can assist with generating unit tests for the selected code. Copilot now has awareness of the available testing structure found in your project, so that when you invoke <strong>/tests</strong> to generate tests in your projects, friction is minimal for integrating the generated tests that fit in with your existing ones.</p>
 <p>For example, when we prompted to generate new unit tests for the <code>Step</code> method in the <code>Weather.cpp</code> file in <a href="https://github.com/endless-sky/endless-sky">endless-sky</a> using the<strong> /tests </strong>command, Copilot generated new tests that resemble the existing tests in the project:</p>
@@ -1114,294 +1433,6 @@ int main() {
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-october-2024/">What’s New in vcpkg (October 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>Microsoft C++ Team at CppCon 2024: Trip Report</title>
-		<link>https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2024-trip-report/</link>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Fri, 01 Nov 2024 18:06:47 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<category><![CDATA[Trip Report]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<category><![CDATA[CppCon]]></category>
-		<category><![CDATA[MSVC]]></category>
-		<category><![CDATA[vcpkg]]></category>
-		<category><![CDATA[visual studio]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34827</guid>
-
-					<description><![CDATA[<p>The Microsoft C++ team attended CppCon, the largest C++ conference in the world. This year, the conference was held in Aurora, Colorado from September 16-20. Microsoft Booth Our team managed a booth from Monday to Thursday of the week. This gave us an amazing opportunity to interact with the C++ community and discuss many topics [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2024-trip-report/">Microsoft C++ Team at CppCon 2024: Trip Report</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The Microsoft C++ team attended <a href="https://cppcon.org/">CppCon, the largest C++ conference in the world</a>. This year, the conference was held in Aurora, Colorado from September 16-20.</p>
-<h2>Microsoft Booth</h2>
-<p>Our team managed a booth from Monday to Thursday of the week. This gave us an amazing opportunity to interact with the C++ community and discuss many topics of interest as well as hear feedback from our customers.</p>
-<p><img decoding="async" width="1767" height="1330" class="wp-image-34840" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2.jpeg" alt="A group of people standing in a room Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2.jpeg 1767w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2-300x226.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2-1024x771.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2-768x578.jpeg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-2-1536x1156.jpeg 1536w" sizes="(max-width: 1767px) 100vw, 1767px" /></p>
-<p>The following people worked at the booth (from left to right in the picture above):</p>
-<ul>
-<li><a href="https://cppcon2024.sched.com/speaker/victor.ciura">Victor Ciura</a>, who works on Rust and C++ interop. He presented a talk called <a href="https://cppcon2024.sched.com/event/1gZfQ/so-you-think-you-can-hash">So You Think You Can Hash</a>.</li>
-<li><a href="https://cppcon2024.sched.com/speaker/mryamgirmay">Mryam Girmay</a>, who works on Visual Studio productivity features. She was one of the co-presenters of this year’s <a href="https://cppcon2024.sched.com/event/1gZgR/whats-new-in-visual-studio-for-c-developers">What&#8217;s New in Visual Studio for C++ Developers talk</a>.</li>
-<li><a href="https://cppcon2024.sched.com/speaker/sinem.akinci">Sinem Akinci</a>, who works on CMake tooling in the Visual Studio IDE and Visual Studio Code. Sinem also works on GitHub Copilot. She was one of the co-presenters of this year’s <a href="https://cppcon2024.sched.com/event/1gZgQ/whats-new-for-visual-studio-code-performance-github-copilot-and-cmake-enhancements">What&#8217;s New in Visual Studio Code talk</a>.</li>
-<li><a href="https://cppcon2024.sched.com/speaker/aupopa">Augustin Popa</a> (me), and I work on the vcpkg package manager. My talk was called <a href="https://cppcon2024.sched.com/event/1gZgU/10-problems-large-companies-have-with-managing-c-dependencies-and-how-to-solve-them">10 Problems Large Companies Have with Managing C++ Dependencies and How to Solve Them</a>.</li>
-<li><a href="https://cppcon2024.sched.com/speaker/alexandra.kemper1">Alexandra Kemper</a>, who works on the C++ experience in Visual Studio Code. She was one of the co-presenters of this year’s <a href="https://cppcon2024.sched.com/event/1gZgQ/whats-new-for-visual-studio-code-performance-github-copilot-and-cmake-enhancements">What&#8217;s New in Visual Studio Code talk</a>.</li>
-<li><a href="https://cppcon2024.sched.com/speaker/michael.price3">Michael Price</a>, who works on C++ integration with developer services like GitHub and Microsoft Dev Box. He was one of the co-presenters of this year’s <a href="https://cppcon2024.sched.com/event/1gZgR/whats-new-in-visual-studio-for-c-developers">What&#8217;s New in Visual Studio for C++ Developers talk</a>.</li>
-</ul>
-<p>Microsoft works on several developer tools for C++, including the <strong>Visual Studio IDE</strong>, <strong>Visual Studio Code</strong>, the <strong>MSVC</strong> <strong>compiler toolset</strong>, <strong>GitHub Copilot for C++</strong>, and the <strong>vcpkg</strong> <strong>package manager</strong>. We interacted with hundreds of C++ developers across a variety of different industries, experience levels, and familiarity with our product offerings. There were folks who had been using our products before their names started with “Visual”, and some that had never used our tools at all.</p>
-<p>We were excited to see so much interest from developers for C++ best practices and how to become more productive. We received some great feedback about how we could improve our tools, in terms of bug reports, user experience improvements, and feature requests. We were also able to have several 1 on 1 longer discussions away from the booth to help people solve more specific challenges using Microsoft C++ developer tools.</p>
-<p><img decoding="async" width="1767" height="1330" class="wp-image-34842" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1.jpeg" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1.jpeg 1767w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1-300x226.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1-1024x771.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1-768x578.jpeg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-2-1-1536x1156.jpeg 1536w" sizes="(max-width: 1767px) 100vw, 1767px" /></p>
-<p>At the booth we also gave out some cool swag, including USB adapters, vcpkg bags, stickers, and the ever-popular Visual Studio socks.</p>
-<p>We also held a raffle at the end of each day at our booth, for some Visual Studio backpacks and tote bags.</p>
-<p><img decoding="async" width="1065" height="799" class="wp-image-34844" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-3.jpeg" alt="A group of people standing in a room Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-3.jpeg 1065w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-3-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-3-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-in-a-room-description-3-768x576.jpeg 768w" sizes="(max-width: 1065px) 100vw, 1065px" /></p>
-<p><img decoding="async" width="1432" height="1074" class="wp-image-34847" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-posing-for-a-photo-description-1.jpeg" alt="A group of people posing for a photo Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-posing-for-a-photo-description-1.jpeg 1432w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-posing-for-a-photo-description-1-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-posing-for-a-photo-description-1-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-posing-for-a-photo-description-1-768x576.jpeg 768w" sizes="(max-width: 1432px) 100vw, 1432px" /></p>
-<p><img decoding="async" width="685" height="910" class="wp-image-34848" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-5-1.jpeg" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-5-1.jpeg 685w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-5-1-226x300.jpeg 226w" sizes="(max-width: 685px) 100vw, 685px" /></p>
-<h2>Keynote Talk: Peering forward – C++’s next decade</h2>
-<p>As usual, Herb Sutter delivered an excellent talk at CppCon. This year it was a keynote that looks forward in time, describing the planned evolution of the C++ language. The main topics were reflection, safety, and simplicity. These topics were effectively previews for a number of other C++ talks that elaborated on these topics in great detail.</p>
-<p><img decoding="async" width="1431" height="1073" class="wp-image-34850" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-6-1.jpeg" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-6-1.jpeg 1431w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-6-1-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-6-1-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/word-image-34827-6-1-768x576.jpeg 768w" sizes="(max-width: 1431px) 100vw, 1431px" /></p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/FNi1-x4pojs?si=Cs1PTZ7UONLrH9k8" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<h2>Microsoft Talks at CppCon 2024</h2>
-<p>Aside from Herb’s keynote, there were several other talks delivered by folks from Microsoft at CppCon this year.</p>
-<h3>So You Think You Can Hash</h3>
-<p>Victor delivered a talk on fundamentals of data structure design, focusing on computing hashes for aggregated user-defined types and experimenting with various hash algorithms. He introduced a method for experimenting with and benchmarking different hash algorithms. This allows easy switching of hashing algorithms used by complex data structures, enabling easy comparisons. This way, hash algorithm designers can concentrate on designing better hash algorithms, with little worry about how these new algorithms can be incorporated into existing code. Type designers can create their hash support just once, without worrying about what hashing algorithm should be used.</p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/lNR_AWs0q9w?si=w6AO868qdbY3KYis" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<p>The talk spurred a bunch of hallway conversations on tradeoffs between performance and flexibility of type design, with attendees sharing their project pains and workarounds in this space.</p>
-<h3>10 Problems Large Companies Have with Managing C++ Dependencies and How to Solve Them</h3>
-<p>I presented a talk on 10 problems that large companies have with C++ dependency management, based on many conversations I had this year with enterprise teams. I also went over how these companies are solving these problems. About half of the problems are solvable with a modern package manager, but the rest require additional investments in development workflows. The talk was well attended and there were some good conversations afterward about the problems.</p>
-<p><img decoding="async" width="1767" height="1330" class="wp-image-34854" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1.jpeg" alt="A group of people in a room with a stage and large screens Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1.jpeg 1767w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1-300x226.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1-1024x771.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1-768x578.jpeg 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-with-a-stage-and-large-1-1536x1156.jpeg 1536w" sizes="(max-width: 1767px) 100vw, 1767px" /></p>
-<p>Today, developers are still more likely to manually manage their dependencies than to use a package manager and consider managing libraries a top pain point for C++, according to ISO C++ surveys. I pointed out some ways that a package manager like vcpkg can mitigate the pain. Here are a few examples:</p>
-<ol>
-<li>Supporting <a href="https://learn.microsoft.com/vcpkg/concepts/ports">build from source</a> as a fallback without sacrificing the build-time savings of <a href="https://learn.microsoft.com/vcpkg/users/binarycaching">binary dependency acquisition</a>.</li>
-<li><a href="https://learn.microsoft.com/vcpkg/users/versioning.concepts">Upgrading dependencies</a> as a set using baselines, rather than managing them individually, to avoid version conflicts / diamond problems.</li>
-<li>How to continue working in an offline build environment using <a href="https://learn.microsoft.com/vcpkg/concepts/asset-caching">asset caching</a>.</li>
-<li>Getting any open-source libraries installed and working with your project with minimal effort, while also automatically resolving transitive dependencies.</li>
-</ol>
-<p>In the second half of the talk, I noted that security is top of mind for enterprises, so vulnerability monitoring, detection, and response is critical. Some enterprises have also started using Software Bill of Materials (SBOMs) to track their dependencies and manage risk. I also pointed out that vcpkg <a href="https://learn.microsoft.com/vcpkg/reference/software-bill-of-materials">generates SPDX SBOM files</a> for dependencies.</p>
-<p>Lastly, I spoke about some workflow changes that make it more manageable to do C++ development at scale, at a large company with many distributed teams. This includes centralizing common development tasks with dedicated core teams, moving to container-based builds and a standardized global build toolchain, and how to handle a large migration to a new software system by breaking it down into smaller, manageable milestones where you get a win at each step.</p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/kOW74IUH7IA?si=d3m6GfotXA5EKBTG" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<p>After my talk, I talked with several folks about the problems they were dealing with at their work and what they had in common with the themes of the talk. In my opinion, one of the best things about delivering a talk is the conversations that happen afterward, which lead to new ideas and approaches to improve our software.</p>
-<h3>Embracing an Adversarial Mindset for C++ Security</h3>
-<p>Amanda Rousseau delivered a compelling talk on thinking like an adversary with respect to C++ security. She walked through some attack scenarios, vulnerability trends, exploits that actually exist out in the wild, and general strategies for C++ development. For Microsoft, security is always top of mind, and it was interesting hearing from her experiences about how to address these growing concerns.</p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/glkMbNLogZE?si=4sUAptv7g4XsyuHX" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<h3>What’s new for Visual Studio Code: Performance, GitHub Copilot, and CMake Enhancements</h3>
-<p>The annual Visual Studio Code talk, delivered this year by Alexandra Kemper and Sinem Akinci, was packed full of updates for C++ developers. Enhancing performance for C++ developers was a top priority for our team, and the talk announced several updates to make the C++ development process faster, including updates to project start-up time and time to colorization. The talk featured enhancements to C++ Copilot completions, sample AI-assisted workflows in C++ code, and new Copilot extensibility points available for developers to tailor the AI tool to their workflow. Demonstrating the chat extension API extensibility points to CppCon via a @CppCon chat participant piqued interest in the crowd. The docs to learn more about these APIs available can be found here: <a href="https://code.visualstudio.com/api/extension-guides/chat">https://code.visualstudio.com/api/extension-guides/chat</a>.</p>
-<p><img decoding="async" width="1430" height="1073" class="wp-image-34857" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-at-a-podium-descriptio-1.jpeg" alt="A group of people standing at a podium Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-at-a-podium-descriptio-1.jpeg 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-at-a-podium-descriptio-1-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-at-a-podium-descriptio-1-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-standing-at-a-podium-descriptio-1-768x576.jpeg 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/pjarNT2YgSQ?si=0oKxvkka4Hel4CPx" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<p>The demo code that was used can be found below. The first demo focused on C++, CMake, and Copilot functionality whereas the second demo focused on a CppCon chat participant for Copilot.</p>
-<ul>
-<li><a href="https://github.com/sinemakinci1/Cpp-Copilot-VSC-Demo/tree/alex-gui-2">sinemakinci1/Cpp-Copilot-VSC-Demo at alex-gui-2</a></li>
-<li><a href="https://github.com/sinemakinci1/cppcon-chat-participant">sinemakinci1/cppcon-chat-participant: Chat participant for CppCon</a></li>
-</ul>
-<p><img decoding="async" width="1430" height="1073" class="wp-image-34858" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-2.jpeg" alt="A person standing in front of a screen Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-2.jpeg 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-2-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-2-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-2-768x576.jpeg 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></p>
-<h3>What&#8217;s New in Visual Studio for C++ Developers</h3>
-<p>Mryam Girmay and Michael Price presented the 10th annual session demonstrating new features for C++ developers in Visual Studio. Highlighted this year were features to make you a more productive C++ developer, from shrinking your build times with <a href="https://devblogs.microsoft.com/cppblog/build-insights-17-12/">Build Insights</a> and <a href="https://learn.microsoft.com/en-us/cpp/ide/include-diagnostics?view=msvc-170">Include Diagnostics</a>, to reducing the amount of time you spend crafting the perfect commit message for those changes you’ve accumulated throughout the day, by <a href="https://devblogs.microsoft.com/visualstudio/write-your-git-commits-with-github-copilot/">letting GitHub Copilot write a first draft</a> for you.</p>
-<p><img decoding="async" width="1430" height="1072" class="wp-image-34859" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-3.jpeg" alt="A person standing in front of a screen Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-3.jpeg 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-3-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-3-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-in-front-of-a-screen-descriptio-3-768x576.jpeg 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></p>
-<p>Visual Studio leverages the power of GitHub Copilot to reduce the burden of routine tasks like <a href="https://devblogs.microsoft.com/visualstudio/copilot-chat-slash-commands-and-context-variables/#slash-commands">sketching out unit tests</a> for a function you just wrote or <a href="https://devblogs.microsoft.com/cppblog/fix-c-warnings-and-errors-with-copilot-introducing-ai-assisted-code-fixes-in-visual-studio/">wading through pages of template error messages</a> to understand what you’ve done wrong. And in the talk, Michael and Mryam demonstrated the soon-to-be-generally available <a href="https://docs.github.com/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot">content exclusion</a> feature that you can configure to prevent contents from specified files never get sent in a prompt to GitHub Copilot. They also showcased interactive demos, allowing developers to see firsthand how these new features can be leveraged in real-world scenarios.</p>
-<p><img decoding="async" width="1463" height="1095" class="wp-image-34860" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-at-a-podium-description-automat-1.jpeg" alt="A person standing at a podium Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-at-a-podium-description-automat-1.jpeg 1463w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-at-a-podium-description-automat-1-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-at-a-podium-description-automat-1-1024x766.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-person-standing-at-a-podium-description-automat-1-768x575.jpeg 768w" sizes="(max-width: 1463px) 100vw, 1463px" /></p>
-<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/Ulq3yUANeCA?si=SiptMnQ4ehfqWQ16" width="784" height="441" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
-<p>After the talk, developers shared valuable feedback on Visual Studio, the Microsoft C++ compiler, and GitHub Copilot. Attendees came with questions and offered several suggestions on how we can further improve our products for them. This input is crucial as the team continues to refine and enhance the tool to better meet the needs of C++ developers.</p>
-<p><img decoding="async" width="1430" height="1073" class="wp-image-34861" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-description-automatic-1.jpeg" alt="A group of people in a room Description automatically generated" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-description-automatic-1.jpeg 1430w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-description-automatic-1-300x225.jpeg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-description-automatic-1-1024x768.jpeg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/10/a-group-of-people-in-a-room-description-automatic-1-768x576.jpeg 768w" sizes="(max-width: 1430px) 100vw, 1430px" /></p>
-<h2>Some Other Interesting Talks</h2>
-<p>There were many great talks this year. Below are a few that we enjoyed.</p>
-<p><a href="https://cppcon2024.sched.com/event/1gZew/common-package-specification-cps-in-practice-a-full-round-trip-implementation-in-conan-c-package-manager"><strong>Common Package Specification (CPS) in practice: A full round trip implementation in Conan C++ package manager</strong></a></p>
-<p>Diego Rodriguez-Losada Gonzalez of JFrog delivered a very interesting talk where he demoed integrated Common Package Specification (CPS) files with various build systems, including CMake, MSBuild, Autotools, and Meson. The <a href="https://cps-org.github.io/cps/overview.html">Common Package Specification</a> is a mechanism for describing the useful artifacts of a software package and is a collaborative effort between several software vendors, build system maintainers, library authors, and large companies to eventually standardize such a system across the industry.</p>
-<p><a href="https://cppcon2024.sched.com/event/1gZeX/creating-a-senderreceiver-http-server"><strong>Creating a Sender/Receiver HTTP Server</strong></a></p>
-<p>This session was a live-coding demo with building an HTTP server from scratch and debugging problems using C++26 sender/receivers.</p>
-<p><a href="https://cppcon2024.sched.com/event/1gZee/performance-engineering-being-friendly-to-your-hardware"><strong>Performance engineering – Being friendly to your hardware</strong></a></p>
-<p>Excellent crash course on hardware details, from DRAM inner-workings to CPUs and how to write software to avoid angering the machine.</p>
-<p><a href="https://cppcon2024.sched.com/event/1gZfH/sender-patterns-to-wrangle-concurrency-in-embedded-devices"><strong>Sender Patterns to Wrangle Concurrency in Embedded Devices</strong></a></p>
-<p>Superb introduction to bare-metal senders and receivers and very crisp explanations of the async examples.</p>
-<p><a href="https://cppcon2024.sched.com/event/1gZfi/crust-interop-using-bridges-in-practice"><strong>C++/Rust Interop: Using Bridges in Practice</strong></a></p>
-<p>Quick tour of the Rust/C++ interop essentials and some of the friction points in hybrid-code projects.</p>
-<h2>Theme: Reflection</h2>
-<p>Every CppCon, there tends to be a big focus on some major feature that is coming up in the language. For a long time, that used to be modules. Now that modules are successfully baked into many of our developer tools and are seeing some adoption, the biggest discussion topic has moved to reflection. Reflection is a significant feature improvement that many of us have looked forward to for years, and our patience is getting rewarded. Aside from Herb’s keynote, there were several talks, including <a href="https://cppcon2024.sched.com/event/1gZea/reflection-based-libraries-to-look-forward-to"><strong>Reflection based libraries to look forward to</strong></a> (by Saksham Sharma), <a href="https://cppcon2024.sched.com/event/1gZhJ/reflection-is-not-contemplation"><strong>Reflection is Not Contemplation</strong></a> (by Andrei Alexandrescu), and <a href="https://cppcon2024.sched.com/event/1gZf7/implementing-reflection-using-the-new-c20-tooling-opportunity-modules"><strong>Implementing Reflection using the new C++20 Tooling Opportunity: Modules</strong></a> (by Maiko Steeman). Lastly, Daveed Vandevoorde’s <a href="https://cppcon2024.sched.com/event/1i0yq/gazing-beyond-reflection-for-c26"><strong>Gazing Beyond Reflection for C++26</strong></a> went into some excellent technical detail while giving a preview of what’s to come and is worth checking out.</p>
-<h2>Theme: C++ Security</h2>
-<p>We have all seen the headlines from industry analysts and governments over the past few years citing concerns with code safety or security in C++. This is a big focus area for the C++ Committee as well as large companies that must worry about rising threats to their business. Some specialized talks included: <a href="https://cppcon2024.sched.com/event/1gZeJ/security-beyond-memory-safety-using-modern-c-to-avoid-vulnerabilities-by-design"><strong>Security Beyond Memory Safety – Using Modern C++ to Avoid Vulnerabilities by Design</strong></a> (by Max Hoffmann), <a href="https://cppcon2024.sched.com/event/1i0y4/embracing-an-adversarial-mindset-for-c-security"><strong>Embracing an Adversarial Mindset for C++ Security</strong></a> (by Amanda Rousseau), <a href="https://cppcon2024.sched.com/event/1gZgI/building-safe-and-reliable-surgical-robotics-with-c"><strong>Building Safe and Reliable Surgical Robotics</strong></a> (by Milad Khaledyan), <a href="https://cppcon2024.sched.com/event/1gZgs/modern-c-error-handling"><strong>Modern C++ Error Handling</strong></a> (by Phil Nash), <a href="https://cppcon2024.sched.com/event/1gZe3/mix-assertion-logging-unit-testing-and-fuzzing-build-safer-modern-c-application"><strong>Mix Assertion, Logging, Unit Testing and Fuzzing: Build Safer Modern C++ Applications</strong></a> (by Xiaofan Sun), <a href="https://cppcon2024.sched.com/event/1lQ9y/pick-a-random-number-no-not-that-one-tales-of-real-world-exploits-based-on-bad-randomness"><strong>“Pick a random number… no, not that one!” – Tales of Real-World Exploits Based on Bad Randomness</strong></a> (by Max Hoffmann), and <a href="https://cppcon2024.sched.com/event/1gZgF/compile-time-validation"><strong>Compile-time Validation</strong></a> (by Alon Wolf).</p>
-<p>In addition, <a href="https://cppcon2024.sched.com/event/1gZgL/llvms-realtime-safety-revolution-tools-for-modern-mission-critical-systems"><strong>LLVM’s Realtime Safety Revolution: Tools for Modern Mission Critical Systems</strong></a> (by Christopher Apple and David Trevelyan) introduced the new Realtime Sanitizer, which detects calls to <code>malloc</code>, <code>pthread_mutex_lock</code>, and other problematic functions in your realtime code at runtime!</p>
-<p>Lastly, there was also an expert-led <a href="https://cppcon2024.sched.com/event/1kYBw/safety-and-security-panel"><strong>Safety and Security Panel</strong></a> to check out too.</p>
-<h2>Women’s Luncheon</h2>
-<p>The Women&#8217;s Networking Luncheon was a fun and resourceful event. Alexandra, Mryam, and Sinem from Microsoft&#8217;s team attended. Each table buzzed with interesting discussions: women in tech, inspirations to join the programming world, various work experiences, and ideas to inspire the next generation of women. With table rotations, attendees had the chance to talk to different people in the room. The relaxed atmosphere fostered connections among women from diverse companies and places who share an interest in C++ and programming.</p>
-<h2>Conclusion</h2>
-<p>It was great to meet many of you in person this year at CppCon. We enjoyed our time there and learned a lot from the C++ community and have taken back our learnings to our day-to-day work. If you didn’t get a chance to attend or missed out on some of the sessions, remember to check out all the CppCon talk on the <a href="https://www.youtube.com/@CppCon">conference’s YouTube channel</a> as they get rolled out! We also made a <a href="https://aka.ms/msatcppcon">playlist of past Microsoft CppCon sessions</a>. We look forward to seeing you again next year.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/microsoft-c-team-at-cppcon-2024-trip-report/">Microsoft C++ Team at CppCon 2024: Trip Report</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Analyzing the Performance of the &#8220;Proxy&#8221; Library</title>
-		<link>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/#comments</comments>
-		
-		<dc:creator><![CDATA[Mingxin Wang]]></dc:creator>
-		<pubDate>Fri, 01 Nov 2024 16:06:51 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Experimental]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34833</guid>
-
-					<description><![CDATA[<p>This article analyzes the performance of the "Proxy" library in various scenarios, demonstrating its significant advantages in indirect invocations and lifetime management across different platforms.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/">Analyzing the Performance of the &#8220;Proxy&#8221; Library</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Since the <a href="https://devblogs.microsoft.com/cppblog/announcing-the-proxy-3-library-for-dynamic-polymorphism/">recent announcement of the Proxy 3 library</a>, we have received much positive feedback, and there have been numerous inquiries regarding the library&#8217;s actual performance. Although the &#8220;Proxy&#8221; library is designed to be <strong>fast</strong>, fulfilling one of our six core missions, it is not immediately clear how fast &#8220;Proxy&#8221; can be across different platforms and scenarios.</p>
-<p>To better understand the performance of the &#8220;Proxy&#8221; library, we designed <a href="https://github.com/microsoft/proxy/tree/main/benchmarks">15 benchmarks</a>, tested in four different environments, and automated them in <a href="https://github.com/microsoft/proxy/actions/workflows/pipeline-ci.yml">our GitHub pipeline</a> to generate benchmarking reports for every code change in the future. Everyone can download the reports and raw benchmarking data attached to each build. The rest of this article delves into the benchmarking details. The numbers shown below were generated from <a href="https://github.com/microsoft/proxy/actions/runs/11550031482#artifacts">a recent CI build</a>.</p>
-<h2>Indirect Invocation</h2>
-<p>Both <a href="https://microsoft.github.io/proxy/docs/proxy.html"><code>proxy</code></a> objects and virtual functions can perform indirect invocations. However, since they have different semantics and memory layout, it should be interesting to see how they compare to each other.</p>
-<p>Because <a href="https://microsoft.github.io/proxy/docs/make_proxy.html"><code>make_proxy</code></a> can effectively place a small object alongside metadata (similar to &#8220;small buffer optimization&#8221; in some other C++ libraries), the benchmarks are divided into two categories: invocation on small objects (4 bytes) and on large objects (48 bytes). By invoking 1,000,000 object of 100 different types, we got the first two rows of the report:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>MSVC on Windows Server 2022 (x64)</th>
-<th>GCC on Ubuntu 24.04 (x64)</th>
-<th>Clang on Ubuntu 24.04 (x64)</th>
-<th>Apple Clang on macOS 15 (ARM64)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Indirect invocation on small objects via <code>proxy</code> vs. virtual functions</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>261.7% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>44.6% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>71.6% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>4.0% faster</strong></td>
-</tr>
-<tr>
-<td>Indirect invocation on large objects via <code>proxy</code> vs. virtual functions</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>186.1% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>15.5% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>17.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>10.5% faster</strong></td>
-</tr>
-</tbody>
-</table>
-<p>From the report, <code>proxy</code> is faster in all four environments, especially on Windows Server. This result is expected because the implementation of <code>proxy</code> directly stores the metadata of the underlying object, making it more cache-friendly.</p>
-<h2>Lifetime Management</h2>
-<p>In many applications, lifetime management of various objects can become a performance hotspot compared to indirect invocations. We benchmarked this scenario by creating 600,000 small or large objects within a single <code>std::vector</code> (with reserved space).</p>
-<p>Besides <code>proxy</code>, there are three typical standard options for storing arbitrary types: <code>std::unique_ptr</code>, <code>std::shared_ptr</code>, and <code>std::any</code>. <code>std::variant</code> is not included because it is essentially a <a href="https://en.wikipedia.org/wiki/Tagged_union">tagged union</a> and can only provide storage for a known set of types (though useful in data context management).</p>
-<p>For small objects, <code>proxy</code> and <code>std::any</code> usually won&#8217;t allocate additional storage. For large objects, <code>proxy</code> and <code>std::shared_ptr</code> offer allocator support (via <a href="https://microsoft.github.io/proxy/docs/allocate_proxy.html"><code>pro::allocate_proxy</code></a> and <a href="https://learn.microsoft.com/cpp/standard-library/memory-functions?view=msvc-170#allocate_shared"><code>std::allocate_shared</code></a>) to improve performance, while there is no direct API to customize <code>std::unique_ptr</code> or <code>std::any</code>.</p>
-<p>Here are the types we used in the benchmarks:</p>
-<table>
-<thead>
-<tr>
-<th>Small types</th>
-<th>Large types</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>int</code></td>
-<td><code>std::array&lt;char, 100&gt;</code></td>
-</tr>
-<tr>
-<td><code>std::shared_ptr&lt;int&gt;</code></td>
-<td><code>std::array&lt;std::string, 3&gt;</code></td>
-</tr>
-<tr>
-<td><code>std::unique_lock&lt;std::mutex&gt;</code></td>
-<td><code>std::unique_lock&lt;std::mutex&gt;</code> + <code>void*[15]</code></td>
-</tr>
-</tbody>
-</table>
-<p>By comparing <code>proxy</code> with other solutions, we got the following numbers:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>MSVC on Windows Server 2022 (x64)</th>
-<th>GCC on Ubuntu 24.04 (x64)</th>
-<th>Clang on Ubuntu 24.04 (x64)</th>
-<th>Apple Clang on macOS 15 (ARM64)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::unique_ptr</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>467.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>413.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>430.1% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>341.1% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (without memory pool)</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>639.2% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>509.3% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>492.5% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>484.2% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (with memory pool)</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>198.4% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>696.1% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>660.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>188.5% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for small objects with <code>proxy</code> vs. <code>std::any</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>55.3% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>311.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>323.0% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>18.3% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> (without memory pool) vs. <code>std::unique_ptr</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>17.4% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>14.8% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>29.7% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f534.png" alt="🔴" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.3% slower</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> (with memory pool) vs. <code>std::unique_ptr</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>283.6% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>109.6% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>204.6% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>88.6% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (both without memory pool)</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>29.2% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.4% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>6.5% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>4.8% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> vs. <code>std::shared_ptr</code> (both with memory pool)</td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>10.8% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>9.9% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>8.3% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>53.2% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> (without memory pool) vs. <code>std::any</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>13.4% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>1.3% slower</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e1.png" alt="🟡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>0.9% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>9.5% faster</strong></td>
-</tr>
-<tr>
-<td>Basic lifetime management for large objects with <code>proxy</code> (with memory pool) vs. <code>std::any</code></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>270.7% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>80.1% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>136.9% faster</strong></td>
-<td><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f7e2.png" alt="🟢" class="wp-smiley" style="height: 1em; max-height: 1em;" /><code>proxy</code> is about <strong>120.4% faster</strong></td>
-</tr>
-</tbody>
-</table>
-<p>From the benchmarking results:</p>
-<ul>
-<li><code>proxy</code> is much faster than any other 3 when the underlying object is small, or managed with memory pools.</li>
-<li><code>proxy</code> is slightly slower than <code>std::unique_ptr</code> when the underlying object is large and not managed with a memory pool.</li>
-<li>The performance of <code>std::any</code> varies in different environments, but is generally slower than <code>proxy</code>.</li>
-</ul>
-<h2>Summary</h2>
-<p>Although the test environments (<a href="https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners">GitHub-hosted runners</a>) may differ from actual production environments, the test results show significant performance advantages of <code>proxy</code> in both indirect invocations and lifetime management. If you have more ideas for benchmarking the &#8220;Proxy&#8221; library, we welcome contributions to <a href="https://github.com/microsoft/proxy">our GitHub repository</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/">Analyzing the Performance of the &#8220;Proxy&#8221; Library</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/analyzing-the-performance-of-the-proxy-library/feed/</wfw:commentRss>
-			<slash:comments>3</slash:comments>
 		
 		
 			</item>
