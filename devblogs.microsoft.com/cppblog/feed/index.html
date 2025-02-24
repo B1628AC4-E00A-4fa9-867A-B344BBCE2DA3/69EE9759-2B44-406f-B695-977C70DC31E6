@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Fri, 21 Feb 2025 17:59:28 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 24 Feb 2025 17:06:35 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,252 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>std::generator: Standard Library Coroutine Support</title>
+		<link>https://devblogs.microsoft.com/cppblog/std-generator-standard-library-coroutine-support/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/std-generator-standard-library-coroutine-support/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Mon, 24 Feb 2025 17:03:51 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Coroutine]]></category>
+		<category><![CDATA[General C++ Series]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35153</guid>
+
+					<description><![CDATA[<p>std::generator is a C++23 feature that enables you to write concise, straightforward functions that generate sequences of values on-demand without manually managing state. It builds upon C++20’s coroutines, providing some standard library support for this powerful, but complex, language feature. As of Visual Studio 2022 version 17.13, we ship an implementation of std::generator in our [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/std-generator-standard-library-coroutine-support/">std::generator: Standard Library Coroutine Support</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p><code><a href="https://en.cppreference.com/w/cpp/coroutine/generator">std::generator</a></code> is a C++23 feature that enables you to write concise, straightforward functions that generate sequences of values on-demand without manually managing state. It builds upon C++20’s <a href="https://en.cppreference.com/w/cpp/language/coroutines">coroutines</a>, providing some standard library support for this powerful, but complex, language feature. As of Visual Studio 2022 version 17.13, we ship an implementation of <code>std::generator</code> in our <a href="https://github.com/microsoft/STL/wiki/Changelog#vs-2022-1713">standard library</a>.</p>
+<p>This blog post will walk through an example of how to use the feature, compare it to implementing custom ranges, consider some of the design decisions made, and briefly look at the performance implications.</p>
+<h2>Motivating Example</h2>
+<p>Here’s a short motivating example from <a href="https://wg21.link/p2502r2">P2502</a>, which proposed the feature:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int&gt; fibonacci() {
+    int a = 0, b = 1;
+    while (true) {
+        co_yield std::exchange(a, std::exchange(b, a + b));
+    }
+}
+
+int answer_to_the_universe() {
+    auto rng = fibonacci() | std::views::drop(6) | std::views::take(3);
+    return std::ranges::fold_left(std::move(rng), 0, std::plus{});
+}</code></pre>
+<p>Here, <code>fibonacci</code> is a coroutine, because it uses the <code>co_yield</code> keyword. Coroutines are a generalization of a subroutine. A subroutine begins its execution when it is called and completes its execution when it returns to the caller (forgetting about things like exceptions for simplicity). A coroutine’s execution similarly begins when it is called, but it need not complete execution to return control flow back to the caller: it can <em>suspend</em> its execution and be resumed later.</p>
+<p>Note that, in the above example, <code>fibonacci</code> contains an infinite loop. This is not a problem, because when the <code>co_yield</code> statement is executed, the coroutine <em>yields</em> both control flow and a value back to the caller, suspending the coroutine&#8217;s execution. <code><a href="https://en.cppreference.com/w/cpp/utility/exchange">std::exchange</a></code> is a small helper utility that assigns a new value to a variable and returns the old one.</p>
+<p>The behavior of operations like <code>co_yield</code> in a coroutine are determined by the coroutine’s return type, in this case <code>std::generator</code>.</p>
+<p>The <code>answer_to_the_universe</code> function uses the <code>std::generator</code> object returned by <code>fibonacci</code> in tandem with range adaptors. It <em>pipes</em> the generator into two range adaptors. The first says to drop the first 6 elements from the range, while the second says to take the next 3 elements. Note that these range adaptors are not executed eagerly; elements are only dropped or taken when a value is requested from the resulting range.</p>
+<p>After building a range to operate on, the <code>answer_to_the_universe</code> function sums the values in the range using the <a href="https://en.cppreference.com/w/cpp/algorithm/ranges/fold_left"><code>std::ranges::fold_left</code></a> algorithm. This is a range-based version of <a href="https://en.cppreference.com/w/cpp/algorithm/accumulate"><code>std::accumulate</code></a>. Folding over the values of the range will continually request values from the range, which will generate those values by resuming execution of the coroutine and forwarding on the yielded results. At the end, we end up with the <a href="https://hitchhikers.fandom.com/wiki/42">obvious</a> answer: 42.</p>
+<h2>Comparison With Custom Ranges</h2>
+<p>Let’s look at how <code>std::generator</code> makes it much easier to write code that generates sequences of values that are compatible with the ranges algorithms and views in the standard library.</p>
+<p>Say we want to represent an infinite range of random numbers using the <a href="https://en.wikipedia.org/wiki/Xorshift">xorshift</a> <a href="https://en.wikipedia.org/wiki/Pseudorandom_number_generator">pseudorandom number generator</a> (PRNG), which looks like this:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::uint64_t xorshift(std::uint64_t state) {
+    state ^= state &lt;&lt; 13;
+    state ^= state &gt;&gt; 7;
+    state ^= state &lt;&lt; 17;
+    return state;
+}</code></pre>
+<p>Given the current state of the PRNG, which is a 64-bit integer, <code>xorshift(state)</code> generates the next random number in the sequence. Don’t ask me where those numbers come from, they’re magic.</p>
+<p>Writing a custom range type for this is achievable, but it is quite verbose and requires a somewhat in-depth understanding of ranges. Let’s give it a shot.</p>
+<p>We’ll write a type called <code>xorshift_range</code>, which we should be able to use like this:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">int main() {
+    auto is_even = [](auto i) { return i % 2 == 0; };
+    auto ten_even_numbers = xorshift_generator(std::random_device{}())
+                          | std::views::filter(is_even)
+                          | std::views::take(10);
+    for (auto i : ten_even_numbers) {
+        std::cout &lt;&lt; i &lt;&lt; ' ';
+    }
+}</code></pre>
+<p>The constructor should take a seed for the PRNG, and we should be able to pipe the result into existing range adaptors to, for example, retrieve ten even random numbers.</p>
+<p>Let’s start with a definition for the type:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">class xorshift_range {
+public:
+    explicit xorshift_range(std::uint64_t seed)
+        : seed_(seed) {
+    }
+    class iterator;
+
+    iterator begin() const;
+    std::unreachable_sentinel_t end() const {
+        return {};
+    }
+private:
+    std::uint64_t seed_;
+};</code></pre>
+<p>Reasonably straightforward for now. The constructor takes a seed and stores it in a member. We declare an iterator type, which will implement the generation logic, and a <code>begin</code> function that will return an instance of the iterator type. The iterator will be infinite, so it will always compare not equal to <code>end()</code>. As such, end returns a <code>std::unreachable_sentinel_t</code>, which compares not equal to everything.</p>
+<p>The implementation of the iterator type is more complex, so we’ll take it a bit at a time.</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">class xorshift_range::iterator {
+public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = std::uint64_t;
+    using iterator_concept = std::forward_iterator_tag;</code></pre>
+<p>We first provide some member types to indicate some information about our iterator. We won’t use <code>difference_type</code> in the implementation of the iterator, but it’s required for compatibility with ranges, so we pick a reasonable default of <code>std::ptrdiff_t</code>. <code>value_type</code> is <code>std::uint64_t</code> becuause we produce unsigned 64-bit integers. Our iterator cannot move backwards, but you can copy instances of it and increment them independently, which corresponds to <code><a href="https://en.cppreference.com/w/cpp/iterator/forward_iterator">std::forward_iterator</a></code>, so we set <code>iterator_concept</code> to <code>std::forward_iterator_tag</code>.</p>
+<p>Next come the constructors:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">    iterator() = default;
+    explicit iterator(std::uint64_t seed)
+        : state_(seed) {
+        ++(*this);
+    }</code></pre>
+<p>C++20 iterators must be default-constructible, so we define a zero-argument constructor. We also define a constructor that takes a seed, stores it in a <code>state_</code> member (which we’ll define soon), and drives the iterator forward to generate the first random number.</p>
+<p>The operator overloads deal with generating the next number and returning it to client code:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">    std::uint64_t operator*() const {
+        return state_;
+    }
+    iterator&amp; operator++() {
+        state_ = xorshift(state_);
+        return *this;
+    }
+    iterator operator++(int) {
+        auto copy = *this;
+        ++(*this);
+        return copy;
+    }</code></pre>
+<p>The dereference operator returns the current number. The preincrement operator generates the next random number in the sequence using the <code>xorshift</code> function we saw earlier. We implement the postincrement operator in terms of the prefix one.</p>
+<p>We also need equality operators and the <code>state_</code> member:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">    friend bool operator==(const iterator&amp;, const iterator&amp;) = default;
+private:
+    std::uint64_t state_ = 0;
+};</code></pre>
+<p>The <a href="https://en.cppreference.com/w/cpp/language/default_comparisons">default equality operator</a> will check equality based on the current state.</p>
+<p>Finally, we need the implementation of begin and one more piece of ranges magic:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">xorshift_range::iterator xorshift_range::begin() const {
+    return iterator{seed_};
+}
+namespace std::ranges {
+    template&lt;&gt;
+    constexpr bool enable_borrowed_range&lt;xorshift_range&gt; = true;
+}</code></pre>
+<p>The <code>begin</code> function just returns an iterator with the supplied seed. The specialization of <code>std::ranges::enable_borrowed_range</code> allows us to use <code>xorshift_range</code> as an <a href="https://en.cppreference.com/w/cpp/language/value_category">rvalue</a> in some contexts, because the iterators can safely outlive the parent <code>xorshift_range</code> object without any dangling references.</p>
+<p>Phew, that was a lot of work. Want to see the <code>std::generator</code> version?</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;std::uint64_t&gt; xorshift_generator(std::uint64_t seed) {
+    while (true) {
+        seed = xorshift(seed);
+        co_yield seed;
+    }
+}</code></pre>
+<p>That’s it. That’s the entire code.</p>
+<p>It’s not entirely the same as the range version, but is clearly a lot easier to implement and maintain. Here are a few differences:</p>
+<ul>
+<li><code>xorshift_range</code> models <code><a href="https://learn.microsoft.com/cpp/standard-library/range-concepts#borrowed_range">std::ranges::borrowed_range</a></code>, but <code>xorshift_generator</code> does not.</li>
+<li><code>xorshift_range</code> models <code><a href="https://learn.microsoft.com/cpp/standard-library/range-concepts#forward_range">std::ranges::forward_range</a></code>, but <code>xorshift_generator</code> only models <code><a href="https://learn.microsoft.com/cpp/standard-library/range-concepts#input_range">std::ranges::input_range</a></code>.</li>
+<li><code>xorshift_range</code> is copyable, but <code>xorshift_generator</code> is move-only.</li>
+</ul>
+<p>We’ll look at the reasons behind these shortly. Whether these tradeoffs are worth it for you depends on your use cases.</p>
+<h2>Design Decisions Taken</h2>
+<p>There are several potential designs for a <code>std::generator</code>-like type, all of which have different tradeoffs and knock-on effects on how the type can be used.</p>
+<h3>Copyability</h3>
+<p>Specializations of <code>std::generator</code> and their iterators are move-only. This is because a coroutine’s state is a unique resource: you cannot perform a deep copy of a coroutine, and resuming a coroutine through one handle to it will be visible through all other handles.</p>
+<h3>Range and Iterator Category</h3>
+<p>As another consequence of a coroutine’s state being a unique resource, specializations of <code>std::generator</code> model <code>std::ranges::input_range</code>, and their iterators model <code>std::input_iterator</code>. This means that <code>std::generators</code> are single-pass ranges, which limits the set of range adaptors and algorithms that you can use with them. For example, you cannot pass a generator to <code><a href="https://en.cppreference.com/w/cpp/algorithm/ranges/max_element">std::ranges::max_element</a></code>, because it requires a forward range.</p>
+<h3>Synchronicity</h3>
+<p><code>std::generator</code> is synchronous. This means that you cannot <code><a href="https://en.cppreference.com/w/cpp/language/coroutines#co_await">co_await</a></code> an asynchronous operation inside the body of the coroutine that returns a <code>std::generator</code>.</p>
+<h3>Recursiveness</h3>
+<p><code>std::generator</code> is recursive in that a coroutine that returns a specialization of <code>std::generator</code> may yield a <code>std::generator</code> of the same type directly rather than having to yield its values one-by-one. It’s easier to understand with an example.</p>
+<p>Say we have a binary tree that stores integers, and we want to yield all of its elements in order. We might write code like this:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">struct tree {
+    tree* left;
+    tree* right;
+    int value;
+};
+std::generator&lt;int&gt; yield_all_loop(const tree&amp; t) {
+    if (t.left) {
+        for (auto l : yield_all_loop(*t.left)) {
+            co_yield l;
+        }
+    }
+
+    co_yield t.value;
+    
+    if (t.right) {
+        for (auto r : yield_all_loop(*t.right)) {
+            co_yield r;
+        }
+    }
+}</code></pre>
+<p>We recursively call <code>yield_all_loop</code> on the left and right subtrees and loop over the elements of each, yielding their values. This results in the number of coroutine resumptions/suspensions growing linearly with the depth of the tree. That is, if all branches of the tree are the same size and the tree has a depth of 16, then 16 coroutines will be resumed and suspended every time a value is requested. That’s a lot of overhead.</p>
+<p><code>std::generator</code> allows you to yield the generators for the subtrees directly rather than having to manually yield their values all the way up the call stack. This is supported by the <code><a href="https://en.cppreference.com/w/cpp/ranges/elements_of">std::ranges::elements_of</a></code> type, which doesn’t do anything other than indicate that we want to yield the elements of a generator rather than the generator itself. The code looks like this:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int&gt; yield_all_direct(const tree&amp; t) {
+    if (t.left) {
+         co_yield std::ranges::elements_of(yield_all_direct(*t.left));
+    }
+    co_yield t.value;
+    if (t.right) {
+        co_yield std::ranges::elements_of(yield_all_direct(*t.right));
+    }
+}</code></pre>
+<p>This eliminates the linear growth issue. On my laptop, with a full tree with a depth of 16, this version runs twice as fast as the loop-based version.</p>
+<h3>Reference/Value Type Shenanigans</h3>
+<p>The design space for deciding what <code><a href="https://learn.microsoft.com/cpp/standard-library/ranges-alias-templates#range_reference_t">std::ranges::range_reference_t</a></code> and <code><a href="https://learn.microsoft.com/cpp/standard-library/ranges-alias-templates#range_value_t">std::ranges::range_value_t</a></code> should be for a generator type and how these can be customized is surprisingly complex. This is because we want to support yielding and dereferencing to both reference and value types, while avoiding both dangling references and unnecessary copies. Ideally, we also shouldn’t need to always specify the first template parameter as a reference type, i.e. <code>std::generator&lt;std::string&gt;</code> should compile, and iterators into it should avoid copying the yielded strings when dereferenced.</p>
+<p>The design that the committee landed on for <code>std::generator</code> is that you can supply two template arguments to tune the reference and value types. If you only supply one, let’s call it <code>Ref</code>, then the reference type is <code>Ref&amp;&amp;</code> and the value type is <code>std::remove_cvref_t&lt;Ref&gt;</code>. What this means in practice is that dereferencing the generator’s iterators gives references, avoiding copies, and machinery that relies on <code>std::ranges::range_value_t</code> will act on values of the given type. Again, an example with code:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;std::string&gt; gen() {
+    std::string hello = "hello";
+    co_yield hello; // 0 copies
+    co_yield "Hello"; // 1 copy (conversion from const char* to std::string)
+}
+int main() {
+    for (auto&amp;&amp; s : gen()) {} // 0 copies
+    //copies all strings (no dangling refs)
+    auto vec = std::ranges::to&lt;std::vector&gt;(gen());
+}</code></pre>
+<p>This all acts as we expect. It compiles, we avoid all the copies we can (except for the string literal), and we don’t avoid copies we shouldn’t. If we want to avoid copying that string literal, we could choose to instead generate <code><a href="https://learn.microsoft.com/cpp/standard-library/string-view">std::string_view</a></code>s, but this has a problem:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;std::string_view&gt; gen() {
+    std::string hello = "hello";
+    co_yield hello; // 0 copies of string data
+    co_yield "Hello"; // 0 copies
+}
+
+int main() {
+    for (auto s : gen()) {} // 0 copies
+    // uh oh, dangling references
+    auto vec = std::ranges::to&lt;std::vector&gt;(gen());
+}</code></pre>
+<p>In this case, the value type of the generator is <code>std::string_view</code>, so <code><a href="https://en.cppreference.com/w/cpp/ranges/to">std::ranges::to</a></code> copies everything into a <code>std::vector&lt;std::string_view&gt;</code>, which holds a bunch of dangling references. Not ideal.</p>
+<p>The solution is to manually specify the value type of the generator with the second template argument:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;std::string_view, std::string&gt; gen() {
+    std::string hello = "hello";
+    co_yield hello; // 0 copies of string data
+    co_yield "Hello"; // 0 copies
+}
+
+int main() {
+    for (auto s : gen()) {} // 0 copies
+    // copies all strings, no dangling ref
+    auto vec = std::ranges::to&lt;std::vector&gt;(gen());
+}</code></pre>
+<p>This is the best of all worlds.</p>
+<p>The moral is: if the template parameter you’re supplying to <code>std::generator</code> has reference semantics, think about manually supplying a reasonable value type to avoid dangling references.</p>
+<h3>Allocator Support</h3>
+<p>Coroutines require the compiler to generate code that tracks the state of the coroutine and its local variables. This is called a <em>coroutine frame</em> or <em>activation record</em>. In general, the compiler allocates the coroutine frame on the heap unless it can detect that it never outlives its caller, in which case it instead allocates the frame on the caller’s stack. This optimization is called the <a href="https://wg21.link/p0981">coroutine Heap Allocation eLision Optimization</a> (HALO). By default, <code>std::generator</code> uses <code><a href="https://en.cppreference.com/w/cpp/memory/allocator">std::allocator</a></code> for allocating its coroutine frame. In case you want more fine-grained control over where the frame for your <code>std::generator</code> is allocated, it supports supplying an allocator in a few different ways.</p>
+<p>First, you can add an allocator to the coroutine’s parameter list:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">template &lt;class Allocator&gt;
+std::generator&lt;int&gt; f(std::allocator_arg_t, Allocator alloc);
+
+// Usage
+f(std::allocator_arg, MyAlloc{});</code></pre>
+<p>The first parameter must be <code>std::allocator_arg_t</code>, then the second parameter defines the allocator to use.</p>
+<p>You can also supply the allocator to use as the third template argument for <code>std::generator</code>:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int, void, StatelessAllocator&lt;int&gt;&gt; f();
+
+// Usage
+f();</code></pre>
+<p>Finally, you can combine these two methods if you have a stateful allocator that you want to specify the type of statically:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int, void, StatefulAllocator&lt;int&gt;&gt;
+f(std::allocator_arg_t, StatefulAllocator&lt;int&gt; alloc);
+
+// Usage
+f(std::allocator_arg, some_allocator); // must be convertible to StatefulAllocator&lt;int&gt;</code></pre>
+<h2>A Short Note on Performance</h2>
+<p>Current implementations of <code>std::generator</code> for both MSVC and libstdc++/GCC introduce some overhead. In the above <code>xorshift</code> sample, the generator version shows around a 3x slowdown with MSVC and 2x slowdown with GCC. We hope to improve on this in future versions of the compiler by, for example, enabling HALO for this use case.</p>
+<h2>Send Us Your Feedback</h2>
+<p>We are very much interested in your feedback to continue to improve our standard library and compiler. The comments below are open. You can also share feedback through <a href="https://github.com/microsoft/STL/issues">GitHub Issues</a> for the standard library and <a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a> for the compiler. You can also reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/std-generator-standard-library-coroutine-support/">std::generator: Standard Library Coroutine Support</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/std-generator-standard-library-coroutine-support/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>MSVC Address Sanitizer updates in Visual Studio 2022 version 17.13</title>
 		<link>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-updates-in-visual-studio-2022-version-17-13/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-updates-in-visual-studio-2022-version-17-13/#respond</comments>
@@ -1124,207 +1370,6 @@ int main() {
 <p>As always, we welcome your feedback. Feel free to send any comments through e-mail at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or through <a href="https://twitter.com/visualc">Twitter @visualc</a>. Also, feel free to follow Cameron DaCamara on Twitter <a href="https://twitter.com/starfreakclone">@starfreakclone</a>.</p>
 <p>If you encounter other problems with MSVC in VS 2022 please let us know via the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022">Report a Problem</a> option, either from the installer or the Visual Studio IDE itself. For suggestions or bug reports, let us know through <a href="https://developercommunity.visualstudio.com/">Developer Community.</a></p>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-language-updates-in-visual-studio-2022-version-17-12/">MSVC Compiler Language Updates in Visual Studio 2022 version 17.12</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>What’s New in vcpkg (November 2024)</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-november-2024/</link>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Sat, 23 Nov 2024 19:40:27 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[vcpkg;CPP]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=34955</guid>
-
-					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2024.11.16 registry release, 2024-11-12 tool release, as well as changes to vcpkg documentation throughout November. This release includes a command line option to force vcpkg to use classic mode even if a manifest file is found along with bug fixes. Some [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-november-2024/">What’s New in vcpkg (November 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2024.11.16">2024.11.16</a> registry release, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2024-11-12">2024-11-12</a> tool release, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout November. This release includes a command line option to force vcpkg to use classic mode even if a manifest file is found along with bug fixes.</p>
-<p>Some stats for this period:</p>
-<ul>
-<li>There are now <strong>2,508 total ports </strong>available in the vcpkg curated registry. A <a href="https://learn.microsoft.com/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
-<li><strong>20 new ports</strong> were added to the curated registry.</li>
-<li><strong>185 updates</strong> were made to existing ports. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 13 main <a href="https://learn.microsoft.com/vcpkg/concepts/triplets">triplets</a>.</li>
-<li><strong>88 </strong>contributors made commits (not counting the vcpkg maintainers).</li>
-<li>The main vcpkg repo has over <strong>6,400 forks</strong> and <strong>23,300 stars</strong> on GitHub.</li>
-</ul>
-<h1>vcpkg changelog (2024.11.16 release)</h1>
-<p>The following changes were made in November:</p>
-<ul>
-<li>Added a <a href="https://learn.microsoft.com/vcpkg/commands/common-options#classic">command line option</a> called &#8211;classic, which instructs vcpkg to skip looking for a manifest and run in classic mode, even if a manifest file exists in the directory hierarchy. Useful for multi-project codebases where some submodules may want run vcpkg in classic mode, while others do not (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1535">Microsoft/vcpkg-tool#1535</a>).</li>
-<li>Fixed a bug where vcpkg was claiming that certain builds were failing due to the x-block-origin option (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1513">Microsoft/vcpkg-tool#1513</a>).</li>
-<li>Other minor bug fixes.</li>
-</ul>
-<h1>Documentation changes</h1>
-<ul>
-<li>Added documentation for new &#8211;classic command line option (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/423">Microsoft/vcpkg-docs#423</a>).</li>
-<li>Updated overlay port documentation to clarify how overlay ports in subdirectories are handled by vcpkg (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/422">Microsoft/vcpkg-docs#422</a>).</li>
-<li>Other minor fixes (thanks @bansan85, @dg0yt, and @woopelderly!).</li>
-</ul>
-<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img decoding="async" class="wp-image-34957" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34955-1.png" width="627" height="184" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34955-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34955-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34955-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/11/word-image-34955-1-768x226.png 768w" sizes="(max-width: 627px) 100vw, 627px" /></p>
-<h1>Total ports available for tested triplets</h1>
-<table>
-<tbody>
-<tr>
-<td><strong>triplet</strong></td>
-<td><strong>ports available</strong></td>
-</tr>
-<tr>
-<td>x64-windows</td>
-<td>2,389</td>
-</tr>
-<tr>
-<td>x86-windows</td>
-<td>2,261</td>
-</tr>
-<tr>
-<td>x64-windows-static</td>
-<td>2,259</td>
-</tr>
-<tr>
-<td>x64-windows-static-md</td>
-<td>2,305</td>
-</tr>
-<tr>
-<td>arm64-windows</td>
-<td>1,978</td>
-</tr>
-<tr>
-<td>x64-uwp</td>
-<td>1,319</td>
-</tr>
-<tr>
-<td>arm64-uwp</td>
-<td>1,287</td>
-</tr>
-<tr>
-<td>x64-linux</td>
-<td>2,362</td>
-</tr>
-<tr>
-<td>x64-osx</td>
-<td>2,234</td>
-</tr>
-<tr>
-<td>arm64-osx</td>
-<td>2,152</td>
-</tr>
-<tr>
-<td>arm-neon-android</td>
-<td>1,646</td>
-</tr>
-<tr>
-<td>x64-android</td>
-<td>1,722</td>
-</tr>
-<tr>
-<td>arm64-android</td>
-<td>1,695</td>
-</tr>
-</tbody>
-</table>
-<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<h1>Thank you to our contributors</h1>
-<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release (listed alphabetically by GitHub username):</p>
-<ul>
-<li>17steen</li>
-<li>ADKaster</li>
-<li>AenBleidd</li>
-<li>agl-alexglopez</li>
-<li>alagoutte</li>
-<li>albertony</li>
-<li>alfredh</li>
-<li>aluaces</li>
-<li>aminya</li>
-<li>andre-nguyen</li>
-<li>ankurvdev</li>
-<li>AnyOldName3</li>
-<li>autoantwort</li>
-<li>azure-sdk</li>
-<li>bansan85</li>
-<li>blavallee</li>
-<li>braindigitalis</li>
-<li>buck-yeh</li>
-<li>bw-hro</li>
-<li>c8ef</li>
-<li>cenit</li>
-<li>DanAlbert</li>
-<li>daniele77</li>
-<li>Deishelon</li>
-<li>dg0yt</li>
-<li>donny-dont</li>
-<li>eao197</li>
-<li>eclipse0922</li>
-<li>elsid</li>
-<li>erikyuzwa</li>
-<li>g-maxime</li>
-<li>gavinltomra</li>
-<li>HisuianZoroark69</li>
-<li>Honeybunch</li>
-<li>huangqinjin</li>
-<li>lrineau</li>
-<li>JacobBarthelmeh</li>
-<li>JanWilczek</li>
-<li>jgillis</li>
-<li>jiayuehua</li>
-<li>jll63</li>
-<li>JoergAtGithub</li>
-<li>johnwason</li>
-<li>jreichel-nvidia</li>
-<li>mbeutel</li>
-<li>metsma</li>
-<li>michaelmigliore</li>
-<li>mikaellindemann</li>
-<li>miyanyan</li>
-<li>myd7349</li>
-<li>n-taka</li>
-<li>netheril96</li>
-<li>Neumann-A</li>
-<li>nickdademo</li>
-<li>nirvn</li>
-<li>nlogozzo</li>
-<li>oleg-derevenetz</li>
-<li>Osyotr</li>
-<li>pedrolcl</li>
-<li>Poldraunic</li>
-<li>rinechran</li>
-<li>rinrab</li>
-<li>rogerqcify</li>
-<li>rtzoeller</li>
-<li>scotthart</li>
-<li>SHIINASAMA</li>
-<li>SidneyCogdill</li>
-<li>simolis3</li>
-<li>skypjack</li>
-<li>sssooonnnggg</li>
-<li>stemann</li>
-<li>SunBlack</li>
-<li>swebb2066</li>
-<li>szhorvat</li>
-<li>talregev</li>
-<li>teo-tsirpanis</li>
-<li>Terentyev</li>
-<li>theblackunknown</li>
-<li>Thomas1664</li>
-<li>tomwillow</li>
-<li>Tradias</li>
-<li>traversaro</li>
-<li>walbourn</li>
-<li>waywardmonkeys</li>
-<li>winsoft666</li>
-<li>wolfgitpr</li>
-<li>woopelderly</li>
-<li>xiaozhuai</li>
-</ul>
-<h1>Learn more</h1>
-<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases">main release notes</a> on GitHub. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-november-2024/">What’s New in vcpkg (November 2024)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
 		
