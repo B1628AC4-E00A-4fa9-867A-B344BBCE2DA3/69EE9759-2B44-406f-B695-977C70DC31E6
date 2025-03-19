@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 18 Mar 2025 13:52:44 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 19 Mar 2025 18:33:52 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,149 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++ Dynamic Debugging: Full Debuggability for Optimized Builds</title>
+		<link>https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/#respond</comments>
+		
+		<dc:creator><![CDATA[David Li]]></dc:creator>
+		<pubDate>Wed, 19 Mar 2025 18:33:52 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Game Development]]></category>
+		<category><![CDATA[debugging]]></category>
+		<category><![CDATA[Optimized Builds]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35229</guid>
+
+					<description><![CDATA[<p>Over the past 5 years, we’ve had many incredible opportunities to engage with game developers. From AAA studios to indie developers, the passion for slashing iteration times is significant. Amidst all the fantastic feedback we&#8217;ve received for Visual Studio, one sentiment has rung loud and clear: a desire to debug optimized C++ code without sacrificing [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/">C++ Dynamic Debugging: Full Debuggability for Optimized Builds</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Over the past 5 years, we’ve had many incredible opportunities to engage with game developers. From AAA studios to indie developers, the passion for slashing iteration times is significant. Amidst all the fantastic feedback we&#8217;ve received for Visual Studio, one sentiment has rung loud and clear: a desire to debug optimized C++ code without sacrificing performance. Although game developers have voiced this need the loudest, we know that solving this issue will benefit many other C++ workflows. While we&#8217;ve consistently rolled out <a href="https://devblogs.microsoft.com/cppblog/unreal-engine-cpp-game-development-made-easy-visual-studio-2022/">many</a> <a href="https://devblogs.microsoft.com/cppblog/partnering-with-the-coalition/">productivity</a> <a href="https://devblogs.microsoft.com/cppblog/unreal-engine-cpp-game-development-made-easy-visual-studio-2022/">and</a> <a href="https://devblogs.microsoft.com/cppblog/faster-cpp-source-code-indexing/">performance</a> <a href="https://devblogs.microsoft.com/cppblog/directly-edit-unreal-engine-projects-in-visual-studio-2022/">enhancements</a> <a href="https://developer.microsoft.com/en-us/games/articles/2024/02/a-year-of-game-development-improvements-in-visual-studio-2022/">over the years</a>, debugging optimized code has always been at the top of everyone&#8217;s wish list.</p>
+<h2>Current Issues with Debugging Optimized Code</h2>
+<p>Through our conversations with game developers, we’ve heard about some common problems when debugging optimized code:</p>
+<ul>
+<li>Trying to inspect locals often yields the &#8220;Variable is optimized away&#8221; message in the watch window.</li>
+<li>Step-over and step-into don&#8217;t always step over, or into, the expected code paths.</li>
+<li>Losing time while iterating with #pragma optimize to try and undo optimizations, requiring a rebuild and restart of the debugger.</li>
+</ul>
+<p>Thanks to your feedback, the team has been hard at work to come up with a creative solution.</p>
+<h2>Announcing: C++ Dynamic Debugging</h2>
+<p>We are thrilled to announce that C++ Dynamic Debugging is now available as a <em>preview</em> feature exclusively with the MSVC toolset. This feature dynamically deoptimizes code that you set breakpoints on or step into, giving you the performance of optimized code with the debugging experience of unoptimized code.</p>
+<p>Try C++ Dynamic Debugging today in <strong>Visual Studio 2022 version 17.14 Preview 2</strong>.</p>
+<p><div class="d-flex justify-content-left"><a class="cta_button_link btn-primary mb-24" href="http://aka.ms/vspreview" target="_blank">Download</a></div></p>
+<p><figure id="attachment_35233" aria-labelledby="figcaption_attachment_35233" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/before.png"><img fetchpriority="high" decoding="async" class="size-full wp-image-35233" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/before.png" alt="Image before" width="481" height="301" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/before.png 481w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/before-300x188.png 300w" sizes="(max-width: 481px) 100vw, 481px" /></a><figcaption id="figcaption_attachment_35233" class="wp-caption-text">Without C++ Dynamic Debugging</figcaption></figure></p>
+<p><figure id="attachment_35232" aria-labelledby="figcaption_attachment_35232" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/after.png"><img decoding="async" class="size-full wp-image-35232" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/after.png" alt="Image after" width="508" height="267" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/after.png 508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/after-300x158.png 300w" sizes="(max-width: 508px) 100vw, 508px" /></a><figcaption id="figcaption_attachment_35232" class="wp-caption-text">With C++ Dynamic Debugging</figcaption></figure></p>
+<blockquote><p><i><span data-contrast="none">“The new feature is exceptional. I now have reliable stepwise debugging, variable inspection, and program counter jumping without needing to recompile with pragma optimize.”</span></i></p>
+<p>– Jess Kube, Principal Software Engineer, The Coalition</p>
+<p><i><span data-contrast="none">Using it daily, the new feature improved my ability to debug and investigate quicker. I don’t need to manually deoptimize my files anymore”</span></i></p>
+<p>– Matthew Koch, Principal Software Engineer, Halo Studios</p>
+<p><i><span data-contrast="none">“With the new feature, breakpoints in inlined functions will now be hit. Previously, I had to use a debug build or #pragma optimize and remember to remove it before code review”</span></i></p>
+<p>– Keith Stockdale, Senior Software Engineer, Rare</p></blockquote>
+<h2>Getting Started with C++ Dynamic Debugging</h2>
+<p>You only need a few short clicks to turn on C++ Dynamic Debugging for your project. After activating these options, you must rebuild to start using C++ Dynamic Debugging.</p>
+<h3>MSBuild C++ Projects</h3>
+<p>To begin, change your configuration to Release mode. Next, right-click on your project and click on Properties to open the Configuration Properties menu. In this menu, click on <em>Advanced</em> &gt; <em>Use C++ Dynamic Debugging</em> &gt; <strong>Yes</strong>. Lastly, rebuild your project.</p>
+<p>Setting this property will turn off Whole Program Optimization.</p>
+<p><figure id="attachment_35235" aria-labelledby="figcaption_attachment_35235" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/configproperties.png"><img decoding="async" class="size-full wp-image-35235" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/configproperties.png" alt="screenshot of configuration properties activating C++ dynamic debugging" width="624" height="212" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/configproperties.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/configproperties-300x102.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></a><figcaption id="figcaption_attachment_35235" class="wp-caption-text">Configuration Properties</figcaption></figure></p>
+<h3>Other Build Systems</h3>
+<ul>
+<li>Pass the new <em>/dynamicdeopt</em> switch to <em>cl.exe, lib.exe, and link.exe</em></li>
+<li>For Unreal Engine developers, UE 5.6 will support the <em>bDynamicDebugging</em> Windows platform flag.</li>
+</ul>
+<p>Please see <a href="https://aka.ms/vcdd">documentation</a> for more details.</p>
+<h2>System Requirements</h2>
+<ul>
+<li>Visual Studio 2022 Version 17.14 Preview 2</li>
+<li>MSVC Toolset 19.44</li>
+<li>X64 architecture</li>
+<li>Not compatible with LTCG, PGO, OPT-ICF flags</li>
+</ul>
+<h2>Using C++ Dynamic Debugging</h2>
+<p>Turning on C++ Dynamic Debugging and rebuilding unlocks familiar debugging patterns for optimized code without compromising on performance.</p>
+<h3>Breakpoints</h3>
+<p>Your breakpoints will get hit in deoptimized code. Look for the [Deoptimized] tag in the Call Stack window to know that you can view all your locals.</p>
+<h3>Conditional and Dependent Breakpoints</h3>
+<p>Set Conditional and Dependent Breakpoints as if the code was unoptimized; you can add conditional breakpoints to variables that have been optimized away in your optimized binaries.</p>
+<h3>Stepping Actions</h3>
+<p>Step Over to the next line of your source code as if the code was unoptimized.</p>
+<p><figure id="attachment_35237" aria-labelledby="figcaption_attachment_35237" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/step-over.png"><img decoding="async" class="size-full wp-image-35237" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/step-over.png" alt="Image step over in visual studio" width="235" height="92" /></a><figcaption id="figcaption_attachment_35237" class="wp-caption-text">Stepping Actions</figcaption></figure></p>
+<p>Step In to any function, and those functions will be deoptimized as well. In addition, Step In will now step into <em>__forceinline</em> functions.</p>
+<p><figure id="attachment_35238" aria-labelledby="figcaption_attachment_35238" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/forceinline.png"><img decoding="async" class="size-full wp-image-35238" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/forceinline.png" alt="Image forceinline code in lyra sample project" width="561" height="114" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/forceinline.png 561w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/forceinline-300x61.png 300w" sizes="(max-width: 561px) 100vw, 561px" /></a><figcaption id="figcaption_attachment_35238" class="wp-caption-text">Step Into __forceinline functions</figcaption></figure></p>
+<h3>Set Next Statement</h3>
+<p>Using Set Next Statement in a deoptimized frame works as if the code was unoptimized.</p>
+<p><figure id="attachment_35239" aria-labelledby="figcaption_attachment_35239" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/set-next-statement.png"><img decoding="async" class="size-full wp-image-35239" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/set-next-statement.png" alt="Image set next statement" width="524" height="172" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/set-next-statement.png 524w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/set-next-statement-300x98.png 300w" sizes="(max-width: 524px) 100vw, 524px" /></a><figcaption id="figcaption_attachment_35239" class="wp-caption-text">Set Next Statement</figcaption></figure></p>
+<h3>Call Stack Window</h3>
+<p>In your Call Stack window, you will see that any frames that have been deoptimized will have a <em>[deoptimized]</em> tag.</p>
+<p><figure id="attachment_35242" aria-labelledby="figcaption_attachment_35242" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/call-stack-window.png"><img decoding="async" class="size-full wp-image-35242" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/call-stack-window.png" alt="Image call stack window" width="421" height="179" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/call-stack-window.png 421w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/call-stack-window-300x128.png 300w" sizes="(max-width: 421px) 100vw, 421px" /></a><figcaption id="figcaption_attachment_35242" class="wp-caption-text">Call Stack Window</figcaption></figure></p>
+<p>Visual Studio only deoptimizes the frame corresponding to your breakpoint or functions stepped into. Frames higher up in the call stack remain optimized for performance. You can select additional frames in the Call Stack window and click “<em>Deoptimize on next entry</em>” to deoptimize those functions when they are entered the next time.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptnextentry.png"><img decoding="async" class="aligncenter size-full wp-image-35241" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptnextentry.png" alt="Image deoptnextentry" width="418" height="184" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptnextentry.png 418w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptnextentry-300x132.png 300w" sizes="(max-width: 418px) 100vw, 418px" /></a></p>
+<h3>Managing &#8220;Deoptimize on next entry&#8221; breakpoints</h3>
+<p>Breakpoints added through &#8220;<em>Deoptimize on next entry</em>&#8221; are listed in the Breakpoints window. You can export these Breakpoints for later use. To return your application to full optimization, delete these breakpoints.</p>
+<p><figure id="attachment_35240" aria-labelledby="figcaption_attachment_35240" class="wp-caption aligncenter" ><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptbps.png"><img decoding="async" class="size-full wp-image-35240" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptbps.png" alt="Image deoptbps" width="408" height="224" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptbps.png 408w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/deoptbps-300x165.png 300w" sizes="(max-width: 408px) 100vw, 408px" /></a><figcaption id="figcaption_attachment_35240" class="wp-caption-text">Deoptimized Breakpoints</figcaption></figure></p>
+<h2>Middleware Support</h2>
+<p>We have been working closely with our middleware partners to ensure that C++ Dynamic Debugging works with popular middleware tools.</p>
+<h3>Unreal Engine</h3>
+<p>In Unreal Engine version 5.6, Unreal Build Tool and Unreal Build Accelerator will support C++ Dynamic Debugging natively. To try the feature today, please manually apply the <a href="http://aka.ms/vcdd_ue">change</a>, temporarily disable Unreal Build Accelerator, and see our <a href="https://aka.ms/vcdd">documentation</a> for more details.</p>
+<h3>IncrediBuild</h3>
+<p>IncrediBuild 10.24 or later supports C++ Dynamic Debugging.</p>
+<h3>FastBuild</h3>
+<p>To use C++ Dynamic Debugging with FastBuild, please see this <a href="https://aka.ms/vcdd_fastbuild">Pull Request</a>.</p>
+<h3>Xbox GDK</h3>
+<p>Out-of-the-box support for C++ Dynamic Debugging will be available in an April 2025 update. To try this feature today, please refer to the official GDK documentation.</p>
+<h2>Overhead Considerations</h2>
+<p>While using C++ Dynamic Debugging, it&#8217;s important to acknowledge the following considerations. Despite these overhead costs, we are confident that your overall iteration time will benefit significantly.</p>
+<h3>File Output Size</h3>
+<p>In our assessments, using a modified version of the Lyra Sample project, we observed a 2.4x increase in the build output size.</p>
+<h3>Build Time</h3>
+<h4>End-to-end Build Time</h4>
+<p>Depending on the project, we saw an increase in end-to-end build time ranging from 1.05x to 1.15x.</p>
+<h4>Iteration Build Time</h4>
+<p>For small and medium-sized binaries, the increase in iteration build time was less than 1.2x. For larger binaries, such as monolithic games, the increase was up to 1.8x.</p>
+<h4>Mitigations for Iteration Build Time</h4>
+<p>If the increase in iteration time is too burdensome for large binaries, you can try the undocumented /d2DDTrimInlines compiler switch. This switch, subject-to-change and removal, reduces the iteration time overhead from 1.8x to 1.4x at the cost of increased end-to-end build time. The switch also removes the ability to step into small __forceinline/inline functions.</p>
+<h2>Known Issues</h2>
+<p>By design:</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-unexpected-PDB-error-LI/10873409">Unexpected PDB error, LIMIT (12), check for insufficient disk space, invalid path, or insufficient privilege.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Stepping-in-disassembly/10873413">Stepping in disassembly window remains optimized.</a></li>
+</ul>
+<p>Fixed in Visual Studio 2022 17.4 Preview 3:</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-crash-with-memcmp-and-ot/10873401">Crash with memcmp and other intrinsic imports with /MD</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-incorrect-emission-of-C4/10873403">Incorrect emission of C4714</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Missing-feature-from-x86/10873404">Missing feature from x86_x64 compiler</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Instrumentation-based-pr/10873412">Instrumentation-based profiling doesn&#8217;t work</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Crash-stepping-past-C/10873414">Crash stepping past C++ exception catch handlers</a></li>
+</ul>
+<p>Active Issues:</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Starting-the-debugger-wi/10873416">Starting the debugger with F10 or F11 keeps main() optimized</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-__ImageBase-is-0-when-de/10873418">ImageBase is 0 when debugging</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/DD-1714p2-bug:-Crash-stepping-into-__tr/10873420">Crash stepping into __try block that has access violation</a></li>
+</ul>
+<h2>Conclusion</h2>
+<p>Try C++ Dynamic Debugging today: Experience the benefits of debug builds and the speed of optimized builds.</p>
+<p><div class="d-flex justify-content-left"><a class="cta_button_link btn-primary mb-24" href="http://aka.ms/vspreview" target="_blank">Download</a></div></p>
+<p>C++ Dynamic Debugging is a <em>preview</em> feature. Thank you to everyone who gave us feedback on debugging optimized code. This feature would not have been possible without your feedback. We love to hear how much time this feature has saved you and how you’re incorporating it into your workflow. Furthermore, we invite you to keep sending feedback so we can make C++ Dynamic Debugging even better. We truly appreciate your feedback and encourage you to keep sharing your thoughts and ideas with us through <a href="https://developercommunity.visualstudio.com/">Developer Community</a>, X (<a href="https://twitter.com/visualc">@VisualC</a>), or email at <a href="mailto:visualcpp@microsoft.com?subject=C++%20Dynamic%20Debugging%20Feedback">visualcpp@microsoft.com</a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/">C++ Dynamic Debugging: Full Debuggability for Optimized Builds</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Optimizing Build Times with Build Insights: How Activision Cut Call of Duty’s Build Time by 50%</title>
 		<link>https://devblogs.microsoft.com/cppblog/optimizing-build-times-with-build-insights-how-activision-cut-call-of-dutys-build-time-by-50/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/optimizing-build-times-with-build-insights-how-activision-cut-call-of-dutys-build-time-by-50/#respond</comments>
@@ -45,7 +188,7 @@
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/optimizing-build-times-with-build-insights-how-activision-cut-call-of-dutys-build-time-by-50/">Optimizing Build Times with Build Insights: How Activision Cut Call of Duty’s Build Time by 50%</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></description>
 										<content:encoded><![CDATA[<p>Slow build times are a major headache for developers, especially in large, complex C++ codebases like game engines. Every minute spent waiting on a build is time that could be used to refine features, resolve issues, or push development forward. Activision faced this challenge with Call of Duty: Modern Warfare II, where prolonged build times were slowing down iteration and impeding workflows. By leveraging Build Insights, they identified key inefficiencies, optimized bottlenecks, and successfully reduced build times from 27:49 minutes to just 14:25 minutes—cutting them in half. Read more about their journey in our detailed breakdown on <a href="https://developer.microsoft.com/en-us/games/articles/2025/03/gdc-2025-build-insights-call-of-duty-modern-warfare/" target="_new" rel="noopener" data-start="696" data-end="758">Microsoft Game Dev</a>.</p>
-<p><img fetchpriority="high" decoding="async" class="alignnone size-full" src="https://press.activision.com/content/dam/atvi/activision/atvi-touchui/press/assets/call-of-duty/modern-warfare-ii/beta/screenshots/Sa%27id_General_Action_1.png" alt="Call of Duty: Modern Warfare II Action Image" width="3840" height="2160" /></p>
+<p><img decoding="async" class="alignnone size-full" src="https://press.activision.com/content/dam/atvi/activision/atvi-touchui/press/assets/call-of-duty/modern-warfare-ii/beta/screenshots/Sa%27id_General_Action_1.png" alt="Call of Duty: Modern Warfare II Action Image" width="3840" height="2160" /></p>
 <blockquote><p>Build times impact every aspect of development. When builds are slow, valuable engineering time is lost—time that could be spent improving features, optimizing performance, or debugging critical issues. Slow builds also create bottlenecks in our continuous integration pipelines, delaying the verification of every piece of code and content that goes into our games. To keep our development workflow efficient, we need our builds to be as fast as possible, and Build Insights provides that capability to our teams. — Michael Vance, SVP &amp; Fellow Software Engineer, Activision</p></blockquote>
 <p>Through a collaboration between Activision, the Xbox Advanced Technology Group (ATG), and the MSVC team, optimizations were made to force inlining, linker efficiency, and whole-program analysis, leading to dramatic improvements in build performance. These insights not only benefited Call of Duty but also contributed to broader enhancements in MSVC’s LTCG and linker performance, positively impacting other major projects like Fortnite, Chrome, and TensorFlow.</p>
 <p>To dive deeper into how these optimizations were achieved and how Build Insights can help your own development workflow, read the full article on <a href="https://developer.microsoft.com/en-us/games/articles/2025/03/gdc-2025-build-insights-call-of-duty-modern-warfare/">How Build Insights Reduced Call of Duty: Modern Warfare II’s Build Times by 50%</a>. You can also check out our <a href="https://www.youtube.com/watch?v=-Cr3PIhCUyM">YouTube Video</a>, explore our <a href="https://devblogs.microsoft.com/cppblog/build-insights-now-available-in-visual-studio-2022/">blog post</a>, or dive into our <a href="https://learn.microsoft.com/en-us/cpp/build-insights/get-started-with-cpp-build-insights?view=msvc-170">documentation</a> to start optimizing your builds today.</p>
@@ -1297,166 +1440,6 @@ static_assert(f()); // OK - constant evaluation never reaches the 'goto' stateme
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>What’s New for C++ Developers in Visual Studio 2022 17.13</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/#comments</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Tue, 11 Feb 2025 18:58:57 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35102</guid>
-
-					<description><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.13 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page. Standard Library and Compiler [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/">What’s New for C++ Developers in Visual Studio 2022 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We are happy to announce that Visual Studio 2022 version 17.13 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
-<h2>Standard Library and Compiler</h2>
-<p>On the compiler side, we’ve implemented C++23’s <code>size_t</code> literal suffix. The suffix <code>uz</code> or <code>UZ</code> (or any permutation of these) will help you avoid sneaky truncations or signed comparison mismatches, especially when writing loops. For example:</p>
-<pre class="prettyprint language-default"><code class="language-cpp">//Infinite loop if v.size &gt; max unsigned int
-for (auto i = 0u; i &lt; v.size(); ++i) {
-    //Use v and v[i]
-}
-
-//Fine due to uz literal
-for (auto i = 0uz; i &lt; v.size(); ++i) {
-    //Use v and v[i]
-}</code></pre>
-<p>Note that, while this feature is available in our MSVC compiler, it is not yet supported in the EDG compiler that powers IntelliSense, so you may see red squiggles in your editor until support is added.</p>
-<p>For all of the compiler improvements shipped in VS 2022 17.13, see <a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13">MSVC Compiler Updates in Visual Studio 2022 version 17.13</a>.</p>
-<p>Our standard library has too many improvements to list in this blog post, so check out the <a href="https://github.com/microsoft/STL/wiki/Changelog#vs-2022-1713">changelog</a> for all the details. Thanks to everyone in the community who contributed to this release! I’ve picked out some highlights below.</p>
-<p>The feature I’m most excited about is <code>std::generator</code>. This brings some long-awaited standard library support for coroutines. A little example from <a href="https://wg21.link/p2502r2">the paper</a>:</p>
-<pre class="prettyprint language-cpp"><code class="language-cpp">std::generator&lt;int&gt; fib() {
-    auto a = 0, b = 1;
-    while (true) {
-        co_yield std::exchange(a, std::exchange(b, a + b));
-    }
-}
-
-int answer_to_the_universe() {
-    auto rng = fib() | std::views::drop(6) | std::views::take(3);
-    return std::ranges::fold_left(std::move(rng), 0, std::plus{});
-}</code></pre>
-<p>The <code>fib</code> function is a coroutine (because it uses the <code>co_yield</code> keyword). Whenever the <code>co_yield</code> statement is executed, <code>fib</code> is suspended and the value is returned to the caller. The <code>fib</code> coroutine can then be resumed later to produce more values, without requiring any manual state handling from the programmer. As you can see from the next function, <code>std::generator</code> is compatible with ranges, so we can pipe it into some range adaptors from the standard library.</p>
-<p>Also in the area of conformance, we implemented two papers that improve the performance of <code>std::print</code>: <a href="https://wg21.link/p3107r5">P3107R5</a> and <a href="https://wg21.link/P3235R3">P3235R3</a>.</p>
-<p>We’ve improved the build throughput of <code>&lt;queue&gt;</code>, <code>&lt;stack&gt;</code>,<code> &lt;stacktrace&gt;</code>, and <code>&lt;thread&gt;</code> by not including all of <code>&lt;format&gt;</code>. For the same reason, we’ve moved <code>system_clock</code>, <code>high_resolution_clock</code>, and <code>chrono_literals</code> from a commonly-included internal header to <code>&lt;chrono&gt;</code>. This has source-breaking impact. If you see compiler errors complaining that it doesn&#8217;t recognize chrono types like <code>system_clock</code> or UDLs like <code>1729ms</code>, you need to include <code>&lt;chrono&gt;</code> specifically, instead of assuming that headers like <code>&lt;thread&gt;</code> will drag it in.</p>
-<p>We have also continued our work in improving vectorization across the standard library. This release comes with improvements for the following types and functions:</p>
-<ul>
-<li><code>(ranges::)find_end</code></li>
-<li><code>basic_string::(r)find</code></li>
-<li><code>adjacent_difference</code></li>
-<li><code>bitset</code></li>
-<li><code>basic_string::find_last_of</code></li>
-<li><code>(ranges::)remove</code></li>
-</ul>
-<h2>C++ Productivity</h2>
-<h3>Unreal Engine integration updates</h3>
-<p>We have made a series of updates for the Unreal Engine integration in Visual Studio:</p>
-<ul>
-<li>We added two new options in <strong>Tools &gt; Options</strong> that allow you to specify Code Analysis with Unreal Header Tool for both header and source files. To enhance performance, analysis of source files is disabled by default.</li>
-<li>You can now specify <em>Public</em> and <em>Private</em> folders when using the <em>Add Class</em> wizard, ensuring that your classes are created in the correct folder structure.</li>
-</ul>
-<p>If you want to learn more about the Visual Studio support for Unreal Engine, check out our <a href="https://learn.microsoft.com/en-us/visualstudio/gamedev/unreal/get-started/vs-tools-unreal-overview">Unreal Engine Overview</a> page.</p>
-<h3>C++23 Preview Project Setting</h3>
-<p>You can now enable a <strong>preview</strong> of our C++23 implementation in Visual C++ directly from your project settings! This new setting unlocks access to the latest features we&#8217;ve implemented of the C++23 standard. As this is a preview of C++23 features, those new features will have limited support and may change in future releases.</p>
-<p><img decoding="async" width="784" height="547" class="wp-image-35103" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m.png 784w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-300x209.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-768x536.png 768w" sizes="(max-width: 784px) 100vw, 784px" /></p>
-<p>For more details and instructions, check out <a href="https://learn.microsoft.com/cpp/build/reference/std-specify-language-standard-version">our documentation</a>.</p>
-<h3>New Code Generation Property Page Settings for x86 and x64</h3>
-<p>Vector Length Property: Configure vector lengths for code generation on x86 and x64 directly in your C++ project settings by going to <strong>Configuration</strong> <strong>Properties &gt; C/C++ &gt; Code Generation</strong>.</p>
-<p><img decoding="async" width="778" height="511" class="wp-image-35104" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1.png 778w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1-300x197.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-1-768x504.png 768w" sizes="(max-width: 778px) 100vw, 778px" /></p>
-<p>AVX10.1 Support: Unlock the power of AVX10.1 with a new entry in Enable Enhanced Instruction Set, adding the /arch:AVX10.1 flag to your builds.</p>
-<p><img decoding="async" width="784" height="511" class="wp-image-35105" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c.png" alt="A screenshot of a computer program AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c.png 784w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c-300x196.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-program-ai-generated-c-768x501.png 768w" sizes="(max-width: 784px) 100vw, 784px" /></p>
-<p>Check out the <a href="https://learn.microsoft.com/cpp/build/reference/vlen">documentation</a> for details.</p>
-<h3>Support for CMake Presets v9</h3>
-<p>Visual Studio now supports CMake Presets v9. This latest version of CMake presets introduces several documented versions of macro expansions in the include field of a preset. Read more at the <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#macro-expansion">official CMake documentation</a>.</p>
-<h3>Specify Linux timeout settings for C++</h3>
-<p>We have added support for specifying a minimum timeout period for your remote machines that you are connected to via the Connection Manager in Visual Studio. To learn more about adding a remote connection in Visual Studio, please see <a href="https://learn.microsoft.com/cpp/linux/connect-to-your-remote-linux-computer">our C++ Linux documentation</a>.</p>
-<p>You can specify the timeout period in the Command Prompt in Visual Studio, using the new property <code>MinTimeoutSeconds</code>. For example, to set the timeout period to 1 minute, you can use the following command:</p>
-<pre class="prettyprint language-default"><code class="language-default">ConnectionManager modify &lt;connection-id&gt; --property MinTimeoutSeconds=60</code></pre>
-<h2>General Productivity</h2>
-<h3>Set Default File Encoding</h3>
-<p>Visual Studio now allows you to set the default file encoding for saving files. This feature ensures that your preferred encoding is used whenever possible.</p>
-<p>To set the default encoding, navigate to <strong>Tools &gt; Options &gt; Environment &gt; Documents</strong>. There, you will find an option titled <strong>Save files with the following encoding</strong>.</p>
-<p><img decoding="async" width="500" height="165" class="wp-image-35106" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4.png 500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-4-300x99.png 300w" sizes="(max-width: 500px) 100vw, 500px" /></p>
-<h3>Horizontal Scrollbar Visibility Improvements</h3>
-<p>The horizontal scrollbar in the editor now repositions itself to always be accessible, even when space is limited. You can customize this behavior with the <strong>Tools &gt; Options &gt; Text Editor &gt; Advanced &gt; Editor horizontal scrollbar location</strong> option.</p>
-<p><img decoding="async" width="570" height="115" class="wp-image-35107" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5.png 570w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-5-300x61.png 300w" sizes="(max-width: 570px) 100vw, 570px" /></p>
-<h3>Word Wrap Indentation</h3>
-<p>You can now specify whether lines that wrap in the editor should be indented. Enable this with the <strong>Tools &gt; Options &gt; Text Editor &gt; General &gt;</strong> <strong>Automatically indent when word wrap is enabled </strong>option.</p>
-<p><strong><img decoding="async" width="615" height="139" class="wp-image-35108" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6.png 615w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-6-300x68.png 300w" sizes="(max-width: 615px) 100vw, 615px" /></strong></p>
-<h3>Recent Files in Code Search</h3>
-<p>When you open Code Search without a query, you&#8217;ll see a list of your recently navigated files. These include the files you opened through Code Search, but also any other files you opened in the solution. This makes it easy to jump back to a file you were recently working on without having to remember or type the file name.</p>
-<p><img decoding="async" width="793" height="499" class="wp-image-35109" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content.png" alt="A screen shot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content.png 793w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-300x189.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-768x483.png 768w" sizes="(max-width: 793px) 100vw, 793px" /></p>
-<h3>Enhanced Line and Column Navigation</h3>
-<p>In Code Search, we&#8217;ve significantly enhanced line navigation capabilities. The following formats are now supported:</p>
-<ul>
-<li>:line to navigate to a specific line in the active document</li>
-<li>:line,col to navigate to a specific line and column in the active document</li>
-<li>file:line to navigate to a specific line in a specified file</li>
-<li>file:line,col to navigate to a specific line and column in a specified file</li>
-<li>file(line) to navigate to a specific line in a specified file</li>
-<li>file(line,col) to navigate to a specific line and column in a specified file</li>
-</ul>
-<p><img decoding="async" width="648" height="496" class="wp-image-35110" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2.png 648w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-2-300x230.png 300w" sizes="(max-width: 648px) 100vw, 648px" /></p>
-<h2>Debugging &amp; Diagnostics</h2>
-<h3>Targeted Instrumentation</h3>
-<p>The Visual Studio profiler&#8217;s instrumentation tool now supports targeted instrumentation for native code, allowing you to select specific classes and functions for detailed analysis.</p>
-<p>To access this tool, select <strong>Debug &gt; Performance Profiler… &gt; Instrumentation</strong>.</p>
-<p><strong><img decoding="async" width="392" height="399" class="wp-image-35111" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3.png 392w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-295x300.png 295w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-24x24.png 24w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-3-48x48.png 48w" sizes="(max-width: 392px) 100vw, 392px" /></strong></p>
-<h3>Color-Coded Swim Lanes for CPU Profiling</h3>
-<p>The Visual Studio profiler&#8217;s CPU Usage tool now supports multi-process analysis, displaying performance graphs with distinct color coding for each process in swim lanes.</p>
-<p>The graphs are displayed as stacked area charts. You also have the option to filter processes using a dropdown on the top left, enabling focused analysis.</p>
-<p><strong><img decoding="async" width="1142" height="189" class="wp-image-35112" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10.png 1142w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-300x50.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-1024x169.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-10-768x127.png 768w" sizes="(max-width: 1142px) 100vw, 1142px" /></strong></p>
-<h2>Git tooling</h2>
-<h3>Add comments on pull requests</h3>
-<p>You can now add new comments to pull request files on the checked-out branch. This was a top request for the pull request experience and is the latest in a series of improvements to the pull request experience in Visual Studio.</p>
-<p>Enable the feature flags <strong>Pull Request Comments</strong> and <strong>Pull Request Add Comment</strong> in <strong>Tools &gt; Options &gt; Environment &gt; Preview Features</strong>, check out any branch with an active pull request, and select <strong>Show comments in files</strong> in the info bar. This will activate the pull request comments experience in the editor.</p>
-<p><strong><img decoding="async" width="798" height="172" class="wp-image-35113" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4.png 798w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4-300x65.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-4-768x166.png 768w" sizes="(max-width: 798px) 100vw, 798px" /></strong></p>
-<h3>Review Changes with Copilot</h3>
-<p>You can now request a code review from GitHub Copilot from the Git Changes window.</p>
-<p><img decoding="async" width="323" height="108" class="wp-image-35114" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5.png 323w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-5-300x100.png 300w" sizes="(max-width: 323px) 100vw, 323px" /></p>
-<p>The model will look for potential issues and create comments for them:</p>
-<p><strong><img decoding="async" width="676" height="176" class="wp-image-35115" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1.png" alt="A screen shot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1.png 676w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screen-shot-of-a-computer-ai-generated-content-1-300x78.png 300w" sizes="(max-width: 676px) 100vw, 676px" /></strong></p>
-<p>To use this feature, ensure you have the following feature flags turned on:</p>
-<ul>
-<li><strong>Tools</strong> &gt; <strong>Options</strong> &gt; <strong>Preview Features</strong> &gt; <strong>Pull Request Comments</strong></li>
-<li><strong>Tools</strong> &gt; <strong>Options</strong> &gt; <strong>GitHub</strong> &gt; <strong>Copilot</strong> &gt; <strong>Source Control Integration</strong> &gt; <strong>Enable Git preview features</strong>.</li>
-</ul>
-<h3>View and Manage Git Tags</h3>
-<p>You can now view and manage Git tags directly from the Git Repository window.</p>
-<p><img decoding="async" width="398" height="414" class="wp-image-35116" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6.png 398w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6-288x300.png 288w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-6-24x24.png 24w" sizes="(max-width: 398px) 100vw, 398px" /></p>
-<h2>IDE</h2>
-<h3>Preserve Font Preferences Across Themes</h3>
-<p>Your font face and size choices are now retained when switching themes in Visual Studio. The colors of your fonts remain linked to the theme.</p>
-<p>This feature is enabled by default. If you prefer the previous behavior, toggle the <strong>Tools &gt; Manage Preview Features &gt; Separate font settings from color theme selection </strong>option.</p>
-<h3>New Ways to Sign In With GitHub</h3>
-<p>You can now sign in to your GitHub account either from the first launch configuration dialog, or the “Sign in” button in Visual Studio.</p>
-<p><img decoding="async" width="500" height="281" class="wp-image-35117" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15.png" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15.png 500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/word-image-35102-15-300x169.png 300w" sizes="(max-width: 500px) 100vw, 500px" /></p>
-<h3>Manage multiple GitHub accounts</h3>
-<p>You can now manage multiple GitHub accounts from Visual Studio. To do so, click <strong>Add another account</strong> in either the profile card menu accessible near the window controls of Visual Studio, or in <strong>File &gt; Account Settings</strong>. If you have multiple GitHub accounts, Visual Studio will default to the one marked as <em>active</em> for GitHub-aware features, such as version control and GitHub Copilot.</p>
-<p><img decoding="async" width="374" height="353" class="wp-image-35118" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7.png 374w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7-300x283.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-7-24x24.png 24w" sizes="(max-width: 374px) 100vw, 374px" /></p>
-<h2>GitHub Copilot</h2>
-<h3>GitHub Copilot Free</h3>
-<p>GitHub Copilot Free is now available. You get 2,000 code completions and 50 chat requests per month at no cost. Go to <a href="https://learn.microsoft.com/visualstudio/ide/copilot-free-plan">Microsoft Learn</a> to find out all the details.</p>
-<h3>Better AI code completions for C++</h3>
-<p>GitHub Copilot code completions provide autocomplete suggestions inline as you code. To enhance the experience of C++ developers, we&#8217;ve updated GitHub Copilot to include other relevant files as context. This improvement helps reduce hallucinations while offering more relevant and accurate suggestions and is aligned with the current GitHub Copilot experience for C++ in VS Code.</p>
-<h3>GitHub Copilot Edits for Working Across Files</h3>
-<p>GitHub Copilot Edits is a new feature that helps make changes that touch multiple files in your project. To start a new Edits session, click the <strong>Create new edit session</strong> at the top of the GitHub Copilot Chat window:</p>
-<p><img decoding="async" width="501" height="87" class="wp-image-35119" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8.png 501w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-8-300x52.png 300w" sizes="(max-width: 501px) 100vw, 501px" /></p>
-<p>Describe the changes you want to make, and Copilot will suggest the relevant edits. You can then preview them one-by-one and accept the ones you want or make corrections.</p>
-<p><strong><img decoding="async" width="490" height="548" class="wp-image-35120" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9.png" alt="A screenshot of a computer AI-generated content may be incorrect." srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9.png 490w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/02/a-screenshot-of-a-computer-ai-generated-content-m-9-268x300.png 268w" sizes="(max-width: 490px) 100vw, 490px" /></strong></p>
-<h2>Send us your feedback</h2>
-<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/">What’s New for C++ Developers in Visual Studio 2022 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-c-developers-in-visual-studio-2022-17-13/feed/</wfw:commentRss>
-			<slash:comments>4</slash:comments>
 		
 		
 			</item>
