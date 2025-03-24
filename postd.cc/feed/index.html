@@ -1,4 +1,420 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Fri, 21 Feb 2025 03:55:05 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Interopと難解な問題]]></title><description><![CDATA[Webプラットフォームにおける優先事項、技術的負債、難解な問題について話しましょう... ブラウザエンジンプロジェクトは、他のほとんどのソフトウェアプロジェクトと多くの点で似ています。「管理者」は今…]]></description><link>https://postd.cc/Interop-and-hard-problems/</link><guid isPermaLink="false">https://postd.cc/Interop-and-hard-problems/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Interop]]></category><pubDate>Fri, 21 Feb 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><em>Webプラットフォームにおける優先事項、技術的負債、難解な問題について話しましょう...</em></p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Mar 2025 01:59:25 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[NextJSのoutput: exportによるi18n]]></title><description><![CDATA[この記事では、Next.jsのプロジェクトにおける国際化対応（i18n）の設定方法について説明します。Next.jsが直接サポートしていない部分の課題を克服しながら、Pages Routerを使用し…]]></description><link>https://postd.cc/i18n-with-nextjs-output-export/</link><guid isPermaLink="false">https://postd.cc/i18n-with-nextjs-output-export/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Mon, 24 Mar 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、Next.jsのプロジェクトにおける<strong>国際化対応</strong>（i18n）の設定方法について説明します。<strong>Next.js</strong>が直接サポートしていない部分の課題を克服しながら、Pages Routerを使用してi18nを実装する方法と、output: exportを使用する方法について検討したいと思います。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>国際化ルーティングは、Next.jsのルーティングレイヤーを使用しないため<code class="language-text">output: 'export'</code>では実装できません。<code class="language-text">output: 'export'</code>を使用しないHybrid Next.jsのアプリケーションは完全にサポートされています。</p></div></div>
+<p>まず初めに、TypeScriptを使用してNext.js v14のプロジェクトを初期化しましょう。TypeScriptの代わりにJavaScriptを使用することもできます。どちらも問題なく使用できます。</p>
+<h2>NextJSプロジェクトの初期化</h2>
+<p>次のコマンドを実行してプロジェクトをセットアップしてください。。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">`npx create-next-app@latest`</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>設定中いくつか質問をされますが、好みで回答してください。筆者の場合はPages Routerを選択し、TypeScriptでsrcディレクトリを指定しました。</p>
+<p>次に、next.config.jsファイルに<code class="language-text">output: "export"</code>を追加します。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fffwmsy8pp3fiq4csz80d.png"></p>
+<p>さらに、<code class="language-text">output: "export"</code>の構成とは互換性がないため<code class="language-text">pages</code>ディレクトリから<code class="language-text">api</code>フォルダを削除します。</p>
+<h2>i18nのインストールと設定</h2>
+<p>国際化対応では、<a href="https://www.npmjs.com/package/next-translate">next-translate</a>パッケージを使用します。本来はoutput: exportに対応していませんが、ご心配なく。その点については後ほどサポートします。</p>
+<p>まずは<code class="language-text">next-translate</code>パッケージをインストールしてください。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">`npm i next-translate`</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>プロジェクトのルートレベルに<code class="language-text">i18n.ts</code>または<code class="language-text">.js</code>という名前のファイルを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> I18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next-translate"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> i18nConfig <span class="token operator">=</span> <span class="token punctuation">{</span>
+  <span class="token literal-property property">locales</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"en"</span><span class="token punctuation">,</span> <span class="token string">"es"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">defaultLocale</span><span class="token operator">:</span> <span class="token string">"en"</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">loader</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">pages</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token string-property property">"*"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"common"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">defaultNS</span><span class="token operator">:</span> <span class="token string">"common"</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span> satisfies I18nConfig<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これがi18nのための基本構成になります。必要に応じて自由にカスタマイズしていただいて構いません。</p>
+<p>次に、プロジェクトのルートレベルに<code class="language-text">locales</code>フォルダを作成します。このフォルダには、各言語の翻訳ファイルが格納されます。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fjd3m1r3xvj6jfr9tq1o5.png"></p>
+<p><code class="language-text">pages</code>ディレクトリ内の<code class="language-text">_app.ts</code>ファイルに移動し、<code class="language-text">I18nProvider</code>で<code class="language-text">Component</code>をラップします。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token string">"@/styles/globals.css"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token keyword">type</span> <span class="token punctuation">{</span> AppProps <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/app"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> I18nProvider <span class="token keyword">from</span> <span class="token string">"next-translate/I18nProvider"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> i18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"../../i18n"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> commonES <span class="token keyword">from</span> <span class="token string">"../../locales/es/common.json"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> commonEN <span class="token keyword">from</span> <span class="token string">"../../locales/en/common.json"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">App</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> Component<span class="token punctuation">,</span> pageProps<span class="token punctuation">,</span> router <span class="token punctuation">}</span><span class="token operator">:</span> AppProps<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> lang <span class="token operator">=</span> i18nConfig<span class="token punctuation">.</span>locales<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale <span class="token keyword">as</span> <span class="token builtin">string</span><span class="token punctuation">)</span>
+    <span class="token operator">?</span> <span class="token function">String</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale<span class="token punctuation">)</span>
+    <span class="token operator">:</span> i18nConfig<span class="token punctuation">.</span>defaultLocale<span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">I18nProvider</span></span>
+      <span class="token attr-name">lang</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>lang<span class="token punctuation">}</span></span>
+      <span class="token attr-name">namespaces</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">{</span> <span class="token literal-property property">common</span><span class="token operator">:</span> lang <span class="token operator">===</span> <span class="token string">"es"</span> <span class="token operator">?</span> commonES <span class="token operator">:</span> commonEN <span class="token punctuation">}</span><span class="token punctuation">}</span></span>
+    <span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Component</span></span> <span class="token spread"><span class="token punctuation">{</span><span class="token operator">...</span>pageProps<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">I18nProvider</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> App<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この手順では以下を行いました。</p>
+<ul>
+<li><code class="language-text">I18nProvider</code>で<code class="language-text">Component</code>をラップする。</li>
+<li>localeというクエリパラメタに指定された文字列から言語を検出し、propsとして<code class="language-text">I18nProvider</code>に渡す。</li>
+<li>その言語を基に名前空間ファイルを定義する。</li>
+</ul>
+<p>次に、<code class="language-text">src/hooks</code>ディレクトリに<code class="language-text">useI18n.ts</code>という名前のカスタムフックを作成し、そこに次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="ts"><pre style="counter-reset: linenumber NaN" class="language-ts line-numbers"><code class="language-ts"><span class="token keyword">import</span> useTranslation <span class="token keyword">from</span> <span class="token string">"next-translate/useTranslation"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token punctuation">{</span> i18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"../../i18n"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">IUseI18n</span> <span class="token punctuation">{</span>
+  namespace<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">useI18n</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> namespace <span class="token punctuation">}</span><span class="token operator">:</span> IUseI18n <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span> t <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">useTranslation</span><span class="token punctuation">(</span>namespace <span class="token operator">?</span> namespace <span class="token operator">:</span> i18nConfig<span class="token punctuation">.</span>defaultNS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">{</span> t <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>このフックは、設定された名前空間またはデフォルトの名前空間をもとに翻訳を可能にします。</p>
+<p>次に、<code class="language-text">pages</code>ディレクトリ内の<code class="language-text">index.tsx</code>ファイルを開き、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> useI18n <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/hooks/useI18n"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span> t <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">useI18n</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span><span class="token function">t</span><span class="token punctuation">(</span><span class="token string">"greeting"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>そうすると、次のような文字が表示されます。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fg0x5w90losm7f8ozuzas.png"></p>
+<p>「Hurrah（やった！）」無事プロジェクトにi18nを設定できました。しかし、言語検出がまだ残っています。次はその部分を実装しましょう。</p>
+<h2>言語検出</h2>
+<p>先ほど見たように、ロケール値は<code class="language-text">router.query</code>から取得していました。
+次に進むために、<code class="language-text">pages</code>ディレクトリ内に<code class="language-text">[locale]</code>という名前のフォルダを作成します。
+ルートファイルは全てこのフォルダの中に格納されます。
+<code class="language-text">[locale]</code>フォルダの中に<code class="language-text">index.tsx</code>ファイルを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> useI18n <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/hooks/useI18n"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">Home</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span> t <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">useI18n</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span><span class="token function">t</span><span class="token punctuation">(</span><span class="token string">"greeting"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> Home<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">localhost:3000/en</code>にアクセスするとコンテンツが英語で表示され、<code class="language-text">localhost:3000/es</code>に変えるとスペイン語で表示されます。この機能はダイナミックルートともシームレスに統合します。</p>
+<p><code class="language-text">pages</code>フォルダは次のような構造になります。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F39yib43wqcbuoymyrt4q.png"></p>
+<p>では、<a href="https://www.npmjs.com/package/next-language-detector">next-language-detector</a>を使用して言語検出機能を実装し、選択した言語をキャッシュしましょう。
+まずはnext-language-detectorをインストールします。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">npm i next-language-detector</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><code class="language-text">src</code>ディレクトリに<code class="language-text">lib</code>という名前のフォルダを作成し、その中に<code class="language-text">languageDetector.ts</code>という名前のファイルを作成します。ファイルを開き、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="ts"><pre style="counter-reset: linenumber NaN" class="language-ts line-numbers"><code class="language-ts"><span class="token keyword">import</span> nextLanguageDetector <span class="token keyword">from</span> <span class="token string">"next-language-detector"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> i18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"../../i18n"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> languageDetector <span class="token operator">=</span> <span class="token function">nextLanguageDetector</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  supportedLngs<span class="token operator">:</span> i18nConfig<span class="token punctuation">.</span>locales<span class="token punctuation">,</span>
+  fallbackLng<span class="token operator">:</span> i18nConfig<span class="token punctuation">.</span>defaultLocale<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>同じ<code class="language-text">lib</code>フォルダの中に<code class="language-text">redirect.tsx</code>という名前のファイルを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useEffect <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> languageDetector <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./languageDetector"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">useRedirect</span> <span class="token operator">=</span> <span class="token punctuation">(</span>to<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> redirectPath <span class="token operator">=</span> to <span class="token operator">||</span> router<span class="token punctuation">.</span>asPath<span class="token punctuation">;</span>
+
+  <span class="token comment">// language detection</span>
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> detectedLng <span class="token operator">=</span> languageDetector<span class="token punctuation">.</span><span class="token function">detect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>redirectPath<span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> router<span class="token punctuation">.</span>route <span class="token operator">===</span> <span class="token string">"/404"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// prevent endless loop</span>
+      router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> router<span class="token punctuation">.</span>route<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>detectedLng <span class="token operator">&amp;&amp;</span> languageDetector<span class="token punctuation">.</span>cache<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      languageDetector<span class="token punctuation">.</span><span class="token function">cache</span><span class="token punctuation">(</span>detectedLng<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> redirectPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>次に、<code class="language-text">pages</code>ディレクトリの中（<code class="language-text">[locale]</code>フォルダの外）にある<code class="language-text">index.tsx</code>ファイルを開き、既存のコードを次のコードに置き換えます。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> useRedirect <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/lib/redirect"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">Redirect</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token function">useRedirect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> Redirect<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これで、ロケールを指定せずにホームページにアクセスを試みたユーザーは、ロケールページにリダイレクトされるようになります。</p>
+<p>しかし、<code class="language-text">[locale]</code>フォルダ内の全てのルートについてリダイレクトページを作成するのはあまり効率的ではありません。したがって、ユーザーが言語を指定せずにページにアクセスしようとした場合に特定言語のルートにリダイレクトするLanguageWrapperを作成します。</p>
+<p>まずは<code class="language-text">src</code>ディレクトリの中に<code class="language-text">wrappers</code>という名前のフォルダを作成します。このフォルダの中に<code class="language-text">LanguageWrapper.tsx</code>という名前のファイルを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> ReactNode<span class="token punctuation">,</span> useEffect <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> languageDetector <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/lib/languageDetector"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> i18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"../../i18n"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">LanguageWrapperProps</span> <span class="token punctuation">{</span>
+  children<span class="token operator">:</span> ReactNode<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">LanguageWrapper</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> children <span class="token punctuation">}</span><span class="token operator">:</span> LanguageWrapperProps<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> detectedLng <span class="token operator">=</span> languageDetector<span class="token punctuation">.</span><span class="token function">detect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span>
+      query<span class="token operator">:</span> <span class="token punctuation">{</span> locale <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      asPath<span class="token punctuation">,</span>
+      isReady<span class="token punctuation">,</span>
+    <span class="token punctuation">}</span> <span class="token operator">=</span> router<span class="token punctuation">;</span>
+
+    <span class="token comment">// Check if the current route has accurate locale</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>isReady <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>i18nConfig<span class="token punctuation">.</span>locales<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token function">String</span><span class="token punctuation">(</span>locale<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>asPath<span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> router<span class="token punctuation">.</span>route <span class="token operator">===</span> <span class="token string">"/404"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>detectedLng <span class="token operator">&amp;&amp;</span> languageDetector<span class="token punctuation">.</span>cache<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        languageDetector<span class="token punctuation">.</span><span class="token function">cache</span><span class="token punctuation">(</span>detectedLng<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> asPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>router<span class="token punctuation">,</span> detectedLng<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale <span class="token operator">&amp;&amp;</span>
+    i18nConfig<span class="token punctuation">.</span>locales<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token function">String</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">||</span>
+    router<span class="token punctuation">.</span>asPath<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span>detectedLng <span class="token operator">??</span> i18nConfig<span class="token punctuation">.</span>defaultLocale<span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">Loading...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>次に、_app.tsxファイルにLanguageWrapperを追加します。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F29bc07vta3ak6cnooiig.png"></p>
+<p>あともう一息です。<code class="language-text">src/components/_shared</code>ディレクトリに<code class="language-text">Link.tsx</code>という名前のコンポーネントを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> ReactNode <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> NextLink <span class="token keyword">from</span> <span class="token string">"next/link"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">LinkProps</span> <span class="token punctuation">{</span>
+  children<span class="token operator">:</span> ReactNode<span class="token punctuation">;</span>
+  skipLocaleHandling<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">boolean</span><span class="token punctuation">;</span>
+  locale<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+  href<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+  target<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">Link</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
+  children<span class="token punctuation">,</span>
+  skipLocaleHandling<span class="token punctuation">,</span>
+  target<span class="token punctuation">,</span>
+  <span class="token operator">...</span>rest
+<span class="token punctuation">}</span><span class="token operator">:</span> LinkProps<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> locale <span class="token operator">=</span> rest<span class="token punctuation">.</span>locale <span class="token operator">||</span> <span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale <span class="token keyword">as</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token string">""</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> href <span class="token operator">=</span> rest<span class="token punctuation">.</span>href <span class="token operator">||</span> router<span class="token punctuation">.</span>asPath<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>href<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span><span class="token string">"http"</span><span class="token punctuation">)</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> skipLocaleHandling <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>locale <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>skipLocaleHandling<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    href <span class="token operator">=</span> href
+      <span class="token operator">?</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">/</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>locale<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>href<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
+      <span class="token operator">:</span> router<span class="token punctuation">.</span>pathname<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"[locale]"</span><span class="token punctuation">,</span> locale<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">NextLink</span></span> <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>href<span class="token punctuation">}</span></span> <span class="token attr-name">target</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>target<span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">NextLink</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>このプロジェクトでは、next/linkコンポーネントの代わりにこの<code class="language-text">Link</code>コンポーネントを使用します。</p>
+<p>次に、<code class="language-text">hooks</code>フォルダの中に<code class="language-text">useRouteRedirect.ts</code>という名前のファイルを作成し、次のコードを挿入します。</p>
+<div class="gatsby-highlight" data-language="ts"><pre style="counter-reset: linenumber NaN" class="language-ts line-numbers"><code class="language-ts"><span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> i18nConfig <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"../../i18n"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> languageDetector <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/lib/languageDetector"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">useRouteRedirect</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> <span class="token function-variable function">redirect</span> <span class="token operator">=</span> <span class="token punctuation">(</span>to<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> replace<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">boolean</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> detectedLng <span class="token operator">=</span> i18nConfig<span class="token punctuation">.</span>locales<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token function">String</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token operator">?</span> <span class="token function">String</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">.</span>locale<span class="token punctuation">)</span>
+      <span class="token operator">:</span> languageDetector<span class="token punctuation">.</span><span class="token function">detect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>to<span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> router<span class="token punctuation">.</span>route <span class="token operator">===</span> <span class="token string">"/404"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token comment">// prevent endless loop</span>
+      router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> router<span class="token punctuation">.</span>route<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>detectedLng <span class="token operator">&amp;&amp;</span> languageDetector<span class="token punctuation">.</span>cache<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      languageDetector<span class="token punctuation">.</span><span class="token function">cache</span><span class="token punctuation">(</span>detectedLng<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>replace<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+      router<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token string">"/"</span> <span class="token operator">+</span> detectedLng <span class="token operator">+</span> to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">{</span> redirect <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>以下に示すとおり、<code class="language-text">router.push</code>と<code class="language-text">router.replace</code>の代わりにこのカスタムフックを使用します。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fence2oltrv1xrk67ig8v.png"></p>
+<p>次に、<code class="language-text">src/components</code>ディレクトリの中に<code class="language-text">LanguageSwitcher.tsx</code>コンポーネントを作成し、次のコードで特定の言語に切り替えられるようにします。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> languageDetector <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/lib/languageDetector"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> Link <span class="token keyword">from</span> <span class="token string">"next/link"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">LanguageSwitcherProps</span> <span class="token punctuation">{</span>
+  locale<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+  href<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+  asPath<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> <span class="token function-variable function">LanguageSwitcher</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span>
+  locale<span class="token punctuation">,</span>
+  <span class="token operator">...</span>rest
+<span class="token punctuation">}</span><span class="token operator">:</span> LanguageSwitcherProps<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> href <span class="token operator">=</span> rest<span class="token punctuation">.</span>href <span class="token operator">||</span> router<span class="token punctuation">.</span>asPath<span class="token punctuation">;</span>
+  <span class="token keyword">let</span> pName <span class="token operator">=</span> router<span class="token punctuation">.</span>pathname<span class="token punctuation">;</span>
+  Object<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>k <span class="token operator">===</span> <span class="token string">"locale"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      pName <span class="token operator">=</span> pName<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">[</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>k<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">]</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span> locale<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    pName <span class="token operator">=</span> pName<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">[</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>k<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">]</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span> <span class="token function">String</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>query<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>locale<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    href <span class="token operator">=</span> rest<span class="token punctuation">.</span>href <span class="token operator">?</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">/</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>locale<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>rest<span class="token punctuation">.</span>href<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span> <span class="token operator">:</span> pName<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Link</span></span>
+      <span class="token attr-name">href</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>href<span class="token punctuation">}</span></span>
+      <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span>
+        languageDetector<span class="token punctuation">.</span>cache <span class="token operator">?</span> languageDetector<span class="token punctuation">.</span><span class="token function">cache</span><span class="token punctuation">(</span>locale<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+      <span class="token punctuation">}</span></span>
+    <span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">{</span> <span class="token literal-property property">fontSize</span><span class="token operator">:</span> <span class="token string">"small"</span> <span class="token punctuation">}</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token punctuation">{</span>locale<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Link</span></span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>お疲れ様です！<code class="language-text">output: export</code>を使用してNext.jsのプロジェクトにi18nを無事実装できました。動的に名前空間を切り替える場合など、異なる名前空間から翻訳を読み込みたい場合は、<code class="language-text">I18nProvider</code>コンポーネントの中の<code class="language-text">_app.tsx</code>で各名前空間とそれぞれに対応する翻訳ファイルを定義する必要があるということを覚えておいてください。</p>
+<p><img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fw68zgdlq0mmqsfdawaax.png"></p>
+<p>ビルドを作成してからテストを行う前に、<code class="language-text">pages</code>ディレクトリに<code class="language-text">404.tsx</code>ファイルを作成し、次のコードを挿入してください。</p>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> <span class="token constant">FC</span><span class="token punctuation">,</span> useEffect<span class="token punctuation">,</span> useState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> NextRouter<span class="token punctuation">,</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/router"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> getRouteRegex <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/dist/shared/lib/router/utils/route-regex"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> getClientBuildManifest <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/dist/client/route-loader"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> parseRelativeUrl <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/dist/shared/lib/router/utils/parse-relative-url"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> isDynamicRoute <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/dist/shared/lib/router/utils/is-dynamic"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> removeTrailingSlash <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"next/dist/shared/lib/router/utils/remove-trailing-slash"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> Link <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"@/components/_shared/Link"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">getPageList</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>process<span class="token punctuation">.</span>env<span class="token punctuation">.</span><span class="token constant">NODE_ENV</span> <span class="token operator">===</span> <span class="token string">"production"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span> sortedPages <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">getClientBuildManifest</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> sortedPages<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">typeof</span> window <span class="token operator">!==</span> <span class="token string">"undefined"</span> <span class="token operator">&amp;&amp;</span> window<span class="token punctuation">.</span>__BUILD_MANIFEST<span class="token operator">?.</span>sortedPages<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token builtin">console</span><span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>window<span class="token punctuation">.</span>__BUILD_MANIFEST<span class="token punctuation">.</span>sortedPages<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span> window<span class="token punctuation">.</span>__BUILD_MANIFEST<span class="token punctuation">.</span>sortedPages<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">getDoesLocationMatchPage</span><span class="token punctuation">(</span>location<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> pages <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">getPageList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> parsed <span class="token operator">=</span> <span class="token function">parseRelativeUrl</span><span class="token punctuation">(</span>location<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> <span class="token punctuation">{</span> pathname <span class="token punctuation">}</span> <span class="token operator">=</span> parsed<span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token function">pathMatchesPage</span><span class="token punctuation">(</span>pathname<span class="token punctuation">,</span> pages<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">pathMatchesPage</span><span class="token punctuation">(</span>pathname<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> pages<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> cleanPathname <span class="token operator">=</span> <span class="token function">removeTrailingSlash</span><span class="token punctuation">(</span>pathname<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pages<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span>cleanPathname<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">const</span> page <span class="token operator">=</span> pages<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>
+    <span class="token punctuation">(</span>page<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">isDynamicRoute</span><span class="token punctuation">(</span>page<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">getRouteRegex</span><span class="token punctuation">(</span>page<span class="token punctuation">)</span><span class="token punctuation">.</span>re<span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>cleanPathname<span class="token punctuation">)</span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>page<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">/**
+ * If both asPath and pathname are equal then it means that we
+ * are on the correct route it still doesnt exist
+ */</span>
+<span class="token keyword">function</span> <span class="token function">doesNeedsProcessing</span><span class="token punctuation">(</span>router<span class="token operator">:</span> NextRouter<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> status <span class="token operator">=</span> router<span class="token punctuation">.</span>pathname <span class="token operator">!==</span> router<span class="token punctuation">.</span>asPath<span class="token punctuation">;</span>
+  <span class="token builtin">console</span><span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Does Needs Processing"</span><span class="token punctuation">,</span> router<span class="token punctuation">.</span>asPath<span class="token punctuation">,</span> status<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> status<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">Custom404</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> router <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>isNotFound<span class="token punctuation">,</span> setIsNotFound<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> <span class="token function-variable function">processLocationAndRedirect</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span>router<span class="token operator">:</span> NextRouter<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">doesNeedsProcessing</span><span class="token punctuation">(</span>router<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token keyword">const</span> targetIsValidPage <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">getDoesLocationMatchPage</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>asPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>targetIsValidPage<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">await</span> router<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>router<span class="token punctuation">.</span>asPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">setIsNotFound</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>router<span class="token punctuation">.</span>isReady<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token function">processLocationAndRedirect</span><span class="token punctuation">(</span>router<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// eslint-disable-next-line react-hooks/exhaustive-deps</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>router<span class="token punctuation">.</span>isReady<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>isNotFound<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>fixed inset-0 flex justify-center items-center<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">className</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>flex flex-col gap-10<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Custom 404 - Page Not Found</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Link</span></span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">Go to Home Page</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Link</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> Custom404<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ダイナミックルートでページが見つからないエラーを解決するために、<code class="language-text">pages</code>ディレクトリに<code class="language-text">404.tsx</code>ファイルを入れておく必要があります。
+また、ビルド作成後にコードを実行するために、<code class="language-text">package.json</code>ファイルに次のコマンドを追加してください。</p>
+<div class="gatsby-highlight" data-language="json"><pre style="counter-reset: linenumber NaN" class="language-json line-numbers"><code class="language-json"><span class="token property">"preview"</span><span class="token operator">:</span> <span class="token string">"serve out/ -p 3000"</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>serveパッケージがない場合はインストールしてください。</p>
+<div class="gatsby-highlight" data-language="shell"><pre style="counter-reset: linenumber NaN" class="language-shell line-numbers"><code class="language-shell"><span class="token function">npm</span> i <span class="token parameter variable">-D</span> serve</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><code class="language-text">npm run build</code>と<code class="language-text">npm run preview</code>を実行した後、ポート3000でプロジェクトにアクセスできます。
+コード全体は<a href="https://github.com/ikramdeveloper/i18n-nextjs-output-export">GitHub</a>にあります。一部微調整を加えていますので、よろしければご覧ください。
+何かお気づきの点やエラーなどがあればぜひコメントをください。喜んでサポートいたします。よろしくお願いします！</p>]]></content:encoded></item><item><title><![CDATA[Interopと難解な問題]]></title><description><![CDATA[Webプラットフォームにおける優先事項、技術的負債、難解な問題について話しましょう... ブラウザエンジンプロジェクトは、他のほとんどのソフトウェアプロジェクトと多くの点で似ています。「管理者」は今…]]></description><link>https://postd.cc/Interop-and-hard-problems/</link><guid isPermaLink="false">https://postd.cc/Interop-and-hard-problems/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Interop]]></category><pubDate>Fri, 21 Feb 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><em>Webプラットフォームにおける優先事項、技術的負債、難解な問題について話しましょう...</em></p>
 <p>ブラウザエンジンプロジェクトは、他のほとんどのソフトウェアプロジェクトと多くの点で似ています。「管理者」は今も、休職中のメンバーなどを考慮に入れながら、マネージャーが統括する専門チームを編成し、予算を割り当てます。優先事項を決め、綿密な計画を立てる必要があります。そして筆者がこれまで見てきたどのプロジェクトとも共通する点として、同じようなプレッシャーや問題に直面します。全ての作業に十分なリソースが確保できることはなく、常に何かしら新たな要求が追加され、技術的負債が積み上がり、時折本当に難解な問題が発生します。
 ブラウザエンジンプロジェクトに特殊な点があるとすれば、独立したプログラム以上のものになろうとしていることでしょう。相互運用可能な標準プラットフォームに貢献しようとしているのです。私たちにとって問題なのは、チーム独自の優先事項を「全て」クリアし、一般向けにリリースされるなどして、初めてその恩恵が得られるということです。</p>
 <p>これは実際に経験するとつらいものです。
@@ -1670,94 +2086,4 @@ React 19以前では、<code class="language-text">useDeferredValue</code>は与
 <p>前を向いて次の抽象化レイヤーをデザインしようとすると、チャットボットのようなものに行き着くようです。これだけでは解決策として不完全である理由は、今では分かっています。<strong>では、問題を逆向きに捉えて、避けるべき望ましくない結果を特定してみたらどうでしょうか</strong>。優れた成果を目指すよりも、愚かな結果を避ける方が簡単でしょう。</p>
 <p>避けるべき明らかな間違いは、時間の制約を考慮せず、ユーザーに対話を強要することです。対話がふさわしいときには、ユーザビリティに関する既存の問題が、同じくらいストレスのたまる新しい問題に置き換わることがないような方法で行えるようにすべきです。ピザの宅配と同等の簡単なタスクには、ランボルギーニを運転するのに匹敵するほど大掛かりなものではない、実用的な解決策を見つけるべきです。さらに、一般ユーザーに対して、プロンプトエンジニアリングの習熟を要求するのも避けるべきです。最後に、システムがより人間らしくなるにつれて、だまされやすいところも似ることがないようにしなくてはいけません。そうなった場合、我々の努力が仇となり、個人データにはるかに簡単にアクセスできるようになってしまいかねません。</p>
 <p>より<strong>インテリジェント</strong>なインターフェースであれば、そのような愚かな間違いをおかすこともないでしょう。</p>
-<p>本記事の草稿時に貴重なご意見をいただいた<a href="https://www.michael-sands.com/">マイケル・サンズ</a>氏、<a href="https://www.evanmiller.org/">エヴァン・ミラー</a>氏、<a href="https://www.youtube.com/@TheRiceRocketeer">コリン・カウリー</a>氏に、この場を借りて感謝の意を表します。</p>]]></content:encoded></item><item><title><![CDATA[グラフィックデザインにおけるAIジレンマ：卓越したタイポグラフィとその先へ]]></title><description><![CDATA[クイックサマリー：AIはタイポグラフィに大変革をもたらしつつあります。それは、デザイナーにとってチャンスをもたらすと同時に、課題も突きつけています。品質に影響はあるのでしょうか。また、デザインの役割…]]></description><link>https://postd.cc/ai-dilemma-graphic-design-typography/</link><guid isPermaLink="false">https://postd.cc/ai-dilemma-graphic-design-typography/</guid><category><![CDATA[AI]]></category><category><![CDATA[タイポグラフィ]]></category><pubDate>Fri, 31 May 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：AIはタイポグラフィに大変革をもたらしつつあります。それは、デザイナーにとってチャンスをもたらすと同時に、課題も突きつけています。品質に影響はあるのでしょうか。また、デザインの役割や活字の使用は今後どう変わっていくのでしょうか。この未知の領域を進みながら、私たちはグーテンベルクによる印刷機の発明以来の重要な岐路に立っていることに気づかされます。近い将来、テキストとの関わり方やビジュアルコミュニケーションは大きく変わるでしょう。</p>
-<hr>
-<p>時は2028年、あなたは今よりもはるかにグレードアップしたワークステーションの前に座り、壁に映し出された画面を見つめています。「ねえ、AI」とあなたは語りかけます。「このページの見出しなんだけど、いくつか字体の選択肢を…」あなたが話し終わる前に、「タイプマスター3000」の愛称で呼ばれるAIアシスタントが熱心に口を挟みます。「大胆かつ奇抜なデザインがいいですか？それとも、洗練された雰囲気の中に遊び心も感じさせるセリフにしますか？」</p>
-<p>あなたはあきれた顔でこう言います。「選択肢を10個出してちょうだい。今回は遊びの要素は抜きで。」</p>
-<p>AIが見栄えのいいフォントや統一感のある質の高いデザインを生み出せなかった時代は終わりました。ライセンスの問題も過去の話です。2028年のAIは、独創的なフォントファミリーを複数の言語で提示できるようになっています。グリフ（訳注：一般的には「字体」などの意）も一つひとつ完璧な仕上がりです。しかし、完璧とは言え、癖がないわけではありません。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/1-typemaster3000-jamieclarketype.jpg">
-<a href="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/1-typemaster3000-jamieclarketype.jpg"><em>拡大プレビュー</em></a></p>
-<p>タイプマスター3000が瞬時に生成したフォントのサンプルを見てみると、「Sandy Serif」や「Desert Island Display」といった具合に、どのデザインにもどこか海辺のバカンスを思わせるような雰囲気があります。</p>
-<p>あなたはため息をつきます。「ビーチ感は抑えて、もっとビジネスライクにしてくれる？」</p>
-<p>「了解です」とタイプマスター3000は言います。「ビジネスモードに戻ります！」</p>
-<p>気に入ったフォントが見つかったのでタップすると、あなたが作成したデザインに即座に反映されます。バランスや位置関係も調整されて、まるで初めからそこにあるべきであったかのような自然な仕上がりです。</p>
-<h2>タイポグラフィにおけるテクノロジーの進化</h2>
-<p>では、現在に視点を戻しましょう。最新のソフトウェアを駆使しても、プロフェッショナルな書体を新たに生み出す作業は時間がかかり、細心の注意が求められます。木活字に始まり、金属、フィルム、デジタルへと進化を遂げてきた活字産業は、歴史を通して常にテクノロジー革新の最前線を走ってきました。</p>
-<p>新たなテクノロジーが生まれる度に、活字の生産方法は大きく変わり、活字の作成と使用の両方でデザイナーの活躍の機会が広がってきました。他の業界と同様に、我々もAIという山を麓から見上げ、この先待ち受ける険しい変化の道のりに身構えています。</p>
-<p>人工知能が活字デザインに及ぼす中期的影響に関する予想は、主には大抵次の2つのシナリオに集約されます。</p>
-<ol>
-<li><strong>コラボレーションツールとしてのAI（副操縦士としてのAI）</strong><br>
-このシナリオでは、AIは活字のデザインプロセスを支援し、太字やイタリック体の書体の作成など、時間のかかる作業を行います。活字デザイナーは反復作業の負担から解放されるため、ワークフローを合理化し、より多くの時間をクリエイティブな作業にあてることができます。</li>
-<li><strong>完全AI生成フォント（オートパイロットとしてのAI）</strong><br>
-タイプマスター3000のシナリオで見たように、このシナリオでは、AIは独自にフォントを作成します。その結果、愛好家がプロンプトを使用して作成した無料の書体が大量に生まれるでしょう。最初は、プロのデザインと比べて新規性や一貫性、クラフトマンシップに欠ける可能性があり、市場はより信頼できる、専門家によって生成されたAIフォントに傾くでしょう。</li>
-</ol>
-<p>しかし、やがて素人が作成した「海辺のバカンスにぴったりなフォントを作って」といった簡単なプロンプトでも、人の手による成果物に匹敵するものをAIが生成できるようになるでしょう。そのため、長期的にはオートパイロットフォントが優勢になってくると思われます。活字ユーザーにとっては、いずれにしても使えるフォントの選択肢が増えるため、どちらのシナリオでも喜ばしいでしょう。しかし、このような変化は活字業界を大混乱に陥れるものになります。</p>
-<h2>グーテンベルク規模の大変革</h2>
-<p>しかし、AIの山の頂はまだこのシナリオのはるか先です。混乱は伴うものの、これは活字産業が将来大きな革新を遂げるために必要で、重要な変化なのです。道のりは険しいかもしれませんが、AIは画期的なフォントを生成するだけでなく、テキストによるコミュニケーションに根本的な革命を起こし、動的でインタラクティブなタイポグラフィの新時代への道を開くでしょう。</p>
-<p>過去にもテクノロジー革新はありましたが、タイポグラフィそのものは600年前に発明されて以来大きく変わっておらず、テキストをより広く普及させるために写字生の創造性が大いに犠牲になってきました。次の進化では、コンテキストによって変わる動的な書体が登場するでしょう。それにより、特定のコンテキストやユーザーの要望に応じてテキストをカスタマイズし、より細かいニュアンスを正確に伝えることが可能になります。</p>
-<p>このようなタイポグラフィの革命は、世界の文明に大きな恩恵をもたらすと考えられ、我々の最終目的であるべきです。</p>
-<h2>AI革命における最新の進歩</h2>
-<p>AI画像生成は、特にディープラーニングの領域において急速な進歩を遂げています。ピクセルベースの画像を中心に、素晴らしい成果物を生み出しています。これらの画像は、ニューラルネットワークを駆使し、<a href="https://www.youtube.com/watch?v=oGvHtpJMO3M&#x26;t=78s">デジタルのモザイク画を作成するように</a>個々のピクセルを操作して生成されます。一方で、フォントの作成に不可欠なベクターグラフィックスは進化のペースが緩慢で、2023年に発表された論文の数もわずかです。</p>
-<p><a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">ベジェ曲線</a>によって定義されるベクターグラフィックスは、そのアルゴリズムの特性により、ニューラルエンコーディングの面でより複雑な課題を突きつけています。しかし、この分野に<a href="https://alexandre01.github.io/deepsvg/">言語モデルの手法を応用</a>する動きが広がっており、より高度な応用が期待できそうです。</p>
-<p>とりわけ目覚ましい進展がみられるのが、AIが学習することで<a href="https://arxiv.org/abs/2303.14585">ある画像のスタイルを別の画像に適用</a>するスタイル転換の研究です。これは、円形書体とモダンなサンセリフ体を融合し、巻きひげや、ストロークのコントラストをあしらったHelveticaを作るようなものです。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/2-font-style-transfer.png">
-<em>フォントスタイル変換</em> <a href="https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/2-font-style-transfer.png"><em>拡大プレビュー</em></a></p>
-<p>AIが少数の文字からフォントのスタイルを学習し、それを当てはめることで完全なフォントを生成する<a href="https://arxiv.org/abs/2305.10462">フューショットフォント生成タスク</a>と呼ばれる手法でも、大きな進展がみられています。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/3-few-shot-font-generation.png">
-<em>フューショットフォント生成</em>  <a href="https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/3-few-shot-font-generation.png"><em>拡大プレビュー</em></a></p>
-<p>このアプローチは、特に多言語フォントや、巨大な文字セットを持つ日本語や中国語のフォントをデザインする上で、商業面でもクリエイティブ面でも大きな可能性を秘めています。</p>
-<p>ベクターグラフィックスやタイポグラフィの生成におけるAIの可能性はまだ初期段階にあるものの、現在の動向は有望な未来を示すものであり、複雑性の問題は徐々に克服されていき、デザイナーに新たな道を開くでしょう。</p>
-<h2>未来を導く：AIタイポグラフィにおけるデザイナーの重要な役割</h2>
-<p>こうした流れや、高らかにうたわれているAIの可能性を受けて、クリエイティブ領域のプロフェッショナルは当然のことながらその短期的影響について検討しています。AIを活用する愛好家が増えるにつれ、タイポグラフィを含む専門テクノロジーが軽視されるようになるのではないかと、デザイナーは懸念を募らせています。</p>
-<blockquote>
-<p><a class="pull-quote__link" aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aTo%20preserve%20our%20creative%20integrity%20and%20professional%20effectiveness,%20it%e2%80%99s%20crucial%20for%20designers%20to%20influence%20the%20development%20of%20AI%20tools%20and%20insist%20on%20high%20design%20standards%20to%20positively%20shape%20the%20future%20of%20our%20industry.%0a&amp;url=https://smashingmagazine.com%2f2024%2f01%2fai-dilemma-graphic-design-typography%2f">クリエイターとしての本来の姿とプロフェッショナルとしての立場を守るため、デザイナーがAIツールの発展に影響を及ぼし、高いデザイン基準を主張することは、我々の業界の未来を良い方向に導く上で極めて重要です。</a></p>
-</blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<p>グーテンベルクの印刷機も、当初は懸念や論争を引き起こしたものの、史上最も革命的な発明の一つになりました。AIも同様の可能性を秘めていますが、それがどのような道筋をたどのるかは我々のアプローチにかかっています。</p>
-<h2>デザイナーのジレンマ：品質を保ちつつAIを受け入れる</h2>
-<p>人工知能を利用して創造性を高め、効率化を図るのか、それとも素人主導の自動化がプロの仕事の質の低下を招くリスクを黙って見過ごすのか、我々は選択を迫られています。受け身の姿勢で傍観者になるのではなく、AIの発展が品質主導の結果につながり、これらのツールがデザイナーとしての我々の力を弱めるのではなく、強化するよう積極的に関わる必要があります。</p>
-<p>デザイナーは、アイデアを構築する方法について造詣が深いため、AIツールをより効果的に使いこなせると言われています。しかし、こうした新しいツールを受け入れることは、ガードを緩め、他者が基準を設定するのを認めることとは違います。そうではなく、我々はAIをインスピレーションやイノベーションへの踏み台として利用すべきです。</p>
-<p>例えば、現在のAI生成画像は分かりにくいテキストプロンプトと大量のデータセットの組み合わせにより、予期しない結果を生み出すことが少なくありません。しかし、インスピレーションを得て、新しいアイデアを生み出すきっかけとして有効なツールです。</p>
-<h2>AIタイポグラフィにおいて立場を守る</h2>
-<p>タイポグラフィにおいて、デザイナーは書体を選ぶ際により慎重になる必要があります。独創的で創意に富んだアマチュアフォントが市場に大量に出回り、それらの品質について掘り下げた評価が必要になる可能性があります。デザイナーは、文字セット、スペーシング、デザイン全体をより注意深く確認しなくてはいけません。</p>
-<p>書体を巧みに使うことは、仕事を際立たせるだけでなく、業界のトレンドや基準に影響し、活字デザイナーのインスピレーションや指針になるという意味でも、これまで以上に重要です。</p>
-<h2>活字デザインにおいてAIに適応する</h2>
-<p>AIツールの発展と方向性は、テクノロジーに巨額の投資を行っている大企業の手にのみ委ねる必要はありません。タイプファウンドリー各社が協力し、互いのリソースを出し合って<strong>共通のAIソフトウェアモデル</strong>を構築できれば有効な手立てになるでしょう。こうした協力的アプローチにより、AI主導のイノベーションを利用できるだけでなく、独自のデザインを無断使用から守ることもできます。</p>
-<p>また、<strong>大規模なAIモデルより小規模なものの方がパフォーマンス面で優れている場合がある</strong>ことを示す<a href="https://www.semianalysis.com/p/google-we-have-no-moat-and-neither#%C2%A7large-models-arent-more-capable-in-the-long-run-if-we-can-iterate-faster-on-small-models">研究結果</a>もあります。つまり、独立系のファウンドリーが独自のニーズに合わせた小規模なカスタムAIツールを開発することも可能ということです。</p>
-<h2>デザイナーが未来を形作る：静的なタイポグラフィからAI主導のイノベーションへ</h2>
-<p>品質がまちまちのアマチュアフォントが大量に出回るのは懸念材料ですが、AIはプロによる書体の品質と新規性も大幅に改善するでしょう。活字デザイナーは開発者と協力し、活字の次なる進化をリードしていく存在です。</p>
-<blockquote>
-<p><a class="pull-quote__link" aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aWhat%20we%e2%80%99ve%20become%20used%20to%20in%20terms%20of%20typography%20is%20woefully%20static,%20lacking%20the%20ability%20to%20dynamically%20adjust%20to%20content,%20context,%20or%20reader%20interaction.%20At%20present,%20our%20options%20are%20limited%20to%20changing%20font%20styles%20and%20incorporating%20emojis.%0a&amp;url=https://smashingmagazine.com%2f2024%2f01%2fai-dilemma-graphic-design-typography%2f">私たちが見慣れたタイポグラフィはひどく静的で、コンテンツやコンテキスト、読み手の反応に応じて動的に調整することができません。現時点では、フォントスタイルを変えたり、絵文字を取り入れたりするくらいしか選択肢がありません。
-</a></p>
-</blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<p>過去に活躍した写字生は、強調や装飾を施したテキストを作成するテクノロジーにたけており、情報の伝達をより豊かなものにしていました。ヨハネス・グーテンベルクが印刷機を発明した際、彼の目的は写字生の芸術性を超えることではなく、知識と情報を一般大衆に届けることでした。その点について言えば、グーテンベルクは成功しました。しかし、活字はその後創造的進化を遂げたものの、テキストを視覚的により豊かにし、微妙なニュアンスを表現する写字生の能力は失われました。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/4-illuminated-manuscript-on-vellum-vienna.jpeg">
-<em>活字の発明によって失われた表現の豊かさや柔軟性を示す挿絵入り原稿。ウィーン、1430〜1435年頃。</em>（<em>画像出典：</em><a href="https://upload.wikimedia.org/wikipedia/commons/4/49/2014_CKS_01584_0011_001%28missal_use_of_udine_illuminated_manuscript_on_vellum_vienna_c1430-35%29.jpg"><em>Wikipedia</em></a>）<a href="https://files.smashing.media/articles/ai-dilemma-graphic-design-typography/4-illuminated-manuscript-on-vellum-vienna.jpeg"><em>拡大プレビュー</em></a></p>
-<h2>タイポグラフィの運命</h2>
-<p>タイポグラフィの次なる革命は、<a href="https://typedrawers.com/discussion/comment/64337/#Comment_64337">テキスト表現の流動性、適応性、双方向性</a>の時代を開くものであるべきでしょう。<strong>活字はもっとカスタムレタリングのように振る舞うべきです</strong>。この変化は読者体験を大幅に向上させ、文字によるコミュニケーションをより汎用的かつ正確にし、以下を含むさまざまな要素への対応を可能にします。</p>
-<ul>
-<li><strong>コンテンツに応じたテキストの調整</strong><br>
-本のクライマックスに合わせてスタイルやリズムを変えたり、元気が出る詩を読む際に文字をおどけた調子で浮かび上がらせたりといった、表示されたコンテンツに応じたテキストの変化。</li>
-<li><strong>環境への適応</strong><br>
-照明や、読者の目とテキストの距離などに応じたテキストの変化。</li>
-<li><strong>感情の表現</strong><br>
-色の変化やかすかなアニメーションなど、テキストの感情的なトーンに応じて変化する要素を取り入れた、表現豊かなコミュニケーション。</li>
-<li><strong>ユーザーインタラクション</strong><br>
-生体センサーを通じて検知するユーザーの読むスピードや目の動き、感情的な反応に応じたテキストの変化。</li>
-<li><strong>デバイスとプラットフォームの応答性</strong><br>
-CSSを使ってあらかじめ設定する必要もなく、画面のサイズ、解像度、向きなどの要素を考慮し、テキストを適応させることで実現する最適な可読性。</li>
-<li><strong>アクセシビリティの強化</strong><br>
-幼い読者や、失語症や視覚障害のある読者に合わせて文字の大きさやコントラストを動的に調整するテキスト。</li>
-<li><strong>言語と文化への適応</strong><br>
-タイポグラフィのデザイン意図を維持し、文化的なニュアンスに敏感に適応しつつ、言語間やスクリプト間でスムーズに移行できる活字。</li>
-</ul>
-<h2>最後に：デザインの未来を受け入れる</h2>
-<p>我々は、タイポグラフィの大変革の入り口に立っています。他の業界と同様に、活字業界もこの先大きな変化が待ち受けています。タイプマスター3000のような未来のシナリオは、業界にとってその道のりがいかに混乱に満ちたものかを示しています。しかし、静的な活字の限界を押し広げ、我々の創造力を高め、異文化コミュニケーションの向上を促すためにも、この道は進む価値のあるものです。</p>
-<p>変化は近づいており、我々デザイナーにとっては変化を受け入れるだけでは不十分です。専門知識、嗜好、判断力を頼りに、積極的に変化のかじ取りをしなくてはいけません。業界一丸となってタイポグラフィへのAIの導入を導き、単なる自動化にとどまらないようにすることが重要です。AIの導入は、タイポグラフィを高めるものであるべきです。目指す先には、フォントの静的な実用性を超越した、動的かつ正確で、コンテキストに応じて変化するタイポグラフィがあります。</p>
-<p>各自が創造性や知見を持ち寄り、ともにAIを導くことで、自らの創造性を高められるだけでなく、デザインの水準を引き上げ、文明全体をより豊かにすることができるはずです。</p>
-<h3>関連リンク</h3>
-<ul>
-<li><a href="http://www.jamieclarketype.com/">Jamie Clarke氏オフィシャルサイト</a></li>
-<li><a href="https://www.lttrink.com/">LTTR/INK</a></li>
-</ul>]]></content:encoded></item></channel></rss>
+<p>本記事の草稿時に貴重なご意見をいただいた<a href="https://www.michael-sands.com/">マイケル・サンズ</a>氏、<a href="https://www.evanmiller.org/">エヴァン・ミラー</a>氏、<a href="https://www.youtube.com/@TheRiceRocketeer">コリン・カウリー</a>氏に、この場を借りて感謝の意を表します。</p>]]></content:encoded></item></channel></rss>
