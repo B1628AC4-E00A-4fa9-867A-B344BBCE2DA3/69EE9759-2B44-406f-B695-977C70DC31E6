@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Fri, 21 Mar 2025 11:34:23 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 25 Mar 2025 17:21:33 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,118 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Boost Your CMake Development with Copilot Custom Instructions</title>
+		<link>https://devblogs.microsoft.com/cppblog/boost-your-cmake-development-with-copilot-custom-instructions/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/boost-your-cmake-development-with-copilot-custom-instructions/#respond</comments>
+		
+		<dc:creator><![CDATA[Garrett Campbell]]></dc:creator>
+		<pubDate>Tue, 25 Mar 2025 17:19:55 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[CMake]]></category>
+		<category><![CDATA[Copilot]]></category>
+		<category><![CDATA[OpenFolder]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35268</guid>
+
+					<description><![CDATA[<p>Introduction Creating a new CMake project that uses unfamiliar libraries can be daunting and time-consuming. This blog post takes you along on my journey using Copilot to make this easier, and leveraging Custom Instructions to tailor Copilot responses. For a sneak peek, see the outcome of this journey in this repository. Background As C++ developers [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/boost-your-cmake-development-with-copilot-custom-instructions/">Boost Your CMake Development with Copilot Custom Instructions</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h3>Introduction</h3>
+<p>Creating a new CMake project that uses unfamiliar libraries can be daunting and time-consuming. This blog post takes you along on my journey using Copilot to make this easier, and leveraging <a href="https://learn.microsoft.com/en-us/visualstudio/ide/copilot-chat-context?view=vs-2022#enable-custom-instructions">Custom Instructions</a> to tailor Copilot responses. For a sneak peek, see the outcome of this journey in this <a href="https://github.com/microsoft/DogDetector">repository</a>.</p>
+<h3>Background</h3>
+<p>As C++ developers who use Copilot every day, we’ve experienced how it can improve our day-to-day productivity. Copilot really shines in scenarios like new codebases or unfamiliar topics, significantly reducing ramp-up. There are multiple ways to engage with it in Visual Studio, including <a href="https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-extension?view=vs-2022">Completions</a> and <a href="https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-chat?view=vs-2022">Copilot Chat</a>. This blog is focused on leveraging Copilot Chat to be more productive.</p>
+<h3>What project should I create?</h3>
+<p>Being a maintainer of the CMake experience, I have always been aware of a popular computer vision library, <a href="https://github.com/opencv/opencv">OpenCV</a>, that is built on CMake to power 2500+ algorithms. However, I’ve never actually played with it and used it in my own code. The first idea that came to mind, being a dog-lover myself, was to create my own real-time dog detector using OpenCV. I set out to create a Dog Detector using CMake and Copilot in Visual Studio.</p>
+<h3>Import OpenCV into CMake Project</h3>
+<p>Starting with a new CMake Project in Visual Studio, the first problem to solve was: “How do I import OpenCV into my CMake project?”. Using CMake can sometimes be complex, and I wanted to make sure I used OpenCV in a cross-platform way, so to figure out how to do this, I asked Copilot.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2.png"><img fetchpriority="high" decoding="async" class="alignnone wp-image-35294 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2-e1742845014677.png" alt="Asking Copilot chat how to use OpenCV in the project" width="918" height="1186" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2-e1742845014677.png 918w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2-e1742845014677-232x300.png 232w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2-e1742845014677-793x1024.png 793w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-v2-e1742845014677-768x992.png 768w" sizes="(max-width: 918px) 100vw, 918px" /></a></p>
+<p>Copilot was able to give me CMakeLists.txt modifications that I can make to my project. However, you’ll notice that it mentions that OpenCV must be installed and that I can use vcpkg. <a href="https://vcpkg.io/en/">Vcpkg is a cross-platform C/C++ package manager</a>.</p>
+<p>Prior to doing this, while the suggested CMakeLists.txt changes are correct, CMake fails the configure step with an error indicating that OpenCV cannot be found. This is because I haven’t yet installed OpenCV.</p>
+<h3>Use vcpkg to install OpenCV</h3>
+<p>Now, how do I take Copilot’s suggestion to use vcpkg to install OpenCV? Let’s ask Copilot.</p>
+<p>Copilot gave the following response:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-opencv.png"><img decoding="async" class="alignnone wp-image-35297" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-opencv.png" alt="Image vcpkg opencv" width="908" height="582" /></a></p>
+<p>You’ll notice that it gave only command-line suggestions for how to install OpenCV with vcpkg. Our team typically uses vcpkg in <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/manifest-mode">manifest mode</a> and I’d prefer to use that. Also, you’ll notice that Copilot suggested a CMake command line. We are in Visual Studio, so the command line is driven by our CMake Presets file, and I’d rather make modifications there.</p>
+<p>Let’s ask Copilot again with those requests in mind.</p>
+<p style="padding-left: 80px; text-align: right;"><em> </em><em><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f4a1.png" alt="💡" class="wp-smiley" style="height: 1em; max-height: 1em;" />Hm, wouldn’t it be nice if I didn’t have to specify manifest mode?</em></p>
+<p style="text-align: right;"><em><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f4a1.png" alt="💡" class="wp-smiley" style="height: 1em; max-height: 1em;" />It would also be nice if I didn’t have to specify that I prefer using CMakePresets.json when I ask Copilot questions? </em></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-manifest.png"><img decoding="async" class="alignnone size-full wp-image-35298" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/vcpkg-manifest.png" alt="Asking Copilot how to use vcpkg in manifest mode to install openCV" width="1809" height="789" /></a></p>
+<p>&nbsp;</p>
+<p>These suggestions are much more aligned with what I’d like to do in my project. Following a combination of the Copilot suggestions and this <a href="https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-vs?pivots=shell-powershell">documentation</a>, I did the following:</p>
+<ol>
+<li>Installed vcpkg and ran the bootstrap script.</li>
+<li>Created the necessary vcpkg.json and vcpkg-configuration.json files defining opencv as a dependency.</li>
+<li>Modified the <code>CMAKE_TOOLCHAIN_FILE</code> using the CMakePresets file.</li>
+</ol>
+<p>At this point, we were closer, but we still failed to configure. After asking Copilot for help, I realized that it wasn’t finding the toolchain file, and that I should specify the <code>VCPKG_ROOT</code> in an environment variable in the preset and use that variable in the <code>CMAKE_TOOLCHAIN_FILE</code> setting to successfully find it.</p>
+<p>At this point, CMake configured successfully and OpenCV had been included in my CMake project.</p>
+<h3>Use OpenCV to detect dogs</h3>
+<p>Now that OpenCV was properly included in my CMake project, the next step was to figure out how to use the library and how to get it to detect dogs. From my little background knowledge of OpenCV, I knew that it would need a model trained to detect certain objects. To start, I asked Copilot if OpenCV can detect dogs already, and it told me that there were already publicly available models and, upon further questioning, pointed me to some links where I could download configuration files, weights files, and class names from <a href="https://github.com/AlexeyAB/darknet">this repository</a>.</p>
+<p>Now that I had downloaded models I could use, I asked Copilot to give me a code snippet that would allow me to detect dogs.</p>
+<p>One thing that I hit errors on and had to modify was that Copilot suggested relative paths, and this didn’t work, since it was running the executable from the build location. I found it easier to always use absolute paths to make this simpler.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/absolute-paths.png"><img decoding="async" class="alignnone wp-image-35299" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/absolute-paths.png" alt="Asking Copilot to modify paths to absolute paths." width="890" height="297" /></a></p>
+<p style="text-align: right;"><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f4a1.png" alt="💡" class="wp-smiley" style="height: 1em; max-height: 1em;" /><em>It would be great if I could tell Copilot to always use absolute paths.</em></p>
+<p>After modifying the paths, I was able to detect dogs in images!</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/dog-detector.png"><img decoding="async" class="alignnone wp-image-35300 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/dog-detector-e1742845236222.png" alt="Using OpenCV, we can now detect dogs" width="957" height="539" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/dog-detector-e1742845236222.png 957w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/dog-detector-e1742845236222-300x169.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/dog-detector-e1742845236222-768x433.png 768w" sizes="(max-width: 957px) 100vw, 957px" /></a></p>
+<h3>Switch to livestream</h3>
+<p>I didn’t want to only be able to detect dogs in images, I also wanted to be able to detect dogs using a livestream. I went back to Copilot and asked it to help me make these changes: “How can I modify this code to livestream from a camera rather than reading a single image?”.</p>
+<p>Copilot was able to suggest slight modifications to the code, and I was able to integrate a while loop and slightly modify the camera capture mechanism to accomplish this. See the original code versus the suggested livestream code below.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream.png"><img decoding="async" class="alignnone wp-image-35301 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream-e1742845270306.png" alt="Copilot helps suggest code to read from a livestream context." width="1306" height="678" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream-e1742845270306.png 1306w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream-e1742845270306-300x156.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream-e1742845270306-1024x532.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/livestream-e1742845270306-768x399.png 768w" sizes="(max-width: 1306px) 100vw, 1306px" /></a></p>
+<p>To my surprise, the model could detect other objects as well.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/9.png"><img decoding="async" class="alignnone wp-image-35279 size-full" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/9.png" alt="Image 9" width="339" height="271" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/9.png 339w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/9-300x240.png 300w" sizes="(max-width: 339px) 100vw, 339px" /></a></p>
+<h3>Add UI</h3>
+<p>To make a more well-rounded application, I wanted to add a user interface to make it easier to control what models are used and to make it easier to operate overall. Through some conversations with Copilot, I was able to add qt5 as a vcpkg.json dependency and add components that allow you to select the .cfg, the .weights, the class names file, and to start and stop the livestream.</p>
+<p>The below partial screenshot shows the initial suggestions that copilot gave:</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot.png"><img decoding="async" class="alignnone size-full wp-image-35314" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot.png" alt="Image FixBlurryScreenshot" width="1336" height="552" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot.png 1336w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot-300x124.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot-1024x423.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/FixBlurryScreenshot-768x317.png 768w" sizes="(max-width: 1336px) 100vw, 1336px" /></a></p>
+<p>After refining the UI with more conversation with UI and code improvements, the pictures below show The Dog Detector when the camera isn’t on versus when it is.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector.png"><img decoding="async" class="alignnone wp-image-35303" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector.png" alt="Image person dog detector" width="751" height="416" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector.png 1696w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector-300x166.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector-1024x567.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector-768x425.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/person-dog-detector-1536x850.png 1536w" sizes="(max-width: 751px) 100vw, 751px" /></a></p>
+<p>Also, the ultimate test was to test out the “Dog Detector” with my dog.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/Dog.gif"><img decoding="async" class="alignnone size-full wp-image-35313" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/Dog.gif" alt="GIF of a dog " width="400" height="441" /></a></p>
+<h3>Build the project statically</h3>
+<p>Finally, I wanted to be able to share the executable of this project easily with others so that they could use this project without having to worry about the runtime, the build process, etc. To do this, I asked Copilot: “How to statically link a library with CMake and vcpkg?”</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/static-link.png"><img decoding="async" class="alignnone wp-image-35305" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/static-link.png" alt="Asking Copilot how to Static link a library using vcpkg" width="561" height="970" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/static-link.png 685w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/static-link-173x300.png 173w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/static-link-592x1024.png 592w" sizes="(max-width: 561px) 100vw, 561px" /></a></p>
+<p>Copilot gave a suggestion to set the vcpkg triplet, but it gave suggestions to modify it in CMakeLists.txt or in the command line. To get better suggestions, I asked again, adding that we want to modify the CMakePresets.json.</p>
+<p style="text-align: right;"><em><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f4a1.png" alt="💡" class="wp-smiley" style="height: 1em; max-height: 1em;" />This is another instance where it’d be nice to not have to specify this every time I ask.</em></p>
+<p>I took these suggestions and modified them to use CMakePresets.json, so I set the <code>VCPKG_TRIPLET_TARGET</code> in CMakePresets.json.</p>
+<p>With these changes, configuration succeeded, but I still got the following build errors:</p>
+<pre>mismatch detected for ‘RuntimeLibrary’: value ‘MTd_StaticDebug’ doesn’t match value ‘MDd_DynamicDebug’ in DogDetector.cpp.obj.</pre>
+<p>To help me fix this problem, I asked Copilot to help. Copilot told me to ensure I set the variable <code>OpenCV_STATIC</code> to <code>ON</code>. Since this variable is specific to only the target that includes OpenCV, I set this in the CMakeLists.txt. Additionally, CMake told me that I should set the <code>CMAKE_MSVC_RUNTIME_LIBRARY</code> to <code>MultiThreaded$&lt;$&lt;CONFIG:Debug&gt;:Debug&gt;</code>. However, after making these changes, I was still getting the error.</p>
+<p>After much conversation with Copilot, I realized it may have something to do with CMake Policies associated with the <code>CMAKE_MSVC_RUNTIME_LIBRARY</code>. Looking at the <a href="https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html">documentation</a>, the variable only takes effect when the CMP0091 policy is set to “new”, which is only “new” by default in version 3.15 and beyond.</p>
+<p style="text-align: right;"><em><img src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f4a1.png" alt="💡" class="wp-smiley" style="height: 1em; max-height: 1em;" />It would have been great to be informed about CMake Policies that affect CMake variables that Copilot suggested I use.</em></p>
+<p>After updating the CMake project to have a minimum required version of 3.15, the project built statically with no errors.</p>
+<h3>Custom Instructions</h3>
+<p>After completing the project, looking back at all the questions and interactions I had with Copilot through Copilot Chat, there were many times where I thought, “Hm, it would be great if I didn’t have to continually specify this information in each question.”. You may have noticed this internal dialog above.</p>
+<p>To solve this, I used the <a href="https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot?tool=webui">Copilot Custom Instructions feature.</a> This feature allows you to create a .github/copilot-instructions.md file that contains additional context you want to be added to every question that you ask Copilot Chat.</p>
+<p>Based on the various observations I made, I created a copilot-instructions.md file and added the following custom instructions:</p>
+<ul>
+<li>This project uses vcpkg in manifest mode. Please keep this in mind when giving vcpkg suggestions. Do not provide suggestions like vcpkg install library, as they will not work as expected.</li>
+<li>Prefer setting cache variables and other types of things through CMakePresets.json if possible.</li>
+<li>Give information about any CMake Policies that might affect CMake variables that are suggested or mentioned.</li>
+<li>This project needs to be cross-platform and cross-compiler for MSVC, Clang, and GCC.</li>
+<li>When providing OpenCV samples that use the file system to read files, please always use absolute file paths rather than file names, or relative file paths. For example, use <code>video.open("C:/project/file.mp4")</code>, not <code>video.open("file.mp4")</code></li>
+</ul>
+<p>After adding this file, it was immediately obvious that answers were better when asking the same questions that had been asked previously. For example, I created a new project again and asked how I should use vcpkg to use OpenCV with CMake, and this is part of the response I received.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/new-vcpkg-opencv.png"><img decoding="async" class="alignnone wp-image-35306" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/new-vcpkg-opencv.png" alt="Now asking vcpkg to open openCV with custom instructions provides tailored results." width="669" height="929" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/new-vcpkg-opencv.png 765w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/new-vcpkg-opencv-216x300.png 216w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/new-vcpkg-opencv-738x1024.png 738w" sizes="(max-width: 669px) 100vw, 669px" /></a></p>
+<p>I was able to repeat the process of creating this project, and by utilizing the Custom Instructions feature, it took me far fewer iterations with Copilot to get answers that I wanted when asking questions related to the custom instructions.</p>
+<h3>Conclusion</h3>
+<p>By utilizing the CMake experience along with Copilot in Visual Studio, I was able to quickly get a Dog Detector program up and running, complete with vcpkg integration, an easy-to-use UI, and static linking to share the executable.</p>
+<p>I was also able to use the Custom Instructions feature provided by Copilot to make my conversations more useful without having to provide as much repetitive, contextual information in each message to Copilot.</p>
+<p>Copilot helped me speed up my development process by answering my questions and helping me navigate CMake and vcpkg. Custom instructions helped Copilot provide more relevant and straightforward answers, without me having to take the time to provide additional context in every question.</p>
+<p>To play with the Dog Detector yourself, you can find the source code <a href="https://github.com/microsoft/DogDetector">here,</a> which is released as a sample under MIT license on GitHub.</p>
+<h3>Disclaimer</h3>
+<p>The screenshots and responses from Copilot shown above may vary. There is no guarantee that if you attempt to replicate this blog post you will get the same responses.</p>
+<h3>Author &amp; Team</h3>
+<p>CMake is a widely adopted cross-platform build system that plays a crucial role in modern C++ development. It is consistently ranked among the top build tools due to its flexibility, scalability, toolability, and extensive ecosystem support. Given its popularity, the team is dedicated to improving its integration, performance, and usability within Microsoft&#8217;s products, enabling C++ developers to build, configure, and manage their projects more efficiently. Read more about our CMake support in <a href="https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170">Visual Studio</a> and <a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/docs/README.md">VS Code</a>.</p>
+<p>Garrett Campbell is a Senior Software Engineer who works on all things CMake, from the Visual Studio CMake experience to the VS Code CMake Tools extension. Also featured in this blog post is Owen. Owen is a mix of lab, Pitbull, and golden retriever!</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/boost-your-cmake-development-with-copilot-custom-instructions/">Boost Your CMake Development with Copilot Custom Instructions</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/boost-your-cmake-development-with-copilot-custom-instructions/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Sign Up for the free Pure Virtual C++ 2025 Conference</title>
 		<link>https://devblogs.microsoft.com/cppblog/sign-up-for-the-free-pure-virtual-c-2025-conference/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/sign-up-for-the-free-pure-virtual-c-2025-conference/#respond</comments>
@@ -41,7 +153,7 @@
 					<description><![CDATA[<p>Every year we run Pure Virtual C++: a free one-day virtual conference for the whole C++ community. Next month we’re doing it again! Sign-up for free to get access to our five live sessions and a host of pre-conference content. The live event will start at April 30th 14:00 UTC. Videos will be available to [&#8230;]</p>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/sign-up-for-the-free-pure-virtual-c-2025-conference/">Sign Up for the free Pure Virtual C++ 2025 Conference</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></description>
-										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png"><img fetchpriority="high" decoding="async" class="aligncenter size-full wp-image-33787" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png" alt="Image pvclogo" width="680" height="181" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png 680w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo-300x80.png 300w" sizes="(max-width: 680px) 100vw, 680px" /></a></p>
+										<content:encoded><![CDATA[<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png"><img decoding="async" class="aligncenter size-full wp-image-33787" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png" alt="Image pvclogo" width="680" height="181" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png 680w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo-300x80.png 300w" sizes="(max-width: 680px) 100vw, 680px" /></a></p>
 <p>Every year we run Pure Virtual C++: a free one-day virtual conference for the whole C++ community. Next month we’re doing it again! <a href="https://developer.microsoft.com/en-us/reactor/events/25184/" target="_blank" rel="noopener">Sign-up for free</a> to get access to our five live sessions and a host of pre-conference content.</p>
 <p>The live event will start at <strong>April 30</strong><strong>th 14:00 UTC</strong>. Videos will be available to stream for free on YouTube after the conference. The speakers and topics will be announced soon.</p>
 <p>Hope to see you there!</p>
@@ -1205,108 +1317,6 @@ f(std::allocator_arg, some_allocator); // must be convertible to StatefulAllocat
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-20-release-introducing-built-in-cmake-language-services/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>MSVC C++ Code Analysis: Updates in Visual Studio 2022 version 17.13</title>
-		<link>https://devblogs.microsoft.com/cppblog/msvc-c-code-analysis-updates-in-visual-studio-2022-version-17-13/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/msvc-c-code-analysis-updates-in-visual-studio-2022-version-17-13/#respond</comments>
-		
-		<dc:creator><![CDATA[Carson Radtke]]></dc:creator>
-		<pubDate>Wed, 19 Feb 2025 15:14:30 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35138</guid>
-
-					<description><![CDATA[<p>This post details the latest updates in Visual Studio 2022 version 17.13 for MSVC C++ Code Analysis. Driven by internal team insights and developer community feedback, these improvements significantly reduce false positives and strengthen production code security.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-c-code-analysis-updates-in-visual-studio-2022-version-17-13/">MSVC C++ Code Analysis: Updates in Visual Studio 2022 version 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>The C++ team is excited to announce the latest improvements to Code Analysis in Visual
-Studio. Continuing our commitment to make C++ development safer and more reliable, this
-update focuses on reducing false positives and enhancing the analysis engine&#8217;s
-precision. These improvements are driven by internal teams&#8217; and your valuable feedback
-through <a href="https://developercommunity.visualstudio.com/">Visual Studio Developer Community</a></p>
-<h2>Key Improvements</h2>
-<p>Following recommendations from
-<a href="https://www.microsoft.com/security/blog/author/microsoft-offensive-research-security-engineering-team/">MORSE</a>,
-we focused on enhancing selected security warnings that detect high-impact
-vulnerabilities. Our goal was to keep the false positive rate below 10% when running
-these checks against large codebases, ensuring broad adoption across Microsoft teams.
-This first wave of improvements targets three crucial warnings:
-<a href="https://learn.microsoft.com/cpp/code-quality/c26100">C26100</a>,
-<a href="https://learn.microsoft.com/cpp/code-quality/c26831">C26831</a>, and
-<a href="https://learn.microsoft.com/cpp/code-quality/c33001">C33001</a>.</p>
-<h3>Concurrency and Locking</h3>
-<p>C26100, one of our critical security warnings, detects potential race conditions that
-could lead to memory corruption or deadlocks. Through improved analysis of
-synchronization patterns, we have enhanced this warning to more accurately identify
-high-risk concurrency issues. Here is a summary of the key improvements in this area:</p>
-<ul>
-<li>New diagnostics
-(<a href="https://learn.microsoft.com/cpp/code-quality/c26132">C26132</a> + <a href="https://learn.microsoft.com/cpp/code-quality/c26133">C26133</a>)
-for detecting lock hierarchy mismatches in custom locking functions</li>
-<li>Better analysis of lock acquisition patterns</li>
-<li>Improved status tracking for concurrency checking</li>
-</ul>
-<h3>Enhanced Overflow Detection for Allocations</h3>
-<p>C26831, another critical security warning, detects potential numerical overflows in
-values used for memory allocation that could lead to buffer overruns and other memory
-corruption vulnerabilities. Through improved analysis of allocation patterns and sign
-conversions, we have enhanced this warning to more accurately identify high-risk
-overflow scenarios. Here is a summary of the key improvements in this area:</p>
-<ul>
-<li>New diagnostics
-(<a href="https://learn.microsoft.com/cpp/code-quality/c26838">C26838</a> + <a href="https://learn.microsoft.com/cpp/code-quality/c26839">C26839</a>)
-for detecting potential allocation overflow issues due
-to signed-to-unsigned conversions</li>
-<li>Added heuristics for validating postcondition overflow checks in allocation routines</li>
-</ul>
-<h3><code>VariantClear</code> and <code>VARIANT</code> Initialization</h3>
-<p>C33001, our third critical security warning, detects uninitialized <code>VARIANT</code> objects that
-could lead to memory corruption when passed to cleanup functions. Through improved
-tracking of <code>VARIANT</code> initialization states, we have enhanced this warning to accurately
-identify high-risk COM interface usage while maintaining a low false positive rate in
-production Windows code.</p>
-<h2>Community Feedback</h2>
-<p>Your feedback drives our prioritization and helps us deliver a better product. We
-actively monitor the Developer Community and use upvotes to understand which issues
-impact the most users. Even if you encounter an issue that is already reported,
-please upvote it &#8211; this helps us better prioritize our fixes.</p>
-<p>Here are some key issues we have addressed based on community feedback:</p>
-<ul>
-<li><a href="https://developercommunity.visualstudio.com/t/Warning-C26435-contradicts-to-Compiler-E/10355159">Warning C26435 contradicts to Compiler Error C3609</a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/False-positive-lifetime-code-analysis-wa/10732352">False positive lifetime code analysis warning C26848: Do not dereference a null pointer (lifetime.1)</a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/warning:-C26822-false-positive-improperl/10796852">warning: C26822 false positive improperly emitted for <code>return NULL;</code></a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/_Must_inspect_result_-incorrectly-issues/10743387">_Must_inspect_result_ incorrectly issues C28193 when nested struct/union field <em>is</em> inspected</a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/_Return_type_success_expr-incorrectly-/10743376">_Return_type_success_(expr) incorrectly produces C6101 expression references anonymous struct / union fields</a></li>
-<li><a href="https://developercommunity.visualstudio.com/t/Code-analysis-warning-C6011-for-valid-ca/10732505">Code analysis warning C6011 for valid call to CWnd::GetSafeHwnd()</a></li>
-</ul>
-<p>We encourage you to continue reporting and upvoting issues you encounter. Whether it is
-a false positive, unclear diagnostic message, or feature request, your input is
-essential in shaping the future of C++ Code Analysis.</p>
-<h2>Looking Forward</h2>
-<p>Security remains a top priority as we work closely with MORSE and internal teams to
-enhance critical security warnings for high-impact vulnerabilities. We remain committed
-to lowering false positive rates across all our checkers.</p>
-<p>Your feedback through the Developer Community continues to be essential in shaping our
-roadmap. As we expand our coverage of modern C++ security best practices, we will keep
-focusing on addressing community-reported issues to ensure our warnings remain precise
-and actionable.</p>
-<h2>Try It Out</h2>
-<p>These improvements are now available in Visual Studio 2022 version 17.13. To get
-started, check out the
-<a href="https://learn.microsoft.com/cpp/code-quality/quick-start-code-analysis-for-c-cpp">Code Analysis documentation</a>.
-Our work is heavily influenced by your feedback; please continue to engage with us
-through the <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a> and
-in the comments section below.</p>
-<p>Stay tuned for more C++ static analysis improvements. Your feedback helps us make C++
-development safer and more productive for everyone.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/msvc-c-code-analysis-updates-in-visual-studio-2022-version-17-13/">MSVC C++ Code Analysis: Updates in Visual Studio 2022 version 17.13</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/msvc-c-code-analysis-updates-in-visual-studio-2022-version-17-13/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
