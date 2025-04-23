@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 17 Apr 2025 15:10:57 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 23 Apr 2025 19:58:50 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,170 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>PyTorch Arm native builds now available for Windows</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/04/23/pytorch-arm-native-builds-now-available-for-windows/</link>
+		
+		<dc:creator><![CDATA[Sanket Kalaskar]]></dc:creator>
+		<pubDate>Wed, 23 Apr 2025 19:58:50 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57425</guid>
+
+					<description><![CDATA[<p>We are excited to announce the availability of Arm native builds of PyTorch for Windows! Until now, developers and researchers had to compile PyTorch locally to support Windows Arm64. With PyTorch 2.7 release, developers can now access Arm native bui</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/04/23/pytorch-arm-native-builds-now-available-for-windows/">PyTorch Arm native builds now available for Windows</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[We are excited to announce the availability of Arm native builds of PyTorch for Windows! Until now, developers and researchers had to compile PyTorch locally to support Windows Arm64. With PyTorch 2.7 release, developers can now access Arm native builds of PyTorch for Windows available for Python 3.12. This unlocks the potential to leverage the full performance of Arm64 architecture on Windows devices, like <a href="https://www.microsoft.com/en-us/windows/copilot-plus-pcs?r=1">Copilot+ PCs</a>, for machine learning experimentation, providing a robust platform for developers and researchers to innovate and refine their models.
+
+Now you can use Arm native builds of PyTorch to develop, train and test short-scale machine learning models locally on Arm powered Copilot+ PCs. This includes areas such as image classification, natural language processing, and generative AI like Stable Diffusion which will be exemplified below.
+<h2>Getting Started</h2>
+<h3>Prerequisites:</h3>
+<ul>
+ 	<li>To address missing dependencies, we recommend installing MSVC and Rust
+<ul>
+ 	<li><a href="https://aka.ms/vs/17/release/vs_BuildTools.exe">Visual Studio Build Tools</a> or any <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio</a>
+<ul>
+ 	<li>In Visual Studio Installer, please select Desktop development with C++</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+[caption id="attachment_57427" align="alignnone" width="645"]<img class="wp-image-57427 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/04/DesktopDev.png" alt="Desktop development with C++ user interface" width="645" height="160" /> Figure 1: Visual Studio Installer Project Selection[/caption]
+<ul>
+ 	<li>In Visual Studio Installer, make sure VS 2022 C++ ARM64/ARM64EC build tools (latest) selected</li>
+</ul>
+[caption id="attachment_57428" align="alignnone" width="648"]<img class="wp-image-57428 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/04/Latest-tools.png" alt="Visual Studio Installer MSVC Selection" width="648" height="33" /> Figure 2: Visual Studio Installer MSVC Selection[/caption]
+<ul>
+ 	<li><a href="https://www.rust-lang.org/tools/install">Install Rust</a></li>
+ 	<li>Select ARM64 installer for <a href="https://www.python.org/downloads/release/python-3129/">Python Release Python 3.12.9 | Python.org</a>.</li>
+</ul>
+<h3>PyTorch:</h3>
+<ul>
+ 	<li>To install PyTorch Stable release (2.7.0):</li>
+</ul>
+<pre class="EnlighterJSRAW" style="padding-left: 40px;" data-enlighter-language="generic">pip install --extra-index-url https://download.pytorch.org/whl torch</pre>
+<ul>
+ 	<li>To access Preview (Nightly) build:</li>
+</ul>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu</pre>
+<h3>LibTorch:</h3>
+<ul>
+ 	<li>The getting started and installation guide for LibTorch can be accessed on <a href="https://pytorch.org/cppdocs/installing.html">PyTorch's website</a></li>
+ 	<li>To access stable LibTorch stable release, select litroch and follow <a href="https://pytorch.org/get-started/locally/">instructions</a></li>
+ 	<li>To access Nightly builds: <a href="https://download.pytorch.org/libtorch/nightly/cpu/libtorch-win-arm64-shared-with-deps-latest.zip">Release</a>, <a href="https://download.pytorch.org/libtorch/nightly/cpu/libtorch-win-arm64-shared-with-deps-debug-latest.zip">Debug</a></li>
+</ul>
+<h3>Recommendations:</h3>
+It is advisable to create a Virtual Environment (venv) within your projects.  A virtual environment separates dependencies between projects, providing isolation.
+
+For further information, please refer to the documentation available on <a href="https://code.visualstudio.com/docs/python/environments#_creating-environments">VS Code</a> and <a href="https://docs.python.org/3/library/venv.html">Python</a>.
+<h2>Example:</h2>
+In this next example, we have used Arm native PyTorch binaries with <a href="https://huggingface.co/stabilityai/sd-turbo"><em>stabilityai/sd-turbo</em></a> model for stable diffusion. Some of the terminologies used in this example:
+
+<strong>Prompt:</strong> A descriptive phrase or sentence that will be used by the Stable Diffusion model to generate images.
+
+<strong>Steps: </strong>A slider that allows the user to select the number of inferences steps the model should take to generate the images. More steps can lead to higher quality images but will take longer to process.
+
+<strong>Seed:</strong> A numerical input field where the user can enter a specific seed value to ensure reproducibility of the generated images. If left empty, a random seed will be used, resulting in different images each time for the same prompt. The default value is 42.
+
+Below is the code, which can also be accessed on the GitHub repository, <a href="https://github.com/Windows-on-ARM-Experiments/pytorch-examples/tree/main/stable-diffusion">pytorch-examples/stable-diffusion</a>:
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">import gradio as gr
+
+import torch
+
+from diffusers import StableDiffusionPipeline
+
+
+
+
+device = &quot;cpu&quot;
+
+pipe = StableDiffusionPipeline.from_pretrained(&quot;stabilityai/sd-turbo&quot;, torch_dtype=torch.float32)
+
+pipe = pipe.to(device)
+
+
+
+
+def generate_image(prompt, steps, seed):
+
+generator = None
+
+if seed is not None:
+
+generator = torch.Generator(device=device).manual_seed(seed)
+
+
+
+
+# guidance is 0.0 as recommended by sd-turbo
+
+# width and height are set to 512 as recommended by sd-turbo
+
+result = pipe(prompt, num_inference_steps=steps,        num_images_per_prompt=2, guidance_scale=0.0, generator=generator, width=512, height=512)
+
+return result.images[0], result.images[1]
+
+
+
+
+with gr.Blocks() as demo:
+
+gr.Markdown(&quot;# SD Turbo Demo - WoA&quot;)
+
+with gr.Row():
+
+prompt = gr.Textbox(label=&quot;Prompt&quot;, placeholder=&quot;Enter your prompt here&quot;)
+
+steps = gr.Slider(minimum=1, maximum=5, step=1, value=1, label=&quot;Steps&quot;)
+
+seed = gr.Number(label=&quot;Seed (leave empty for random seed)&quot;, value=42, precision=0)
+
+with gr.Row():
+
+image1 = gr.Image(type=&quot;pil&quot;, label=&quot;Generated Image 1&quot;)
+
+image2 = gr.Image(type=&quot;pil&quot;, label=&quot;Generated Image 2&quot;)
+
+gr.Button(&quot;Generate&quot;).click(
+
+fn=generate_image,
+
+inputs=[prompt, steps, seed],
+
+outputs=[image1, image2]
+
+)
+
+
+
+
+demo.launch(share=False)</pre>
+<h2>Output:</h2>
+[caption id="attachment_57429" align="alignnone" width="786"]<img class="wp-image-57429 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/04/Cats.png" alt="Two images of cats" width="786" height="443" /> Figure 3: Image Output[/caption]
+
+<strong><em>Disclaimer:</em></strong><em> The model used in this example is </em><a href="https://huggingface.co/stabilityai/sd-turbo"><em>stabilityai/sd-turbo</em></a><em>. As this is a basic generative AI application, we do not assume responsibility for the results generated. You are solely responsible for generating images on your computer.</em>
+
+<strong>Note</strong>:
+
+Some packages you may use alongside PyTorch don’t have Arm native support for Windows.
+<strong>pip</strong> can automatically install dependencies from source code (tar.gz) and compile them into “.whl” files using MSVC and Rust on your system.
+
+Please check the prerequisites section for details.
+<ul>
+ 	<li><strong>NumPy 2.2.3 </strong>can be installed via compilation.</li>
+</ul>
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">pip install numpy==2.2.3</pre>
+<ul>
+ 	<li><strong>safetensors 0.5.3 </strong>can be installed via compilation.
+<pre class="EnlighterJSRAW" data-enlighter-language="generic">pip install safetensors==0.5.3</pre>
+</li>
+</ul>
+<h2>Conclusion</h2>
+Developers can now start using stable Arm native PyTorch builds for Windows to create applications that leverage AI and utilize the full potential of ARM architecture. Give the native binaries a try today! <a href="https://pytorch.org/">Download here</a>.]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>GitHub Actions now supports Windows on Arm runners for all public repos</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2025/04/14/github-actions-now-supports-windows-on-arm-runners-for-all-public-repos/</link>
 		
@@ -622,55 +786,6 @@ We hope these improvements spark a bit more joy as you’re using the Store on W
 We have a lot more fun in store for you in 2025 – stay tuned!
 
 <sup>1</sup> Data based on internal testing and subject to factors such as device, location, Windows and Store app versions.]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>DirectML unlocks new silicon for AI experiences across Windows Copilot+ PCs</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2024/11/12/directml-unlocks-new-silicon-for-ai-experiences-across-windows-copilot-pcs/</link>
-		
-		<dc:creator><![CDATA[]]></dc:creator>
-		<pubDate>Tue, 12 Nov 2024 18:00:21 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57163</guid>
-
-					<description><![CDATA[<p>October was an exciting month of amazing showcases and announcements for applications leveraging the power of the NPU on the new Copilot+ PCs to deploy their AI innovations on Windows. Windows’ diverse hardware ecosystem empowers developers with a </p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2024/11/12/directml-unlocks-new-silicon-for-ai-experiences-across-windows-copilot-pcs/">DirectML unlocks new silicon for AI experiences across Windows Copilot+ PCs</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[October was an exciting month of amazing showcases and announcements for applications leveraging the power of the NPU on the new Copilot+ PCs to deploy their AI innovations on Windows. Windows’ diverse hardware ecosystem empowers developers with a range of options at their fingertips to develop and deploy AI. From client to web apps, DirectML, foundational to <a href="https://developer.microsoft.com/en-us/windows/ai/">Windows Copilot Runtime</a>, aims to uniquely simplify how developers can scale their AI innovations across Windows. Through a single, cross-hardware DirectX API, DirectML works across different hardware architectures, local device accelerators and machine learning frameworks, supporting an open platform for AI on Windows.
-
-Let’s see some of the amazing AI innovations leveraging DirectML on Copilot+ PC NPUs.
-<h2>Adobe® Premiere® Pro is the first Adobe app to leverage NPU on Copilot+ PCs, powered by Intel® Core™ Ultra and DirectML</h2>
-Adobe is at the forefront of machine learning (ML) for creatives by providing a variety of hardware-accelerated features throughout their product suite. Now, Adobe Premiere Pro has enabled the machine learning efficiency of the latest Intel Core Ultra processors, opening up even more platform possibilities for Adobe customers.
-
-Through collaboration with Intel and Microsoft, Adobe enabled Audio Category Tagger to optionally utilize Intel’s latest generation NPU using DirectML as a beta capability in Premiere Pro. This feature automatically tags audio, classifying clips as sound effects, music, dialog or ambience, which makes it easy for creatives to just get started editing their audio files right away. Each clip is marked with an Essential Sound Badge, and clicking on that badge opens the Essential Sound Panel to give access to parameters needed for that sound category.
-
-[caption id="attachment_57164" align="aligncenter" width="1024"]<img class="wp-image-57164 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/11/Adobe-Premier-Pro-Audio-Category-Tagger-1024x331.png" alt="A screen capture of Premier Pro showing audio clips marked by icons indicating audio categories A, B, C, and D. A is Music, B is SFX, C is Dialogue, and D is Ambience." width="1024" height="331" /> Audio Category Tagger labeling A. Music B. SFX C. Dialogue D. Ambience[/caption]
-
-We are excited to partner with an AI innovator like Adobe to deliver on the promise of DirectML. Adobe’s extensive portfolio of applications and AI-driven scenarios offers a unique proving ground for DirectML and we’ll continue our partnership across GPU- and NPU-accelerated applications.
-<h2>Capture One to bring NPU-enhanced Match Look and AI Crop features to Copilot+ PCs</h2>
-<strong>Capture One</strong> is an imaging software commercial studio photographers use in the fashion and e-commerce industries. It helps professionals quickly edit many images while maintaining complete control over the creative expression and artistry behind every shot. At Snapdragon Summit, Capture One showcased two advanced AI-powered features on Copilot+ PCs powered by the Qualcomm NPU.
-
-[caption id="attachment_57165" align="aligncenter" width="1024"]<img class="wp-image-57165 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/11/Capture-One-Match-Look-1024x575.jpg" alt="A screenshot of the Capture One application, where the Match Look feature is being applied to an image of a woman holding pears to her ears." width="1024" height="575" /> The Match Look feature being applied to an image in Capture One[/caption]
-
-<strong>Match Look</strong> is a brand new tool that lets you instantly match the style or edits of a reference image — whether from a previous project, a film still or a mood board. It uses AI selection to dynamically adjust multiple editing sliders, giving you a strong starting point for editing and color grading.
-
-[caption id="attachment_57167" align="aligncenter" width="1024"]<img class="wp-image-57167 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/11/Capture-One-Ai-Crop-1024x575.jpg" alt="A screenshot of the Capture One application where there is a crop reference set on an image of a purse in order to use the AI Crop feature. AI Crop is displayed on the right hand side of the screenshot where it's consistently applying the crop to other images." width="1024" height="575" /> The AI Crop feature in use in Capture One[/caption]
-
-<strong>AI Crop </strong>allows you to make instant and consistent crops. Avoid errors and reduce manual effort. Set a crop reference on a single photo and automatically create consistent crops for all other images, even while shooting.
-
-Capture One continues to utilize AI innovation in a way that maintains the creative artistry their photographers required and DirectML is excited to partner with them to bring their vision to life.
-<h2>Affinity Photo 2 accelerates Object and Subject Selection capabilities with NPU</h2>
-Affinity Photo 2 is a popular image-editing app that is used by millions of digital creators worldwide. Human creativity is the heart of Affinity products, so it’s no surprise that the first AI enhanced tools they announced are focused on optimizing artist workflows — eliminating tedious tasks and friction between creator and canvas. Affinity Photo 2 will scale these features to their creator base by using DirectML on Copilot+ PCs. Like stated during the Snapdragon Summit, they have already achieved the optimized workflow of these AI experiences with DirectML, powered by the Qualcomm® Hexagon NPU in the Snapdragon<sup>®</sup> X Elite Compute Platform.
-
-<strong>Object Selection</strong> is a newly announced feature that eliminates the grunt work of manually creating layer masks, by using ML to quickly isolate and segment objects within an image. Automating this process gives artists a shortcut to the ‘real’ creative work — applying visual adjustments and effects to targeted areas within an image. Using the Qualcomm® Hexagon NPU in the Snapdragon<sup>®</sup> X Elite Compute Platform, Object Selection tasks will increase overall efficiency and productivity for creators.
-
-[caption id="attachment_57168" align="aligncenter" width="1024"]<img class="wp-image-57168 size-large" src="https://blogs.windows.com/wp-content/uploads/prod/sites/3/2024/11/Affinity-Object-Selection-1920-1024x576.png" alt="A screenshot of Affinity Photo 2 with Object Selection being applied to select a car in an image of a car with smoke all around it." width="1024" height="576" /> Object Selection being applied within Affinity Photo 2[/caption]
-
-Affinity is at the forefront of identifying ML innovations that deliver to their promise of incredible speed, power and precision image editing software and DirectML looks forward to scaling this promise across Windows’ diverse hardware ecosystem.
-<h2>What’s next?</h2>
-The DirectML team is always excited to see the creative and amazing ways developers are innovating with AI to enhance the experience for their customers across Windows. Stay tuned for more DirectML features coming soon, as we continue to invest in features to support an open platform for AI on Windows! To learn more about DirectML and to get started today, visit <a href="https://learn.microsoft.com/en-us/windows/ai/directml/dml">aka.ms/directml</a> or check us out at various sessions at <a href="https://ignite.microsoft.com/en-US/home">Microsoft Ignite</a>.]]></content:encoded>
 					
 		
 		
