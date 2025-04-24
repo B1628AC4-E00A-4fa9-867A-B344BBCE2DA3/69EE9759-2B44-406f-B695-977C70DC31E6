@@ -1,4 +1,196 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Mar 2025 01:59:25 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[NextJSのoutput: exportによるi18n]]></title><description><![CDATA[この記事では、Next.jsのプロジェクトにおける国際化対応（i18n）の設定方法について説明します。Next.jsが直接サポートしていない部分の課題を克服しながら、Pages Routerを使用し…]]></description><link>https://postd.cc/i18n-with-nextjs-output-export/</link><guid isPermaLink="false">https://postd.cc/i18n-with-nextjs-output-export/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Mon, 24 Mar 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、Next.jsのプロジェクトにおける<strong>国際化対応</strong>（i18n）の設定方法について説明します。<strong>Next.js</strong>が直接サポートしていない部分の課題を克服しながら、Pages Routerを使用してi18nを実装する方法と、output: exportを使用する方法について検討したいと思います。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Apr 2025 03:05:05 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Next.jsのPages RouterからApp Routerに移行する]]></title><description><![CDATA[Next.jsプロジェクトをアップグレードする Next.jsの従来のPages Routerから新しいApp Routerに移行しましょう。ここの移行により、アプリケーションのルーティング効率と柔…]]></description><link>https://postd.cc/migrate-from-nextjs-pages-to-app-router/</link><guid isPermaLink="false">https://postd.cc/migrate-from-nextjs-pages-to-app-router/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Thu, 24 Apr 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>Next.jsプロジェクトをアップグレードする</h2>
+<p>Next.jsの従来のPages Routerから新しいApp Routerに移行しましょう。ここの移行により、アプリケーションのルーティング効率と柔軟性が向上します。App Routerは、ファイルシステムベースのルーティング機能が改善されたほか、React Server Componentsが導入されたことなどにより、開発体験を向上させます。</p>
+<h3>依存関係をチェックする</h3>
+<p>package.jsonファイルのバージョンが最新であることが重要です。依存関係をすべてチェックし、新しいApp Routerと互換性があることを確認しましょう。必要であればアップグレードしてください。この準備を行うことで、移行時に互換性の問題が発生するのを避けることができます。</p>
+<p>依存関係は<code class="language-text">npm</code>を使用することで簡単にチェックできます。以下のコマンドを実行してください。</p>
+<p><code class="language-text">$ npm outdated</code></p>
+<h3><code class="language-text">/app</code>ディレクトリを作成する</h3>
+<p>まずは、Next.jsプロジェクトのルートに新しい<code class="language-text">/app</code>ディレクトリを作成しましょう。App Routerのファイルやコンポーネントはすべてここに格納されます。</p>
+<h3>PagesフォルダからAppフォルダにファイルを移動する</h3>
+<p>サーバー上でレンダリングされるHTMLドキュメントは、<code class="language-text">/pages/_document.tsx</code>ファイルを使用してカスタマイズします。App Routerでは、<code class="language-text">/app/layout.tsx</code>ファイルがこの機能を担います。</p>
+<ul>
+<li>
+<p><code class="language-text">/pages/_document.tsx</code>の内容を<code class="language-text">/app/layout.tsx</code>という新しいファイルにコピーします。</p>
+</li>
+<li>
+<p><code class="language-text">next/document</code>のインポートを削除し、<code class="language-text">&lt;Html></code>、<code class="language-text">&lt;Head></code>、<code class="language-text">&lt;Main /></code>の各コンポーネントを対応するHTMLコンポーネント（<code class="language-text">&lt;html></code>、<code class="language-text">&lt;head></code>、<code class="language-text">{children}</code>）に置き換えます。</p>
+</li>
+<li>
+<p><code class="language-text">&lt;NextScript /></code>コンポーネントを削除します。</p>
+</li>
+</ul>
+<h3>ページをApp Routerに移行する</h3>
+<p><code class="language-text">/pages</code>ディレクトリにある各ページについて、対応するフォルダ構造を<code class="language-text">/app</code>ディレクトリに作成する必要があります。</p>
+<ul>
+<li>
+<p>ページのURLパスと一致するフォルダ構造を<code class="language-text">/app</code>に作成します。例えば、<code class="language-text">/pages/about.tsx</code>にページがある場合、<code class="language-text">/app/about/page.tsx</code>ファイルを作成します。</p>
+</li>
+<li>
+<p><code class="language-text">page.tsx</code>ファイルに元のページコンポーネントの内容をコピーします。</p>
+</li>
+<li>
+<p>ページコンポーネントがクライアントサイドの機能（Hooks、Browser APIなど）を使用する場合、ファイルの先頭に<code class="language-text">use client</code>ディレクティブを記述してラップする必要があります。</p>
+</li>
+</ul>
+<h3>データフェッチをアップデートする</h3>
+<p>App Routerでは、Next.jsの従来のデータフェッチ方法（<code class="language-text">getStaticProps</code>、<code class="language-text">getServerSideProps</code>、<code class="language-text">getStaticPaths</code>）は使用されません。その代わり、ページコンポーネント内で直接データをフェッチできます。</p>
+<ul>
+<li>
+<p>ページコンポーネント内に<code class="language-text">getStaticProps</code>、<code class="language-text">getServerSideProps</code>、<code class="language-text">getStaticPaths</code>のいずれかの関数がある場合は削除します。</p>
+</li>
+<li>
+<p>JavaScript/TypeScriptの標準の非同期関数を使用し、ページコンポーネント内で直接データをフェッチします。</p>
+</li>
+</ul>
+<h3>例1：データフェッチ</h3>
+<h4>移行前（Pages Router）</h4>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token comment">// /pages/about.tsx</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> GetStaticProps <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'next'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">const</span> getStaticProps<span class="token operator">:</span> <span class="token function-variable function">GetStaticProps</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetchSomeData</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span>
+    props<span class="token operator">:</span> <span class="token punctuation">{</span> data <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">AboutPage</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> data <span class="token punctuation">}</span><span class="token operator">:</span> <span class="token punctuation">{</span> data<span class="token operator">:</span> <span class="token builtin">any</span> <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">About Page</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>data<span class="token punctuation">.</span>message<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> AboutPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h4>移行後（App Router）</h4>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token keyword">import</span> <span class="token punctuation">{</span> fetchSomeData <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@/lib/data'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">AboutPage</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetchSomeData</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">About Page</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>data<span class="token punctuation">.</span>message<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> AboutPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>ルーティングのHooksを移行する</h2>
+<p>App Routerでは、Pages Routerで使用されていたものに代わる新しいルーティングのHooksが導入されます。</p>
+<ul>
+<li>
+<p><code class="language-text">next/router</code>から<code class="language-text">useRouter()</code>を使用する代わりに、<code class="language-text">next/navigation</code>から<code class="language-text">useRouter()</code>、<code class="language-text">usePathname()</code>、<code class="language-text">useSearchParams()</code>を使用します。</p>
+</li>
+<li>
+<p>新しいHooksの<code class="language-text">useRouter()</code> は、<code class="language-text">pathname</code>と<code class="language-text">query</code>のプロパティを返しません。代わりに、<code class="language-text">usePathname()</code>と<code class="language-text">useSearchParams()</code>を使用します。</p>
+</li>
+</ul>
+<h3>例2：ルーティングのHooksの移行</h3>
+<h4>移行前（Pages Router）</h4>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token comment">// /pages/users/[id].tsx</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useRouter <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'next/router'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">UserPage</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> <span class="token punctuation">{</span> query <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">useRouter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> userId <span class="token operator">=</span> query<span class="token punctuation">.</span>id <span class="token keyword">as</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">User Page</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">User ID: </span><span class="token punctuation">{</span>userId<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> UserPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h4>移行後（App Router）</h4>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token comment">// /app/users/[id]/page.tsx</span>
+<span class="token string">'use client'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token punctuation">{</span> usePathname<span class="token punctuation">,</span> useSearchParams <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'next/navigation'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">UserPage</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> pathname <span class="token operator">=</span> <span class="token function">usePathname</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> searchParams <span class="token operator">=</span> <span class="token function">useSearchParams</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> userId <span class="token operator">=</span> searchParams<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'id'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">User Page</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">User ID: </span><span class="token punctuation">{</span>userId<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> UserPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h3>エラーハンドリングをアップデートする</h3>
+<p>App Routerでは、Pages Routerとはエラーハンドリングのアプローチが異なります。</p>
+<ul>
+<li>
+<p>グローバルエラーのハンドリングについては、<code class="language-text">pages/_error.js</code>ファイルを<code class="language-text">app/error.tsx</code>に置き換えます。</p>
+</li>
+<li>
+<p>特定のルートに関連するエラーの処理のためにページフォルダ内に個別の<code class="language-text">error.tsx</code>ファイルを作成します。</p>
+</li>
+</ul>
+<h3>例3：エラーハンドリングの移行</h3>
+<h4>移行前（Pages Router）</h4>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// /pages/_error.js</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> NextPageContext <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'next'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">ErrorPage</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> statusCode <span class="token punctuation">}</span><span class="token operator">:</span> <span class="token punctuation">{</span> <span class="token literal-property property">statusCode</span><span class="token operator">:</span> number <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Error </span><span class="token punctuation">{</span>statusCode<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">An error occurred on the server</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+ErrorPage<span class="token punctuation">.</span><span class="token function-variable function">getInitialProps</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> res<span class="token punctuation">,</span> err <span class="token punctuation">}</span><span class="token operator">:</span> NextPageContext</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> statusCode <span class="token operator">=</span> res <span class="token operator">?</span> res<span class="token punctuation">.</span>statusCode <span class="token operator">:</span> err <span class="token operator">?</span> err<span class="token punctuation">.</span>statusCode <span class="token operator">:</span> <span class="token number">404</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span> statusCode <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> ErrorPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h4>移行後（App Router）</h4>
+<div class="gatsby-highlight" data-language="tsx"><pre style="counter-reset: linenumber NaN" class="language-tsx line-numbers"><code class="language-tsx"><span class="token comment">// /app/error.tsx </span>
+<span class="token comment">// エラーコンポーネントはClient Componentである必要があります！</span>
+<span class="token string">'use client'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">ErrorPageProps</span> <span class="token punctuation">{</span>
+  error<span class="token operator">:</span> Error <span class="token operator">&amp;</span> <span class="token punctuation">{</span> digest<span class="token operator">?</span><span class="token operator">:</span> <span class="token builtin">string</span> <span class="token punctuation">}</span>
+  <span class="token function-variable function">reset</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token keyword">void</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">ErrorPage</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> error<span class="token punctuation">,</span> reset <span class="token punctuation">}</span><span class="token operator">:</span> ErrorPageProps<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">Error</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>error<span class="token punctuation">.</span>message<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>
+          <span class="token comment">// セグメントの再レンダリングにより復旧を試みます。</span>
+          <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">reset</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+		Try again
+	  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> ErrorPage<span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h3>他の機能の移行</h3>
+<p>アプリケーションによっては、APIルートやミドルウェア、カスタムdocument/appコンポーネントなど他の機能も移行する必要があるかもしれません。これらの機能をApp Routerに移行する方法については、Next.jsのドキュメントをご覧ください。</p>
+<h3>テストと検証</h3>
+<p>移行が完了したら、アプリケーションのテストを行い、すべての機能が正常に動作することを確認しましょう。Pages RouterとApp Routerで挙動に違いが見られないか注意してみてください。</p>
+<p>App RouterとPages Routerは同じNext.jsアプリケーション上に共存できるため、段階的な移行が可能です。App Routerがまだ対応していない特定のレガシー機能を残す必要がある場合などには、そうするとよいでしょう。</p>
+<p><img src="https://www.luckymedia.dev/_next/image?url=https%3A%2F%2Fcms.luckymedia.dev%2Fassets%2Fposts%2Fnext.js-15-release-date.png&#x26;w=3840&#x26;q=75"></p>
+<h2>まとめ</h2>
+<p>Next.jsのPages Routerから新しいApp Routerに移行することで、アプリケーションのルーティング機能を強化し、柔軟性を高めることができます。依存関係をアップデートし、ファイル構造を再構築し、新しいデータフェッチとエラーハンドリングの方法に適応することで、App Routerの機能を最大限活用することができます。少し手間はかかりますが、アプリケーションの効率性と拡張性が向上することで明確なメリットが得られます。</p>]]></content:encoded></item><item><title><![CDATA[NextJSのoutput: exportによるi18n]]></title><description><![CDATA[この記事では、Next.jsのプロジェクトにおける国際化対応（i18n）の設定方法について説明します。Next.jsが直接サポートしていない部分の課題を克服しながら、Pages Routerを使用し…]]></description><link>https://postd.cc/i18n-with-nextjs-output-export/</link><guid isPermaLink="false">https://postd.cc/i18n-with-nextjs-output-export/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Mon, 24 Mar 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>この記事では、Next.jsのプロジェクトにおける<strong>国際化対応</strong>（i18n）の設定方法について説明します。<strong>Next.js</strong>が直接サポートしていない部分の課題を克服しながら、Pages Routerを使用してi18nを実装する方法と、output: exportを使用する方法について検討したいと思います。</p>
 <div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>国際化ルーティングは、Next.jsのルーティングレイヤーを使用しないため<code class="language-text">output: 'export'</code>では実装できません。<code class="language-text">output: 'export'</code>を使用しないHybrid Next.jsのアプリケーションは完全にサポートされています。</p></div></div>
 <p>まず初めに、TypeScriptを使用してNext.js v14のプロジェクトを初期化しましょう。TypeScriptの代わりにJavaScriptを使用することもできます。どちらも問題なく使用できます。</p>
 <h2>NextJSプロジェクトの初期化</h2>
@@ -1920,170 +2112,4 @@ React 19以前では、<code class="language-text">useDeferredValue</code>は与
 <ul>
 <li><a href="https://joyofreact.com/">The Joy of React</a></li>
 </ul>
-<p>最後まで読んでいただきありがとうございました！ 💖</p>]]></content:encoded></item><item><title><![CDATA[言葉で説明できないとき：対話型インターフェースを超えるAIのためのデザイン]]></title><description><![CDATA[クイックサマリー：人工知能がコンピューティングパラダイムの進化をもたらしており、それに伴いデザイナーはより直感的なユーザーインターフェースを開発するチャンスに恵まれています。新しい機能のほとんどは、…]]></description><link>https://postd.cc/designing-ai-beyond-conversational-interfaces/</link><guid isPermaLink="false">https://postd.cc/designing-ai-beyond-conversational-interfaces/</guid><category><![CDATA[生成AI]]></category><category><![CDATA[UIデザイン]]></category><category><![CDATA[UXデザイン]]></category><pubDate>Fri, 21 Jun 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：人工知能がコンピューティングパラダイムの進化をもたらしており、それに伴いデザイナーはより直感的なユーザーインターフェースを開発するチャンスに恵まれています。新しい機能のほとんどは、テキストベースの大規模言語モデルによって実現されているため、グラフィカルインターフェースからチャットボットのような対話型インターフェースへの移行が必要との声が多く聞かれるようになっています。しかし、多くのインタラクションパターンにおいて、対話は優れたインターフェースではないことをかなりの証拠が示しています。最新のAI機能によって、対話だけにとどまらずヒューマンコンピューターインタラクションの未来がどう変わりうるのか、マクシミリアン・ピラスが考察します。</p>
-<hr>
-<p>人間とコンピューターのインタラクションのあり方を根本から変えうるような技術革新はそうそうありません。幸運なことに、次のパラダイムシフトは今まさに私たちの目の前で展開されているようです。</p>
-<p>こうした変化は、新たな抽象化レイヤーを解放し、サブシステムの詳細な仕組みを覆い隠す傾向にあります。詳細を一般化することで、複雑なシステムをより単純で直感的なものとして見せることができます。それにより、コンピュータープログラムのコーディングや、コンピューターを操作するためのインターフェースの設計が合理化されます。</p>
-<p>例えば、<strong>コマンドラインインターフェース</strong>は抽象化レイヤーを作り出し、格納されたプログラムによるインタラクションを可能にしました。その結果、スイッチを用いて1と0を入力することでしかプログラミングできなかった以前のコンピューターではあらわになっていたサブシステムの詳細が見えなくなりました。</p>
-<p><strong>グラフィカルユーザーインターフェース（GUI）</strong> は、視覚的メタファーを用いてコンピューターを操作できるようにすることで、この概念をさらに抽象化しました。これらの抽象概念により、コンピューターは大勢の一般ユーザーにも使えるものになりました。</p>
-<p>こうした進歩を遂げてきたものの、まだ完璧に直感的なインターフェースは見つかっていません。インターネット上に公開されている大量の関連論文からもそれは明らかです。しかし、近年見られるAIの進歩を受け、多くの技術者はコンピューティングの次なる進化のサイクルが始まっていると確信しています。</p>
-<p><img src="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/1-smashing-abstraction-intro.gif"></p>
-<p><em>インターフェースの抽象化レイヤー（下から上）：コマンドラインインターフェース、グラフィカルユーザーインターフェース、AI搭載の対話型インターフェース。（出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/1-smashing-abstraction-intro.gif">拡大プレビュー</a>）</em></p>
-<h2>次のインターフェース抽象化レイヤー <a href="#次のインターフェース抽象化レイヤー">#</a><a name="次のインターフェース抽象化レイヤー"></a></h2>
-<p>近年のイノベーションの大半は、機械学習の一種である<strong>生成AI</strong>によって推進されています。データセット内のパターンを認識し、確率分布を推定することで、テキストやメディア、コードの斬新な構成を可能にします。コンピューターの制御がさらに簡単になることから、「グラフィカルユーザーインターフェース以来最も重要なテクノロジーの進化」であると<a href="https://www.gatesnotes.com/The-Age-of-AI-Has-Begun">ビル・ゲイツ氏は語っています</a>。自然言語のような非構造化データを解釈する能力を新たに手に入れたことで、これまでにない形の入出力が可能になり、<a href="https://twitter.com/AviSchiffmann/status/1708439854005321954">今までにない</a> <a href="https://www.youtube.com/watch?v=9lNIwOOMVHk">斬新な</a> <a href="https://www.youtube.com/watch?v=Yla0f5JZg78">物理仕様</a>を実現できるようになりました。</p>
-<p>今では、人間同士で話すように直感的なインターフェースを通して即座に膨大な量の情報を呼び出せるようになりました。これらは『スタートレック』に登場する「データ（※訳注：劇中に登場するアンドロイドキャラクター）」に搭載されたシステムのような、私たちが夢見てきたSF世界のコンピューターです。もしかすると、これまでのコンピューターは試作品に過ぎず、これから出てくるのが本当の製品なのかもしれません。<strong>インターネットの構築が線路を敷く行為だと仮定すると、AIは猛スピードで情報を運ぶ列車かもしれません</strong>。これらの列車がものすごいスピードで街に入ってくるとどうなるか、これから目の当たりにすることになるでしょう。</p>
-<blockquote>
-<p>「画面をタップするのではなくコマンドプロンプトを入力してコンピューターを使っていた日々のようにAI以前の時代はもうすぐ遠い過去に感じられるようになるでしょう」<br>
-— ビル・ゲイツ、『<a href="https://www.gatesnotes.com/The-Age-of-AI-Has-Begun">The Age of AI Has Begun（AIの時代が始まった）</a>』</p>
-</blockquote>
-<p>今後何もかも変わるのであれば、ソフトウェアデザイナーのメンタルモデルも変わらなくてはいけません。<a href="https://www.lukew.com/ff/entry.asp?933">ルーク・ウルブレフスキー氏</a>がかつてモバイルファーストデザインを普及させたように、次のトレンドはAIファーストになるでしょう。AIの制約と能力を理解することで、初めて人に喜ばれるものを作れます。インターフェースの進化に関する議論にはすでに影響を与え始めています。</p>
-<p>例えば、大規模言語モデル（LLM）は多くの新しいアプリケーションで使われているAIで、テキストベースであるため、将来的にはチャットボットのような対話型インターフェースが適していると多くの人が考えています。AIが語りかける対象であるという考え方は、<a href="https://www.wired.com/2013/03/conversational-user-interface/">何年も前から業界内で広がっています</a>。『UXマガジン』誌の共同オーナーであるロブ・ウィルソン氏は、著書『The Age of Invisible Machines（透明な機械の時代）』（2022年）の中で、対話は「無限に拡張可能なインターフェース」であると語っています。<a href="https://www.designerfund.com/blog/how-figma-midjourney-and-databricks-harness-ai-in-design/">フィグマ社のプロダクトデザイン担当バイスプレジデントであるノア・レヴィン氏</a>は、「対話の仕方を学ぶというのは、非常に直感的なものである」と述べています。GUIの先駆者である<a href="https://www.gatesnotes.com/The-Age-of-AI-Has-Begun">ビル・ゲイツ氏</a>でさえ、「カーソルを合わせてクリックするというコンピューターの制御方法は、今後主流ではなくなります」と断言しています。</p>
-<p><img src="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/2-smashing-abstraction-mscopilot-800px.gif"></p>
-<p><em>Microsoft Copilotは、マイクロソフト社のオフィススイート全体への統合が進められている新しい対話型AI機能です。（出典：<a href="https://www.microsoft.com/en-us/microsoft-365/blog/2023/03/16/introducing-microsoft-365-copilot-a-whole-new-way-to-work/">マイクロソフト社</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/2-smashing-abstraction-mscopilot.gif">拡大プレビュー</a>）</em></p>
-<p>対話型コンピューターにより、学習曲線が平坦化することが望まれています。<a href="https://www.rabbit.tech/keynote">ラビット社の創設者であるジェシー・リュー氏</a>は、自然言語によるアプローチは「使い方を学ぶ必要がないほど直感的」だと言います。</p>
-<p>『スタートレック』の「データ」も取扱説明書が付いてきたわけではありません。その観点で言うと、GUIに取って代わる対話型インターフェースの<a href="https://www.shopify.com/partners/blog/conversational-interfaces">進化の物語</a>も必然的であるように感じられ、過去に見られたコマンドラインからの転換を彷彿させます。しかし、チャットボットのような対話型インターフェースを「怠惰な解決策」とまで呼ぶ<a href="https://maggieappleton.com/lm-sketchbook">マギー・アップルトン氏</a>のように、<a href="https://wattenberger.com/thoughts/boo-chatbots">異論</a>を唱える者もいます。</p>
-<p>一見すると意見が分裂しているように見えるかもしれませんが、むしろインターフェースの進化を単純に捉え過ぎた結果だと言えるでしょう。コマンドラインは決して廃れてなどいません。柔軟性や効率性に優れるため、技術者は今でも好んで使用しています。ソフトウェア開発や自動化スクリプトの作成などのユースケースの場合、コードを使用しないグラフィカルツールにおいて追加された抽象化レイヤーは、橋渡しどころか障壁となることがあります。</p>
-<blockquote>
-<p><a class="pull-quote__link" aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aGUIs%20were%20revolutionary%20but%20not%20a%20panacea.%20Yet%20there%20is%20ample%20research%20to%20suggest%20conversational%20interfaces%20won%e2%80%99t%20be%20one,%20either.%20For%20certain%20interactions,%20they%20can%20decrease%20usability,%20increase%20cost,%20&%20introduce%20security%20risk%20relative%20to%20GUIs.%0a%0a&url=https://smashingmagazine.com%2f2024%2f02%2fdesigning-ai-beyond-conversational-interfaces%2f">GUIは革命的ではありましたが、万能薬ではありませんでした。多くの研究結果が、対話型インターフェースも万能薬にはならないことを示しています。インタラクションによっては、GUIに比べて使い勝手が損なわれ、コストが増し、セキュリティリスクがもたらされる可能性があります。</a></p>
-</blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<p><strong>では、人工知能を搭載したアプリケーションにはどのようなインターフェースが適しているのでしょうか？</strong>この記事では、インターフェースとしての対話の可能性と制約を比較することで、その判断を下すのに必要な情報を提供します。</p>
-<h2>ピクセルをつなぐ <a href="#ピクセルをつなぐ">#</a><a name="ピクセルをつなぐ"></a></h2>
-<p>過去を振り返ることから始めるのが、未来を知るための鍵になることが多いため、まずは歴史的背景から見ていきましょう。対話型インターフェースは新しいもののように感じられますが、実はコンピューターと会話することは何十年も前から可能でした。</p>
-<p>世界初のチャットボットである<a href="https://en.wikipedia.org/wiki/ELIZA">ELIZA</a>は、ジョセフ・ワイゼンバウム氏が1966年にMITで行った実験によって発明されました。これが、音声アシスタントのAlexaや、電話の自動音声応答など、以後何世代にもわたる言語モデルの基礎を築いたのです。しかし、チャットボットの大半は、<a href="https://www.theverge.com/2021/12/23/22851451/amazon-alexa-by-the-way-use-case-functionality-plateaued">タイマーをセットするといった基本的な作業</a>にしか使われず、それ以上の用途を与えられることはほとんどありませんでした。</p>
-<p>ほとんどの消費者は、さほどコンピューターと対話したいとは思っていないようでした。しかし、昨年何かが変わったようです。<a href="https://www.cnet.com/tech/computing/why-were-all-obsessed-with-the-mind-blowing-chatgpt-ai-chatbot/">CNETの記事</a>では、「72%の人がチャットボットは時間の無駄と考えている」と報じられていたにもかかわらず、<a href="https://techcrunch.com/2023/11/06/openais-chatgpt-now-has-100-million-weekly-active-users/">ChatGPTの1週間のアクティブユーザー数が1億人に達した</a>のです。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/3-abstraction-eliza.png"></p>
-<p><em>1966年に発明された世界初のチャットボットELIZAとの会話。（画像出典：<a href="https://en.wikipedia.org/wiki/ELIZA">ウィキペディア</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/3-abstraction-eliza.png">拡大プレビュー</a>）</em></p>
-<p>不毛と見られていたチャットボットの驚くべき躍進をもたらしたものは何でしょうか？多くの専門家がその要因として挙げるのが、<a href="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf">OpenAI社が2018年に発明</a>（PDF）した<strong>GPT（Generative Pre-trained Transformer</strong>）です。GPTは、自然言語の理解力が大幅に改善した新しいタイプのLLMです。しかし、GPTの中核にあるのは、それ以前の<a href="https://arxiv.org/pdf/1706.03762.pdf">2017年に紹介されたTransformerアーキテクチャの技術革新</a>（PDF）です。このアーキテクチャにより、自然言語の入力の前後にある長期間にわたる文脈を捕捉するために必要な並行処理が可能になりました。さらに掘り下げると、このアーキテクチャが可能なのは、<a href="https://arxiv.org/pdf/1409.0473.pdf">2014年に紹介された注意機構</a>（PDF）のおかげです。これにより、入力の異なる部分を選択的に比較検討することが可能になりました。</p>
-<p>こうした相補的な技術革新を組み合わせることで、対話型インターフェースはより幅広い作業でGUIと競い合える存在になったのです。GUIがコマンドラインの有望な代替技術として実用化された際も、驚くほど類似した経過をたどっています。もちろん、キーストロークを超えるユーザーシグナルを捕捉するにはマウスのようなハードウェアが必要であり、十分な解像度の画面も必要でした。しかし、研究者らは何年も後になってビットマップを発明したことで、欠けていたソフトウェアの要素を発見したのでした。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/4-abstraction-sketchpad.png"></p>
-<p><em>1963年にSketchpadのグラフィカルユーザーインターフェースを使用するアイバン・サザランド氏。（画像出典：<a href="https://www.researchgate.net/figure/Ivan-E-Sutherland-al-lavoro-con-il-suo-sistema-di-disegno-Sketchpad-ca-1963-da-Blau_fig2_310004778">ResearchGate</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/4-abstraction-sketchpad.png">拡大プレビュー</a>）</em></p>
-<p>ビットマップは、以前のベクターディスプレイが苦手とした複雑なピクセルパターンを可能にしました。例えば、アイバン・サザランド氏が発明したSketchpadは初めてのGUIでしたが、ウィンドウの重なりといった概念には対応できませんでした。『IEEEスペクトラム』誌の「<a href="https://spectrum.ieee.org/graphical-user-interface">Of Mice and Menus（マウスとメニュー）</a>」（1989年）に、ゼロックス社パロアルト研究所のアラン・ケイ氏率いるグループによるビットマップの発明につながった進歩について記されています。この新しいテクノロジーにより、革命的な<a href="https://en.wikipedia.org/wiki/WIMP_(computing)">WIMP（ウィンドウ、アイコン、メニュー、ポインター）</a>パラダイムが可能になり、直感的な視覚的メタファーを通じて誰もがパソコンを使える時代の到来を後押ししました。</p>
-<p>コンピューティングには、あらかじめ考えられた一連のステップを最初に用意しておく必要がなくなりました。後から考えると些細なことのように思えるかもしれませんが、1963年に<a href="https://www.youtube.com/watch?v=6orsmFndx_o">MITでSketchpadのデモ</a>が行われた際、発表者らはすでに人工知能システムに言及していました。これは、<strong>精巧な計算機が探索ツールへと変貌を遂げた転換点となりました</strong>。これにより、デザイナーは発見に対するニーズが、コマンドラインがもたらす柔軟性や効率性に対するニーズを上回る体験のためにインターフェースを設計できるようになりました。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/5-abstraction-susankare.png"></p>
-<p><em>スーザン・ケア氏による、アップル社のGUIにおけるポインターアイコンの初期のスケッチ。（画像出典：<a href="https://www.itsnicethat.com/news/susan-kare-apple-macintosh-icons-california-designing-freedom-design-museum-240517">It’s Nice That</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/5-abstraction-susankare.png">拡大プレビュー</a>）</em></p>
-<h2>並行するパラダイム <a href="#並行するパラダイム">#</a><a name="並行するパラダイム"></a></h2>
-<p>新しいインターフェースが登場する度に、既存の技術に対して斬新な調整を行うことで一般ユーザーに受け入れられてきました。言うなれば、サンデーにさくらんぼを乗せるようなものです。いずれの場合も、土台のシステムはすでに存在していましたが、データ処理に関して異なる判断を下すことで出力が意義深いものとなり、技術者以外の一般ユーザーを惹きつけました。</p>
-<p>ビットマップでは、GUIはピクセルをグリッドの並びに整理し、複雑なスキュアモーフィック構造を生み出すことができます。GPTでは、対話型インターフェースは非構造化データセットを整理し、人間のような（あるいは人間を超える）知性で応答を作成することができます。</p>
-<p>どちらのパラダイムも原型となるインターフェースは1960年代に発明されていますが、その後の開発の進行には時系列的に大きな差が開きました。それ自体一つのケーススタディになりそうですが、<strong>ここでもう一つの転換点が訪れます。すなわち、計算機や探索ツールとしてだけでなく、コンピューターは生き物のように振る舞うこともできるのです</strong>。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/6-abstraction-movie-her.png"></p>
-<p><em>ジェフ・マクフェトリッジ氏による、映画『her/世界でひとつの彼女』に登場する対話型インターフェースの初期のスケッチ。（画像出典：<a href="https://gizmodo.com.au/2014/03/an-interview-with-geoff-mcfetridge-on-the-interfaces-from-her/">ギズモード</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/6-abstraction-movie-her.png">拡大プレビュー</a>）</em></p>
-<p>しかし、グラフィカルインターフェースより対話型インターフェースが求められるようなニーズとはどのようなものでしょうか？主人公がデジタルアシスタントに恋する映画『her/世界でひとつの彼女』の中で、他者との交わりに対する欲求に対する理論的解決策が見られます。しかし、生身の人間との関係に満足している人にとってのメリットは何でしょうか？<strong>対話がより直感的なインターフェースである</strong>との仮定の検証に期待しましょう。WIMPパラダイムの中核的要素のいくつかは十分に裏付けられたユーザビリティの問題があるため、この仮定には妥当性があるように思われます。</p>
-<p><a href="https://www.nngroup.com/articles/icon-usability/">ニールセン・ノーマン・グループ</a>のレポートによると、文化的違いにより、アイコンが万国共通の認識を得ることはほとんどないようです。メニューは時間とともに必然的に複雑性が増し、徐々に使い物にならなくなります。対話型インターフェースの場合、混乱して分からなければシステムにそう伝えればいいだけなので、より使い勝手は良さそうです。しかし、この後のセクションで見ていくように、対話型インターフェースにもユーザビリティの問題はあります。</p>
-<blockquote>
-<p><a class="pull-quote__link" aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aBy%20replacing%20menus%20with%20input%20fields,%20we%20must%20wonder%20if%20we%e2%80%99re%20trading%20one%20set%20of%20usability%20problems%20for%20another.%0a&url=https://smashingmagazine.com%2f2024%2f02%2fdesigning-ai-beyond-conversational-interfaces%2f">メニューを入力欄に置き換えることで、ユーザビリティに関する問題の中身が変わるだけではないのか、考える必要があります。</a></p>
-</blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<h2>対話のコスト <a href="#対話のコスト">#</a><a name="対話のコスト"></a></h2>
-<p>SF映画の中で対話型インターフェースの人気が高いのはなぜでしょうか？<a href="https://rhizome.org/editorial/2014/feb/03/ill-send-os-world-her-product-spec/">Rhizomeに掲載されたエッセー</a>の中で、マーティン・シムス氏は対話型インターフェースが「より映画的なやりとりや制作のスリム化」に役立つと論じています。同じ費用対効果はアプリケーションの開発にも当てはまります。書き言葉または話し言葉による文章補完はLLMの中核的機能です。これにより、デザインおよび技術的観点から対話がこの機能を製品化する最も簡単な方法となっています。</p>
-<p>著名なAIリサーチエンジニアであるライナス・リー氏は、「アルゴリズムの生のインターフェースをあらわにする」ものだと<a href="https://thesephist.com/posts/latent/">述べています</a>。インタラクションのパターンや構成要素はすでにほとんど定義されているため、新たに発明するものはあまりありません。すべてチャットウィンドウに盛り込むことができます。</p>
-<blockquote>
-<p>「エンジニアまたはデザイナーとして、これらのモデルの力をソフトウェアのインターフェースに組み込む作業を課せられたのであれば、この機能をUIに実装する最も簡単で自然な方法は、対話型インターフェースでしょう」<br>— ライナス・リー氏、「<a href="https://thesephist.com/posts/latent/">Imagining Better Interfaces to Language Models</a>（言語モデルのより良いインターフェースについて考える）」</p>
-</blockquote>
-<p>このことは、<a href="https://www.theatlantic.com/technology/archive/2023/11/sam-altman-open-ai-chatgpt-chaos/676050/?gift=bQgJMMVzeo8RHHcE1_KM0WVuODpKll0A708pOI0Ple4&#x26;utm_source=copy-link&#x26;utm_medium=social&#x26;utm_campaign=share">ChatGPTの発表に関するアトランティック誌のレポート</a>が「目立たないリサーチプレビュー」として扱われたことでも証明されています。OpenAI社が製品化することをためらっていたことは、ユーザーエクスペリエンスに対する自信の欠如を示すものです。社内の期待値は極めて低く、社員が予想した1週目の採用者数で最も高かったのは10万人でした（実際のユーザー数はこの数を90%上回りました）。</p>
-<blockquote>
-<p><a class="pull-quote__link" aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aConversational%20interfaces%20are%20cheap%20to%20build,%20so%20they%e2%80%99re%20a%20logical%20starting%20point,%20but%20you%20get%20what%20you%20pay%20for.%20If%20the%20interface%20doesn%e2%80%99t%20fit%20the%20use%20case,%20downstream%20UX%20debt%20can%20outweigh%20any%20upfront%20savings.%0a&url=https://smashingmagazine.com%2f2024%2f02%2fdesigning-ai-beyond-conversational-interfaces%2f">対話型インターフェースは開発コストが安いため、スタート地点として理にかなってはいますが、金額相応のものしか得られません。インターフェースがユースケースに合わなければ、先行投資を節約できてもUX面での負債がそれを上回る可能性があります。</a></p>
-</blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/7-abstraction-llmwrapper.png"></p>
-<p><em>LLMの生の出力を対話型インターフェースに表示するのがいかに簡単であるかを示す例。（画像出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/7-abstraction-llmwrapper.png">拡大プレビュー</a>）</em></p>
-<h2>忘れられたユーザビリティの原則 <a href="#忘れられたユーザビリティの原則">#</a><a name="忘れられたユーザビリティの原則"></a></h2>
-<p><a href="https://www.bloomberg.com/news/articles/1998-05-25/steve-jobs-theres-sanity-returning">スティーブ・ジョブズ氏はかつてこう言いました</a>。「人は形にして見せてもらうまで、自分は何が欲しいのか分からないものだ。」この考え方をインターフェースに当てはめると、発見可能性と呼ばれるユーザビリティの評価と一致します。<a href="https://www.nngroup.com/articles/navigation-ia-tests/">ニールセン・ノーマン・グループ</a>は、これをユーザーが「知らなかった新しいコンテンツや機能を見つけられる」ことと定義しています。</p>
-<p>優れた設計のインターフェースは、存在する機能をユーザーが見つけやすくします。今日人気のある多くの生成AIアプリケーションのインターフェースは、ユーザーが任意のシステムプロンプトを入力できる入力欄が中心となっています。問題は、ユーザーが望む出力を得るためには何を入力すればいいのかが不明な場合が多いことです。皮肉なことに、理論的な<a href="https://www.forbes.com/sites/forbesagencycouncil/2023/07/20/generative-ai-and-solving-the-blank-page-problem/">ライターズブロックの解決策</a>自体、空白ページ問題があるかもしれません。</p>
-<blockquote>
-<p>「AIは、ユーザーインターフェースが欠けていることに問題があるように思います。ほとんどの場合、空白の入力欄が用意されているだけであり、AIに何ができるのかは自分で見つけなくてはいけません」<br>— ケイシー・ニュートン氏、ハード・フォーク・ポッドキャスト</p>
-</blockquote>
-<p>対話型インターフェースは、人と人とのインタラクションの模倣には優れていますが、それ以外の点では不十分な場合もあります。例えば、「Midjourney」という人気の画像生成AIは、当初テキスト入力のみに対応していましたが、現在は「使いやすさ向上」のため<a href="https://www.zdnet.com/article/later-discord-midjourney-ai-tool-is-moving-to-dedicated-website/">GUIに移行しています</a>。</p>
-<p>これは、この新たな未開の領域を進む上で、ドン・ノーマン氏の重要な著書『The Design of Everyday Things』（1988年）に書かれているように、古典的な人間中心の原則を忘れてはならないということを思い出させてくれます。明確なアフォーダンスとシグニファイアを提供することで発見可能性を高めよというノーマン氏のアドバイスには、今でもグラフィカルな構成要素の方が適しているように思われます。</p>
-<p>また、ヤコブ・ニールセン氏が提唱する<a href="https://www.nngroup.com/articles/ten-usability-heuristics/">ユーザビリティ10原則</a>もあります。今日の対話型インターフェースの多くは、これらの原則をすべて無視しているように見えます。システムの状態を可視化することで、ユーザーに対して自らの行為の結果について認識させることができると述べた<strong>1つ目のユーザビリティ原則</strong>について考えてみてください。比喩的な地図上の「現在地」ピンを使用することで、適切な方向付けが次のステップを踏み出す上で重要であることを説明しています。</p>
-<p>インタラクションはすべて同じチャットウィンドウ上で行われますが、<strong>ナビゲーションはチャットボットのような対話型インターフェースにとって見かけ以上に重要です</strong>。ChatGPTのような製品のバックエンドは、ニューラルネットワーク全体をナビゲートし、訓練データセットの異なる部分に注目することで各回答を作成します。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/8-abstraction-roleplay.png"></p>
-<p><em>プロンプトエンジニアリングにおけるロールプレイがAIモデルを大まかに導き、異なる出力を作成する方法を可視化した図。
-（画像出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/8-abstraction-roleplay.png">拡大プレビュー</a>）</em></p>
-<p>パラメーターで表現される知識の地図にピンを置くことは、些細なことではありません。LLMは極めて不透明であり、<a href="https://openaipublic.blob.core.windows.net/neuron-explainer/paper/index.html">OpenAI社でさえ「仕組みを理解していない」と認めています</a>。しかし、モデルを大まかに導き、異なる知識領域から回答を作成するような方法で入力をカスタマイズすることが可能です。</p>
-<p>注意を向ける手法としてよく使われるのが、<strong>ロールプレイング</strong>です。「自分は歴史家であると想像してください」と入力するなどして、LLMに特定の役割（ロール）を演じさせることで、効果的にモードを切り替えることができます。<a href="https://promptengineering.org/role-playing-in-large-language-models-like-chatgpt/">プロンプト・エンジニアリング・インスティテュートは次のように説明しています</a>。「多彩なドメインから集めたテキストデータの大規模なコーパスを用いて訓練する際、モデルはさまざまなロールとそれらに関連付けられた言語について複雑な理解を形成します。」ロールを演じることで、AIの訓練データの関連する要素（トーン、スキル、合理性など）が呼び出されるのです。</p>
-<p>例えば、歴史家のロールは事実に基づく詳細によって回答するのに対し、語り手のロールは叙述的説明によって回答します。また、データサイエンティストのロールを割り当ててPythonコードによる回答を生成するなどして、作業の効率化を図ることもできます。</p>
-<p><a href="https://www.youtube.com/watch?v=ieWT6X2Yh_g">ジェイソン・ユアン氏</a>が「バンキングAIエージェントはおそらくあなたと深い哲学的な会話をできるべきではないでしょう」と述べるように、ロールは社会規範を強化するものでもあります。しかし、対話型インターフェースはこの手のシステムステータスをメッセージ履歴に埋没させてしまうため、我々は<a href="https://www.nngroup.com/articles/working-memory-external-memory/">作業記憶</a>に留めておく必要があります。</p>
-<p><img src="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/9-abstraction-rolebot.gif"></p>
-<p><em>セグメント化されたコントローラーを使用してユーザーがワンクリックでロールを特定できる理論上のAIチャットボット—各ボタンが自動的にLLMのシステムプロンプトを調節する。（出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/9-abstraction-rolebot.gif">拡大プレビュー</a>）</em></p>
-<p>ロールプレイのようなコンテキストに対する永続的なシグニファイアが欠けていると、ユーザビリティの問題につながる場合があります。明確化のため、ターミナルに<code class="language-text">ls</code>や<code class="language-text">cd</code>コマンドを打ち込むのと同じように、頻繁にAIのステータスを尋ねる必要があります。専門家であれば問題ないでしょうが、素人の頭には負担が大きいでしょう。問題は人間の記憶力にとどまらず、システムにも同様の認知的過負荷がかかります。コンテキストウィンドウに表示できるデータ量が限られているため、ユーザーは最終的にシステムより下位のレベルでロールプレイを再び開始する必要があります。こうした情報がインターフェース上に永続的に表示されたら、ユーザーにとって明確になり、プロンプトごとにAIに対して自動的に繰り返し思い出させることができます。</p>
-<p><a href="http://character.ai/">Character.ai</a>は、歴史上の人物をなじみのある焦点として用いることで、これを実現しています。文化的な共通認識により、「アル・パチーノ」に対して行う質問は、「ソクラテス」に対して行う質問とは違ったものになるでしょう。「キャラクター」が、ユーザーの期待を設定し、システム設定を自動的に調整するための原則となるのです。これは、レストランのメニューを掲示するのと似ています。客はどんな料理があるのか聞く必要がなくなり、直ちに注文することができます。</p>
-<blockquote>
-<p>「人間の短期記憶には限界があります。認識を促すインターフェースは、ユーザーに求められる認知的労力を減らします。」<br>
-— ヤコブ・ニールセン氏、「<a href="https://www.nngroup.com/articles/ten-usability-heuristics/">10 Usability Heuristics for User Interface Design</a>（ユーザーインターフェースデザインのためのユーザビリティ10原則）」</p>
-</blockquote>
-<p>ユーザビリティに関する教訓でもう一つ忘れられているのが、タスクの中には説明するより行う方が簡単なものがあるということです。これは、GUIで普及しているような<a href="https://www.nngroup.com/articles/direct-manipulation/">直接操作</a>するスタイルのインタラクションを通して行う場合に特に当てはまります。</p>
-<p>Photoshopの新しい生成AI機能は、グラフィカルインターフェースと統合することでこの概念を強化しています。<a href="https://www.adobe.com/products/photoshop/generative-fill.html">生成塗りつぶし</a>には入力欄がありますが、定番のなげなわツールのようなスキュアモーフィックコントロールも使用します。画像のどの部分を操作するのか説明するのは、クリックするよりもはるかに面倒です。</p>
-<p><strong>言葉が非効率な場合、インタラクションは入力欄以外の方法で行うべきです</strong>。サイズを変更したいとき、「大きくして」と言葉で言うと主観が入り込む余地があまりに大きすぎるため、スライダーを使用する方が良いでしょう。色やアスペクト比は、説明するより選択した方が簡単です。また、標準化されたコントロールの方が、システムが裏でプロンプトを整理しやすいでしょう。例えば、モデルがパラメーターに対する特定の値を受け取った場合、インターフェースが自然なマッピングで入力方法を示すことができます。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/10-abstraction-promptgui.png"></p>
-<p><em>Visual Electricの入力欄。システムが裏でプロンプトを整理するのにグラフィカルコントロールがどう役立つかが分かります。（画像出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/10-abstraction-promptgui.png">拡大プレビュー</a>）</em></p>
-<p>これらのユーザビリティ原則のほとんどは30年以上前のものであるため、今でも重要なのか疑問に思う人もいるでしょう。<a href="https://www.nngroup.com/articles/ten-usability-heuristics/">ヤコブ・ニールセン氏が最近、この点について次のように考えを述べています</a>。「26年間有効であったなら、未来の世代のユーザーインターフェースにも当てはまるでしょう。」しかし、必ずしも古典的な構成要素を使用しなくても、これらのユーザビリティ原則に従うことはできます。Kreaのようなアプリは、生成AIを操作する<a href="https://twitter.com/MaximillianNYC/status/1733627162517794899/video/1">新しいGUI</a>をすでに模索しています。</p>
-<h2>プロンプトエンジニアリングは専門的な技術である <a href="#プロンプトエンジニアリングは専門的な技術である">#</a><a name="プロンプトエンジニアリングは専門的な技術である"></a></h2>
-<p>現在の対話型インターフェースのユーザビリティに関する最大の問題は、一般ユーザーに技術的な作業を押し付けることです。
-コマンドラインとの共通点で言うと、見つけにくさの他に、<strong>コマンドを学ばなければ望ましい出力が得られない</strong>ことが挙げられます。生成AIシステムと効果的にコミュニケーションを取るために入力をカスタマイズすることを「プロンプトエンジニアリング」と呼びます。その名前からも分かるように、プロンプトエンジニアリングは専門家が行うものです。その技術を磨けば<a href="https://www.wsj.com/tech/ai/talking-to-chatbots-is-now-a-200k-job-so-i-applied-258bd5f0">年収20万ドル</a>の仕事を獲得することも可能です。</p>
-<p>自然言語によるプログラミングは素晴らしい進歩ですが、消費者向けアプリケーションの要件とするのは間違っているように感じます。誰もがコンピューターと同じ言語を話せるからと言って、何を言えばいいか、どう言うのが一番いいかを知っているとは限りません。一般のユーザーは専門家による手引きが必要です。新しいテクノロジー使いこなすためには学習が不可欠ですが、対話型インターフェースに関しては習得が難しく、それがさらなる普及と長期的な定着の妨げになりそうです。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/11-abstraction-magicstudio.jpeg"></p>
-<p><em>Canva社のAI機能「マジックスタジオ」。（画像出典：<a href="https://www.businesswire.com/news/home/20231004078842/en/Canva-Celebrates-10th-Anniversary-With-Launch-of-World%E2%80%99s-First-All-In-One-AI-Design-Offering-for-Everyone-and-Every-Business">ビジネスワイヤ</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/11-abstraction-magicstudio.jpeg">拡大プレビュー</a>）</em></p>
-<p>質の高い出力を得るために必要なプロンプトエンジニアリングは、黒魔術のような神秘的雰囲気をまとっているように感じます。AI機能を紹介する販促資料の多くが「魔法」といった表現を使用していることも、そうした印象を強めています。正のフィードバックループが働いていると仮定すると、この不透明さが消費者の好奇心をそそるのでしょう。</p>
-<p>しかし、呪文書やシャーマンの領域に製品を位置付けるのは、理解不能な体験であることを示唆することにもなります。これは長期的に良い戦略なのでしょうか。スティーブ・クリュッグ氏が『<a href="https://sensible.com/dont-make-me-think/">Don’t Make Me Think</a>』（2000年）で紹介し、大きな影響を及ぼした教訓がまだ当てはまると仮定した場合、ほとんどの人は適切なプロンプトをわざわざ学習しようとは思わず、どうにか乗り切ろうとするでしょう。</p>
-<p>試行錯誤しながら生成AIを使うことの問題は、毎回何かしら回答が得られるため「失敗」がないことです。例えば、LLMに数学の問題を解いてもらった場合、自信満々に出した答えが<a href="https://garymarcus.substack.com/p/math-is-hard-if-you-are-an-llm-and">完全な間違い</a>であることもあります。回答が全くの誤り（ハルシネーション）であっても、それが分からなければ失敗から学ぶのは難しくなります。OpenAI社の<a href="https://twitter.com/karpathy/status/1733299213503787018">アンドレイ・カルパシー氏が言うように</a>、LLMは「夢のマシン」であるため、ハルシネーションは必ずしもバグとは言えません。したがって、<strong>すべてはインターフェースがユーザーに何を期待させるのかによる</strong>のです。</p>
-<blockquote>
-<p>「相手が人である場合と同じように、AIから最も意味のある答えを引き出すには、最適な質問をする必要があります。AIは超能力者でもテレパシーが使えるわけでもありません」<br>
-— ステファン・J・ビゲロウ氏、「<a href="https://www.techtarget.com/whatis/feature/Skills-needed-to-become-a-prompt-engineer">5 Skills Needed to Become a Prompt Engineer</a>（プロンプトエンジニアになるために必要な5つのスキル）」</p>
-</blockquote>
-<p>魔法を思わせるような表現を使用すると、素人はAIが全知的存在であると考えてしまうかもしれません。AIの知識が訓練データに限られていることは、必ずしも明白ではありません。</p>
-<ul>
-<li>
-<p>データセットの限界に達した場合、ユーザーはRAG（<a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">Retrieval-Augmented Generation</a>：検索拡張生成）によって補完できることを知っているか？</p>
-</li>
-<li>
-<p>ユーザーは、AIの推論を調整するため、<a href="https://www.promptingguide.ai/techniques/fewshot">フューショット</a>や<a href="https://www.promptingguide.ai/techniques/cot">思考の連鎖</a>といった別のプロンプトテクニックが使えることを知っているか？</p>
-</li>
-</ul>
-<p>魔法の粉の効果が失われると、ソフトウェアデザイナーは<strong>こうした判断が</strong>ユーザー体験につながることに気付くでしょう。</p>
-<p>ユーザーが喜ぶものを作るには、適切なプロンプトテクニック、ナレッジソース、モデルを選択する必要があります。この作業をいかにユーザーに押し付けないようにするかを考えるべきです。</p>
-<ul>
-<li>AIの知識の限界を何も表示しないことによって示せば、ユーザーは必要に応じて不足を補うことができます。</li>
-<li>導入フローの中でユーザーの目的を確認すれば、最適な推論が可能な適切なモデルを提案できます。</li>
-<li>あいまい検索と同様の機能により、ユーザーの入力にマーキングすることで、有効な調整の仕方を教えることができます。</li>
-</ul>
-<p>ユーザーの入力を裏で<a href="https://community.openai.com/t/api-image-generation-in-dall-e-3-changes-my-original-prompt-without-my-permission/476355">リライトする</a>ことで、出力結果を最適化できるOpenAI社の画像生成AIが一つのヒントを提示しています。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/12-abstraction-promptengineering.png"></p>
-<p><em>グラフィカルユーザーインターフェースと自由形式の入力を組み合わせることで、RAGのようなテクニックを使用してプロンプトエンジニアリングを自動化できることを示す例。（画像出典：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/12-abstraction-promptengineering.png">拡大プレビュー</a>）</em></p>
-<h2>ランボルギーニでピザ宅配 <a href="#ランボルギーニでピザ宅配">#</a><a name="ランボルギーニでピザ宅配"></a></h2>
-<p>ユーザビリティの問題がもたらす認知コストの他に、<strong>経済的コスト</strong>についても考慮する必要があります。対話型インターフェースとのインタラクションは、すべてAIが推論して回答を出す必要があります。これには、GUIのボタンをクリックするよりはるかに高い処理能力が求められます。現在のコンピューティングコストだと、かなり法外な費用がかかります。高い知能がもたらす価値が値段に見合わないタスクも中にはあります。</p>
-<p>例えば、<a href="https://www.wsj.com/tech/ai/ais-costly-buildup-could-make-early-products-a-hard-sell-bdd29b9f">ウォール・ストリート・ジャーナル紙</a>はメールの要約などのタスクにLLMを使用するのは、「ランボルギーニでピザを宅配してもらうようなものだ」と論じています。コストがかさむ要因の一つは、AIシステムが一般的なソフトウェアのようにスケールメリットを生かせていないことにあります。あらゆるインタラクションに膨大な計算が求められるため、使えば使うほどコストは直線的に増え続けます。限界費用ゼロの複製が使えないため、一般的なソフトウェアのサブスクリプションモデルは現実的ではありません。</p>
-<p>消費者は高い値段を払って対話型インターフェースを買うでしょうか。それとも、AI機能を搭載した、コスパの良いGUIを選ぶでしょうか。皮肉にも、この苦境は初期のGUIが直面した困難を思い出させます。基礎となるビットマップの処理に必要なCPUのロジックとメモリの処理速度が現実的に使えるようになったのは、何年も後になってメモリチップの価格が下がってからです。歴史は繰り返すことを願いましょう。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_2000/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/13-abstraction-ramchips.jpeg"></p>
-<p><em>ゼロックス社製「Alto」の初期のラスターディスプレイを描いたスケッチ。メモリチップの価格が下がるまでは膨大なコストがかかっていました。（画像出典：<a href="http://worrydream.com/EarlyHistoryOfSmalltalk/">ブレット・ビクター</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/13-abstraction-ramchips.jpeg">拡大プレビュー</a>）</em></p>
-<p><strong>セキュリティリスク</strong>も考慮すべきコストの一つです。ピザの宅配中にランボルギーニが盗難されたとしたら？AIに何でも自由に質問できるようにすれば、質問を通じて意図的に操ろうとする人も出てきます。自然言語によりシステムを操ろうとすることを<a href="https://developer.nvidia.com/blog/securing-llm-systems-against-prompt-injection/">プロンプトインジェクション</a>と言います。言葉の順番を工夫すれば、入力欄が攻撃ベクトルになり、悪意のあるユーザーが個人の<a href="https://stackdiary.com/chatgpts-training-data-can-be-exposed-via-a-divergence-attack/">情報やシステム</a>にアクセスできてしまう可能性もあります。</p>
-<p>したがって、AIを<a href="https://www.lindy.ai/blog/announcing-a-new-way-to-create-ai-employees">チームの一員</a>と位置付ける場合は注意が必要です。なぜなら、従業員はすでにサイバーセキュリティ対策における最も大きな脆弱性の一つと見なされているからです。間違ったビジネスロジックを使うことで、会社に被害をもたらすフィッシングメールの数を誤って最大化してしまう可能性もあります。</p>
-<p>優れたデザインにより、AIがユーザーにとって最も有意義であるポイントを特定することで、こうしたコストを低減することができます。そのような場面では人間のような会話ベースのインタラクションを重視し、他ではよりコスパに優れた要素を使用すると良いでしょう。プロンプトインジェクション対策としては、セキュアなシステムしかアクセスできない場所に機密性の高いデータを置くことです。LLMがあまり計算を得意としないことは分かっているので、請求書の処理のような退屈な仕事をさせるのではなく、創造的コラボレーションに注力させると良いでしょう。</p>
-<h2>生成は予測である <a href="#生成は予測である">#</a><a name="生成は予測である"></a></h2>
-<p><a href="https://www.smashingmagazine.com/2023/08/friction-feature-machine-learning-algorithms/">筆者が以前Smashingに投稿した記事</a>で、アルゴリズムに適したインターフェースの概念について説明しました。これらのインターフェースは、あらゆるインタラクションを、双方向のフィードバックを通じて理解を深める機会と捉えます。ユーザーにシステムフィードバックを提供しつつ、システムにはパフォーマンスフィードバックを返します。予測精度を最適化するデータ収集ポイントを最大化することがその成功を左右します。出力の予測精度を高めると、ユーザーの定着率が上がる傾向にあります。したがって、優れたデータはネットワーク効果を通じて強化され、価値が一層高まります。</p>
-<p>筆者は以前コンテンツレコメンデーションアルゴリズムを専門としていましたが、これを生成AIに適用することは可能でしょうか。出力は全く異なりますが、どちらも予測モデルです。個人ユーザーの特徴、好み、行動といった具体的なデータを使用することで、これらの予測をカスタマイズすることが可能です。</p>
-<p>Spotifyがユーザーの音楽の好みを学習し、新曲をレコメンドするのと同様に、理論上では生成AIをパーソナライズすることは可能でしょう。使用履歴や好みをもとにMidjourneyが画像生成パラメーターをレコメンドすることもできるはずです。ChatGPTは、状況に応じて適切なロールを演じることができるでしょう（システムステータスも可視化できるとなお良いですが）。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/14-abstraction-signals.jpeg"></p>
-<p><em>アルゴリズムに適したインターフェースのフィードバックループ。（画像出展：<a href="https://www.maximillian.nyc/">マクシミリアン・ピラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/14-abstraction-signals.jpeg">拡大プレビュー</a>）</em></p>
-<p>この領域はまだ若干未知のところもあるため、対話型インターフェースがどの程度アルゴリズムに適しているのかは不明です。対話型インターフェースの使い勝手に影響を及ぼしている同じ発見可能性の問題が、エンゲージメントシグナルを分析する能力にも影響を及ぼす可能性があります。ノイズとシグナルを区別できなければ、パーソナライゼーションの実現性は低くなるでしょう。「いいね」ボタンをタップするという簡単なインタラクションを検討してみましょう。バックエンド側には非常にクリーンなシグナルが送られます。</p>
-<p>対話においてこれと同等のインタラクションは何でしょうか。「いいね」という言葉を入力するのは、この言葉が普段の会話の中で何気なく使われるものであるため、シグナルとしては確実性に劣るかもしれません。筆者が以前の記事で紹介した知見によると、効果的なパーソナライゼーションは極めて価値が高く、不具合があった場合は会社の収益に大きな影響を及ぼすことが示唆されます。</p>
-<p>別のLLMを推論エンジンとして使用し、非構造化入力の体裁を自動的に整えて、明瞭なエンゲージメントシグナルに変換することが解決策になるかもしれません。しかし、<strong>データ収集の効率性が明確になるまでは、対話型インターフェースのメリットがパーソナライゼーションの後退によるリスクを上回るのか、デザイナーは問うべきでしょう</strong>。</p>
-<h2>次の抽象化レイヤーに向けて <a href="#次の抽象化レイヤーに向けて">#</a><a name="次の抽象化レイヤーに向けて"></a></h2>
-<p>コンピューティングにおけるこの新たなパラダイムシフトが進む中で、この記事がインターフェースの次なる抽象化につい考える上で参考になることを願っています。対話側インターフェースは次のAIファーストデザイン時代の主流になることは間違いないでしょう。音声機能が追加されることで、私たちはパソコンの前に座り、健康を害するほど長時間作業しなくても、コンピューターが能力を引き出してくれるようになります。しかし、対話だけでは不十分であり、言葉では説明できないニーズに対応したデザインも求められます。</p>
-<p>したがって、インターフェースが万能薬にならないのであれば、単純な進化のストーリーを語るのはやめ、優れたエクスペリエンスの原則を目指しましょう。我々が求めているのは、<strong>統合された、コンテキストベースで、マルチモーダルなインターフェース</strong>です。このインターフェースは、私たちがジャスチャーや図でしか意図を伝えられないこともあることを知っています。私たちが忙しすぎて会話できず、簡単な質問だけしたくても、理解してくれます。実際に会話をするときになると、このインターフェースは私たちの視点で考えることができるため、長い説明を書く煩わしさもありません。言葉でうまく説明できなくても、趣旨は伝わります。</p>
-<h2>未来に対し視野を狭めない <a href="#未来に対し視野を狭めない">#</a><a name="未来に対し視野を狭めない"></a></h2>
-<p>モバイルファーストデザインの時代にさかのぼる教訓が思い出されます。iPhoneが登場した数年後、タッチスクリーンが共通の未来像として人気のテーマになりました。しかし、ヒューマンインターフェースインベンター（<a href="http://worrydream.com/#!/Apple">アップル社での肩書き</a>）として尊敬を集めるブレット・ビクター氏には、タッチスクリーンは未来に対する<em>視野を狭める</em>ものと映ったようです。</p>
-<p><a href="http://worrydream.com/ABriefRantOnTheFutureOfInteractionDesign/">同氏がさまざまな可能性についてざっくばらんに語った記事</a>の中で、タッチスクリーンが皮肉にも触覚を完全に無視していると指摘されています。手を通じたハプティックフィードバックにはさまざまな可能性があるものの、ほとんどのインタラクションは主に視覚に頼っています。AIファーストデザインが私たちの能力を余すことなく増強するにはどうすればよいでしょうか。</p>
-<blockquote>
-<p>「ツールは人間の能力を増強することによって、人のニーズを解決します。」<br>
-— ブレット・ビクター氏、「<a href="http://worrydream.com/ABriefRantOnTheFutureOfInteractionDesign/">A Brief Rant on the Future of Interaction Design</a>（インタラクションデザインの未来を語る）」</p>
-</blockquote>
-<p>対話型インターフェースを使うべきタイミングについて、法則のようなものはあるのでしょうか。説明可能性（D）は、グラフィカルな利便性（G）と逆相関の関係にあるため、説明の複雑さが増すほど、対話型インターフェースの利便性は低くなるという観察可能な法則を、「D∝1/G」という数式で表すことは可能かもしれません。これは事実かもしれませんが、あまり役には立ちません。</p>
-<p>正直なところ、現時点ではあまりに不確実なことが多いため、新しいデザイン原則について予測を立てるのは避けたいと思います。その代わり、最近亡くなったチャーリー・マンガー氏の言葉からヒントを得て、問題を反転させて考えてみることはできるかもしれません。</p>
-<p><img src="https://res.cloudinary.com/indysigner/image/fetch/f_auto,q_80/w_1600/https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/16-abstraction-inversion.jpg"></p>
-<p><em>私たちは基本的に優れた成果を目指し、前向きにデザインを進めますが、愚かな結果を避けるため、問題を反転させて後ろ向きにデザインしなくてはならないこともあります。（画像出展：<a href="https://www.maximillian.nyc/">マクシミリアン・ミラス</a>）（<a href="https://files.smashing.media/articles/designing-ai-beyond-conversational-interfaces/16-abstraction-inversion.jpg">拡大プレビュー</a>）</em></p>
-<h2>後ろ向きにデザインする <a href="#後ろ向きにデザインする">#</a><a name="後ろ向きにデザインする"></a></h2>
-<p>前を向いて次の抽象化レイヤーをデザインしようとすると、チャットボットのようなものに行き着くようです。これだけでは解決策として不完全である理由は、今では分かっています。<strong>では、問題を逆向きに捉えて、避けるべき望ましくない結果を特定してみたらどうでしょうか</strong>。優れた成果を目指すよりも、愚かな結果を避ける方が簡単でしょう。</p>
-<p>避けるべき明らかな間違いは、時間の制約を考慮せず、ユーザーに対話を強要することです。対話がふさわしいときには、ユーザビリティに関する既存の問題が、同じくらいストレスのたまる新しい問題に置き換わることがないような方法で行えるようにすべきです。ピザの宅配と同等の簡単なタスクには、ランボルギーニを運転するのに匹敵するほど大掛かりなものではない、実用的な解決策を見つけるべきです。さらに、一般ユーザーに対して、プロンプトエンジニアリングの習熟を要求するのも避けるべきです。最後に、システムがより人間らしくなるにつれて、だまされやすいところも似ることがないようにしなくてはいけません。そうなった場合、我々の努力が仇となり、個人データにはるかに簡単にアクセスできるようになってしまいかねません。</p>
-<p>より<strong>インテリジェント</strong>なインターフェースであれば、そのような愚かな間違いをおかすこともないでしょう。</p>
-<p>本記事の草稿時に貴重なご意見をいただいた<a href="https://www.michael-sands.com/">マイケル・サンズ</a>氏、<a href="https://www.evanmiller.org/">エヴァン・ミラー</a>氏、<a href="https://www.youtube.com/@TheRiceRocketeer">コリン・カウリー</a>氏に、この場を借りて感謝の意を表します。</p>]]></content:encoded></item></channel></rss>
+<p>最後まで読んでいただきありがとうございました！ 💖</p>]]></content:encoded></item></channel></rss>
