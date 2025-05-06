@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Fri, 02 May 2025 21:44:09 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 06 May 2025 12:56:20 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,760 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>C++ Language Updates in MSVC in Visual Studio 2022 17.14</title>
+		<link>https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/#respond</comments>
+		
+		<dc:creator><![CDATA[Cameron DaCamara]]></dc:creator>
+		<pubDate>Tue, 06 May 2025 15:00:34 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[Frontend]]></category>
+		<category><![CDATA[C++ language]]></category>
+		<category><![CDATA[compiler]]></category>
+		<category><![CDATA[MSVC]]></category>
+		<category><![CDATA[VC++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35448</guid>
+
+					<description><![CDATA[<p>Introduction In this update, we continue the tradition of bucketing bugs into helpful categories for you all to filter through along with even more notes from the compiler team as to what, exactly, was fixed. This blog is also complemented by the recent Pure Virtual C++ pre-conference talk by RanDair Porter; so please check out [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/">C++ Language Updates in MSVC in Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>In this update, we continue the tradition of bucketing bugs into helpful categories for you all to filter through along with even <em>more</em> notes from the compiler team as to what, exactly, was fixed. This blog is also complemented by the recent <a href="https://www.youtube.com/watch?v=H8nGW3GY868">Pure Virtual C++</a> pre-conference talk by RanDair Porter; so please check out RanDair&#8217;s talk, <a href="https://www.youtube.com/watch?v=MfYZQu9zG80">&#8220;MSVC C++23 Conformance&#8221;</a>, if you have not already to get a better view of MSVC&#8217;s conformance status for Visual Studio 2022 overall.</p>
+<p><a href="https://devblogs.microsoft.com/cppblog/msvc-compiler-updates-in-visual-studio-2022-version-17-13/">17.13 notes for reference.</a></p>
+<h2 id="c-23-features-">C++23 Features</h2>
+<p><strong>Note:</strong> C++23 features can be used by either adding <code>/std:c++latest</code> or
+<code>/std:c++23preview</code> to the command line. In addition, features used from unfinished standards may not
+have full IntelliSense support.</p>
+<ul>
+<li>Add support for <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1102r2.html">P1102R2</a>
+(Down with ()!) which makes a parameter-list an optional part of a lambda-declarator.</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="langauge-cpp">auto lambda = [] constexpr { }; // C++23: can now omit the '()' after the capture list.</code></pre>
+<ul>
+<li>Implemented <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1938r3.html">P1938R3</a>:
+<code>if consteval</code> for C++23.</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="langauge-cpp">constexpr int f(int) {
+  if consteval { // C++23: previously this would be 'if (std::is_constant_evaluated()) { ... }'.
+    return 42;
+  }
+  else {
+    return 1337;
+  }
+}
+int main(int argc, const char**) {
+  static_assert(f() == 42);
+  int x = f(argc);
+  if (x != 1337) // Since 'f' cannot be evaluated at compile-time, the value here is '1337'
+                 // due to taking the 'else' branch in 'f'.
+    return 1;
+}</code></pre>
+<ul>
+<li>Implement <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1401r5.html">P1401R5</a> &#8211;
+Narrowing contextual conversions to bool, making the following well-formed as of C++23:</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="langauge-cpp">enum Flags { Zero, One, Two };
+static_assert(One | Two);</code></pre>
+<ul>
+<li>Add support of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2173r1.pdf">P2173R1</a> &#8211;
+attributes for lambda-expressions.</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="langauge-cpp">auto lambda = [] [[nodiscard]] [[deprecated]] { return 10; };
+void f() {
+  lambda(); // C++23: Attributes here will fire a deprecation warning and a discard of return value warning.
+}</code></pre>
+<ul>
+<li>Implement <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1169r4.html">P1169R4</a> which adds
+support for <code>static operator()</code>.</li>
+<li>Implement <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2589r1.pdf">P2589R1</a> which adds
+support for <code>static operator[]</code>.</li>
+</ul>
+<pre class="prettyprint language-cpp"><code class="langauge-cpp">struct Functor {
+  static constexpr int operator()() { return 42; }
+  static constexpr int operator[](int) { return 42; }
+};
+using T1 = decltype(Functor::operator()());  // C++23: Deduces to 'int'.
+static_assert(Functor::operator()() == 42); // C++23: Can be used without creating a 'Functor' object.
+
+using T2 = decltype(Functor::operator[](10));  // C++23: Deduces to 'int'.
+static_assert(Functor::operator[](10) == 42); // C++23: Can be used without creating a 'Functor' object.</code></pre>
+<h3 id="smaller-c-23-items">Smaller C++23 Items</h3>
+<ul>
+<li>Implement <a href="https://cplusplus.github.io/CWG/issues/2428.html">CWG2428</a> &#8211; Deprecating a concept.</li>
+</ul>
+<h2 id="compiler-improvements-for-17-14">Compiler improvements for 17.14</h2>
+<h3 id="c-cli">C++/CLI</h3>
+<ul>
+<li>Fix bug where std::optional could not be used with managed types.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Regression-in-17120:-Substitution-Fail/10792624">Regression
+in 17.12.0: Substitution Failure Is An Error C3699 when compiling with /CLR</a></li>
+</ul>
+</li>
+<li>Fix an issue related to nested lambdas and pack-expansions and stop emitting a warning related to
+&#8216;volatile&#8217; if the class type is imported.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/content/problem/1114850/version-1670-preview-40-ccli-warning-c5220-is-issu.html">[Version
+16.7.0 Preview 4.0] [C++/CLI] Warning C5220 is issued for non-static data members of classes
+imported from metadata</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-rejects-valid-pack-expansion-of-lam/10599041">MSVC
+rejects valid pack expansion of lambda expressions </a></li>
+</ul>
+</li>
+<li>Fix regression in C++/CLI which causes a crash or bad diagnostics when calling functions with parameter-arrays
+and compiling for Net Core.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-with-String::Format-in-C-CLR-Cla/10788352">Error
+with String::Format in C++ CLR Class Library (.NET) project</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/Compilation-Error-Occurs-When-Using-std:/10734025">Compilation
+Error Occurs When Using std::shared_ptr in C++/CLI Code</a></li>
+</ul>
+<h3 id="diagnostics">Diagnostics</h3>
+<ul>
+<li>Add a warning to detect undefined behavior mentioned in [meta.reqmts].
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C-std::is_signed_v-is-implemented-wron/10665561">C++
+std::is_signed_v is implemented wrong.</a></li>
+</ul>
+</li>
+<li>Fixes the lack of a diagnostic on an initialization getting skipped over in a switch statement.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Variable-Declaration-Allowed-Inside-Swit/10281175">Variable
+Declaration Allowed Inside Switch Case Without Scoping Operator</a></li>
+</ul>
+</li>
+<li>Fix missing error diagnostic for explicit constructor initialization
+<ul>
+<li><a href="https://developercommunity2.visualstudio.com/t/list-init-of-aggregate-with-explicitly-d/1326684">list-init
+of aggregate with explicitly-default-constructible member incorrectly accepted</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="-constexpr-"><code>constexpr</code></h3>
+<ul>
+<li>Prevent binding constexpr references to local temporaries
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/constexpr-reference-should-bind-to-globa/10826064">constexpr
+reference should bind to global variable</a></li>
+</ul>
+</li>
+<li>Fix spurious error where <code>if consteval</code> would not properly be considered in consetxpr functions.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/error-C3615-constexpr-function-f-cann/10857535">error
+C3615 &#8220;constexpr function &#8216;f&#8217; cannot result in a constant expression&#8221; does not
+properly recognize early return in <code>if consteval</code></a></li>
+</ul>
+</li>
+<li>Fix an issue with combing a non-type template parameter of reference type with a template argument that is a
+function call that returns by reference.</p>
+<ul>
+<li><a href="https://developercommunity2.visualstudio.com/t/std::is_constant_evaluated-fails-in-fu/1271614">std::is_constant_evaluated()
+fails in function returning reference</a></li>
+</ul>
+</li>
+<li>Fix a bug in immediate function folding that resulted in bad string data
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/user-literals-causes-crash-if-its-cons/10683502">user
+literals causes crash if it&#8217;s <code>consteval</code> but not if it&#8217;s
+<code>constexpr</code>.</a></li>
+</ul>
+</li>
+<li>Fix incorrect C7595 errors in constructor member initializers and as the object expression of member access
+expressions</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-calling-consteval-function-from-an/1669482">Error
+calling consteval function from an ordinary constructor</a></li>
+</ul>
+</li>
+<li>We now run destructors during constant evaluation that appear in the init-stmt of a for loop
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-doesnt-proper-destroy-a-loop-varia/10808176">MSVC
+doesn&#8217;t properly destroy a loop variable in constant evaluation</a></li>
+</ul>
+</li>
+<li>Fixed constexpr __builtin_memcmp comparing unsigned chars
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/regression-v1710:-__builtin_memcmp-/10701277">[regression]
+v17.10: __builtin_memcmp() yields erroneous results if evaluated at compile time</a></li>
+</ul>
+</li>
+<li>Fix an incorrect rejection of an out-of-line static constexpr data member definition
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C2370-is-falsely-emitted-when-a-static-c/898167">C2370
+is falsely emitted when a static const member is defined with the constexpr specifier outside a
+template class</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/Assigning-value-to-field-of-base-class-i/10792451">Assigning
+value to field of base class in constexpr virtual function gennerates ICE</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Labeled-statements-is-incorrectly-reject/10851261">Labeled
+statements is incorrectly rejected during constant evaluation</a></li>
+</ul>
+<h3 id="c-modules">C++ Modules</h3>
+<ul>
+<li>Fix issue where the compiler would sometimes issue a syntax error when parsing template-ids from a module.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-C20-modules:-export-using-templat/10826448">MSVC
+C++20 modules: export using template alias</a></li>
+</ul>
+</li>
+<li>Fixed an issue where users would sometimes see linker errors with certain inline functions from a module and
+various other compiler issues when building with header units enabled for Unreal Engine 5.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Unreal-does-not-build-with-header-units-/10800119">Unreal
+does not build with header units enabled</a></li>
+</ul>
+</li>
+<li>Fix ICE in the compiler when importing a type with an apparent cyclic dependency on itself
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/CCLI-internal-compiler-error-importin/1542341">C++/CLI
+internal compiler error importing types from C# dll</a></li>
+</ul>
+</li>
+<li>Fixed an issue where custom-defined data sections were not persisted into a C++ module.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C2341-is-incorrectly-raised-if-the-segme/10187003">C2341
+is incorrectly raised if the segment is defined in a header unit module</a></li>
+</ul>
+</li>
+<li>Fixed a case where C5260 was firing spuriously
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/When-building-a-header-unit-module-usin/10185032">When
+building a header unit module, using a <code>static const</code> variable in a template causes C5260
+to incorrectly fire</a></li>
+</ul>
+</li>
+<li>Fixed an issue where using a class marked as <code>__declspec(dllimport)</code> would sometimes issue a linker
+error when imported through a module.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/unresolved-external-symbol-local-vftable/10417737">unresolved
+external symbol local vftable when using modules, dll, virtual destructor and MSVC 14.36.17.6</a></li>
+</ul>
+</li>
+<li>Fixed an issue where the compiler would sometimes crash when loading a PCH with a module import.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-Compiler-Error-if-std::shared_p/10262449">Internal
+Compiler Error if std::shared_ptr is used both with and without modules</a></li>
+</ul>
+</li>
+<li>Fixed a bug where functions returning <code>auto</code> would sometimes not be resolved from a module.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C3779-using-C20-modules-due-to-u/10775150">Error
+C3779 using C++20 modules due to unrecognized function definition</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Duplicate-COMDAT-error-when-using-C20-/10805736">Duplicate
+COMDAT error when using C++20 modules</a></li>
+</ul>
+</li>
+<li>Fixed compiler crash in modules when using lambdas in static member functions of a class.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/False-positive-C2028-error-with-c-modu/10853719">False
+positive C2028 error with c++ modules</a></li>
+</ul>
+</li>
+<li>Fix a compiler crash when trying to match explicit object member functions which originate outside a C++ module.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C2028-caused-by-weird-interaction-of-mod/10860345">C2028
+caused by weird interaction of modules and a virtual function calling a deducing this function.</a></li>
+</ul>
+</li>
+<li>Fix an issue with mdspan and modules.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Cannot-use-C23-multi-dimensional-opera/10868352">Cannot
+use C++23 multi-dimensional operator[] in concepts in modules due to &#8220;Sorry: not yet
+implemented&#8221; internal compiler error</a></li>
+</ul>
+</li>
+<li>Fixed an issue when using <code>std::ranges</code> in modules where the compiler would issue a syntax error.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/A-custom-formatter-and-a-module-raise-er/10755613">A
+custom formatter and a module raise errors in __msvc_formatter.hpp</a></li>
+</ul>
+</li>
+<li>Fix issue where <code>__vectorcall</code> functions in a module would sometimes not compile.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/__vectorcall-conflicts-with-C-modules/10484298">__vectorcall
+conflicts with C++ modules</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="conformance">Conformance</h3>
+<ul>
+<li>Implement CWG 1213: Array subscripting and xvalues
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Subscripting-an-rvalue-array-does-not-ge/10707244">Subscripting
+an rvalue array does not generate an rvalue in VS2019</a></li>
+</ul>
+</li>
+<li>Added <code>/Zc:u8EscapeEncoding</code> for conformant encoding of escape sequences like u8&#8243;\xFF&#8221;
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/hex-escape-codes-in-a-utf8-literal-are-t/225847">Hex
+escaping in strings can&#8217;t be compiled in v15.6.5</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/escape-sequences-in-unicode-string-liter/260684">escape
+sequences in unicode string literals are overencoded (non conforming =&gt; compiler bug)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VC-is-incorrectly-encoding-UTF-8-x-esc/347197">VC++
+is incorrectly encoding UTF-8 \x escape chars as \u escape chars</a></li>
+</ul>
+</li>
+<li>Fix missing diagnostic for mixing &#8216;friend&#8217; and &#8216;static&#8217;.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/accepts-invalid-cl-accepts-static-frie/535960">[accepts
+invalid] cl accepts static friend functions</a></li>
+</ul>
+</li>
+<li>Fix issue where lookup-related diagnostics are missing in fold expressions
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Fold-expressions-unreliable-in-171-with/1676476">Fold
+expressions unreliable in 17.1 with c++20</a></li>
+</ul>
+</li>
+<li>Fixed an issue where the compiler did not conform to <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1779r3.html">P1779R3</a>.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Module-TU-local-function-called-via-non-/10263594">Assertion
+failed: !XMVector3IsInfinite(EyeDirection) when there is no implementation unit for a module which
+includes DirectXMath.h</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="reliability">Reliability</h3>
+<ul>
+<li>Fix a compiler crash when using d1initall and constant evaluation
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-when-using-d1initall-in-a-constexpr-/10809997">ICE
+when using d1initall in a constexpr context</a></li>
+</ul>
+</li>
+<li>Fix a compiler crash caused by a pointer-to-member
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-CRTP-multiple-/10151890">Internal
+compiler error (CRTP, multiple inheritance)</a></li>
+</ul>
+</li>
+<li>Fix a silent compiler crash on certain malformed explicit destructor calls.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-crashes-but-with-no-ICE-appare/10813874">Compiler
+crashes (but with no ICE apparently) on this code</a></li>
+</ul>
+</li>
+<li>Fix a compiler crash related to default function parameters
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-with-VS17123-w/10814618">Internal
+compiler error with VS17.12.3 when compiling a function with a default parameter involving multiple
+vector operations</a></li>
+</ul>
+</li>
+<li>Fix an issue with name-lookup of a <em>conversion-function-id</em> and an issue related to the pack-expansion of
+a nested lambda.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-v19-fatal-error-C1001:-Internal-com/10830908">MSVC
+v19 fatal error C1001: Internal compiler error.</a></li>
+</ul>
+</li>
+<li>Fix an ICE in certain alias template definitions with multi-component, dependent nested names.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-for-some-templat/10178789">Internal
+compiler error for some template aliases</a></li>
+</ul>
+</li>
+<li>Fix ICE when C11 _Atomic is used with PCH
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Adding-including-stdatomichgenerates/10783271">Adding
+#including generates C1001: Internal compiler error: &#8216;msc1.cpp&#8217;, line 1599 in
+Visual Studio 2022 Version 17.12.0 Preview 5.0</a></li>
+</ul>
+</li>
+<li>Fix an ICE with certain noexcept-specifiers
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-when-having-virtual-noexceptconstex/1531831">ICE
+when having virtual noexcept(constexpr) function with argument</a></li>
+</ul>
+</li>
+<li>Fix a crash in constant evaluation with base-to-derived conversions of pointers to array elements
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-when-calling-CRTP-function-with-memb/1517303">ICE
+when calling CRTP function with member access from constexpr array member</a></li>
+</ul>
+</li>
+<li>Fix an issue relating to explicit lambda template parameters and also an issue related to a multidimensional
+subscript operator</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-using-lambda-template-parameter-as-s/10778800">ICE
+using lambda template parameter as size for an array</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-rejects-a-template-argument-with-mu/10815450">MSVC
+rejects a template argument with multidimensional subscript operator</a></li>
+</ul>
+</li>
+<li>Fixes extreme memory use for some zero-initialized arrays (and aggregates thereof)
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-memory-usage-explodes-with-lamb/10573182">Compiler
+memory usage explodes with lambda returning large structure</a></li>
+</ul>
+</li>
+<li>Fix an ICE on a decltype containing a noexcept expression
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-compiler-error-if-use-noexcept-/10845122">Internal
+compiler error if use noexcept inside decltype</a></li>
+</ul>
+</li>
+<li>Fix an issue with class template argument deduction for alias templates
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-with-Eigen-340-when-missing-templa/10832467">ICE
+with Eigen 3.4.0 when missing template argument</a></li>
+</ul>
+</li>
+<li>Fix an ICE with some ill-formed qualified names.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/CL-std:clatest---INTERNAL-COMPILER-ER/10802160">CL
+/std:c++latest &#8211; INTERNAL COMPILER ERROR C1001 tested in CL v19.42.34435 and CL v19.43.34604</a></li>
+</ul>
+</li>
+<li>Fix an issue with dependent base-classes and class template argument deduction for aggregates.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-on-CTAD-for-aggregate-derived-from-a/10864939">ICE
+on CTAD for aggregate derived from a local class type</a></li>
+</ul>
+</li>
+<li>Fix a crash with brace-initialization of an object containing a const reference member
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Internal-Compiler-Error-ICE-when-an-ob/10808136">Internal
+Compiler Error (ICE) when an object is brace initialized using another object that contains a
+reference</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/fatal-error-C1001:-Internal-compiler-err/10856022">fatal
+error C1001: Internal compiler error on atomic operation with struct</a></li>
+</ul>
+<h3 id="correctness">Correctness</h3>
+<ul>
+<li>Fix incorrect error given when a base class name referenced in a template is found on multiple base class paths.
+<ul>
+<li><a href="https://developercommunity2.visualstudio.com/t/error-C2385:-ambiguous-access-of-IUnkno/230955">error
+C2385: ambiguous access of &#8216;IUnknown&#8217; referring to common base class in VS2017.7 Preview
+3</a></li>
+</ul>
+</li>
+<li>Correct an issue with using directives not being respected in some nested lambdas.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Nested-template-lambda-accidentally-ig/10802570"><code>Nested template lambda</code>
+accidentally ignores the <code>using-directives</code> of the parent scope, and thus the
+<code>non-ADL user-defined literals</code> to fail.</a></li>
+</ul>
+</li>
+<li>Add missing diagnostic for ill-formed pure-specifier and fix issue with combination of &#8216;volatile&#8217; and
+copy-assignment operators.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/content/problem/996890/pure-virtual-functions-should-require-a-literal-0.html">[accepts
+invalid] VS accepts invalid pure specifier</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Possible-C-compiler-bug:-copy-assignme/10173503">Possible
+C++ compiler bug: copy assignment operator with volatile qualifier</a></li>
+</ul>
+</li>
+<li>Fix an issue related to the backing array for a std::initializer_list being destroyed too soon.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Optimization-removes-initialization-for-/10455125">Optimization
+removes initialization for std::initializer_list of trivially copyable objects</a></li>
+</ul>
+</li>
+<li>Fix an issue with lambda captures within a decltype-specifier, and an issue with a static_assert within a
+concept.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Error-C2327-in-decltype-context-within-l/10775436">Error
+C2327 in decltype context within lambda referencing member variable (C++20)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-ignores-static_assert-inside-concep/10780672">MSVC
+ignores static_assert inside concept definition</a></li>
+</ul>
+</li>
+<li>Fix a case where the compiler dropped pointer dereference of a cast of a pointer to an array in some cases
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/What-is-the-reason-for-a-behavior-change/10808170">Incorrect
+code generated with convoluted pointer casting</a></li>
+</ul>
+</li>
+<li>Fix incorrect access checks in certain alias templates
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-fails-to-compile-template-member-fu/10832533">MSVC
+fails to compile template member function full specialization with private type and type alias
+arguments</a></li>
+</ul>
+</li>
+<li>Fix an issue where a volatile reference could bind to an rvalue of a derived class
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/_MSC_VER--1940-MSVC-allows-binding-a-/10811594">[_MSC_VER
+= 1940] MSVC allows binding a const volatile lvalue reference to an rvalue under
+<code>/permissive-</code></a></li>
+</ul>
+</li>
+<li>Fix an issue with the initialization of a variable of class type that is volatile.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-discards-volatile-variable/10834274">MSVC
+discards volatile variable</a></li>
+</ul>
+</li>
+<li>Fix incorrect error C3770 when certain alias template specializations are used as base classes
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Const-base-class-rejected-when-used-thro/10825754">Const
+base class rejected when used through alias template</a></li>
+</ul>
+</li>
+<li>Fix an issue with capturing &#8216;this&#8217; in a lambda that is part of an init-capture and an issue in which the
+compiler to did not correctly handle an abstract class type during template argument substitution.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Unable-to-directly-access-member-variabl/10801088">Unable
+to directly access member variable inside lambda nested in capture list of lambda</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Call-to-method-template-with-abstract-cl/10817327">Call
+to method template with abstract class parameter may fail depending on call point</a></li>
+</ul>
+</li>
+<li>Fix an issue in which a variable with an &#8216;auto&#8217; type was referenced before its type had been deduced and
+an issue in which a valid goto-statement within an if-constexpr statement was flagged as an error.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/ICE-when-recursively-calling-a-lambda-te/10794160">ICE
+when recursively calling a lambda template</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Incorrect-C3907-in-C20-only/10872427">Incorrect
+C3907 in C++20 only</a></li>
+</ul>
+</li>
+<li>Fix an issue in which warning C4100, &#8220;unused parameter&#8221;, was not emitted,
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/vriable-passed-by-value-and-warning-4100/10252561">variable
+passed by value and warning 4100</a></li>
+</ul>
+</li>
+<li>Fix an invalid error C2210 with some alias template specializations
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/error-C2210-Compile-error/10830348">error C2210
+Compile error</a></li>
+</ul>
+</li>
+<li>Fix an issue with lambdas in a class with virtual bases.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Compilation-error-in-lambda-expressions-/10825673">Compilation
+error in lambda expressions in hierarchies with virtual inheritance</a></li>
+</ul>
+</li>
+<li>Fix an issue with the zero-initialization of arrays with /d1initAll
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/d1initall1023-d1initAll:FillPatternE2-/10812330">/d1initall1023
+/d1initAll:FillPatternE2 options causes incorrect initialization results in constant evaluation</a></li>
+</ul>
+</li>
+<li>Fix an issue with decltype and calls to static member functions with an object and an issue with warnings and
+the conditional operator</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Illegal-use-of-undefined-type/10465157">Illegal
+use of undefined type</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C4365-incorrect-warning-and-diagnostic-l/10875348">C4365
+incorrect warning and diagnostic location</a></li>
+</ul>
+</li>
+<li>Address an issue in which C4100, unused parameter, was not emitted.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/vriable-passed-by-value-and-warning-4100/10252561">variable
+passed by value and warning 4100</a></li>
+</ul>
+</li>
+<li>Fix an issue with aggregate initialization when a non-static data member is a self-referential reference type.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/too-many-initializers-error-for-valid-/1539585">&#8220;too
+many initializers&#8221; error for valid code</a></li>
+</ul>
+</li>
+<li>Fix an issue with hidden friend functions that are declared to return &#8216;auto&#8217;
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Unable-to-compile-this-piece-of-code-wit/10795218">Unable
+to compile this piece of code with constexpr and auto since 17.12.0</a></li>
+</ul>
+</li>
+<li>Fix a regression that a deduction guide has incorrect return type.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/CTAD-failure-with-deduction-guide-in-the/10831853">CTAD
+failure with deduction guide in the abbreviated function template form</a></li>
+</ul>
+</li>
+<li>Correct invalid implicit move of extern or thread_local variables
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-incorrectly-implicitly-moves-a-non-/10825317">MSVC
+incorrectly implicitly moves a non-local variable when the function contains its non-defining
+declaration</a></li>
+</ul>
+</li>
+<li>Fix issue where braced initialization in a non-type template argument would confuse the compiler.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Syntax-error-when-using-non-type-templat/10729428">Syntax
+error when using non-type template parameters in templated class member function</a></li>
+</ul>
+</li>
+<li>Fix an issue with a template-id that had a template-argument that used a decltype-specifier and fix an issue
+with a variable template + class template argument deduction + lambdas</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Failure-with-concept-containing-decltype/10840010">Failure
+with concept containing decltype and lambda</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Rejects-valid-variable-template-CTAD-for/10869223">Rejects
+valid variable template CTAD for aggregate</a></li>
+</ul>
+</li>
+<li>Fix an issue with &#8216;[[no_unique_address]]&#8217; and trivial copy/move assignment operators.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/std::set-broken-under-VS-17124-with-n/10837331">std::set
+broken under VS 17.12.4 with &#8220;no_unique_address&#8221; comparator</a></li>
+</ul>
+</li>
+<li>Fix and issue with a compiler requires-expression in an if-constexpr statement.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/The-requires-requires-doesnt-short-ci/10822127">The
+&#8216;requires requires&#8217; doesn&#8217;t short-circuit when used in &#8216;if constexpr&#8217;</a></li>
+</ul>
+</li>
+<li>Fix incorrect template specialization involving certain qualified-names and dependent base classes.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C-compilation-error-on-using-BoostRan/10813169">C++
+compilation error on using Boost.Range</a></li>
+</ul>
+</li>
+<li>Fix incorrect access checks in certain alias templates
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-fails-to-compile-template-member-fu/10832533">MSVC
+fails to compile template member function full specialization with private type and type alias
+arguments</a></li>
+</ul>
+</li>
+<li>Fix an incorrect type-deduction failure involving certain template specializations and empty packs.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/formatter-for-empty-tuples-is-broken-in-/10837269">formatter
+for empty tuples is broken in VS 17.13</a></li>
+</ul>
+</li>
+<li>Fixed a bug where a user-provided <code>operator,</code> would sometimes not be called if there was a cast
+involved on one of the operands.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Silent-bad-codegen:-Operand-to-overloade/10855548">Silent
+bad codegen: Operand to overloaded operator comma is wrongly turned into pointer</a></li>
+</ul>
+</li>
+<li>Fix an issue with undecorating cv-qualified nullptr.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/c-Bug-in-type_infoname-for-TMyClass/10801963">c++
+Bug in type_info.name() for TMyClass_const std::nullptr<em>t</em></a></li>
+</ul>
+</li>
+<li>Reduced implementation divergence between clang and gcc when C++23 explicit object functions are called in
+various cases.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/C23-Deducing-This-build-error-for-Dog:/1705020">C++23
+Deducing This build error for Cat::Meow(this, float) in VS2022 Preview 2.1 (Version 17.2.0)</a></li>
+</ul>
+</li>
+<li>Fix an issue related to pack-expansion and an issue related to the use of &#8216;decltype(auto)&#8217; within a
+lambda.</p>
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/Compiler-error-expanding-parameter-pack/10838085">Compiler
+error expanding parameter pack</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Compilation-Failure-with-decltypeauto-/10867628">Compilation
+Failure with decltype(auto) in Lambda Capture on MSVC, Works on GCC/Clang</a></li>
+</ul>
+</li>
+<li>Fix an issue causing temporaries to be required in certain conditional expressions.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-incorrectly-attempts-to-call-the-co/10825946">MSVC
+incorrectly attempts to call the copy constructor for xvalue conditional expression</a></li>
+</ul>
+</li>
+<li>Add missing checks for deduction guide and trailing return type.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/decorated-auto-accepted-despite-a-traili/10799228">decorated
+auto accepted despite a trailing-return-type</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Const-in-deduction-guide/10806776"><code>Const</code>
+in deduction guide</a></li>
+</ul>
+</li>
+<li>Fix an issue with the compiler emitting the IL for a special member function when it was not ODR used.
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/std::vector-tries-to-default-construct-a/10838060">std::vector
+tries to default construct an object from constructor accepting std::initializer_list</a></li>
+</ul>
+</li>
+<li><a href="https://developercommunity.visualstudio.com/t/C20-compile-error-with-ATL::CComPtr/10833434">C++20
+compile error with ATL::CComPtr&lt;&gt;</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Cannot-capture-local-constexpr-closure-o/10855644">Cannot
+capture local constexpr closure object in lambda in C++20 mode</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VisualCppTools--ppltasksh-race-conditi/10813456">VisualCppTools
+/ ppltasks.h race condition bug in when_any</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Write-to-base-class-member-through-virtu/10792751">Write
+to base class member through virtual function called by another function fails to compile.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/vcruntime-nothrow-array-operator-new-fal/10373274">vcruntime
+nothrow array operator new falls back on the wrong function</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/17125-internal-preview-fails-to-scan-P/10833569">17.12.5
+internal preview fails to scan PreFast on cppcorecheck plugin</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-instantiates-constexpr-destructors-/10604135">MSVC
+instantiates constexpr destructors too early when data member initializers are involved</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/VC-2017:-Member-enumeration-of-class-t/91207">VC++ 2017:
+Member enumeration of class template cannot be defined outside of the class template definition.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/MSVC-194334808-Preprocessor-Bug:-EP/10855069">MSVC
+19.43.34808 Preprocessor Bug: <code>/EP</code> Adds Unwanted <code>#pragma warning</code> Directives
+(Introduced in VS 2022 v17.13.x, Corrupts Preprocessed Files)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Requires-clause-rejected-in-lambda-initi/10837397">Requires
+clause rejected in lambda initializing a variable template</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/False-positive-lifetime-code-analysis-wa/10732359">False
+positive lifetime code analysis warning C26849: Don&#8217;t dereference an invalid pointer: (lifetime.1).</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C26822-false-positive-with-not_null/10792869">C26822
+false positive with not_null</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/cant-compile-with-valid-CTAD/10855618">can&#8217;t compile
+with valid CTAD</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Type-always-prefered-over-value-when-usi/10729382">Type
+always prefered over value when using qualified identifiers</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/std::bit_cast-does-not-work-for-bit-fiel/10629958">std::bit_cast
+does not work for bit-fields equal to whole type</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Bit-fields-with-widths-computed-via-temp/10816564">Bit
+fields with widths computed via template are treated as 1-bit fields instead starting with MSVC 19.40</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/OpenJDK-jdk17u-build-failure-with-VS20/10860335">OpenJDK
+(jdk17u) build failure with VS2022: error C2244: &#8216;TestEnableIfNested::sub1&#8217;: unable to match
+function definition to an existing declaration</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/C26815-false-positive-on-return-this;/10863015">C26815
+false positive on &#8220;return *this;&#8221; with assignment of std::optional member in member function.</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Trivial-template-argument-expressions-br/10852233">Trivial
+template argument expressions broken in 14.44</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/False-positive-lifetime-code-analysis-wa/10732367">False
+positive lifetime code analysis warning C26847: Don&#8217;t return an invalid pointer (lifetime.4).</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Inconsistent-ESP-analysis-defects-after-/10807134">Inconsistent
+ESP analysis defects after 17.10 update (Office)</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Breakpoint-line-mimatch-due-to-VC-comp/10370838">Breakpoint
+line mismatch due to VC++ compiler parse the line number wrongly, when a template class with alignas and
+comma</a></li>
+<li><a href="https://developercommunity.visualstudio.com/t/Microsoft-cl-compiler-successfully-compi/10318070">Microsoft
+cl compiler successfully compile code that has unnecessary template-id specified.</a></li>
+</ul>
+<h3 id="correctness-c-compiler-">Correctness (C compiler)</h3>
+<ul>
+<li>C Make char types unique for <code>_Generic</code> operator
+<ul>
+<li><a href="https://developercommunity2.visualstudio.com/t/_Generic-char-signed-char-unsigned-cha/1228885?preview=true">_Generic
+char, signed char, unsigned char are not distinct in C11</a></li>
+</ul>
+</li>
+<li>C dropped pointer dereference of a cast of a pointer to an array in some cases
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/What-is-the-reason-for-a-behavior-change/10808170">Incorrect
+code generated with convoluted pointer casting</a></li>
+</ul>
+</li>
+<li>C compiler stack overflow on large array initialization
+<ul>
+<li><a href="https://developercommunity.visualstudio.com/t/VS-2022-clexe-stack-overflows-when-pars/10798104">VS
+2022 cl.exe stack overflows when compiling zig2.c (~185 MB, ~4.1 M lines)</a></li>
+</ul>
+</li>
+</ul>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/">C++ Language Updates in MSVC in Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New in vcpkg (April 2025)</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-april-2025/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-april-2025/#comments</comments>
@@ -857,57 +1611,6 @@
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>VS Code C++ Extension Updates: 4x Faster Colorization &#038; 3.5x Faster Project Startup</title>
-		<link>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-updates-4x-faster-colorization-3-5x-faster-project-startup/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-updates-4x-faster-colorization-3-5x-faster-project-startup/#comments</comments>
-		
-		<dc:creator><![CDATA[Alexandra Kemper]]></dc:creator>
-		<pubDate>Tue, 25 Mar 2025 22:23:36 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35326</guid>
-
-					<description><![CDATA[<p>In the latest releases of the C++ Extension in Visual Studio Code, we have focused on performance improvements and stability. A fast, responsive, and reliable development environment is essential for maintaining productivity, especially in large and complex C++ projects. These updates include many incremental optimizations that collectively speed up the time from opening a C++ [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/vs-code-c-extension-updates-4x-faster-colorization-3-5x-faster-project-startup/">VS Code C++ Extension Updates: 4x Faster Colorization &#038; 3.5x Faster Project Startup</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span data-contrast="auto">In the latest releases of the C++ Extension in Visual Studio Code, we have focused on performance improvements and stability. A fast, responsive, and reliable development environment is essential for maintaining productivity, especially in large and complex C++ projects. These updates include many incremental optimizations that collectively speed up the time from opening a C++ project to writing code with the full suite of C++ features available at your fingertips. Experience these new features for yourself by updating to the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">newest version of the C++ Extension</a>.</span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<h2 aria-level="3"><span data-contrast="none">Faster Project Startup and Time to Colorization</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><span data-contrast="auto">Many different optimizations have been made in the C++ extension to provide better initialization performance on project startup and when configuring IntelliSense. If you’re working on a large or complex project on a MacOS or Linux machine, you’ll notice a significant improvement. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">Through our testing, we found an average 3.4x speedup on Linux and 3.6x speedup on MacOS . Testing was done with a basic machine using VS Code 1.97.1 and the </span><a href="https://pytorch.org/"><span data-contrast="none">PyTorch source code</span></a><span data-contrast="auto">.</span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> <a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again.png"><img decoding="async" class="wp-image-35328 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again.png" alt="Graph showing the project startup time. for linux it has gone from 67.56 to 19.95 between versions 1.21 and 1.23 of the extenion. For mac it has gone from 71.54 to 19.94" width="506" height="371" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again.png 1693w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again-300x220.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again-1024x749.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again-768x562.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/perf_march_2025_again-1536x1124.png 1536w" sizes="(max-width: 506px) 100vw, 506px" /></a></span></p>
-<p><span data-contrast="auto">When opening a source file, </span><a href="https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide"><span data-contrast="none">semantic highlighting (colorization)</span></a><span data-contrast="auto"> is also now much faster. This change is due to the C++ Extension now caching configuration information rather than relying on real-time processing, resulting in much faster configuration access. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">Based on our testing, we found an average 4x speedup in the time to file colorization, 4.8x for Linux, and 3.3x for MacOS. This testing was done using VS Code 1.97.1 on a basic machine and colorizing a representative file in the </span><a href="https://pytorch.org/"><span data-contrast="none">PyTorch source code</span></a><span data-contrast="auto">. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:2,&quot;335551620&quot;:2,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025.png"><img decoding="async" class="wp-image-35329 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025.png" alt="Shows a graph where the time to colorization for linux has decreased from 9.84 to 2.05 seconds between version 1.21 and version 1.23 in the C++ Extension. For Mac, this is 17.49 seconds to 5.25 seconds between the two extension versions," width="524" height="329" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025.png 1434w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025-300x188.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025-1024x642.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/03/time_to_colirzation_march_2025-768x481.png 768w" sizes="(max-width: 524px) 100vw, 524px" /></a></span></p>
-<h2 aria-level="3"><span data-contrast="none">Optimizing IntelliSense Configuration</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><span data-contrast="auto">IntelliSense is the core of the C++ Extension, building your coding experience into a dynamic process with real-time analysis and insights. This ranges from autocompletion to file navigation like “Go to Definition”. But in order for IntelliSense to be able to provide this information, it must understand your project’s configuration. Configuration details, such as compiler settings and include paths, are parsed on project startup. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">With this release, we optimized the IntelliSense configuration process. The biggest change is that compiler configurations are now cached. A quick retrieval via the database is much faster than identifying and querying the correct compiler every time a project is opened. This leads to faster population of IntelliSense features as seen in the previous section for time to colorization.</span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">We have optimized further by parallelizing different processes during file discovery. For example, determining the relationship between source and header files and lookups of different #include files now happen in parallel, providing faster results. Additionally, an updated path canonicalization process for MacOS and Linux uses better path resolutions to standardize file paths. This eliminates redundancies like relative components, reduces file system access, and improves performance across the different operating systems. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:0,&quot;335559737&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">Beyond configuring with a compiler, we also optimized the process of using alternate methods for configuration, such as custom configurations. It is now faster to reconfigure a custom configuration provider, and the selected C++ configuration can also now be easily switched within the extension. Switching a configuration is available via a new parameter thanks to the work of </span><a href="https://github.com/adrianstephens"><span data-contrast="none">@adrianstephens</span></a><span data-contrast="auto">. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559685&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">We have also expanded support for configuring your project via a compile_commands.json file. A project can now support multiple compile_command.json file, thanks to the contributions of </span><a href="https://github.com/yiftahw"><span data-contrast="none">@yiftahw</span></a><span data-contrast="auto">. This makes it easier for build systems that run CMake separately in different repositories to be able to specify which CMake version to use via multiple separate compile_commands files. Additionally, there is now faster processing of large and complex compile_commands.json files, especially for files with thousands of entries. Combined with the new configuration caching, this creates a better startup experience. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335551550&quot;:1,&quot;335551620&quot;:1,&quot;335559685&quot;:0,&quot;335559737&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<h2 aria-level="3"><span data-contrast="none">Other Enhancements</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><span data-contrast="auto">Beyond startup time and IntelliSense improvements, we’ve introduced additional enhancements to improve performance and usability: </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="11" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="1" data-aria-level="1"><span data-contrast="auto">An improved implementation of file buffers, reducing memory usage while using the extension</span></li>
-</ul>
-<ul>
-<li data-leveltext="" data-font="Symbol" data-listid="11" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" aria-setsize="-1" data-aria-posinset="2" data-aria-level="1"><span data-contrast="auto">Additional settings have been added to the C/C++: Log Diagnostics output for more details on the environment setup and configuration, including modified C_Cpp settings, additionally tracked settings, and the database path used. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></li>
-</ul>
-<p><span data-contrast="auto">To learn more about these changes, please reference the </span><a href="https://github.com/microsoft/vscode-cpptools/releases"><span data-contrast="none">changelog</span></a><span data-contrast="auto">. </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<h2 aria-level="3"><span data-contrast="none">What do you think?</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools"><span data-contrast="none">Download the C/C++ extension for Visual Studio Code </span></a><span data-contrast="auto"> </span><span data-contrast="auto">today, give it a try, and let us know what you think.  </span><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p><span data-contrast="auto">If you have any questions around this release, feel free to start a discussion in </span><a href="https://github.com/microsoft/vscode-cpptools/discussions"><span data-contrast="none">our GitHub repository</span></a><span data-contrast="auto">. Otherwise, if you run into any issues, please report them in the</span><span data-contrast="auto"> </span><a href="https://github.com/Microsoft/vscode-cpptools/issues"><span data-contrast="none">issues section</span></a><span data-contrast="auto">. We can be reached via the comments below, per email at</span><span data-contrast="auto"> </span> <a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com,</span></a><span data-contrast="auto"> or through our team on X/Twitter at </span><span data-contrast="auto"> </span><a href="https://twitter.com/visualc"><span data-contrast="none">@</span></a><a href="https://twitter.com/visualc"><span data-contrast="none">VisualC.</span></a><span data-ccp-props="{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p>&nbsp;</p>
-<p><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559739&quot;:240,&quot;335559740&quot;:279}"> </span></p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/vs-code-c-extension-updates-4x-faster-colorization-3-5x-faster-project-startup/">VS Code C++ Extension Updates: 4x Faster Colorization &#038; 3.5x Faster Project Startup</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-updates-4x-faster-colorization-3-5x-faster-project-startup/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
