@@ -28,6 +28,221 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Introducing the /forceInterlockedFunctions switch for ARM64</title>
+		<link>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/#respond</comments>
+		
+		<dc:creator><![CDATA[Emily Bao]]></dc:creator>
+		<pubDate>Tue, 13 May 2025 10:00:25 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[Backend]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35259</guid>
+
+					<description><![CDATA[<p>In Visual Studio 2022 17.14, we are introducing the /forceInterlockedFunctions[-] switch, which generates and links with out-of-line atomics that select Armv8.1+ Large System Extension (LSE) atomic instructions based on CPU support. This switch is on by default for Armv8.0 and off for Armv8.1+. Outlining is necessary in Armv8.0 because this version&#8217;s interlocked intrinsics use exclusive [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/">Introducing the /forceInterlockedFunctions switch for ARM64</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In Visual Studio 2022 17.14, we are introducing the <code>/forceInterlockedFunctions[-]</code> switch, which generates and links with out-of-line atomics that select Armv8.1+ Large System Extension (LSE) atomic instructions based on CPU support.</p>
+<p>This switch is on by default for Armv8.0 and off for Armv8.1+. Outlining is necessary in Armv8.0 because this version&#8217;s interlocked intrinsics use exclusive instructions—<code>LoadExcl</code>/<code>StoreExcl</code>—that do not guarantee forward progress. This can cause performance issues due to intermittent livelocks. <a href="https://developer.arm.com/documentation/ddi0487/ka">See Arm Architecture Reference Manual for A-profile architecture</a>, section &#8220;B2.17.5 Load-Exclusive and Store-Exclusive instruction usage restrictions&#8221; for examples of when the <code>LoadExcl</code>/<code>StoreExcl</code> loop may not make forward progress.</p>
+<p>Below is an example of code that was previously generated when using the <code>_InterlockedAdd64</code> intrinsic. You can see the <code>ldaxr</code> and <code>stlxr</code> instructions being used.</p>
+<table style="width: 74.6316%;">
+<tbody>
+<tr>
+<td style="width: 49.3177%;">Main.cpp</td>
+<td style="width: 115.99%;">Main.asm snippet</td>
+</tr>
+<tr>
+<td style="width: 49.3177%;">
+<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;intrin.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;Windows.h&gt;
+
+void main() {
+    volatile __int64 Addend = 5;
+    __int64 Value = 1; _InterlockedAdd64(&amp;Addend, Value);
+}</code></pre>
+</td>
+<td style="width: 115.99%;">
+<pre class="prettyprint language-default"><code class="language-default">; _InterlockedAdd64(&amp;Addend, Value);
+ldr x10,[sp]
+add x9,sp,#8
+|$LN3@main|
+ldaxr x8,[x9]
+add x8,x8,x10
+stlxr wip0,x8,[x9]
+cbnz wip0,|$LN3@main|
+dmb ish</code></pre>
+</td>
+</tr>
+</tbody>
+</table>
+<p>With the <code>/forceInterlockedFunctions</code> option you can see that the <code>ldaxr</code> and <code>stlxr</code> are gone and have been replaced with a <code>bl _InterlockedAdd64</code> instruction</p>
+<table>
+<tbody>
+<tr>
+<td>Main.cpp</td>
+<td>Main.asm snippet</td>
+</tr>
+<tr>
+<td>
+<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;intrin.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;Windows.h&gt;
+
+void main() {
+    volatile __int64 Addend = 5;
+    __int64 Value = 1; _InterlockedAdd64(&amp;Addend, Value);
+}</code></pre>
+</td>
+<td>
+<pre class="prettyprint language-default"><code class="language-default">; InterlockedAdd64(&amp;Addend, Value);
+ldr x1,[sp,#0x10]
+add x0,sp,#0x18
+bl _InterlockedAdd64
+nop</code></pre>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>/forceInterlockedFunctions</code> option only applies to Arm64 and will be ignored if not applicable. Additionally, enabling the LSE feature will override the default outlining behavior in Armv8.0.</p>
+<p>Note that the option is on by default for all Arm64EC versions. We would not recommend turning the option off for ARM64EC, as outlining helps address the memory model differences between Arm64 and x64.</p>
+<p>&nbsp;</p>
+<p>This flag impacts the following interlocked intrinsics:</p>
+<p>Key:</p>
+<ul>
+<li>Full: supports plain, <code>_acq</code>, <code>_rel</code>, and <code>_nf</code> forms.</li>
+<li>None: Not supported</li>
+</ul>
+<table>
+<tbody>
+<tr>
+<td><strong>Operation</strong></td>
+<td><strong>8</strong></td>
+<td><strong>16</strong></td>
+<td><strong>32</strong></td>
+<td><strong>64</strong></td>
+<td><strong>128</strong></td>
+<td><strong>Pointer</strong></td>
+</tr>
+<tr>
+<td><code>Add</code></td>
+<td>None</td>
+<td>None</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>And</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>CompareExchange</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+</tr>
+<tr>
+<td><code>Decrement</code></td>
+<td>None</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>Exchange</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>Full</td>
+</tr>
+<tr>
+<td><code>ExchangeAdd</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>Increment</code></td>
+<td>None</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>Or</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>Xor</code></td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>bittestandset</code></td>
+<td>None</td>
+<td>None</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>bittestandreset</code></td>
+<td>None</td>
+<td>None</td>
+<td>Full</td>
+<td>Full</td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h4><strong>See also</strong></h4>
+<p><a href="https://learn.microsoft.com/cpp/build/reference/force-interlocked-functions?view=msvc-170">/forceInterlockedFunctions | Microsoft Learn</a></p>
+<p><a href="https://learn.microsoft.com/cpp/intrinsics/arm64-intrinsics?view=msvc-170">ARM64 intrinsics | Microsoft Learn</a></p>
+<p><a href="https://learn.microsoft.com/cpp/build/reference/feature-arm64?view=msvc-170">/feature (ARM64) | Microsoft Learn</a></p>
+<p><a href="https://learn.arm.com/learning-paths/servers-and-cloud-computing/lse/intro/">Introduction to Large System Extensions | Arm Learning Paths</a></p>
+<h4><strong>Feedback</strong></h4>
+<p>That’s all about this new compiler option and default setting that you can find starting in Visual Studio 2022 version 17.14. Please give it a try and let us know how it goes! We always welcome feedback, questions, or concerns from the community, as it helps make Visual Studio better.</p>
+<p>Please share your thoughts, comments and questions with us through <a href="https://developercommunity.visualstudio.com/home">Developer Community</a>. You can also reach us on X <a href="https://x.com/visualc">@VisualC</a>, or via email at visualcpp@microsoft.com.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/">Introducing the /forceInterlockedFunctions switch for ARM64</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>C++ Language Updates in MSVC in Visual Studio 2022 17.14</title>
 		<link>https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/#respond</comments>
@@ -1581,35 +1796,6 @@ code generated with convoluted pointer casting</a></li>
 ]]></content:encoded>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Automatically generate any doc comment for C++ functions in Visual Studio</title>
-		<link>https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/#respond</comments>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Thu, 03 Apr 2025 15:55:21 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35355</guid>
-
-					<description><![CDATA[<p>Have a difficult time documenting your C++ code? Spending too much time thinking of what a function and its parameters accomplish when generating documentation? Copilot is now integrated into C++ doc comments to automatically provide documentation suggestions based on the function’s contents in Visual Studio 2022 17.14 Preview 2. To learn more about this feature, [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/">Automatically generate any doc comment for C++ functions in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Have a difficult time documenting your C++ code? Spending too much time thinking of what a function and its parameters accomplish when generating documentation?</p>
-<p>Copilot is now integrated into C++ doc comments to automatically provide documentation suggestions based on the function’s contents in Visual Studio 2022 17.14 Preview 2.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/ai-doc-comments-2.gif"><img decoding="async" class="alignnone size-full wp-image-35356" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/ai-doc-comments-2.gif" alt="Copilot helping to generate the doc comments for a bubble sort function." width="768" height="295" /></a></p>
-<p>To learn more about this feature, please check out the <strong><a href="https://devblogs.microsoft.com/visualstudio/introducing-automatic-documentation-comment-generation-in-visual-studio/">original announcement on the Visual Studio blog</a>.</strong></p>
-<h3>What do you think?</h3>
-<p>Try out the latest Copilot features for your C++ workflows today. To access these updates to Copilot, you’ll need an <a href="https://github.com/features/copilot?utm_source=vscom&amp;utm_medium=hero&amp;utm_campaign=cta-get#pricing">active GitHub Copilot subscription</a> and <a href="http://aka.ms/vs">the latest version of Visual Studio</a> (minimum Visual Studio 2022 17.14 Preview 2).</p>
-<p>In addition, our team is working hard on improving C++ integrations with Copilot, so please let us know any other enhancements you’d like to see to your C++ workflows and content. Comment below, or you can find us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a> or via X at <a href="https://x.com/visualc">@VisualC</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/">Automatically generate any doc comment for C++ functions in Visual Studio</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/automatically-generate-any-doc-comment-for-c-functions-in-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
 		
 		
