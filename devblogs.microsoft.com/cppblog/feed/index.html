@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 06 May 2025 17:21:52 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 13 May 2025 17:28:12 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,125 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New for C++ Developers in Visual Studio 2022 17.14</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/#respond</comments>
+		
+		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
+		<pubDate>Tue, 13 May 2025 17:27:47 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35467</guid>
+
+					<description><![CDATA[<p>Visual Studio 2022 version 17.14 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the Visual Studio downloads page or upgrade your existing installation by following the Update Visual Studio Learn page. Standard Library and Compiler We’ve made a myriad of [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/">What’s New for C++ Developers in Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Visual Studio 2022 version 17.14 is now generally available! This post summarizes the new features you can find in this release for C++. You can download Visual Studio 2022 from the <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Visual Studio downloads page </a>or upgrade your existing installation by following the <a href="https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022" target="_blank" rel="noopener">Update Visual Studio Learn page</a>.</p>
+<h2>Standard Library and Compiler</h2>
+<p>We’ve made a myriad of fixes and improvements to the MSVC compiler and standard library. See <a href="https://devblogs.microsoft.com/cppblog/c-language-updates-in-msvc-in-visual-studio-2022-17-14/">C++ Language Updates in MSVC in Visual Studio 2022 17.14 </a>for a full list of changes on the compiler side, and the <a href="https://github.com/microsoft/STL/wiki/Changelog">STL Changelog</a> for all the standard library updates.</p>
+<h3>Compiler</h3>
+<p>We’ve added support for several C++23 features, which are available under the <code>/std:c++latest</code> and <code>/std:c++23preview</code> flags.</p>
+<p>You can now omit <code>()</code> in some forms of lambdas that previously required them, thanks to <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1102r2.html" target="_blank" rel="noopener">P1102R2</a>:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">auto lambda = [] constexpr { }; //no '()' needed after the capture list</code></pre>
+<p>We implemented <code><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1938r3.html">if consteval</a></code>, with which you can run different code depending on whether the statement is executed at compile time or run time. This is useful for cases where your run time version can be heavily optimized with compiler intrinsics or inline assembly that are not available at compile time:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">constexpr size_t strlen(char const* s) {
+    if consteval {
+        // if executed at compile time, use a constexpr-friendly algorithm
+        for (const char *p = s; ; ++p) {
+            if (*p == '\0') {
+                return static_cast&lt;std::size_t&gt;(p - s);
+            }
+        }
+    } else {
+        // if executed at run time, use inline assembly
+        __asm__("SSE 4.2 magic");
+    }
+}
+</code></pre>
+<p>We now support <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2173r1.pdf">attributes for lambdas</a>:</p>
+<pre class="prettyprint language-default"><code class="language-cpp">auto lambda = [] [[nodiscard]] [[deprecated]] { return 10; };
+
+void f() {
+    lambda(); // fires a deprecation warning and a discard of return value warning.
+}</code></pre>
+<p>We also now support <code><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1169r4.html">static operator()</a></code> and <code><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2589r1.pdf">static operator[]</a></code>. These allow the compiler to generate more efficient code for these operators when the implicit object parameter is not needed and therefore does not need to be passed as an argument to the function:</p>
+<pre class="prettyprint language-cpp"><code class="language-cpp">struct X {
+    static bool operator()(int) const;
+};
+
+inline constexpr X x;
+
+int count_x(std::vector&lt;int&gt; const&amp; xs) {
+    return std::count_if(xs.begin(), xs.end(), x);
+}</code></pre>
+<p>The performance of generated code improved due to 17.14 including earlier SSA optimizations and control-flow simplifications. The 17.14 compiler emits 20% faster code than the initial Visual Studio 2022 17 release.</p>
+<p>For throughput, the 17.14 compiler incorporates a dataflow simplification that reduced the compile time of an UnrealEngine <code>/LTCG</code> link repro by 13%.</p>
+<h3>Standard Library</h3>
+<p>We have implemented parts of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3471r4.html">standard library hardening</a>, which checks for some instances of undefined behavior at runtime and reports them to the user. This is currently disabled by default, but you can enable it by defining <code>_MSVC_STL_HARDENING</code> to 1 project-wide. The proposal uses C++26 contract violations as the mechanism for reporting hardened precondition violations, but since we haven’t implemented contracts yet, we default to calling <code>__fastfail()</code>.</p>
+<p>Another new safety feature we have added is destructor tombstones, which help mitigate use-after-free mistakes. This is also disabled by default, but can be enabled by defining <code>_MSVC_STL_DESTRUCTOR_TOMBSTONES</code> to 1 project-wide.</p>
+<p>Some miscellaneous improvements we have made are:</p>
+<ul>
+<li>We now take advantage of our compiler support for <code>static operator()</code>, which gives slightly improved codegen.</li>
+<li>We marked <code>std::expected</code>, <code>std::unexpected</code>, and all STL exception types as <code>[[nodiscard]]</code>. This will help protect you from misusing them.</li>
+<li>Improved the visualizers for <code>std::basic_string_view</code> and its iterators.</li>
+<li>Added or improved vectorized implementations of <code>std::basic_string::find()</code>, <code>find_first_of()</code>, and <code>find_last_of()</code>.</li>
+</ul>
+<h2>C++ Dynamic Debugging</h2>
+<p>C++ Dynamic Debugging is a new compiler and IDE feature that gives you the performance of optimized builds with the debugging experience of unoptimized builds. It is now available as a <em>preview</em> feature exclusively with the MSVC toolset and works by dynamically deoptimizing functions that you set deoptimized breakpoints on or step into.</p>
+<p>For example, without C++ Dynamic Debugging, you might see this in your Watch window:</p>
+<p><img fetchpriority="high" decoding="async" width="481" height="301" class="wp-image-35468" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-before.png" alt="Image before" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-before.png 481w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-before-300x188.png 300w" sizes="(max-width: 481px) 100vw, 481px" /></p>
+<p>Many of the variables are unavailable, so the debugger cannot visualize them.</p>
+<p>When you enable the feature, however, you’ll see this:</p>
+<p><img decoding="async" width="508" height="267" class="wp-image-35469" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-after.png" alt="Image after" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-after.png 508w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/image-after-300x158.png 300w" sizes="(max-width: 508px) 100vw, 508px" /></p>
+<p>The values of the variables are now available because the function has been dynamically deoptimized.</p>
+<p>To begin, change your configuration to Release mode. Next, right-click on your project and click on Properties to open the Configuration Properties menu. In this menu, click on <em>Advanced</em> &gt; <em>Use C++ Dynamic Debugging</em> &gt; <strong>Yes</strong>. Lastly, rebuild your project. Setting this property will turn off Whole Program Optimization.</p>
+<p><img decoding="async" width="624" height="212" class="wp-image-35470" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/screenshot-of-configuration-properties-activating.png" alt="screenshot of configuration properties activating C++ dynamic debugging" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/screenshot-of-configuration-properties-activating.png 624w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/screenshot-of-configuration-properties-activating-300x102.png 300w" sizes="(max-width: 624px) 100vw, 624px" /></p>
+<p>For all the details about C++ Dynamic Debugging, see <a href="https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/">our blog post</a>.</p>
+<h2>IDE</h2>
+<p>You can now automatically populate template arguments in the template bar, which displays and allows editing of template parameters, when using <strong>Go to Definition</strong> or F12.</p>
+<p>For example, pressing F12 on vector will now jump to vector with the template bar automatically populated, allowing you to quickly inspect and modify template parameters.</p>
+<p>In the example below, using <strong>Go To Definition</strong> or pressing F12 will populate both the type and allocator in the template bar.</p>
+<p><img decoding="async" width="800" height="305" class="wp-image-35471" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/auto-populate-template-intellisense.gif" alt="Auto Populate Template IntelliSense" /></p>
+<p>We’ve also added support for controlling which headers appear in the include completion list when you type #include.</p>
+<p>The dropdown setting in <strong>Tools → Options → Text Editor → C/C++ → IntelliSense → Include style for suggestions</strong> now affects both include suggestions and include completion, with the following refined behaviors:</p>
+<ul>
+<li><strong>Core Guidelines (Default)</strong>: Uses quotes for relative paths and angle brackets for everything else.</li>
+<li><strong>Quotes mode</strong>: Uses quotes for all headers except standard headers, which use angle brackets.</li>
+<li><strong>Angle brackets mode</strong>: Uses angle brackets for all headers that are part of the include path.</li>
+</ul>
+<p><img decoding="async" width="736" height="476" class="wp-image-35472" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/include-style-for-suggestions-setting.png" alt="Include Style for Suggestions Setting" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/include-style-for-suggestions-setting.png 736w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/include-style-for-suggestions-setting-300x194.png 300w" sizes="(max-width: 736px) 100vw, 736px" /></p>
+<h2>CMake</h2>
+<p>We have added support for IntelliSense-based completions and quick info for CMake modules in Visual Studio. Now, you can view all available CMake modules and learn more about them directly from the Visual Studio editor.</p>
+<h3>Quick Info</h3>
+<p>When you hover over a referenced CMake module, IntelliSense provides detailed information about the selected module, helping you understand its usage and functionality at a glance.</p>
+<p><img decoding="async" width="787" height="108" class="wp-image-35473" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-information-in-the-quick-info.png" alt="CMake information in the Quick Info" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-information-in-the-quick-info.png 787w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-information-in-the-quick-info-300x41.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-information-in-the-quick-info-768x105.png 768w" sizes="(max-width: 787px) 100vw, 787px" /></p>
+<h3>Completion</h3>
+<p>When you start typing a CMake module in your CMakeLists.txt or other CMake script files, IntelliSense will provide a list of available modules to choose from.</p>
+<p><img decoding="async" width="369" height="310" class="wp-image-35474" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-module-completion.png" alt="CMake module completion" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-module-completion.png 369w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/cmake-module-completion-300x252.png 300w" sizes="(max-width: 369px) 100vw, 369px" /></p>
+<h2>GitHub Copilot</h2>
+<p>We’ve added doc comment generation support for GitHub Copilot. With this feature enabled, you can type the comment pattern according to your settings configuration (e.g., <code>///</code>), and Copilot will complete the function description based on the code.</p>
+<p><img decoding="async" width="768" height="295" class="wp-image-35475" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/ai-doc-comments.gif" alt="AI doc comments" /></p>
+<p>Also new in this release is Next Edit Suggestions (NES). When you&#8217;re presented with an edit suggestion, if it is on a different line than the one you are on now, it will suggest you <strong>Tab to Navigate to the corresponding line</strong> first.</p>
+<p>You can enable NES at<strong> Tools → Options → GitHub → Copilot → Copilot Completions → Enable Next Edit Suggestions.</strong></p>
+<p><img decoding="async" width="642" height="311" class="wp-image-35476" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/nes-tab-to-jump-hint-bar.png" alt="NES Tab to Jump Hint Bar" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/nes-tab-to-jump-hint-bar.png 642w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/nes-tab-to-jump-hint-bar-300x145.png 300w" sizes="(max-width: 642px) 100vw, 642px" /></p>
+<h2>Unreal Engine Blueprints Debugger</h2>
+<p>The Unreal Engine Blueprint integration allows you to debug Blueprints directly within Visual Studio. This integration includes displaying Blueprint stack traces in the Visual Studio call stack tab and showing Blueprint node values in the local variables table. These features limit the need for you to switch between Visual Studio and the Unreal Editor, providing a seamless debugging experience and reducing context-switching.</p>
+<p><img decoding="async" width="860" height="230" class="wp-image-35477" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/picture-1-picture.png" alt="Picture 1, Picture" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/picture-1-picture.png 860w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/picture-1-picture-300x80.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/picture-1-picture-768x205.png 768w" sizes="(max-width: 860px) 100vw, 860px" /></p>
+<p>With the new functionality, developers can easily track interactions between Blueprints and C++ code, making it simpler to identify and fix bugs. Additionally, an <a href="https://github.com/microsoft/vc-ue-extensions">Unreal Engine plugin for Visual Studio</a> enhances this capability by tracking Blueprint execution flow and storing additional information, which the debugger extension can then display.</p>
+<h2>Address Sanitizer</h2>
+<p>We have resolved various issues and feedback tickets, enhancing the quality and stability of Address Sanitizer. We have published a comprehensive list of issues we resolved in Visual Studio 2022 17.13 <a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-updates-in-visual-studio-2022-version-17-13/">here</a> and will publish a similar one for 17.14 soon.</p>
+<p>To further improve the quality of both Address Sanitizer and our toolchain, we now instrument the entire toolchain with Address Sanitizer on each pull request. Then, internal test pipelines are executed against this instrumented toolset to protect against memory safety errors. This process enables the identification of novel memory safety issues within the toolset and improves the quality of Address Sanitizer through an expedited feedback loop. The Visual C++ Library implementation in the <a href="https://github.com/Microsoft/STL">STL GitHub repository</a> is also tested daily using Address Sanitizer using a <a href="https://dev.azure.com/vclibs/STL/_build?definitionId=5&amp;_a=summary">dedicated pipeline</a>.</p>
+<h2>Send us your feedback</h2>
+<p>We are very much interested in your feedback to continue to improve this experience. The comments below are open. Feedback can also be shared through <a href="https://developercommunity.visualstudio.com/cpp" target="_blank" rel="noopener">Visual Studio Developer Community</a>. You can also reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/">What’s New for C++ Developers in Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Introducing the /forceInterlockedFunctions switch for ARM64</title>
 		<link>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/#respond</comments>
@@ -1040,7 +1159,7 @@ code generated with convoluted pointer casting</a></li>
 <li>Sorted Concepts table of contents entries alphabetically (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/471">Microsoft/vcpkg-docs#471</a>).</li>
 </ul>
 <p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img fetchpriority="high" decoding="async" class="wp-image-35442" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1.png" width="728" height="214" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-768x226.png 768w" sizes="(max-width: 728px) 100vw, 728px" /></p>
+<p><img decoding="async" class="wp-image-35442" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1.png" width="728" height="214" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/05/word-image-35441-1-768x226.png 768w" sizes="(max-width: 728px) 100vw, 728px" /></p>
 <h2>Total ports available for tested triplets</h2>
 <table>
 <tbody>
@@ -1765,38 +1884,6 @@ code generated with convoluted pointer casting</a></li>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2025 Talks Announced</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/#respond</comments>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Mon, 07 Apr 2025 13:51:39 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[Pure Virtual C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35364</guid>
-
-					<description><![CDATA[<p>Pure Virtual C++ is our free, one-day, virtual conference for the whole C++ community. This year, it is running on the 30th April. We&#8217;re pleased to announce four of our five live sessions for the day: Welcome to v1.0 of the meta::[[verse]]! with Inbal Levi Proxy: Next Generation Polymorphism with Mingxin Wang Making unfamiliar C++ [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/">Pure Virtual C++ 2025 Talks Announced</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><img decoding="async" class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png" /></p>
-<p>Pure Virtual C++ is our free, one-day, virtual conference for the whole C++ community. This year, it is running on the 30th April. We&#8217;re pleased to announce four of our five live sessions for the day:</p>
-<ul>
-<li>Welcome to v1.0 of the meta::[[verse]]! with Inbal Levi</li>
-<li>Proxy: Next Generation Polymorphism with Mingxin Wang</li>
-<li>Making unfamiliar C++ code familiar with GitHub Copilot with Sinem Akinci</li>
-<li>C++ Modules Myth Busting with Cameron DaCamara</li>
-</ul>
-<p>You can find abstracts for all the talks and register for the conference with the button below.</p>
-<p><div class="d-flex justify-content-left"><a class="cta_button_link btn-primary mb-24" href="https://developer.microsoft.com/en-us/reactor/events/25184/" target="_blank">Register for Free</a></div></p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/">Pure Virtual C++ 2025 Talks Announced</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-talks-announced/feed/</wfw:commentRss>
-			<slash:comments>0</slash:comments>
 		
 		
 			</item>
