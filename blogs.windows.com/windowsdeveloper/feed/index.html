@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Wed, 14 May 2025 17:24:51 +0000</lastBuildDate>
+	<lastBuildDate>Mon, 19 May 2025 16:22:37 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,722 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>The Windows Subsystem for Linux is now open source</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/the-windows-subsystem-for-linux-is-now-open-source/</link>
+		
+		<dc:creator><![CDATA[Pierre Boulay]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:30 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57441</guid>
+
+					<description><![CDATA[<p>Today we’re very excited to announce the open-source release of the Windows Subsystem for Linux. This is the result of a multiyear effort to prepare for this, and a great closure to the first ever issue raised on the Microsoft/WSL repo: <a href="ht
+</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/the-windows-subsystem-for-linux-is-now-open-source/">The Windows Subsystem for Linux is now open source</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Today we’re very excited to announce the open-source release of the Windows Subsystem for Linux. This is the result of a multiyear effort to prepare for this, and a great closure to the first ever issue raised on the Microsoft/WSL repo: <a href="https://github.com/microsoft/WSL/issues/1">Will this be Open Source? · Issue #1 · microsoft/WSL</a>.
+
+That means that the code that powers WSL is now available on GitHub at <a href="https://github.com/microsoft/WSL/releases/tag/2.5.7">Microsoft/WSL</a> and open sourced to the community! You can download WSL and build it from source, add new fixes and features and participate in WSL’s active development.
+<h3>WSL component overview</h3>
+WSL is made of a set of distribution components. Some run in Windows, and some run inside the WSL 2 virtual machine. Here’s an overview of WSL’s architecture:
+
+<img class="alignnone wp-image-57503 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/wsl-architecture.png" alt="Windows Subsystem for Linux architecture." width="1000" height="934" />
+
+WSL's code can be broken up into these main areas:
+<ul>
+ 	<li>Command line executables that are the entry points to interact with WSL
+<ul>
+ 	<li>wsl.exe, wslconfig.exe and wslg.exe</li>
+</ul>
+</li>
+ 	<li>The WSL service that starts the WSL VM, starts distros, mounts file access shares and more
+<ul>
+ 	<li>wslservice.exe</li>
+</ul>
+</li>
+ 	<li>Linux init and daemon processes, binaries that run in Linux to provide WSL functionality
+<ul>
+ 	<li>init for start up, gns for networking, localhost for port forwarding, etc.</li>
+</ul>
+</li>
+ 	<li>File sharing Linux files to Windows with WSL's plan9 server implementation
+<ul>
+ 	<li>plan9</li>
+</ul>
+</li>
+</ul>
+Head over to <a href="https://wsl.dev/">https://wsl.dev</a> to learn more about each component.
+
+This comes as an addition to the already open sourced WSL components:
+<ul>
+ 	<li><a href="https://github.com/microsoft/wslg">microsoft/wslg: Enabling the Windows Subsystem for Linux to include support for Wayland and X server related scenarios</a></li>
+</ul>
+<ul>
+ 	<li><a href="https://github.com/microsoft/WSL2-Linux-Kernel">microsoft/WSL2-Linux-Kernel: The source for the Linux kernel used in Windows Subsystem for Linux 2 (WSL2)</a></li>
+</ul>
+The following components are still part of the Windows image and are not open sourced at this time:
+<ul>
+ 	<li>Lxcore.sys, the kernel side driver that powers WSL 1</li>
+</ul>
+<ul>
+ 	<li>P9rdr.sys and p9np.dll, which runs the “\\wsl.localhost” filesystem redirection (from Windows to Linux)</li>
+</ul>
+<h3>Why open source now? A bit of history…</h3>
+WSL was first announced at BUILD back in 2016 and first shipped with the Windows 10 Anniversary update.
+
+At that time WSL was based on a pico process provider, lxcore.sys, which enabled Windows to natively run ELF executables, and implement Linux syscalls inside the Windows kernel. This eventually became what we today know as “WSL 1”, which WSL still supports.
+
+Over time it became clear that the best way to provide optimal compatibility with native Linux was to rely on the Linux kernel itself. WSL 2 was born, and first announced in 2019.
+
+As the community behind WSL grew, WSL gained more features such as GPU support, graphical applications support (via wslg) and support for systemd.
+
+It eventually became clear that to keep up with the growing community and feature requests, WSL had to move faster, and ship separately from Windows. That’s why in 2021 we separated WSL from the Windows codebase, and moved it to its own codebase. This new WSL first shipped as version 0.47.1 to the Microsoft Store, in July 2021. At the time, only Windows 11 was supported, and the package was marked as preview, only recommended to users that wanted to experience the latest and greatest of WSL.
+
+We continued to develop this new “WSL package” until it was ready for general availability. That happened November of 2022, with WSL 1.0.0, which added support for Windows 10 and was the first “stable” release of this new WSL.
+
+From there we kept on improving WSL, with the objective of fully transitioning all users to this new WSL package, and away from the WSL component that shipped with Windows. Windows 11 24H2 was the first Windows build that moved users from the “built-in” WSL to the “new” WSL package. We kept wsl.exe in the Windows image, so it could download the latest package on demand to make the transition easier.
+
+As we kept on improving WSL, we eventually hit another milestone: WSL 2.0.0 (What are the three hardest problems in computer science? Off by one errors and naming things!).
+
+WSL 2.0.0 introduced major improvements such as mirrored networking, DNS tunneling, session 0 support, proxy support, firewall support and more.
+
+And that’s the milestone we’re still building on today! At the time of writing this article, WSL <a href="https://github.com/microsoft/WSL/releases/tag/2.5.7">2.5.7</a> is the latest available version out of our <a href="https://github.com/microsoft/WSL/releases/tag/2.5.7">nine pages of Github releases</a> since 0.47.1 4 years ago !
+<h3>The community behind WSL</h3>
+Over the years we’ve been incredibly lucky to have a strong community supporting WSL from day 1. We’ve been blessed with people sharing their knowledge, and spending countless hours to help track down bugs, find the best ways to implement new features and improve WSL.
+
+WSL could never have been what it is today without its community. Even without access to WSL’s source code, people have been able to make major contributions that lead to what WSL is now.
+
+This is why we’re incredibly excited to open-source WSL today. We’ve seen how much the community has contributed to WSL without access to the source code, and we can’t wait to see how WSL will evolve now that the community can make direct code contributions to the project.
+<h3>Contributing to WSL</h3>
+Are you interested in learning how WSL works? Would you like to see how a specific feature works, or make a change? Head over to <a href="https://github.com/microsoft/WSL">microsoft/WSL</a> to learn more!]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Introducing Windows ML: The future of machine learning development on Windows</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/introducing-windows-ml-the-future-of-machine-learning-development-on-windows/</link>
+		
+		<dc:creator><![CDATA[Tucker Burns]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:25 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57438</guid>
+
+					<description><![CDATA[<p>Machine learning is at the forefront of technological innovation, enabling transformative user experiences. With the advances in client silicon and model miniaturization, new scenarios are feasible to run completely locally.</p>
+<p>To support developers sh</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/introducing-windows-ml-the-future-of-machine-learning-development-on-windows/">Introducing Windows ML: The future of machine learning development on Windows</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Machine learning is at the forefront of technological innovation, enabling transformative user experiences. With the advances in client silicon and model miniaturization, new scenarios are feasible to run completely locally.
+
+To support developers shipping production experiences in the increasingly complex AI landscape, we are thrilled to announce the public preview of <strong>Windows ML</strong> – a cutting-edge runtime optimized for performant on-device model inference and simplified deployment, and the foundation of <a href="https://blogs.windows.com/windowsdeveloper/?p=57397">Windows AI Foundry</a>.
+
+Windows ML is designed to support developers creating AI-infused applications with ease, harnessing the incredible strength of Windows’ diverse hardware ecosystem whether it’s for entry-level laptops, <a href="https://www.microsoft.com/en-us/windows/copilot-plus-pcs">Copilot+ PCs</a> or <a href="https://blogs.windows.com/windowsdeveloper/?p=57439">top-of-the-line AI workstations</a>. It’s built to help developers leverage the client silicon best suited for their specific workload on any given device – whether it’s an NPU for low-power and sustained inference, a GPU for raw horsepower or CPU for the broadest footprint and flexibility.
+
+Windows ML provides a unified framework so developers can confidently target Windows 11 PCs that are available today. It was built from the ground up to optimize model performance and agility and to respond to the speed of innovation in model architectures, operators and optimizations across all layers of the stack. Windows ML is an evolution of DirectML (DML) based on our learnings from the past year, listening to feedback from many developers, our silicon partners and our own teams developing AI experiences for Copilot+ PCs. Windows ML is designed with this feedback in mind, empowering our partners – AMD, Intel, NVIDIA, Qualcomm – to leverage the execution provider contract to optimize model performance, and match the pace of innovation.
+
+Windows ML is powered by ONNX Runtime Engine (ORT), allowing developers to utilize the familiar ORT APIs, and with ONNX as the native model format it ensures seamless integration with existing models and workflows. A key design aspect is leveraging and enhancing the existing ORT Execution Provider (EP) contract to optimize workloads for varied client silicon. Built in partnership with our Independent Hardware Vendors (IHVs), these execution providers are designed to optimize model execution on existing and emerging AI processors, enabling each to showcase their fullest capability. We’ve been working closely with AMD, Intel, NVIDIA and Qualcomm to integrate their EPs seamlessly in Windows ML, and are pleased to support the full set of CPUs, GPUs and NPUs from day one.
+
+<img class="alignnone wp-image-57497 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/WindowsML_1920x1280@2x-1024x683.jpg" alt="Windows ML architecture." width="1024" height="683" />
+
+<strong>AMD</strong> fully supports Windows ML for Ryzen AI products, where their AMD GPU and AMD NPU Execution Provider enables maximum leverage of GPU and NPU in their platforms. <a href="https://nam06.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.amd.com%2Fen%2Fblogs%2F2025%2Fai-pcs-with-ryzen-ai-300-series-and-windows-ml.html&data=05%7C02%7Cpamelaberry%40microsoft.com%7Cef1914d378bf4c43f29708dd93f13f12%7C72f988bf86f141af91ab2d7cd011db47%7C1%7C0%7C638829386617749529%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dADQxW%2Fa9Q1fl6UcyXmS5P0yxwyvgRkYFa5xNtKXvmI%3D&reserved=0"> Learn more</a>.
+<p style="padding-left: 40px;"><em>"Windows ML seamlessly integrates across CPUs, GPUs and NPUs across the AMD’s portfolio including Ryzen AI 300 series, empowering ISVs to deliver groundbreaking AI experiences. This deep partnership between Microsoft and AMD is driving the future of AI on Windows, optimizing performance, efficiency and accelerating innovation."</em> — <strong>John Rayfield, Vice President of AI, AMD</strong></p>
+<strong>Intel </strong>integrates the performance and efficiency of OpenVINO across CPUs, GPUs and NPUs with the development and deployment simplicity provided by Windows ML, enabling AI developers to more easily target the XPU that best fits their workload across the broad scale of products powered by Intel Core Ultra Processors.  <a href="https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Unlocking-AI-Development-with-Windows-ML-Intel-and-Microsoft-s/post/1689650">Learn more</a>.
+<p style="padding-left: 40px;"><em>“Intel’s partnership with Microsoft on Windows ML supercharges AI app development by tightly integrating high-performance, high-accuracy workflows into the Windows ecosystem. Whether targeting CPU, GPU or NPU, developers can flexibly deploy across any XPU. With the Intel and OpenVINO integration, the focus shifts from plumbing to progress—unlocking faster, smarter AI-powered apps for Windows users everywhere.”</em>  – <strong>Sudhir Tonse Udupa, Vice President, AI PC Software Engineering, Intel</strong></p>
+<strong>NVIDIA’s </strong>new TensorRT EP is the fastest way to execute AI models on NVIDIA RTX GPUs for the more than 100 million RTX AI PCs. When compared to the previous Direct ML implementation, TensorRT for RTX delivers up to 2x faster performance for AI workloads.  <a href="https://developer.nvidia.com/blog">Learn more</a>.
+<p style="padding-left: 40px;"><em>“Today, Windows developers must often choose between broad hardware compatibility and full performance for AI workloads. Through Windows ML, developers can easily support a wide spectrum of hardware while achieving full TensorRT acceleration on NVIDIA GeForce RTX and RTX PRO GPUs.” </em>– <strong>Jason Paul, Vice President of Consumer AI, NVIDIA</strong></p>
+<strong>Qualcomm Technologies Inc. </strong>and Microsoft collaborated to develop and optimize Windows ML-based AI models and applications for the NPU found in Snapdragon X Series processor using the Qualcomm Neural Network Execution Provider (QNN EP). <a href="https://www.qualcomm.com/news/onq/2025/05/microsoft-qualcomm-collaborate-on-windows-11-copilot-plus-pcs-windows-ai-foundry">Learn more</a>.
+<p style="padding-left: 40px;"><em>"The new Windows ML's cutting-edge runtime not only optimizes on-device model inference but also simplifies deployment, making it easier for developers to harness the full potential of advanced AI processors in Snapdragon</em><em> X</em><em> Series platforms<strong>. </strong>Windows ML’s unified framework and support for diverse hardware, including our NPUs, GPUs and CPUs, ensures that developers can create AI applications that deliver exceptional performance and efficiency across a wide range of devices. We look forward to continuing our collaboration with Microsoft to drive innovation and velocity of development to bring the best AI experiences on Windows Copilot+ platforms." </em>– <strong>Upendra Kulkarni, VP, Product Management, Qualcomm Technologies, Inc.</strong></p>
+There are a few key aspects to highlight for Windows ML:
+<ul>
+ 	<li><strong>Simplified Deployment:</strong> Leveraging our infrastructure APIs, developers no longer need to create multiple builds of their app to target different silicon as they don’t have to bundle ONNX or execution providers in their application directly. We’ll make them available on the device and provide simple ways of registering them and enabling on-device ahead-of-time (AOT) model compilation.</li>
+</ul>
+<ul>
+ 	<li><strong>Advanced Silicon Targeting:</strong> Leverage device policies to optimize for low-power, high performance, or override to specify exactly what silicon to leverage for a specific model. In the future this will enable split processing for optimal performance – leveraging CPU or GPU for some pieces of a model and NPU for others.</li>
+</ul>
+<ul>
+ 	<li><strong>Performance:</strong> Windows ML is designed for performance; built on the foundations of ONNX and ONNX Runtime we see up to 20% improvement compared to other model formats. Over time we will add more Windows-specific capabilities for further optimization, like progressive memory mapping, partial model pinning and an optimized scheduler for parallel execution.</li>
+</ul>
+<ul>
+ 	<li><strong>Compatibility: </strong>Working with our IHV partners, Windows ML will guarantee conformance and compatibility, so you can rely on continued improvement while guaranteeing accuracy build-over-build for your models.</li>
+</ul>
+But it’s not just about the runtime, we are also introducing a robust set of tools in <a href="https://code.visualstudio.com/docs/intelligentapps/overview">AI Toolkit for VS Code</a> (AI Toolkit) to support model and app preparation – conversion to ONNX from PyTorch, quantization, optimization, compilation and profiling, to help developers ship production applications with proprietary or open-source models. These tools are specifically designed to simplify the process of preparing and shipping performant models via Windows ML without having to create multiple builds and complex logic.
+
+<img class="alignnone wp-image-57498 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/ModelConversion-Build2025.gif" alt="Animated image of Windows ML user interface" width="800" height="636" />
+
+Windows ML is available in public preview starting today on all Windows 11 machines worldwide, offering developers the opportunity to explore its capabilities and provide feedback. The preview includes two layers of APIs:
+<ul>
+ 	<li><strong>ML Layer:</strong> High-level APIs for runtime initialization, dependency management and helper APIs for establishing generative AI loops.</li>
+</ul>
+<ul>
+ 	<li><strong>Runtime Layer:</strong> Low-level ONNX Runtime APIs for fine-grained control of on-device inference.</li>
+</ul>
+To get started, <a href="https://marketplace.visualstudio.com/items?itemName=ms-windows-ai-studio.windows-ai-studio&ssr=false#overview">install AI Toolkit</a>, leverage one of our conversion and optimization templates, or start building your own. Explore documentation and code samples available on <a href="https://learn.microsoft.com/en-us/windows/ai/windows-ml/">Microsoft Learn</a>, check out AI Dev Gallery (<a href="https://ms-windows-store/pdp/?productid=9N9PN1MM3BD5">install</a>, <a href="https://learn.microsoft.com/en-us/windows/ai/ai-dev-gallery/">documentation</a>) for demos and more samples to help you get started with Windows ML.
+
+<img class="alignnone wp-image-57499 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Windows_ML_Partners-1024x342.png" alt="Logos of companies under a banner reading Windows ML." width="1024" height="342" />
+
+While building Windows ML, it was important to us to receive feedback and perspective from app developers, especially those who are at the forefront of delivering AI-powered features and experiences. We shared early previews of Windows ML with a few leading developers who are testing integration with Windows ML and we’re thrilled by their early reactions:
+
+<strong>Adobe </strong>(Volker Rölke - Senior ML Computer Scientist): <em>“Adobe Premiere Pro and After Effects juggles terabytes of footage and heavy ML workloads. A reliable Windows ML API that delivers consistent performance across heterogeneous devices would remove huge obstacles and let us ship more exceptional features faster. Windows ML can help us take a hardware-agnostic approach with far less boiler-plate system checks and low-level decision-making.”</em>
+
+<strong>Bufferzone</strong> (Dr. Ran Dubin, CTO, Bufferzone): <em>“At Bufferzone, we believe that AI powered PCs represent the future of endpoints. Windows ML simplifies integration challenges for ISVs, reduces time to market and fosters a higher adoption rate. As a result, customers will gain significantly more from their PCs which is a tremendous benefit for everyone.”</em>
+
+<strong>Filmora </strong>(Luyan Zhang – AI Product Manager): <em>“The simplicity amazes me.  Following Microsoft's easier approach with ONNX models added to our app. We converted a complex AI feature to Windows ML in just 3 days."</em>
+
+<strong>McAfee</strong> (Carl Woodward, Sr. Principal Engineer): <em>“We’re excited about the efficiencies Windows ML can bring to the development and management of the new scam detection capabilities in McAfee+.</em><em> Windows ML will allow us to focus on high-impact areas like model accuracy and performance, while providing confidence that AI components work well across the entire ecosystem, including new hardware revisions.</em><em>”</em>
+
+<strong>Powder </strong>(Barthélémy Kiss - Co-founder and CEO at Powder): <em>“Powder is an early adopter of Windows ML, and it has enabled us to integrate models 3x faster, transforming speed into a key strategic advantage.  With Windows 11 handling the heavy lifting across silicon providers, now we can focus more on doing what our Powder developers do best </em>–<em> developing more magical AI video experiences in less time, and at a drastically lower operating cost.”</em>
+
+<strong>Reincubate </strong>(Aidan Fitzpatrick – CEO): <em>“We're committed to supporting and making the most of new AI hardware chipsets on day one. And Windows ML should be a powerful tool in helping us to move at the speed of silicon innovation. For us, the holy grail is being able to take a single high precision model and have it just work seamlessly across Windows silicon and we think Windows ML is an important step in the right direction.”</em>
+
+<strong>Topaz Labs</strong><strong> </strong>(Dr. Suraj Raghuraman – Head of AI Engine): <em>“Windows ML will reduce our installer size tremendously, going down from gigabytes to</em><em> megabytes.</em><em> This will allow our users to do more things on their disk, because the</em><em> model storage</em><em> requirement goes down as well. Since Windows ML relies heavily on ONNX runtime,</em><em> it was really easy for us to integrate it.</em><em> We integrated the entire API</em><em> within a couple of days and it has been a seamless experience from an innovation standpoint.</em><em>”</em>
+
+Whether you’re a seasoned AI developer or exploring ML for the first time, Windows ML empowers you to focus on innovation rather than infrastructure management, enabling you to delight your customers with AI-infused applications with reduced app footprints. Windows ML will be generally available later this year. In the meantime, we look forward to your feedback and seeing how you leverage Windows ML to create solutions that redefine possibilities. <a href="https://learn.microsoft.com/en-us/windows/ai/new-windows-ml/get-started">Join the Windows ML journey today</a> and be part of the next wave of AI innovation!]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Accelerating AI development with Windows-based AI workstations</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/accelerating-ai-development-with-windows-based-ai-workstations/</link>
+		
+		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:20 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57439</guid>
+
+					<description><![CDATA[<p>Today, we <a href="https://blogs.windows.com/windowsdeveloper/?p=57397">announced</a> powerful capabilities for AI development with Windows AI Foundry, featuring components like <a href="https://blogs.windows.com/windowsdeveloper/?p=57438">Windows ML</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/accelerating-ai-development-with-windows-based-ai-workstations/">Accelerating AI development with Windows-based AI workstations</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[Today, we <a href="https://blogs.windows.com/windowsdeveloper/?p=57397">announced</a> powerful capabilities for AI development with Windows AI Foundry, featuring components like <a href="https://blogs.windows.com/windowsdeveloper/?p=57438">Windows ML</a> that enable developers to bring their own models and deploy them efficiently across diverse silicon partner ecosystem including – AMD, Intel, NVIDIA and Qualcomm spanning CPU, GPU, NPU (Neural Processing Unit).  In the rapidly evolving field of AI development, having robust hardware is just as important as reliable software and tools for optimizing performance and efficiency.
+
+We heard from developers that they need powerful workstations equipped with advanced CPUs, GPUs and specialized processors like <a href="https://www.microsoft.com/en-us/surface/do-more-with-surface/what-are-npus?msockid=30d957fd7d1e69fb121742557c406892">NPUs</a>  with blazing fast memory and storage for moving massive amounts of data around to handle the intensive computational demands of AI tasks such as data processing, model training, finetuning, inference and deployment. A robust Windows-based workstation combined with a reliable platform like Windows AI Foundry enables AI developers to streamline their workflows, reduce latency and achieve real-time processing capabilities.
+
+Your AI stack, your machine: The case for Windows-based Workstations
+
+For AI developers, a workstation is more than just a powerful machine; it's a critical asset that enhances their ability to develop, test and deploy AI models efficiently and more importantly – locally. It offers a few key benefits:
+<ul>
+ 	<li><strong>Privacy and Security</strong>: Workstations enable local development without the need for internet access, ensuring sensitive data remains on device, minimizing security threats and maximizing privacy.</li>
+</ul>
+<ul>
+ 	<li><strong>Cost Efficiency</strong>: By handling fine-tuning and inference locally, developers can reduce recurring cloud compute costs. In the case of Copilot+ PCs, local AI workloads are becoming more energy efficient, lowering overall power consumption.</li>
+</ul>
+<ul>
+ 	<li><strong>Speed and Reliability</strong>: Developers can iterate quickly and debug without delays from cloud syncs or network dependencies. The hardware also enables low latency inferencing and high-performant user experiences.</li>
+</ul>
+Choosing a Windows-based AI workstation is especially important for Windows developers who require speed, flexibility and control in AI workloads. It is also ideal for leveraging <a href="https://learn.microsoft.com/windows/ai/toolkit/toolkit-getting-started?tabs=rest">AI Toolkit</a> for Visual Code and the full capabilities of Windows AI Foundry and its components such as Foundry Local and  <a href="https://blogs.windows.com/windowsdeveloper/?p=57438">Windows ML</a>, which are optimized for local workflows.
+<h3>Diverse options of Windows workstations, catering to the demanding needs of AI developer workloads</h3>
+AI developers on Windows 11 can choose from a wide array of PC hardware from OEM partners like Dell, HP, Lenovo and more. Not only are these systems optimized for AI model finetuning, inferencing and deployment, but they also provide flexibility in your developer workflow with different form factors and price points.
+
+For developers requiring raw power, a desktop workstation with a powerful CPU and GPU can significantly reduce the time for local model finetuning. Those looking for physical space efficiency may consider a mini workstation, while developers on the move can benefit from a mobile workstation, which enables them to run inference on a proprietary model locally in absence of a stable network connection.
+
+At Build 2025, we featured the latest workstations from a few of our OEM partners:
+<ul>
+ 	<li>The <strong>Dell Pro Max Tower T2</strong> desktop leads in thermal innovation and is the world’s fastest tower for single-threaded application performance,<sup>1</sup> made possible by Dell’s exclusive unlimited turbo duration technology. This ensures top-tier performance under sustained heavy workloads. Turbo duration allows the device to excel in prolonged intensive tasks, keeping AI applications running efficiently over extended periods without compromising thermal integrity. The Tower will be available with Intel’s Core Ultra series processors delivering up to 32GB of DDR5 memory, 1TB self-encrypting storage and NVIDIA’s RTX PRO Blackwell Generation GPUs in July 2025. <a href="https://www.dell.com/en-us/plcp/lp/dell-pro-max-pcs">Learn more about Dell Pro Max PCs</a>.</li>
+</ul>
+<ul>
+ 	<li>The <strong>Dell Pro Max 16</strong> laptop packs high-end performance in a portable, lightweight and modern design. The 16-inch QHD+ resolution display provides expansive screen real estate and supports complex and demanding applications on-the-go. The laptop is available on both AMD Ryzen AI PRO 300 series and Intel Core Ultra series processors running NVIDIA’s RTX PRO Blackwell Generation Laptop GPUs in July 2025, providing engineers and designers with performance for AI inferencing, rendering and creative applications. <a href="https://www.dell.com/en-us/plcp/lp/dell-pro-max-pcs">Learn more about Dell Pro Max PCs</a>.</li>
+</ul>
+<ul>
+ 	<li>The<strong> HP</strong> <strong>ZBook Ultra G1a 14”</strong> powerful 14-inch mobile workstation laptop defies what's possible on the go. A Copilot+ PC with a compact design and new AMD Ryzen AI Max PRO processor, the ZBook Ultra offers the performance to tackle workflows previously not possible on a laptop. Take desk-bound workflows anywhere with an ultra-thin and light design, combined with a long-lasting battery, Next-Gen AI PC features and AI-enhanced privacy. Featuring up to 16 desktop-class CPU cores, discrete-like integrated graphics and up to 128GB of unified memory architecture, and the ability to assign up to 96GB RAM to the GPU, the ZBook Ultra enables seamless multitasking between applications. <a href="https://bit.ly/HPZMSBUILD">Learn more about the ZBook Ultra G1a</a>.</li>
+</ul>
+<ul>
+ 	<li>The <strong>HP</strong> <strong>Z2 Mini G1a</strong> mini workstation is equipped with the AMD Ryzen AI Max PRO processor and scalable 128GB of unified memory architecture with the ability to assign up to 96GB exclusively to the GPU, the Z2 Mini G1a delivers performance for graphics-intensive workflows. With an internal power supply, this PC cleanly fits on a desk, mounted behind a monitor or attached under a desk. It also easily fits in a rack, and its small size allows for a high-density rack mount solution that combines performance, manageability and security. <a href="https://bit.ly/HPZMSBUILD">Learn more about the Z2 Mini G1a</a>.</li>
+</ul>
+<ul>
+ 	<li>The<strong> Lenovo ThinkPad P14s Gen 6</strong> mobile workstation laptop is a Copilot+ PC that combines pro-grade performance with true mobility. Featuring the latest AMD Ryzen AI PRO 300 series processors and integrated AMD Radeon graphics, it’s ISV-certified and ideal for workflows such as 2D CAD, light 3D design and content creation. Built for hybrid professionals, students and educators, it balances performance, security and battery life in a compact 14-inch chassis. <a href="https://www.lenovo.com/us/en/workstations/">Learn more about Lenovo workstations</a>.</li>
+</ul>
+<ul>
+ 	<li>The <strong>Lenovo</strong> <strong>ThinkPad P16s Gen 4</strong> mobile workstation laptop is a Copilot+ PC that offers enhanced performance, a larger display and greater configuration flexibility. Also powered by AMD Ryzen AI PRO 300 series processors and certified for key ISV applications, it’s built to handle more demanding workloads, such as 3D CAD, BIM modeling and data-heavy tasks. With a 16-inch screen, integrated AI acceleration and robust ThinkShield security, it’s ideal for professionals in engineering, architecture and media. <a href="https://www.lenovo.com/us/en/workstations/">Learn more about Lenovo workstations</a>.</li>
+</ul>
+<h3>Examples of how workstations benefit the developer workflow</h3>
+<strong>Fine-Tuning on the Dell Pro Max Tower T2 with Intel Core Ultra 7 processor and the NVIDIA RTX PRO 6000 Blackwell GPU</strong>
+
+Local fine-tuning on a workstation improves developer productivity by offering a quick, powerful and easy way to run and debug your prototypes locally before you take your final workflows to cloud.
+
+With the Dell Pro Max Tower T2, we fine-tuned the <a href="https://techcommunity.microsoft.com/blog/educatordeveloperblog/welcome-to-the-new-phi-4-models---microsoft-phi-4-mini--phi-4-multimodal/4386037"><strong>Microsoft's Phi-4-mini</strong></a> model using the NVIDIA GPU with <a href="https://aka.ms/win-lora">LoRA (low-rank adaption)</a> in <a href="https://learn.microsoft.com/windows/ai/toolkit/toolkit-getting-started?tabs=rest">AI Toolkit</a> and the <a href="https://huggingface.co/datasets/yahma/alpaca-cleaned">alpaca-cleaned dataset</a> which contained 51,760 prompts. For a batch size of 8 prompts, the system was able to backpropagate 2.16 batches per second, finishing 3 full epochs of fine-tuning in about 2 hours and 15 minutes<strong>. </strong>The same workflow could take up to a day to complete on the cloud due to round trip latency with the additional costs of cloud billing.
+
+<strong>Example 1: Fine-tuning Phi-4-mini model local off the NVIDIA RTX PRO 60000 GPU on a Dell Pro Max Tower T2 (sped up 150x)</strong>
+
+https://www.youtube.com/watch?v=P2vsNBMFAsA
+
+<strong>AI Anywhere: Harnessing GPU Power on the go with the HP ZBook Ultra G1a 14” </strong>
+
+The new HP ZBook Ultra G1a 14” powered by the AMD Ryzen AI Max+ PRO 395 is a Copilot+ PC that leverages the power of a CPU, GPU and NPU to maximize performance and resources in various workflows.
+
+<strong>Example 2: Loading and running 70b DeepSeek R1 locally on HP ZBook Ultra G1a 14”</strong>
+
+In one use case, we utilized AI Tool Kit for VS Code to load and run a large 70b parameter DeepSeek R1 model locally – an impressive feat for a mobile workstation.
+
+https://www.youtube.com/watch?v=gm2iZxnJP8A
+
+<strong>Example 3: Running SDXL and Phi-4 Mini concurrently on the HP ZBook Ultra G1a 14” laptop</strong>
+
+In another use case, we ran Stable Diffusion XL (SDXL) model and Phi-4 Mini CPU ONNX model at the same time. The image generation ran at ~3 to 6 it/sec concurrently while the text generation task concluded within 7-17 tokens/sec. You can see from the task manager that the GPU is utilized to give max processing performance. The NVMe SSD makes it ideal for high performance applications like these.
+
+https://www.youtube.com/watch?v=6vkHpTTMvOc
+
+To run both the image generation and text generation concurrently, you typically need a system with enough processing power, memory and storage. Although a desktop setup can meet these requirements, the HP ZBook Ultra G1a 14” laptop is capable of handling such tasks within a compact form factor for productivity on the go.
+<h3>Building for the future of AI on Windows based workstations</h3>
+By 2027, it is expected that 60% of PCs shipped will feature on-device AI capabilities<sup>2</sup> pushing the boundaries of AI models running locally. Having the right workstation not only accelerates the development cycle but also ensures that AI models run across a wide breadth of CPUs, GPUs and NPUs. Understanding the breadth of available options and investing in the right workstation can significantly enhance developers’ ability to innovate and succeed in the competitive landscape of AI.
+
+To drive innovation, both software and hardware must align. Not only do we encourage developers to check out <a href="https://aka.ms/WindowsAIFoundry">Windows AI Foundry</a>, but we also encourage developers to leverage the latest hardware in Windows-based AI workstations for the best developer experience.
+
+<em>1 The Dell Pro Max Tower T2 is the World’s fastest for single-threaded application performance – Based on internal analysis of competitors within the entry level workstation space, Lenovo P3 Ultra, HP Z2 G9 Mini, HP Z2 G1a Mini and Lenovo P3 Tiny. February 2025</em>
+
+<em>2 Based on report by Canalys </em><a href="https://www.canalys.com/reports/AI-PC-market-forecasts"><em>“Now and next for AI-capable PCs: Revolutionizing computing: AI PCs and the market outlook.”</em></a><em> (January 2024)</em>]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Enhance your application security with administrator protection</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/enhance-your-application-security-with-administrator-protection/</link>
+		
+		<dc:creator><![CDATA[Nilanjana Ganguly]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:15 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57440</guid>
+
+					<description><![CDATA[<h3>Introduction</h3>
+<p>Administrator protection is a new Windows 11 platform security feature that aims to protect the admin users on the device while still allowing them to perform the necessary functions which may require use of admin level permissi</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/enhance-your-application-security-with-administrator-protection/">Enhance your application security with administrator protection</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h3>Introduction</h3>
+Administrator protection is a new Windows 11 platform security feature that aims to protect the admin users on the device while still allowing them to perform the necessary functions which may require use of admin level permissions. This article provides the guidelines and best practices for applications running on Windows to elevate more securely with administrator protection enabled.
+
+As Windows application developers, this article will guide you through best practices for using elevation in your applications and leveraging the new layer of security provided by administrator protection. This provides guidelines on what changes you need to make in your applications to make them compatible with administrator protection and help avoid breakages.
+
+As IT professionals and technical users you will learn how the new administrator protection feature offers a more secure environment to run your applications, and how to navigate the changes effectively.
+<h3>How administrator protection increases security</h3>
+Applications are most vulnerable to attacks when operating with elevated privileges. In an elevated context, applications possess extensive abilities to alter configurations and implement systemwide changes, which can affect the overall security of the device. Running applications as admin increases the risk from malware infiltration. If malicious code is executed while elevated, it can capture tokens and then have an opportunity to move laterally within an organization, leading to a widespread compromise. Recent statistics from <a href="https://www.microsoft.com/en-us/security/security-insider/intelligence-reports/microsoft-digital-defense-report-2024">Microsoft Digital Defense Report 2024</a> indicate that token theft incidents, which abuse user privileges, have grown to an estimated 39,000 per day.
+
+The administrator protection feature is designed to enhance security by minimizing the risks associated with elevated privileges. It safeguards users by providing just-in-time administrator privileges, incorporating Windows Hello to enhance both security and user convenience. Running applications with administrator protection enabled is crucial for maintaining a robust security posture.
+<h3>Key design highlights</h3>
+Administrator protection brings in a paradigm shift in user access control (UAC) architecture for admin users. It enforces the Principle of Least Privilege which brings in transparency for the elevations.
+<ul>
+ 	<li><strong>New security boundary with separate profile: </strong>Administrator protection uses a hidden, system-managed, profile-separated local user account to create the isolated admin token. This helps ensure that user-level malware cannot access and compromise the code running in the elevated context, thus making elevation a security boundary. Application developers please note: This System Managed Administrator Account (SMAA) has a different <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers">security identifier</a> (SID).</li>
+ 	<li><strong>Just-in-time admin token</strong>: The admin token which is required to perform system tasks is generated from SMAA. This token is non-persistent and created just in time to perform elevation and is discarded once the task is completed. The whole cycle repeats itself when the user tries to perform another task which requires admin privileges.</li>
+ 	<li><strong>Removal of auto-elevation</strong>: Auto-elevation refers to allowing certain Windows processes and applications to automatically gain elevated privileges without prompting the user to consent. This can be exploited to perform User Access Control (UAC) bypass attacks where malware may misuse admin privileges to install an unwanted application on the device or for changing device security configuration thus compromising the security. With administrator protection, all auto-elevations in Windows are removed and users need to interactively authorize every admin operation. This helps ensure that the user stays in full control and that admin privileges are not abused.</li>
+ 	<li><strong>Windows Hello integration:</strong> Administrator protection is recommended to be used in conjunction with <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/windows-hello">Windows Hello</a>. This further enhances security while providing a convenient authentication experience with face, fingerprint or PIN.​</li>
+</ul>
+<h3>Running applications elevated</h3>
+Without administrator protection, an admin user would receive two access tokens upon logon – a full privilege, “elevated” administrator token with admin group set to “Enabled” and a restricted, “unelevated” access token with admin group set to “DenyOnly”. Now, when an application is launched elevated with this split-token administrator model, both “halves” of the user share a common profile. Despite each token being appropriately restricted in its use, both restricted and admin-level processes could access shared resources such as the user file system and the registry. This could be abused to perform classic UAC bypasses, such as the registry key manipulation and environment variable overloading attacks.
+
+When an application is run elevated with administrator protection enabled, it is elevated using the profile separated SMAA. As separate-but-linked accounts, each with its own profile, file system directories, registry hives are no longer shared. This design mitigates the classic UAC bypass attacks as well as allows for the tokens to be created on-demand and discarded just as quickly, thus limiting exposure of the privileged token to the lifetime of the requesting process.
+
+Understanding this new design is crucial for both app developers and technical users to ensure that it does not regress the functionality of their application when the same application is run elevated. The profile separated elevation implemented by administrator protection utilizes the same security principles as implemented by over-the-shoulder elevation for standard users in Windows. Running your application compatibly with administrator protection also helps ensure that it will run compatibly  with a standard user (user without administrative privileges).
+
+The following behavior may be observed when an application is run elevated with administrator protection enabled:
+<ul>
+ 	<li>Files created by apps when running elevated and saved in library folders (e.g. Documents, Pictures, Videos), will be saved into corresponding library folders of SMAA profile by default. If the user is using an app from an elevated context which needs to access a file created from the unelevated context, they will need to navigate to the unelevated library folders.</li>
+</ul>
+<ul>
+ 	<li>When running elevated, default registry hive for the current user will map to SMAA user’s registry hive instead of primary user’s registry hive.</li>
+</ul>
+<ul>
+ 	<li>Any application specific configuration like background color or font applied by the regular user will not be automatically applied to the SMAA profile, and vice versa.</li>
+</ul>
+<ul>
+ 	<li>Users may see more elevation prompts due to the removal of auto-elevations.</li>
+</ul>
+<h3>Recommendations</h3>
+The following are general guidelines and best practices for installing and running applications with administrator protection:
+
+<strong>Application installation</strong>
+<ul>
+ 	<li>Per-user application installations should be run unelevated. Install all executables, applications and packages unelevated. This includes Win32 installers like setup.exe and package installers like MSIX or AppxBundle.</li>
+</ul>
+<ul>
+ 	<li>For installing Store applications, use the UI based installation whenever available. Preferably install from an unelevated context. If necessary, you can install elevated too.</li>
+</ul>
+<ul>
+ 	<li>If you need to install using API based Store apps they should be installed unelevated using the catalogID.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: If installer elevation is absolutely necessary, then avoid placing app binaries under user profile folder. Use %ProgramFiles% for 64-bit apps or %ProgramFiles(x86)% for 32-bit installs on a 64-bit system. A better option is to use MSIX packaging since that allows for elevation too and manages the installation location itself.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: While installing as unelevated, don’t install using %LOCALAPPDATA%, since that’s also under %USERPROFILE%. Instead, create a directory in %ProgramData% and place your app there, if the app needs to be shared between elevated and unelevated callers.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: Refrain from switching context from within the application during installation and continue to install either elevated or unelevated.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: If the files created in the elevated context need to be accessed by the unelevated user (for example, log files using file explorer) then you need to store that file in the unelevated profile’s file directory. Avoid sharing files between elevated and unelevated context from your application.</li>
+</ul>
+<strong>Launching and running an application</strong>
+<ul>
+ 	<li>Always run applications as non-elevated unless there is a specific task you intend to perform that needs elevation.</li>
+</ul>
+<ul>
+ 	<li>If you are required to run the app in both elevated and non-elevated mode, you will need to duplicate your application settings like theme, background, widgets etc., across the two elevated and non-elevated modes.</li>
+</ul>
+For example, when you change the theme to dark in the unelevated Notepad, the change will not be reflected automatically in the elevated Notepad. If you need parity you will need to make the change manually.
+
+<img class="alignnone wp-image-57444 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Notepad.png" alt="Screen showing Notepad screens in unelevated and elevated context side by side." width="624" height="275" />
+<ul>
+ 	<li>Any file you create while running your application non-elevated, which needs to be saved in library folders should be saved in the regular user’s library folders, so that they are easy to retrieve when running the application non-elevated. If the files are stored in the library folders of elevated user profile, you will have to run the application elevated to access those files again.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: Accessing the user registry (HKCU hive) and user registered COM classes should be in the context for the same user.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>: Since users will mostly be running app unelevated, apps need to be designed for granular use of elevated privileges, rather than elevating “up-front”.</li>
+</ul>
+<ul>
+ 	<li><em>For app developers</em>:  With administrator protection enabled there will not be any silent elevations; your application will request authentication at every elevation. To improve user experience, remove dependency on auto-elevation from your applications.</li>
+</ul>
+<strong>Using elevation</strong>
+<ul>
+ 	<li>Run your apps with least privilege. Reduce and if possible, eliminate the need to elevate your apps.</li>
+</ul>
+<ul>
+ 	<li>Consider using system accounts and services-based design to manage processes that need to run elevated.</li>
+</ul>
+<h3>General troubleshooting guidelines</h3>
+<ul>
+ 	<li>If you are not seeing the toggle to enable administrator protection in the Account protection section in Windows Security settings, make sure you are on a supported build.
+<ul>
+ 	<li>Supported editions: Windows 11 Home, Windows 11 Professional, Windows 11 Enterprise and Windows 11 Education</li>
+ 	<li>Supported builds at GA: 24H2+ (Servicing build number will be communicated)</li>
+ 	<li>Preview builds: Windows Insider Program. Canary channel #27718+ Coming soon to Dev Channel</li>
+ 	<li>Not supported in Windows Server editions, Windows 365 Cloud PC or Azure Virtual Desktop editions, Windows 10 or other legacy editions.<strong> </strong></li>
+</ul>
+</li>
+ 	<li>If you enable administrator protection by toggling the switch on Windows security settings but you are not prompted with Windows Hello when you try to elevate, try the following:
+<ul>
+ 	<li>Reboot the device.</li>
+ 	<li>Ensure <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/windows-hello">Windows Hello</a> is enabled on the device.</li>
+</ul>
+</li>
+</ul>
+<ul>
+ 	<li>If your IT admin has informed you that administrator protection has been enabled on your device, but you are not prompted with Windows Hello when you try to elevate, try the following:
+<ul>
+ 	<li>Ensure that there is sufficient time for your device to have synced with Intune. <a href="https://learn.microsoft.com/en-us/intune/intune-service/remote-actions/device-sync">Sync devices with Microsoft Intune | Microsoft Learn</a></li>
+ 	<li>Reboot your device.</li>
+ 	<li>Ensure <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/windows-hello">Windows Hello</a> is enabled on the device.</li>
+</ul>
+</li>
+</ul>
+<ul>
+ 	<li>To test if administrator protection is enabled on the device:
+<ul>
+ 	<li>Launch command prompt as an administrator</li>
+ 	<li>Type in the command “whoami”</li>
+ 	<li>You will see the profile as “ADMIN_”</li>
+</ul>
+</li>
+</ul>
+<ul>
+ 	<li>Your device already has administrator protection enabled on which you have installed an application from an elevated context. If the application is not able to launch even after you have uninstalled administrator protection, you may need to reinstall your application.</li>
+</ul>
+<h3>Case study: Running Visual Studio with administrator protection</h3>
+We recommend running Visual Studio as an unelevated user whenever possible. However, <a href="https://learn.microsoft.com/en-us/visualstudio/ide/user-permissions-and-visual-studio?view=vs-2022">installation and certain development, building, debugging, profiling and deployment scenarios</a> require elevated permissions.
+
+In scenarios where Visual Studio is required to run elevated and the Windows administrator protection feature is enabled there are incompatibilities and Visual Studio is not supported in such a configuration. However, many scenarios continue to work and most of the incompatibilities are minor, but there are some incompatibilities that could block certain scenarios.
+
+When running Visual Studio elevated with administrator protection enabled, you’ll notice some behavioral differences caused by the use of per user locations as illustrated in the examples below. The list below isn’t exhaustive and ultimately you will need to test your scenarios that require elevated Visual Studio with administrator protection enabled.
+<ol>
+ 	<li>Extensions are typically per user and are by default installed into a location that’s specific to the user who installed the extension. As such per user extensions won’t be accessible from Visual Studio running as elevated with administrator protection enabled.</li>
+ 	<li>Various settings in Visual Studio are stored in per user locations and those settings will be different between Visual Studio running elevated or not. However, several settings are roamed and will be based on the user account that is signed into Visual Studio (see: <a href="https://learn.microsoft.com/en-us/visualstudio/ide/synchronized-settings-in-visual-studio?view=vs-2022">Synchronize settings across multiple computers - Visual Studio (Windows) | Microsoft Learn</a>).</li>
+ 	<li>In places where the default path includes the signed in user, such as in the new project dialog, Visual Studio will use the admin’s account which might not be accessible when not elevated.</li>
+</ol>
+<img class="alignnone wp-image-57445 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Visual-Studio-1.png" alt="Visual Studio user interface" width="299" height="105" />
+
+Whenever Visual Studio 2022 is running as an elevated process the top right of the IDE will contain a badge “Admin” as show in the screenshot below.
+
+<img class="alignnone wp-image-57446 size-full" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Visual-Studio-2.png" alt="Visual Studio user interface, top right of the IDE containing a badge “Admin”" width="372" height="130" />
+<h3>Conclusion</h3>
+Administrator protection is an upcoming security feature in Windows 11, offering robust security and user privilege management to help the user stay in control of changes to their Windows device. By requiring user authorization for administrative tasks, it helps safeguard the system from unauthorized changes and malware, enhancing overall device security. A seamless integration with <a href="https://blogs.windows.com/windows-insider/2024/11/01/announcing-windows-11-insider-preview-build-22635-4440-beta-channel/">modernized Windows Hello</a> helps provide a secure and convenient way to authorize the use of admin privileges.
+
+Our goal is to enable administrator protection by default in Windows very soon. This feature is available now to Windows Insiders. We encourage you to try out your applications with administrator protection enabled and provide us with your <a href="https://support.microsoft.com/en-us/windows/send-feedback-to-microsoft-with-the-feedback-hub-app-f59187f8-8739-22d6-ba93-f66612949332">feedback</a>.
+
+<strong>Securing the present, innovating for the future</strong>
+
+Security is a shared responsibility. Through collaboration across hardware and software ecosystems, we can build more resilient systems secure by design and by default, from Windows to the cloud, enabling trust at every layer of the digital experience.
+
+The updated <a href="https://aka.ms/Windows11SecurityBook">Windows Security book</a> and Windows Server Security book  are available to help you understand how to stay secure with Windows. Learn more about <a href="https://www.microsoft.com/en-us/windows/business">Windows 11</a>, <a href="https://learn.microsoft.com/en-us/windows-server/">Windows Server</a> and <a href="https://www.microsoft.com/en-us/windows/business/devices/copilot-plus-pcs">Copilot+ PCs</a>. To learn more about Microsoft Security Solutions, visit our <a href="https://www.microsoft.com/en-us/security/business">website.</a>
+
+Bookmark the <a href="https://www.microsoft.com/security/blog/">Security blog</a> to keep up with our expert coverage on security matters.
+
+Also, follow us on LinkedIn (<a href="https://www.linkedin.com/showcase/microsoft-security/">Microsoft Security</a>) and X (<a href="https://twitter.com/@MSFTSecurity">@MSFTSecurity</a>) for the latest news and updates on cybersecurity.]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Microsoft Store expands opportunities for Windows app developers</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/microsoft-store-expands-opportunities-for-windows-app-developers/</link>
+		
+		<dc:creator><![CDATA[Giorgio Sardo]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:11 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57437</guid>
+
+					<description><![CDATA[<p>The <a href="https://blogs.windows.com/windowsdeveloper/?p=57397">Windows developer platform continues to evolve</a>, bringing more quality, performance and innovation through Copilot+ PC. This translates into a tremendous opportunity for app develop</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/microsoft-store-expands-opportunities-for-windows-app-developers/">Microsoft Store expands opportunities for Windows app developers</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[The <a href="https://blogs.windows.com/windowsdeveloper/?p=57397">Windows developer platform continues to evolve</a>, bringing more quality, performance and innovation through Copilot+ PC. This translates into a tremendous opportunity for app developers that are looking to scale their user acquisition strategies, to deepen engagement, to invent on larger form factors where immersive experiences thrive.
+
+It’s been exciting to witness the momentum and innovation across the Windows app ecosystem in recent months - from AI breakthroughs like <a href="https://apps.microsoft.com/detail/9nt1r1c2hh7j"><strong>ChatGPT</strong></a> and <a href="https://apps.microsoft.com/detail/xp8jnqfbqh6pvf"><strong>Perplexity</strong></a>, to best-in-class productivity tools like <a href="https://apps.microsoft.com/detail/9p0kn9s5rp86"><strong>Fantastical</strong></a> and <a href="https://apps.microsoft.com/detail/9nn2h8x92wbt"><strong>Day One</strong></a>, creative apps like <a href="https://apps.microsoft.com/detail/xp9kn75rrb9nhs"><strong>CapCut</strong></a> and <a href="https://apps.microsoft.com/detail/9p9rb7zf49xk"><strong>djay Pro</strong></a> that continue to push boundaries, and <a href="https://apps.microsoft.com/tencent?hl=zh-CN&gl=CN">new mobile apps and games in China</a> through our partnership with <strong>Tencent</strong>. As previewed at Build, we’re thrilled to welcome even more experiences in the weeks ahead, including <strong>Notion</strong>, the all-in-one workspace for notes and collaboration, and <strong>Raycast</strong>, a collection of powerful productivity tools.
+
+We are committed to helping the developer ecosystem thrive, and we thank you for the feedback you continue to give us. The Microsoft Store is now used by over 250 million monthly active users, and <a href="https://blogs.windows.com/windowsdeveloper/2021/09/28/microsoft-store-more-apps-more-open/">because of its open policies</a> - it is the most trusted and scalable PC distribution channel across both consumer and commercial devices.
+<p style="padding-left: 40px;">“Microsoft Store seamless integration with Windows allowed us to focus on app development rather than building a separate distribution and code signing infrastructure.” <strong><em>- OpenAI</em></strong></p>
+<p style="padding-left: 40px;">“With 99% of enterprise users not running the latest version of Docker Desktop, the Microsoft Store’s and Intune automatic update capabilities directly address compliance and security concerns while minimizing downtime.” <strong><em>– Docker </em></strong></p>
+<p style="padding-left: 40px;">“We saw a meaningful lift in key metrics after participating in the Microsoft Store AI Hub, including a 13% growth in installs, and a 24% rise in new active users.” <strong><em>– Grammarly </em></strong></p>
+Today we have some exciting announcements for developers – across onboarding, discovery and user acquisition, and analytics.
+<h3>Onboarding</h3>
+<ul>
+ 	<li><strong>Free developer registration for individual developers </strong>
+Starting later next month, individual developers will be able to publish apps to the Microsoft Store without paying any onboarding fees - making it the first global digital storefront to eliminate such charges. Developers will no longer need a credit card to get started, removing a key point of friction that has affected many creators around the world. By eliminating these one-time fees, Microsoft is creating a more inclusive and accessible platform that empowers more developers to innovate, share and thrive on the Windows ecosystem.Visit <a href="https://aka.ms/microsoftstoredeveloper">https://aka.ms/microsoftstoredeveloper</a> to get started.</li>
+</ul>
+[caption id="attachment_57462" align="alignnone" width="1024"]<img class="wp-image-57462 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/New-onboarding-experience-blog-asset1920-1024x576.png" alt="Free individual developer registration." width="1024" height="576" /> Free registration for individual developers[/caption]
+<ul>
+ 	<li><strong>Microsoft Store FastTrack program for companies</strong>
+If you're a qualified company that hasn’t yet published to the Microsoft Store, we invite you to join the new Microsoft Store FastTrack program, a free preview initiative designed to help you submit your app. We’ll waive your program registration fee, streamline app certification and advise you through every step of your submission. Sign up for our FastTrack program at <a href="https://aka.ms/msstorefast">https://aka.ms/msstorefast</a>.</li>
+ 	<li><strong>Transparent and faster certification</strong>
+We’ve significantly improved the certification experience - giving you faster turnaround, clearer guidance and fewer resubmissions on your path to publishing. With detailed reports including crash logs, policy guidance and screenshots, you can now resolve feedback with confidence and speed. We are also making it easier to meet privacy policy requirements, by adding the <a href="https://aka.ms/privacypolicyimprovements">ability to host your privacy terms</a> securely and at no cost – removing the need to setup external domains.</li>
+</ul>
+<h3>Discovery and user acquisition</h3>
+<ul>
+ 	<li><strong>Microsoft Store Web Installer </strong>
+With the <a href="https://learn.microsoft.com/en-us/windows/apps/distribute-through-store/how-to-use-store-web-installer-for-distribution">latest Web Installer</a>, you can now enable a streamlined download and install experience for your Win32 or MSIX packaged apps across any browser, delivering a better conversion funnel than traditional flows. The Store Web Installer can be embedded directly on your website; it will work also on enterprise-managed devices where the Microsoft Store app might be disabled.Visit <a href="https://apps.microsoft.com/badge">https://apps.microsoft.com/badge</a> and generate the link to your app using the launch parameter “mode=Direct”.</li>
+ 	<li><strong>Discovery in Windows Search and Store Search </strong>
+Listing your app in the Store is the best way to get discovered through Windows Search and Microsoft Store Search. Starting this month, we are making it easier for users to <a href="https://microsoft.design/articles/start-fresh-redesigning-windows-start-menu/">launch apps they already installed</a>, or to find and install new apps when they search for them in  Windows Search. Furthermore, Store search is evolving to become more intent-aware, powered by vector embeddings and semantic ranking to better match users with the apps they’re looking for and including new signals like app updates.</li>
+</ul>
+[caption id="attachment_57463" align="alignnone" width="1024"]<img class="wp-image-57463 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/WSB1920-1024x576.png" alt="Discovery in Windows Search." width="1024" height="576" /> Discover Store apps through Windows Search.[/caption]
+<ul>
+ 	<li><strong>Enterprise distribution via Intune</strong>
+The Microsoft Store has expanded its integration with Intune, now supporting distribution of Win32 apps (Preview), AI apps and age-restricted apps as well. This update enhances enterprise app deployment by enabling secure, scalable distribution - while offering developers deep OS integration and automatic updates.</li>
+ 	<li><strong>Create campaigns to promote your apps </strong>
+Last year we introduced the App Campaigns program, and since then received great feedback from developers growing their user acquisition or reducing their customer acquisition costs. Over the next weeks, we will open this program to all Store developers – giving you the ability to create campaigns for your apps and games across Microsoft Store and other Microsoft surfaces. With built-in analytics, you can track post-install actions and optimize growth.</li>
+</ul>
+Apply to join the Open Beta of this program at <a href="https://aka.ms/appcampaigns">https://aka.ms/appcampaigns</a>.
+
+[caption id="attachment_57464" align="alignnone" width="1024"]<img class="wp-image-57464 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/App-Ads-w-title-center1920-1024x576.png" alt="Text reading App Campaigns program along with photos of people." width="1024" height="576" /> App Campaigns program now open to all Store developers.[/caption]
+<h3>Analytics</h3>
+<ul>
+ 	<li><strong>Acquisition Reports. </strong>We’ve rolled out an enhanced Acquisition Reports experience in Partner Center, featuring an improved funnel view and addressing top developer feedback. This includes the highly requested Install Success Rate metric. We’ve also refined how install failures are reported and introduced a new User-Initiated Aborts trend chart to provide deeper insights into user behavior.</li>
+ 	<li><strong>Health Reports.</strong> Over the next two months, we’re expanding the Health Report in Partner Center to give you deeper visibility into app quality. New metrics like crash rate, hang rate and affected device counts will help you prioritize fixes based on user impact. You’ll also be able to compare quality across versions, architectures and devices.</li>
+</ul>
+[caption id="attachment_57465" align="alignnone" width="1024"]<img class="wp-image-57465 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Health-Reports-blog-asset1920-1024x591.png" alt="Health reports." width="1024" height="591" /> Gain new insights into the health of your apps.[/caption]
+<h3>Ready to publish?</h3>
+Get started at <a href="https://aka.ms/microsoftstoredeveloper">https://aka.ms/microsoftstoredeveloper</a>.
+
+To learn more about the announcements above, check-out the <a href="https://build.microsoft.com/en-US/sessions/OD801">Store session at Build</a>. We can’t wait to see what you will build next.]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Advancing Windows for AI development: New platform capabilities and tools introduced at Build 2025</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/05/19/advancing-windows-for-ai-development-new-platform-capabilities-and-tools-introduced-at-build-2025/</link>
+		
+		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
+		<pubDate>Mon, 19 May 2025 16:00:04 +0000</pubDate>
+				<category><![CDATA[Events]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57397</guid>
+
+					<description><![CDATA[<p>We’re excited to be back at Build, a special moment each year to connect with the global developer community. It’s energizing to share what we’ve been working on, and just as important, to hear how developers are using Microsoft platforms to bu</p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/advancing-windows-for-ai-development-new-platform-capabilities-and-tools-introduced-at-build-2025/">Advancing Windows for AI development: New platform capabilities and tools introduced at Build 2025</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[We’re excited to be back at Build, a special moment each year to connect with the global developer community. It’s energizing to share what we’ve been working on, and just as important, to hear how developers are using Microsoft platforms to build what’s next.
+
+At Microsoft, we believe the future of AI is being built right now across the cloud, on the edge and on Windows. Windows is, and will remain, an open platform that empowers developers to do their best work, offering the ultimate flexibility.
+
+Our north star is clear: to make Windows the best platform for developers, built for this new era of AI, where intelligence is integrated across software, silicon and hardware. From working with Windows 11 on the client to Windows 365 in the cloud, we’re building to support a broad range of scenarios, from AI development to core IT workflows, all with a security-first mindset.
+
+Over the past year, we’ve spent time listening to developers, learning what they value most, and where we have opportunities to continue to make Windows an even better dev box, particularly in this age of AI development. That feedback has shaped how we think about the Windows developer platform and the updates we’re introducing today.
+
+https://www.youtube.com/watch?v=_HILpQ9Ba4o
+<h3><strong>What’s new for Windows at Build:</strong></h3>
+<ul>
+ 	<li><strong>Windows AI Foundry</strong>, an evolution of Windows Copilot Runtime, offers a unified and reliable platform supporting the AI developer lifecycle from model selection, optimization, fine-tuning and deployment across client and cloud. Windows AI Foundry includes several capabilities:</li>
+</ul>
+<ul>
+ 	<li><strong>Windows ML is the foundation of our AI platform and the built-in AI inferencing runtime on</strong> <strong>Windows</strong>. This enables developers to bring their own models and deploy them efficiently across the silicon partner ecosystem including – AMD, Intel, NVIDIA and Qualcomm spanning CPU, GPU, NPU.</li>
+</ul>
+<ul>
+ 	<li><strong>Windows AI Foundry integrates Foundry Local </strong>and other model catalogs like Ollama and NVIDIA NIMs, offering developers quick access to ready-to-use open-source models on diverse Windows silicon. This offers the ability for developers to browse, test, interact and deploy models in their local apps.</li>
+</ul>
+<ul>
+ 	<li>In addition, Windows AI Foundry offers ready-to-use AI APIs that are powered by Windows inbox models on Copilot+ PCs for key language and vision tasks, like text intelligence, image description, text recognition, custom prompt and object erase. We are announcing new capabilities like<strong> LoRA </strong>(low-rank-adaption)<strong> for finetuning our inbox SLM, Phi Silica, with custom data.</strong> We are also announcing <strong>new APIs for semantic search and knowledge retrieval</strong> so developers can build natural language search and RAG (retrieval-augmented generation) scenarios in their apps with their custom data.</li>
+</ul>
+<ul>
+ 	<li><strong>Evolving Windows 11 for the agentic future with native support for Model Context Protocol (MCP)</strong>. MCP integration with Windows will offer a standardized framework for AI agents to connect with native Windows apps, enabling apps to participate seamlessly in agentic interactions. Windows apps can expose specific functionality to augment the skills and capabilities of agents installed locally on a Windows PC. This will be available in a private developer preview with select partners in the coming months to begin garnering feedback.</li>
+</ul>
+<ul>
+ 	<li><strong>App Actions on Windows</strong>, a new capability for app developers to build actions for specific features in their apps and increase discoverability, unlocking new entry points for developers to reach new users.</li>
+</ul>
+<ul>
+ 	<li><strong>New Windows security capabilities</strong> like the <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-vbs">Virtualization Based Security (VBS)</a> Enclave SDK and post-quantum cryptography (PQC) give developers additional tools that make it easier to develop secure solutions as the threat landscape continues to evolve.</li>
+</ul>
+<ul>
+ 	<li><strong>Open sourcing Windows Subsystem for Linux (WSL)</strong>, inviting developers to contribute, customize and help us integrate Linux more seamlessly into Windows.</li>
+</ul>
+<ul>
+ 	<li><strong>New improvements to popular Windows Developer tools</strong> including Terminal, WinGet and PowerToys enable developers to increase their productivity and focus on what they do best – code.</li>
+</ul>
+<ul>
+ 	<li><strong>New Microsoft Store growth features</strong> now include free developer registration, Web Installer for Win32 apps, Analytics reports, App Campaign program, and more to help app developers grow user acquisition, discovery and engagement on Windows.</li>
+</ul>
+<h3><strong>Windows AI Foundry</strong></h3>
+[caption id="attachment_57491" align="alignnone" width="1024"]<img class="wp-image-57491 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/Windows-AI-Foundry-16x9-Blog-Post@2x1920-1024x683.jpg" alt="Image of Windows AI Foundry." width="1024" height="683" /> Windows AI Foundry[/caption]
+
+We want to democratize the ability for developers to build, experiment and reach users with breakthrough AI experiences. We have heard from developers who are just getting started with AI development that they prefer off-the-shelf solutions for task specific capabilities to accelerate AI integration in apps. Developers also told us they need an easy way to browse, test and integrate open-source models in their apps. Advanced developers building their own models told us they prefer fast and capable solutions to deploy models across diverse silicon efficiently. To cater to various development needs we evolved Windows Copilot Runtime to be <strong>Windows AI Foundry, </strong>which offers many powerful capabilities. <a href="http://aka.ms/windowsaifoundry">Learn more</a>.
+<h3><strong>Developers can more easily access ready-to-use open-source models </strong></h3>
+Windows AI Foundry integrates models from Foundry Local and other model catalogs like Ollama and NVIDIA NIMs, offering developers quick access to ready-to-use open-source models on diverse Windows silicon. With Foundry Local model catalog, we have done the heavy-lifting of optimizing these models across CPUs, GPUs and NPUs making them ready-to-use instantly.
+
+During preview, developers can access Foundry Local by installing from WinGet (winget install Microsoft.FoundryLocal) and the Foundry Local CLI to browse, download and test models. Foundry Local will automatically detect device hardware (CPU, GPU and NPU) and list compatible models for developers to try. Developers can also leverage the Foundry Local SDK to easily integrate Foundry Local in their app. We will make these capabilities available directly in Windows 11 and Windows App SDK in the coming months, optimizing the developer experience in shipping production apps using Foundry Local.
+
+While we offer ready-to-use open-source models, we have a growing number of developers building their own models and bringing breakthrough experiences to end-users. <strong>Windows ML is the foundation of our AI platform and is the built-in AI inferencing runtime, offering simplified and efficient model deployment across CPUs, GPUs and NPUs.</strong>
+
+Windows ML is a high-performance local inference runtime built directly into Windows to simplify shipping production applications with open source or proprietary models including our own Copilot+ PC experiences. It was built from the ground up to optimize for model performance and agility and to respond to the speed of innovation in model architectures, operators and optimizations across all layers of the stack. Windows ML is an evolution of DirectML (DML) based on our learnings from the past year, listening to feedback from many developers, our silicon partners and our own teams developing AI experiences for Copilot+ PCs. Windows ML is designed with this feedback in mind, empowering our silicon partners – AMD, Intel, NVIDIA, Qualcomm – to leverage the execution provider contract to optimize for model performance, and match the pace of innovation.
+
+Windows ML offers several benefits:
+
+<strong>Simplified Deployment</strong>: Enables developers to ship production applications without needing to package ML runtimes, hardware execution providers or drivers with their app. Windows ML detects the hardware on client devices, pulls down the appropriate execution providers and selects the right one for inference based on developer provided configuration.
+
+<strong>Automatically adapts to future generations of AI hardware: </strong>Windows ML enables developers to build AI apps confidently even in a fast-evolving silicon ecosystem. As new hardware becomes available, Windows ML keeps all required dependencies up to date and adapts to new silicon while maintaining model accuracy and hardware compatibility.
+
+<strong>Tools to prepare and ship performant models:</strong> Robust tools included in AI Toolkit for VS Code for various tasks from model conversion, quantization to optimization simplifying the process of preparing and shipping performant models all in one place.
+
+We are working closely with all our silicon partners – <a href="https://www.amd.com/en/blogs/2025/ai-pcs-with-ryzen-ai-300-series-and-windows-ml.html">AMD</a>, <a href="https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Unlocking-AI-Development-with-Windows-ML-Intel-and-Microsoft-s/post/1689650">Intel</a>, <a href="https://developer.nvidia.com/blog">NVIDIA</a>, <a href="https://www.qualcomm.com/news/onq/2025/05/microsoft-qualcomm-collaborate-on-windows-11-copilot-plus-pcs-windows-ai-foundry">Qualcomm</a> - to integrate their execution providers seamlessly with Windows ML to provide the best model performance for their specific silicon.
+
+Many app developers like <a href="https://apps.microsoft.com/detail/XPDLPKWG9SW2WD?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Adobe</a>, <a href="https://bufferzonesecurity.com/">Bufferzone</a>, <a href="https://apps.microsoft.com/detail/9N1SQW2NKPDS?hl=en-us&amp;gl=US&amp;ocid=pdpshare">McAfee</a>, <a href="https://apps.microsoft.com/detail/9PGM3QB3PDRD?hl=en-us&amp;gl=US&amp;ocid=pdpshare">Reincubate</a>, <a href="https://topazlabs.com/">Topaz Labs,</a> <a href="https://apps.microsoft.com/detail/XP9M20CZB2C5W8?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Powder</a> and Wondershare are already working with us to leverage Windows ML to deploy models across AMD, <a href="https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Unlocking-AI-Development-with-Windows-ML-Intel-and-Microsoft-s/post/1689650">Intel</a>, NVIDIA and Qualcomm silicon. To learn more about Windows ML, visit this <a href="https://blogs.windows.com/windowsdeveloper/?p=57438">blog</a>.
+
+https://youtu.be/pr7s4wr9hrA
+<h3><strong>Integrate AI using APIs powered by Windows built-in models quickly and easily</strong></h3>
+We are offering ready-to-use AI APIs powered by Windows inbox models for key tasks like text intelligence and image processing. These include language APIs like text summarization and rewrite, and vision APIs like image description, text recognition (OCR), image super resolution and image segmentation, all available in stable version in the latest release of <a href="https://aka.ms/windowsappsdk/1.7/1.7.2-NuGet">Windows App SDK 1.7.2</a>. These APIs remove the overhead of model building or deployment. These APIs run locally on the device and help provide privacy, security and compliance at zero additional cost and are optimized for NPUs on Copilot+ PCs. App developers like Dot Vista, Filmora by Wondershare, <a href="https://apps.microsoft.com/detail/9NB490VLC1LL?hl=en-us&amp;gl=US&amp;ocid=pdpshare">Pieces for Developers</a>, Powder, <a href="https://apps.microsoft.com/detail/XPDMFPX9C03HVL?hl=en-US&amp;gl=US&amp;ocid=pdpshare">iQIYI</a> and more are already leveraging our ready-to-use AI APIs in their apps.
+
+We also heard from developers they need to fine-tune LLMs with their custom data to get the required output for specific scenarios. Many also expressed that fine-tuning the base model is a difficult task. That’s why we’re announcing LoRA (low-rank-adaption) support for Phi Silica.
+<h3><strong>Introducing LoRA (low-rank-adaption) for Phi Silica to fine-tune our in-built SLM with custom data</strong></h3>
+LoRA makes fine-tuning more efficient by updating only a small subset of parameters of the model with custom data. This allows improved performance on desired tasks without affecting the model's overall abilities. This is available in public preview starting today on Snapdragon X Series NPUs, and will be available on Intel and AMD Copilot+ PCs in the coming months. Developers can access LoRA for Phi Silica in Windows App SDK 1.8 Experimental 2. <a href="https://aka.ms/win-lora">Learn more</a>.
+
+Developers can get started with LoRA training for Phi Silica in <a href="https://learn.microsoft.com/en-us/windows/ai/toolkit/toolkit-getting-started">AI Toolkit for VS Code</a>. Choose the Fine-tuning tool, select the Phi Silica model, configure project, and kick off the training in Azure with custom data set. Once the training is complete developers can download the LoRA adapter, use it on top of the Phi Silica API and experiment to see the difference in responses with the LoRA adapter and without it.
+
+https://youtu.be/cMg7O0_53hw
+<h3><strong>Introducing semantic search and knowledge retrieval for LLMs</strong></h3>
+We are introducing new semantic search APIs to help developers to create powerful search experiences using their own app data. These APIs power both semantic search (search by meaning, including image search) and lexical search (search by exact words), giving users more intuitive and flexible ways to find what they need.
+
+These search APIs run locally on all device types and offer seamless performance and privacy. On <a href="https://www.microsoft.com/en-us/windows/copilot-plus-pcs?r=1">Copilot+ PCs</a>, semantic capabilities are enabled for premium experience.
+
+Beyond traditional search, these APIs also support RAG (retrieval-augmented-generation), enabling developers to ground LLM output with their own custom data.
+
+These APIs are available in private preview today. <a href="https://aka.ms/WindowsAIFSemanticSearch">Sign up here to get early access</a>.
+
+In summary, Windows AI Foundry offers a host of capabilities for developers, meeting them where they are on their AI journey. It offers ready-to-use APIs powered by in-built models, tools to customize Windows in-built models, and a high-performance inference runtime to help developers bring their own models and deploy them across silicon. With Foundry Local integration in Windows AI Foundry, developers also get access to a rich catalog of open-source models.
+
+[caption id="attachment_57492" align="alignnone" width="1024"]<img class="wp-image-57492 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/ISV_Partner_Logos_1Premoved_1920x1280@sc-1024x683.jpg" alt="Image listing all the 3P ISV's that have adopted Windows AI Foundry as their AI development platform." width="1024" height="683" /> Windows AI Foundry ISV adoption[/caption]
+
+We are pleased to celebrate our incredible developer community building experiences using on-device AI on Windows 11 today and we can’t wait to see what else developers will build using these rich capabilities offered in Windows AI Foundry.
+<h3><strong>Introducing native support for Model Context Protocol (MCP) to power the agentic ecosystem on Windows 11</strong></h3>
+As the world moves toward an agentic future, Windows is evolving to deliver the tools, capabilities and security paradigms for agents to operate in and augment their skills to deliver meaningful value to customers.
+
+The MCP platform on Windows will offer a standardized framework for AI agents to connect with native Windows apps, which can expose specific functionality to augment the skills and capabilities of those agents on Windows 11 PC. This infrastructure will be available in a private developer preview with select partners in the coming months to begin garnering feedback.
+
+<strong>Security and privacy first:</strong> With new MCP capabilities, we recognize that we'll be learning as we continue to expand MCP and other agentic capabilities, and our top priority is to ensure we're building upon a secure foundation. Below are some of the principles guiding our responsible development of MCP on Windows 11:
+<ul>
+ 	<li>We're committed to making the MCP Registry for Windows an ecosystem of trustworthy MCP servers that meet strong security baseline criteria.</li>
+</ul>
+<ul>
+ 	<li>User control is a guiding principle as we develop this integration. Agents’ access to MCP servers is turned off by default. Once enabled, all sensitive actions performed by the agent on behalf of the user will be auditable and transparent.</li>
+</ul>
+<ul>
+ 	<li>MCP server access will be governed by the principle of least privilege, enforced through declarative capabilities and isolation (where applicable), ensuring that the user is in control of what privileges are granted to an MCP server and helping limit the impact of any attacks on any specific server.</li>
+</ul>
+Security is not a one-time feature—it’s a continuous commitment. As we expand MCP and other agentic capabilities, we will continue to evolve our defenses. To learn more about the security approach, visit <a href="https://blogs.windows.com/windowsexperience/?p=179739">Securing the Model Context Protocol: Building a safe agentic future on Windows</a>.
+
+We are introducing the below components in the MCP platform on Windows:
+
+<strong>MCP Registry for Windows:</strong> This is the single, secure and trustworthy source to make MCP servers accessible to AI agents on Windows. Agents can discover the installed MCP servers on client devices via the MCP Registry for Windows, leverage their expertise and offer meaningful value to end-users.
+
+<strong>MCP Servers for Windows: </strong>This will include Windows system functionalities like File System, Windowing, and Windows Subsystem for Linux as MCP Servers for agents to interact with.
+
+Developers can wrap desired features and capabilities in their apps as MCP servers and make them available via MCP Registry for Windows. We are introducing App Actions on Windows, a new capability for developers, which will also be available as built-in MCP servers enabling apps to provide their functionality to agents.
+
+[caption id="attachment_57493" align="alignnone" width="1024"]<img class="wp-image-57493 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/MCP_BLOG@2x-1920-1024x683.jpg" alt="This image showcases the various component of MCP on Windows such as MCP Registry and servers for Windows." width="1024" height="683" /> MCP on Windows architecture[/caption]
+
+We are building this platform in collaboration with app developers like <a href="http://www.anthropic.com/">Anthropic</a>, <a href="http://www.perplexity.ai/">Perplexity</a>, <a href="https://openai.com/">OpenAI</a> and <a href="http://www.figma.com/">Figma</a> who are integrating their MCP functionalities for their apps on Windows.
+
+As Rich O'Connell, Head of Strategic Alliances from <a href="http://www.anthropic.com/">Anthropic </a>, shared, “<em>We’re excited to see continued adoption of the Model Context Protocol, with a thriving ecosystem of integrations built by popular services and the community. LLMs benefit substantially from connecting to your world of data and tools, and we look forward to seeing the value users experience by connecting </em><a href="http://www.claude.ai/"><em>Claude</em></a><em> to Windows.</em>”
+
+And Aravind Srinivas, co-founder and CEO of Perplexity, shared, “<em>At Perplexity, like Microsoft, we’re focused on trustworthy experiences that are truly useful. MCP in Windows brings assistive AI experiences to one of the most empowering operating systems in the world.”</em>
+
+And Kevin Weil, Chief Product Officer OpenAI, shared <em>“We’re excited to see Windows embracing AI agent experiences through its adoption of the Model Context Protocol. This paves the way for ChatGPT to seamlessly connect to Windows tools and services that users rely on every day. We look forward to empowering both developers and users to create powerful, context-rich experiences through this integration.”</em>
+
+These early collaborations underscore our commitment to maintaining Windows as an open platform and evolving it for the agentic future. The momentum behind MCP offers incredible opportunity for developers to increase app discoverability and engagement.
+<h3><strong>Introducing App Actions on Windows, a new capability for developers to increase discoverability for their apps</strong></h3>
+We have heard from developers that remaining top of mind for their users and boosting app engagement is critical to their growth. Being a company of developers ourselves, we understand this core need deeply. That’s why we are introducing App Actions on Windows. App Actions offer a new capability for developers to increase discoverability for their apps’ features, unlocking new entry points for developers to reach new users.
+
+Already, leading apps across productivity, creativity and communication are building with App Actions to unlock new surfaces of engagement. <a href="https://apps.microsoft.com/detail/XP99J3KP4XZ4VV?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Zoom</a>, <a href="https://apps.microsoft.com/detail/XP8JNPKGTV6NRL?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Filmora</a>, <a href="https://apps.microsoft.com/detail/9N92MC09DB30?hl=en-us&amp;gl=US&amp;ocid=pdpshare">Goodnotes</a>, <a href="https://apps.microsoft.com/detail/XP99K37G9CWBDC?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Todoist</a>, <a href="http://www.raycast.com/">Raycast</a>, <a href="https://apps.microsoft.com/detail/9NB490VLC1LL?hl=en-us&amp;gl=US&amp;ocid=pdpshare">Pieces for Developers</a> and <a href="https://apps.microsoft.com/detail/XPFCS9QJBKTHVZ?hl=en-US&amp;gl=US&amp;ocid=pdpshare">Spark Mail </a>are among the first wave of developers embracing this capability.
+
+Developers can use:
+<ul>
+ 	<li><strong>App Actions APIs</strong> to author actions for their desired features. Developers can also consume actions developed by other relevant apps to offer complementary functionality, thereby increasing the engagement time in their apps. Developers can access these APIs in Windows SDK 10.0.26100.4188 or greater.</li>
+</ul>
+<ul>
+ 	<li><strong>App Actions Testing Playground </strong>to test the functionality and user experience of their App Actions. Developers can <a href="https://aka.ms/AppActionsTestingPlayground">download</a> the testing tool via the Microsoft Store.</li>
+</ul>
+<h3><strong>Powerful AI developer workstations to meet the needs of high computation and local inferencing workloads</strong></h3>
+Developers building high computational AI workloads told us they not only need reliable software but also robust hardware for local AI development. We have partnered with a range of OEMs and silicon partners to offer powerful AI developer workstations.
+
+OEM partners like Dell, HP and Lenovo offer a variety of Windows based systems to provide flexibility in both hardware specifications and budget. The <a href="https://www.dell.com/en-us/plcp/lp/dell-pro-max-pcs">Dell Pro Max Towe</a><u>r</u> provides impressive hardware specs for powerful performance, a great option for AI model inference on GPU or CPU, and for local model fine-tuning. For processing power with space efficiency, the <a href="https://www.hp.com/us-en/workstations/z2-mini-a.html">HP Z2 Mini G1a</a> is a capable mini workstation. The new <a href="https://www.dell.com/en-us/plcp/lp/dell-pro-max-pcs">Dell Pro Max 16 Premium,</a> <a href="https://www.hp.com/us-en/workstations/zbook-ultra.html">HP Zbook Ultra G1a</a> and <a href="https://news.lenovo.com/pressroom/press-releases/lenovo-introduces-new-thinkpad-mobile-workstations-and-business-laptops-designed-for-the-ai-ready-workforce/">Lenovo P14s/P16s</a> are Copilot+ PCs that offer incredible mobility for developers. <a href="https://blogs.windows.com/windowsdeveloper/?p=57439">Learn more about these devices.</a>
+<h2><strong>New Windows platform security capabilities</strong></h2>
+<h3><strong>Introducing the VBS Enclave SDK (Preview) for secure compute needs</strong></h3>
+Security is at the forefront of our innovation and everything we do at Microsoft. In this era of AI, more applications have the need to protect their data from attacks by malware and even malicious users and administrators. In 2024, we introduced <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-vbs">Virtualization Based Security (VBS)</a> Enclaves technology to provide a Trusted Execution Environment where applications can perform secure computations, including cryptographic operations, that are protected from admin level attacks. This is the same foundation that is <a href="https://www.microsoft.com/en-us/msrc/windows-security-servicing-criteria">securing our Recall experience on Copilot+ PCs</a>. We are now making this secure foundation capability available for developers. The VBS Enclave SDK is now available for public preview and includes a set of libraries and tools that make programming enclaves a more natural experience, developers can clone the <a href="https://aka.ms/VBSEnclaveSDK">repo here</a>.
+
+It starts with tooling to create an API projection layer. Developers can now define the interface between the host app and the enclave, while the tooling does all the hard work to validate parameters and handle memory management and safety checks. This allows developers to focus on their business logic while the enclave protects the parameters, data and memory. In addition, the libraries make it easy for developers to handle common tasks such as enclave creation, encrypt and decrypt data, manage thread pools and report telemetry.
+<h3><strong>Post-quantum cryptography comes to Windows Insiders and Linux</strong></h3>
+We've <a href="https://blogs.microsoft.com/blog/2023/05/31/building-a-quantum-safe-future/">previously discussed</a> security challenges that come along with the advancement of quantum computing and have taken steps to contribute to quantum safety across the industry, including the addition of <a href="https://techcommunity.microsoft.com/blog/microsoft-security-blog/microsofts-quantum-resistant-cryptography-is-here/4238780">PQC algorithms to SymCrypt</a>, our core cryptographic library.
+
+We will be making PQC capabilities available for Windows Insiders soon and for Linux (<a href="https://github.com/microsoft/SymCrypt-OpenSSL">SymCrypt-OpenSSL</a> version 1.9.0.). This integration is an important first step in enabling developers to experiment with PQC in their environments and assess compatibility, performance and integration with existing security systems. Early access to PQC capabilities helps security teams identify challenges, optimize strategies and ease transitions as industry standards evolve. By proactively addressing security concerns with current cryptographic standards, we are working to pave the way for a digital future that realizes the benefits of quantum and mitigates security risks. <a href="https://techcommunity.microsoft.com/blog/microsoft-security-blog/post-quantum-cryptography-comes-to-windows-insiders-and-linux/4413803">Learn more</a>.
+<h3><strong>New experiences designed to empower every developer to be more productive on Windows 11</strong></h3>
+Windows Subsystem for Linux (WSL) offers a robust platform for AI development on Windows by making it easy to run Windows and Linux workloads simultaneously. Developers can easily share files, GUI apps, GPUs and more between environments with no additional setup.
+<h3><strong>Announcing Windows Subsystem for Linux is now open source</strong></h3>
+We are thrilled to announce we are open sourcing Windows Subsystem for Linux. With this, we are opening up the code that creates and powers the virtual machine backing WSL distributions and integrates it with Windows features and resources for community contributions. This will unlock new performance and extensibility gains. This is an open invitation to the developer community to help us integrate Linux more seamlessly into Windows and make Windows the go-to platform for modern, cross-platform development.
+
+In fact, looking back, open sourcing WSL was the very first issue filed on the repository. At that time, all the logic for the project was inseparable from the Windows image itself, but since then we have made changes to WSL 2 distros and delivered WSL as its own standalone application. With that we’re able to close that first request! Thank you to the amazing WSL community for all your feedback, ideas, and efforts. <a href="https://blogs.windows.com/windowsdeveloper/?p=57441">Learn more about WSL open source</a>.
+<h3><strong>New improvements to popular Windows Developer tools</strong></h3>
+We know building great AI experiences starts with developer productivity – from getting devices and environments set up faster to getting all the tools needed in once place. That’s why we are announcing improvements to popular Windows developer tools like WinGet, PowerToys and Terminal.
+<h3><strong>Get code-ready faster with WinGet Configuration </strong></h3>
+Developers can effortlessly set up and replicate development environments using a single, reliable WinGet Configure command. Developers can now capture the current state of their device including their applications, packages and tools (available in a configured WinGet source) into a WinGet Configuration file. WinGet Configuration has now been updated to support Microsoft DSC V3. If installed applications and packages are DSC V3 enabled, the application’s settings will also be included in the generated configuration file. It will be generally available next month. Visit <a href="https://aka.ms/winget-samples">winget-dsc</a> GitHub repository to learn more.
+<h3><strong>Introducing Advanced Windows Settings to help developers control and personalize their Windows experience</strong></h3>
+Developers and power users often face challenges in customizing Windows to meet their unique needs due to hidden or obscure settings. Advanced Windows Settings allow developers to easily control and personalize their Windows experience. They can access and configure powerful, advanced settings with just a few clicks, all from a central place within Windows Settings. These include powerful settings like enabling File Explorer with GitHub version control details. This will be coming soon in preview to the Windows Insider Program.
+
+[caption id="attachment_57494" align="alignnone" width="1024"]<img class="wp-image-57494 size-large" src="https://winblogs.thesourcemediaassets.com/sites/3/2025/05/advanced-settings1920-1024x653.png" alt="Advanced Windows Settings user interface" width="1024" height="653" /> Advanced Windows Settings[/caption]
+<h3><strong>Introducing Command Palette in PowerToys </strong></h3>
+Command Palette, the next evolution of PowerToys Run, enables developers to reduce their context switching efforts by providing an easy way to access all their frequently used commands, applications and workflows from a single place. It is customizable, fully extensible and highly performant, empowering developers to manage interactions with their favorite tools effectively. It is now generally available.
+
+https://youtu.be/WdihwdDqS9Y
+<h3><strong>Edit, the new command-line text editor on Windows</strong></h3>
+We are introducing a command-line text editor, Edit on Windows which can be accessed by running “edit” in the command line. This enables developers to edit files directly in the command line, staying in their current flows and minimizing context switching. It is currently open source and will be available to preview in the Windows Insider Program in the coming months. Go to <a href="https://github.com/microsoft/edit">GitHub Repo</a> to learn more.
+<h3><strong>Microsoft Store: Strategic growth opportunity for app developers</strong></h3>
+The Microsoft Store is a trusted and scalable distribution channel for all Windows apps. With over 250 million monthly active users and a rapidly expanding catalog — including recent additions like ChatGPT, Perplexity, Fantastical, Day One, Docker and coming soon Notion — the Store is the largest app marketplace on Windows. And with a recently reimagined AI Hub, we’re making the Microsoft Store on Windows the go-to destination for people to discover what’s possible with AI on their devices. For those with Copilot+ PCs, we introduced a new AI Hub experience and AI Badges to spotlight experiences from Windows and the developer ecosystem.
+
+Today, we are announcing exciting new capabilities for developers:
+<ul>
+ 	<li>Free account registration for individual developers — making it easier than ever for anyone to publish apps.</li>
+</ul>
+<ul>
+ 	<li>Microsoft Store FastTrack, a new free preview program for qualified companies to <a href="https://aka.ms/microsoftstoreonboarding">submit their first Win32 app</a>.</li>
+</ul>
+<ul>
+ 	<li>Open Beta of App Campaigns, a new developer program to <a href="https://aka.ms/appcampaigns">drive user acquisition</a> across Store and other Microsoft surfaces.</li>
+</ul>
+<ul>
+ 	<li>New discovery capabilities for apps on Windows, new acquisition and health analytic reports, actionable certification reports and a lot more.</li>
+</ul>
+Check out <a href="https://blogs.windows.com/windowsdeveloper/?p=57437">this blog</a> to learn more.
+<h3><strong>Building for the future of AI on Windows</strong></h3>
+This past year has been incredibly exciting as we reimagined our platform capabilities to meet the needs of developers in this fast-evolving era of AI. This is just the start of our journey. We look forward to continuing to partner with our developer and MVP community, to bring innovation to our platform and tools, and enabling them to build experiences that will empower every person on the planet to achieve more.
+
+We can’t wait to see what you will build next!]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Microsoft App Assure helps Nord Security build for Windows on Arm</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2025/05/14/microsoft-app-assure-helps-nord-security-build-for-windows-on-arm/</link>
 		
@@ -389,409 +1105,6 @@ Phew! Babylon.js 8.0 is by far the platform’s biggest release to date. There�
 With each evolution of Babylon.js comes a revolution in web rendering technology and an overwhelming feeling of gratitude. The Babylon platform simply wouldn’t be possible without the incredible community of developers, the 500+ contributors, and the steadfast advocates that contribute their knowledge, expertise, help and passion to this amazing technology. “Thank you” to each one of you for all that you do to help make Babylon.js one of the most powerful, beautiful, simple and open web rendering platforms in the world.
 
 <em>See <a href="https://blogs.windows.com/windowsdeveloper/2025/03/27/announcing-babylon-js-8-0/">Part 1</a> and <a href="https://blogs.windows.com/windowsdeveloper/2025/03/31/part-2-babylon-js-8-0-audio-gaussian-splat-and-physics-updates/">Part 2</a> of this series of posts about what's in Babylon.js 8.0.</em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Part 2 &#8211; Babylon.js 8.0: Audio, Gaussian Splat and physics updates</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/03/31/part-2-babylon-js-8-0-audio-gaussian-splat-and-physics-updates/</link>
-		
-		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
-		<pubDate>Mon, 31 Mar 2025 19:59:20 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57382</guid>
-
-					<description><![CDATA[<p>Our mission is to create one of the most powerful, beautiful and simple web rendering engines in the world. The latest Babylon.js 8.0 engine packs a ton of new improvements to help you create stunning experiences.</p>
-<h3><strong>Overhauled Audio Engine<
-</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/03/31/part-2-babylon-js-8-0-audio-gaussian-splat-and-physics-updates/">Part 2 &#8211; Babylon.js 8.0: Audio, Gaussian Splat and physics updates</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[Our mission is to create one of the most powerful, beautiful and simple web rendering engines in the world. The latest Babylon.js 8.0 engine packs a ton of new improvements to help you create stunning experiences.
-<h3><strong>Overhauled Audio Engine</strong></h3>
-Babylon’s audio engine is long overdue for a tune-up and Babylon.js 8.0 swings for the fences, bringing an entirely fresh audio engine to your ears. This new engine was designed to be <strong>powerful —</strong><strong> </strong>taking advantage of the full suite of web-audio features, <strong>modern</strong><strong> </strong>— class names and architecture you’ve come to expect, and <strong>simple-to-use</strong> — allowing anyone to leverage these features, no matter what your experience level. For those of you who care passionately about the marriage of audio and visuals to tell a compelling story, Babylon.js 8.0 was built for you!
-
-Check out a demo: <a href="https://aka.ms/babylon8AudioEnginev2Demo">https://aka.ms/babylon8AudioEnginev2Demo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8AudioEnginev2Doc">https://aka.ms/babylon8AudioEnginev2Doc</a>
-
-https://youtu.be/vdjBS_EfeDg
-<h3><strong>Gaussian Splat Updates</strong></h3>
-Babylon.js 8.0 builds on the exciting foundation of Gaussian Splat support with some exciting new updates such as SPZ and compressed PLY formats, spherical harmonics, as well as runtime optimizations for memory footprint and CPU/GPU usage.
-
-Check out a demo for SPZ: <a href="https://aka.ms/babylon8gsplatImrovementsDemo">https://aka.ms/babylon8gsplatImrovementsDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8gsplatImprovementsDoc">https://aka.ms/babylon8gsplatImprovementsDoc</a>
-
-https://youtu.be/8iMUkvsYzLU
-
-<em>Footage from: </em><a href="https://www.basilicasanpietro.va/en/"><em>St. Peter’s Basilica</em></a><em>. A collaboration with Microsoft and Iconem for the Fabbrica di San Pietro.</em>
-<h3><strong>Havok Character Controller</strong></h3>
-With Babylon.js 8.0, we’ve continued our amazing partnership with the very talented team at Havok, this time bringing their fully featured character controller into Babylon.js. This brings a state-of-the-art character controller to your toolbox allowing you to start making your very own character-centered game with just a few lines of code!
-
-Check out a demo: <a href="https://aka.ms/babylon8havokCCDemo">https://aka.ms/babylon8havokCCDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8havokCCDoc">https://aka.ms/babylon8havokCCDoc</a>
-
-https://youtu.be/Bu_hAq6kGBk
-<h3><strong>Smart Filters</strong></h3>
-Babylon.js 8.0 builds on our rich library of node-based creation tools with the introduction of Smart Filters and the Smart Filter Editor. This new tool allows you to create video filters, texture treatments, post-processes, you name it. If it’s a 2D visual effect, this tool is for you! Under the hood it leverages shaders in the same way you’d expect any of our GPU-based tools to do, but it focuses on helping you create elaborate 2D visual treatments for web experiences. We can’t wait to see what you make with this exciting new tool!
-
-Try it out yourself (on desktop): <a href="https://aka.ms/babylon8sfe">https://aka.ms/babylon8sfe</a>
-
-Check out a demo (on desktop): <a href="https://aka.ms/babylon8sfeDemo">https://aka.ms/babylon8sfeDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8sfeDoc">https://aka.ms/babylon8sfeDoc</a>
-
-https://youtu.be/WREWPLE6NAM
-<h3><strong>Environment Improvements </strong></h3>
-Babylon.js 8.0 continues to improve visual realism, leveling up the environment lighting to look closer and closer to real-time ray traced results! Another shout out to Michael Bond at Adobe for this additional great contribution.
-
-Check out a demo: <a href="https://aka.ms/babylon8EnvImprovementsDemo">https://aka.ms/babylon8EnvImprovementsDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8EnvImprovementsDoc">https://aka.ms/babylon8EnvImprovementsDoc</a>
-
-https://youtu.be/AYpnP0a9ZcE
-<h3><strong>Node Geometry Editor Updates</strong></h3>
-Last year, Babylon.js introduced the ability to procedurally generate geometry without writing any code through the Node Geometry Editor.
-
-With Babylon.js 8.0, Node Geometry takes a big step up with a massive list of new features including a lattice deformer, point list, clean geometry, interceptor, an aggregator and the ability to subdivide.
-
-Check out a demo (on desktop): <a href="https://aka.ms/babylon8ngeDemo">https://aka.ms/babylon8ngeDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8ngeDoc">https://aka.ms/babylon8ngeDoc</a>
-
-https://youtu.be/ZjQ0Nu5pXdk
-<h3><strong>Node Material Editor Debug Node</strong></h3>
-Babylon’s Node Material Editor makes it incredibly simple to create complex visual shaders without writing any code. This artist-friendly tool bridges the gap between the complexity of building GPU shaders and the way artists think and work.
-
-Babylon.js 8.0 introduces some exciting UI improvements as well as the new incredibly useful “visual debug node.” This node allows you to see the visual output at any point in your Node Tree. You no longer have to move the output around and hook it up to different places in your graph. It’s as simple as adding debug nodes throughout your tree to see how your shader changes throughout the computation!
-
-Check out a demo (on desktop): <a href="https://aka.ms/babylon8nmedebugnodedemo">https://aka.ms/babylon8nmedebugnodedemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8nmedebugnodedoc">https://aka.ms/babylon8nmedebugnodedoc</a>
-
-https://youtu.be/vBwgLWeIERs
-<h3><strong>Improved Booleans</strong></h3>
-No, not those Booleans. True and False are just fine the way they are. We’re talking about Geometric Booleans!
-
-Babylon.js 8.0 introduces support for the popular <a href="https://github.com/elalish/manifold">Manifold.js</a> library, allowing you to create new shapes with more consistent Geometric Booleans. Or more simply put, “Finally some Booleans that look the way I expect them to look!”
-
-Check out a demo: <a href="https://aka.ms/babylon8booleanDemo">https://aka.ms/babylon8booleanDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8booleanDoc">https://aka.ms/babylon8booleanDoc</a>
-
-https://youtu.be/SE5-rF8ryhQ
-
-This list is extensive, but there's more to come! Check out the next post for updates on glTF, USDz, WebXR and more.
-
-<em>See <a href="https://blogs.windows.com/windowsdeveloper/2025/03/27/announcing-babylon-js-8-0/">Part 1</a> and <a href="https://blogs.windows.com/windowsdeveloper/2025/04/03/part-3-babylon-js-8-0-gltf-usdz-and-webxr-advancements/">Part 3</a> of this series of posts about what's in Babylon.js 8.0.</em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Announcing Babylon.js 8.0</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/03/27/announcing-babylon-js-8-0/</link>
-		
-		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
-		<pubDate>Thu, 27 Mar 2025 20:03:55 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57381</guid>
-
-					<description><![CDATA[<p>Our mission is to build one of the most powerful, beautiful, simple and open web rendering engines in the world. Today, web graphics and rendering hit the accelerator with the release of Babylon.js 8.0.</p>
-<p>https://youtu.be/kKaomUggipQ</p>
-<p>Babylon.js 8.0 r</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/03/27/announcing-babylon-js-8-0/">Announcing Babylon.js 8.0</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[Our mission is to build one of the most powerful, beautiful, simple and open web rendering engines in the world. Today, web graphics and rendering hit the accelerator with the release of Babylon.js 8.0.
-
-https://youtu.be/kKaomUggipQ
-
-Babylon.js 8.0 represents a year of new features, optimizations and performance improvements aimed at helping you create more compelling, interactive web experiences faster than ever.
-<h3><strong>IBL Shadows</strong></h3>
-Image-Based Lighting (<a href="https://en.wikipedia.org/wiki/Image-based_lighting">IBL</a>) is a computer graphics lighting technique that approximates environment lighting based on a source image. Originating in the visual effects world as a way to blend computer-generated effects with real photography, IBL has become a ubiquitous tool for computer graphics wizards around the world.
-
-Babylon.js first introduced support for IBL over 8 years ago and it has quickly become one of the most commonly used features of the engine.
-
-Today, we are absolutely thrilled to announce that our good friends at Adobe leveled up IBL in Babylon by adding shadows to the mix! Yup, that’s right, now both light and shadows for the scene environment can be approximated from a source image. Special shout out to Michael Bond at Adobe for his incredible work on this!
-
-Check out a demo: <a href="https://aka.ms/babylon8IBLShadows">https://aka.ms/babylon8IBLShadows</a>
-
-Learn more: <a href="https://aka.ms/babylon8IBLShadowsDoc">https://aka.ms/babylon8IBLShadowsDoc</a>
-
-https://youtu.be/xVLyy7N4Us8
-<h3><strong>Area Lights</strong></h3>
-We are thrilled to announce that Babylon.js 8.0 brings a frequently requested feature…Area Lights! This amazing new addition to the lighting palette allows you to specify a 2D shape that emits light from it, much like a large diffuse light that you might find on a movie set! We can’t wait to see how you use this new light type to bring a new dimension to your scene!
-
-Check out a demo: <a href="https://aka.ms/babylon8AreaLightsDemo">https://aka.ms/babylon8AreaLightsDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8AreaLightsDoc">https://aka.ms/babylon8AreaLightsDoc</a>
-
-https://youtu.be/U1FdTyTlJsU
-<h3><strong>Node Render</strong><strong> Graph - Alpha</strong></h3>
-One of the most powerful new features in Babylon.js 8.0 is something we call the “Node Render Graph.”
-
-Up to now, the specific rendering pipeline for Babylon has been a black box. You tell Babylon what to render and it goes off and does it for you. There have been observables that allow you to manipulate the result after completion of a render, but the render process itself has been opaque. Well…not anymore!
-
-With Babylon.js 8.0 you now have full control of the entire render pipeline. This means that you can fully customize and control every part of the process of how your frames are rendered on the GPU. And if that wasn’t enough, you also now have a fancy new Node Graph tool to allow you to customize your own render pipeline, without writing complex render process code! Please note that the Node Render Graph is in Alpha for you to test and discover but should not be used in production yet as it is subject to change.
-
-Try out the editor (on desktop): <a href="https://nrge.babylonjs.com/">Babylon.js Node Render Graph Editor</a>
-
-Check out a demo (on desktop): <a href="https://aka.ms/babylon8RenderGraphDemo">https://aka.ms/babylon8RenderGraphDemo</a>
-
-Learn more here: <a href="https://aka.ms/babylon8RenderGraphDoc">https://aka.ms/babylon8RenderGraphDoc</a>
-
-https://youtu.be/emoIox2sru0
-<h3><strong>All New Lightweight Viewer</strong></h3>
-Babylon.js is a powerful tool used by tens of thousands of people and organizations across the globe to bring complex visual ideas to life on the web. Babylon.js 8.0 unlocks a new super-powered tool for the other end of the spectrum…those scenarios where you want to display a simple 3D object on a web page with zero complexity, and stunning visuals in a tiny package.
-
-Introducing the all new Babylon.js Lightweight Viewer. This new viewer is designed to harness the same rendering beauty and power of the full engine but comes in a smaller bundle footprint and uses dynamic imports and capabilities (audio or animation for example) depending on the model that is loaded. It can be added to any web page with just a few lines of HTML and is also fully extensible!
-
-Of course, this new Lightweight Viewer wouldn’t be complete without a super easy-to-use configurator along with it! The Viewer Configurator is a simple tool that allows you to customize the Viewer to your exact specifications and give you the simple .html properties to set so it looks the same in your website!
-
-Play with the Configurator (on desktop): <a href="https://aka.ms/babylon8ViewerConfig">https://aka.ms/babylon8ViewerConfig</a>
-
-Check it out: <a href="https://aka.ms/babylon8viewerHome">https://aka.ms/babylon8viewerHome</a>
-
-Learn more here: <a href="https://aka.ms/babylon8viewerDoc">https://aka.ms/babylon8viewerDoc</a>
-
-https://youtu.be/HmkkGE96Xb4
-<h3><strong>WGSL Core Engine</strong><strong> Shaders</strong></h3>
-Babylon.js has had support for WebGPU since its inception. The core engine shaders in Babylon.js, however, have been written in GLSL (WebGL shading language) from the beginning. Because WebGPU has its own shading language (WGSL) this posed a very interesting challenge. How do you get GLSL shaders to render in WebGPU? Fortunately, there is a conversion library that’s been available. So, anyone wanting to target WebGPU with Babylon can leverage this library to convert the Babylon shaders into something WebGPU can use. The downside of this is that this conversion library is over 3MB, requiring users to double their download size for a standardBabylon.js project.
-
-With Babylon 8.0, this problem is a thing of the past. All of the core engine shaders for Babylon.js are now available in both GLSL and WGSL. This means direct support for WebGPU right out of the box with no conversion layer, essentially making Babylon.js 2x smaller when targeting WebGPU than in the past!
-
-Check out a demo: <a href="https://aka.ms/babylon8WGSLDemo">https://aka.ms/babylon8WGSLDemo</a> (try switching between WebGL2 and WebGPU)
-
-Learn more here: <a href="https://aka.ms/babylon8WGSLDoc">https://aka.ms/babylon8WGSLDoc</a>
-
-https://youtu.be/pKyGxT5xyUs
-<h3><strong>NME -> WGSL</strong><strong> Support</strong></h3>
-Well, why stop at core engine shaders? Why not unlock the ability to create custom WGSL shaders using Babylon’s <a href="https://doc.babylonjs.com/toolsAndResources/nme/">Node Material Editor</a> as well!
-
-OK! Check!
-
-Ability Unlocked! Let’s go Babylon 8.0!!!!!
-
-Check out a demo (on desktop): <a href="https://aka.ms/babylon8nmeWGSL">https://aka.ms/babylon8nmeWGSL</a>
-
-Learn more here: <a href="https://aka.ms/babylon8nmeWGSLDoc">https://aka.ms/babylon8nmeWGSLDoc</a>
-
-https://youtu.be/IAKi7krpUgA
-
-Those are just some of the main features of Babylon.js 8.0, there is much more! Tune in for next posts and learn more about Audio, Gaussian Splat and physics advancements, ….
-
-<em>See <a href="https://blogs.windows.com/windowsdeveloper/2025/03/31/part-2-babylon-js-8-0-audio-gaussian-splat-and-physics-updates/">Part 2</a> and <a href="https://blogs.windows.com/windowsdeveloper/2025/04/03/part-3-babylon-js-8-0-gltf-usdz-and-webxr-advancements/">Part 3</a> of this series of posts about what's in Babylon.js 8.0.</em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>AI Toolkit for Visual Studio Code now supports NVIDIA NIM microservices for RTX AI PCs</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/03/25/ai-toolkit-for-visual-studio-code-now-supports-nvidia-nim-microservices-for-rtx-ai-pcs/</link>
-		
-		<dc:creator><![CDATA[Anna Soracco]]></dc:creator>
-		<pubDate>Tue, 25 Mar 2025 13:03:15 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57390</guid>
-
-					<description><![CDATA[<p><strong><em>Editor’s note – March 26, 2025 –</em></strong><em> The screenshot was updated to reflect relevant models.</em></p>
-<p><a href="https://aka.ms/aitoolkit">AI Toolkit</a> now supports <a href="https://developer.nvidia.com/nim">NVIDIA NIM mic</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/03/25/ai-toolkit-for-visual-studio-code-now-supports-nvidia-nim-microservices-for-rtx-ai-pcs/">AI Toolkit for Visual Studio Code now supports NVIDIA NIM microservices for RTX AI PCs</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<strong><em>Editor’s note – March 26, 2025 –</em></strong><em> The screenshot was updated to reflect relevant models.</em>
-
-<a href="https://aka.ms/aitoolkit">AI Toolkit</a> now supports <a href="https://developer.nvidia.com/nim">NVIDIA NIM microservice</a>-based foundation models for inference testing in the model playground! Explore these NIMs in AI Toolkit's model catalog today!
-
-[caption id="attachment_57393" align="alignnone" width="1024"]<img class="wp-image-57393 size-large" src="https://pub-d00f534024b04d0e8036586fc78a41fa.r2.dev/sites/3/2025/03/blog_post_update1920-1024x578.png" alt="Editor’s note – March 25, 2025 – The screenshot was updated to reflect relevant models" width="1024" height="578" /> AI Toolkit now supports NVIDIA NIM for a unified development environment[/caption]
-
-Read more about it on the Tech Community Blog at <a href="https://aka.ms/aitk/nimsblog">aka.ms/aitk/nimsblog</a>.]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Available today: DeepSeek R1 7B &#038; 14B distilled models for Copilot+ PCs via Azure AI Foundry – further expanding AI on the edge</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/03/03/available-today-deepseek-r1-7b-14b-distilled-models-for-copilot-pcs-via-azure-ai-foundry-further-expanding-ai-on-the-edge/</link>
-		
-		<dc:creator><![CDATA[Vivek Pradeep]]></dc:creator>
-		<pubDate>Mon, 03 Mar 2025 19:53:09 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57375</guid>
-
-					<description><![CDATA[<p>At Microsoft, we believe the future of AI is happening now — spanning from the cloud to the edge. Our vision is bold: to build Windows as the ultimate platform for AI innovation, where intelligence isn’t just in the cloud but seamlessly woven t</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/03/03/available-today-deepseek-r1-7b-14b-distilled-models-for-copilot-pcs-via-azure-ai-foundry-further-expanding-ai-on-the-edge/">Available today: DeepSeek R1 7B &#038; 14B distilled models for Copilot+ PCs via Azure AI Foundry – further expanding AI on the edge</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[At Microsoft, we believe the future of AI is happening now — spanning from the cloud to the edge. Our vision is bold: to build Windows as the ultimate platform for AI innovation, where intelligence isn’t just in the cloud but seamlessly woven throughout the system, silicon and hardware at the edge. Building on our <a href="https://blogs.windows.com/windowsdeveloper/2025/01/29/running-distilled-deepseek-r1-models-locally-on-copilot-pcs-powered-by-windows-copilot-runtime/">recent announcement</a> of bringing NPU-optimized versions of DeepSeek-R1 1.5B distilled model directly to Copilot+ PCs, we’re taking the next step forward with the availability of DeepSeek R1 7B &amp; 14B distilled models for Copilot+ PCs via Azure AI Foundry. This milestone reinforces our commitment to delivering cutting-edge AI capabilities that are fast, efficient and built for real-world applications — helping developers, businesses and creators push the boundaries of what’s possible.
-
-https://www.youtube.com/watch?v=GotHKdBQPw4
-
-Availability starts with Copilot+ PCs powered by Qualcomm Snapdragon X, followed by Intel Core Ultra 200V and AMD Ryzen.
-
-The ability to run 7B and 14B parameter reasoning models on <a href="https://support.microsoft.com/en-us/windows/all-about-neural-processing-units-npus-e77a5637-7705-4915-96c8-0c6a975f9db4">Neural Processing Units (NPUs)</a> is a significant milestone in the democratization and accessibility of artificial intelligence. This progression allows researchers, developers and enthusiasts to leverage the substantial power and functionalities of large-scale machine learning models directly from their Copilot+ PCs. These Copilot+ PCs include an NPU capable of over 40 trillion operations per second (TOPS).
-<h3><strong>NPUs are purpose-built to run AI models locally on-device with exceptional efficiency </strong></h3>
-NPUs like those built into Copilot+ PCs are purpose-built to run AI models with exceptional efficiency, balancing speed and power consumption. They ensure sustained AI compute with minimal impact on battery life, thermal performance and resource usage. This leaves CPUs and GPUs free to perform other tasks, allowing reasoning models to operate longer and deliver superior results — all while keeping your PC running smoothly.
-
-Efficient inferencing has heightened significance due to a new scaling law for language models, which indicates that chain of thought reasoning during inference can improve response quality across various tasks. The longer a model can “think,” the better its quality will be. Instead of increasing parameters or training data, this approach taps into additional computational power for better outcomes. DeepSeek distilled models exemplify how even small pretrained models can shine with enhanced reasoning capabilities and when coupled with the NPUs on <a href="https://blogs.microsoft.com/blog/2024/05/20/introducing-copilot-pcs/">Copilot+ PCs</a>, they unlock exciting new opportunities for innovation.
-
-Reasoning emerges in models of a certain minimum scale, and models at that scale must think using a large number of tokens to excel at complex multi-step reasoning. Although the NPU hardware aids in reducing inference costs, it is equally important to maintain a manageable memory footprint for these models on consumer PCs, say with 16GB RAM.
-<h3><strong>Pushing the boundaries of what’s possible on Windows</strong></h3>
-Our research investments have enabled us to push the boundaries of what’s possible on Windows even further at the system level and at a model level leading to innovations like Phi Silica. <a href="https://blogs.windows.com/windowsexperience/2024/12/06/phi-silica-small-but-mighty-on-device-slm/">With our work on Phi Silica</a> we were able to create a scalable platform for low-bit inference on NPUs, enabling powerful performance with minimal memory and bandwidth tax. Combined with the data privacy offered by local compute, this puts advanced scenarios like Retrieval Augmented Generation (RAG) and model fine-tuning at the fingertips of application developers.
-
-We reused techniques such as <a href="https://arxiv.org/abs/2404.00456">QuaRot</a>, sliding window for fast first token responses and many other optimizations to enable the DeepSeek 1.5B release. We used Aqua, an internal automatic quantization tool, to quantize all the DeepSeek model variants to int4 weights with QuaRot, while retaining most of the accuracy. Using the same toolchain we used to optimize Phi Silica we quickly integrated all the optimizations into an efficient <a href="https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html">ONNX QdQ</a> model with low precision weights.
-
-Like the 1.5B model, the 7B and 14B variants use 4-bit block wise quantization for the embeddings and language model head and run these memory-access heavy operations on the CPU. The compute-heavy transformer block containing the context processing and token iteration uses int4 per-channel quantization for the weights alongside int16 activations. We already see about 8 tok/sec on the 14B model (the 1.5B model, being very small, demonstrated close to 40 tok/sec) — and further optimizations are coming in as we leverage more <a href="https://arxiv.org/abs/2402.17764">advanced techniques</a>. With all this in place, these nimble language models think longer and harder.
-
-This durable path to innovation has made it possible for us to more quickly optimize larger variants of DeepSeek models (7B and 14B) and will continue to enable us to bring more new models to run on Windows efficiently.
-<h3><strong>Get started today</strong></h3>
-Developers can access all distilled variants (1.5B, 7B and 14B) of DeepSeek models and run them on Copilot+ PCs by simply downloading the <a href="https://learn.microsoft.com/en-us/windows/ai/toolkit/toolkit-getting-started?utm_source=chatgpt.com&amp;tabs=rest">AI Toolkit VS Code extension</a>. The DeepSeek model optimized in the ONNX QDQ format is available in AI Toolkit’s model catalog, pulled directly from Azure AI Foundry. You can download it locally by clicking the “Download” button. Once downloaded, experimenting with the model is as simple as opening the Playground, loading the “deepseek_r1_1_5” model and sending it prompts.
-<h3><strong>Run models across Copilot+ PCs and Azure</strong></h3>
-Copilot+ PCs offer local compute capabilities that are an extension of capabilities enabled by Azure, giving developers even more flexibility to train, fine-tune small language models on-device and leverage the cloud for larger intensive workloads. In addition to the ONNX model optimized for Copilot+ PC, you can also try the cloud-hosted source model in Azure Foundry by clicking on the “Try in Playground” button under “DeepSeek R1.” AI Toolkit is part of your developer workflow as you experiment with models and get them ready for deployment. With this playground, you can effortlessly test the DeepSeek models available in Azure AI Foundry for local deployment too. Through this, developers now have access to the most complete set of DeepSeek models available through the Azure AI Foundry from cloud to client.
-
-Copilot+ PCs pair efficient compute with the near infinite compute Microsoft has to offer via its Azure services. With reasoning able to span the cloud and the edge, running in sustained loops on the PC and invoking the much larger brains in the cloud as needed — we are on to a new paradigm of continuous compute creating value for our customers. The future of AI compute just got brighter! We can’t wait to see the new innovations from our developer community taking advantage of these rich capabilities. Please keep the feedback coming!]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Discover magical AI experiences through the Microsoft Store on Windows, with the new AI Hub</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/02/18/discover-magical-ai-experiences-through-the-microsoft-store-on-windows-with-the-new-ai-hub/</link>
-		
-		<dc:creator><![CDATA[Steve Clarke, Editor]]></dc:creator>
-		<pubDate>Tue, 18 Feb 2025 17:00:01 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57340</guid>
-
-					<description><![CDATA[<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/02/18/discover-magical-ai-experiences-through-the-microsoft-store-on-windows-with-the-new-ai-hub/">Discover magical AI experiences through the Microsoft Store on Windows, with the new AI Hub</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[The Microsoft Store on Windows is the best place to discover AI experiences for your PC from Microsoft and our rich developer ecosystem. In 2023, we launched the AI Hub in Store to help our users find great AI-powered apps. In the last two years, we’ve seen hundreds of new AI-capable apps join the Microsoft Store community and we’ve partnered with many to showcase their content in the AI Hub. Developers like <a href="https://apps.microsoft.com/detail/XPDDXX9QW8N9D7?hl=en-US&gl=US&ocid=pdpshare">Grammarly</a> have noted that “through this partnership, we saw a meaningful lift in key metrics, including a 245% increase in page views, a 13% growth in installs and a 24% rise in new active users. The AI Hub spotlight helped us connect with more users seeking AI assistance for communication and productivity, reinforcing the value of Grammarly for Windows.”
-
-<strong>Today, we’re excited to announce the next iteration of AI Hub<sup>1</sup>.</strong> We have reimagined it to be the destination for users to learn about the AI experiences possible on their devices. For users on Copilot+ PCs, we’ll showcase the Windows and developer ecosystem experiences that leverage the power of their PC. For users not yet on Copilot+ PCs, we’ll showcase the best apps and experiences compatible with their devices. And we are proud to do this with a brand-new product design – you’ll find beautiful new visuals and snappy flows that help make your browsing experience inspiring.
-<h3>AI experiences powered by Microsoft</h3>
-https://youtu.be/A63BCh-qs-E
-
-When you’re browsing the new AI Hub on your Copilot+ PC, you’ll find rich informational content on the AI experiences powered by your PC’s <a href="https://support.microsoft.com/en-us/windows/all-about-neural-processing-units-npus-e77a5637-7705-4915-96c8-0c6a975f9db4">Neural Processing Unit</a> (NPU). The NPU plays a key role in handling tasks related to AI and machine learning. It is designed to speed up complex processes such as facial recognition, voice assistance and data analysis, delivering advanced computation with exceptional battery efficiency. The NPU’s ability to offload these tasks from the CPU and GPU allows for faster, more efficient operation of the entire system.
-
-As you become more familiar with the capabilities of your Copilot+ PC, AI Hub is here to help! We’ve created a new Welcome Experience to help you familiarize yourself with exclusive Windows features, ready for you to use – to start, these include <a href="https://support.microsoft.com/en-us/windows/windows-studio-effects-273c1fa8-2b3f-41b1-a587-7cc7a24b62d8">Windows Studio Effects</a>, <a href="https://support.microsoft.com/en-us/windows/use-copilot-pc-features-in-paint-53857513-e36c-472d-8d4a-adbcd14b2e54">Paint Cocreator</a> and <a href="https://support.microsoft.com/en-us/windows/microsoft-photos-restyle-image-and-image-creator-responsible-ai-faq-6c352e99-d954-49c9-84cd-b7cacd018868">Photos Image Creator</a>. And when you’re ready to dive into a specific workflow, we’ll help you get started.
-
-Your AI Hub will stay current to include details on the latest Copilot+ PC features and NPU-powered apps available. We're excited about helping customers connect to upcoming Windows features when they're generally available, including Recall, Click To Do and Improved Windows Search<sup>2</sup>.
-
-https://youtu.be/3ptccBogS18
-
-For users browsing AI Hub on Windows 11 PCs, you’ll find informational content available on the AI-powered apps that work on your device. Microsoft apps like <a href="https://apps.microsoft.com/detail/9nht9rb2f4hd"><strong>Copilot</strong></a>, <a href="https://apps.microsoft.com/detail/9pjgrcldlx5v"><strong>Designer</strong></a>, <a href="https://apps.microsoft.com/detail/9p1j8s7ccwwt?hl"><strong>Clipchamp</strong></a> and <a href="https://apps.microsoft.com/detail/9n0dgwh9pszf"><strong>Reading Coach</strong></a> all have AI functionalities ready for you to dive into.
-<h3>Our rich AI developer ecosystem</h3>
-<img class="alignnone wp-image-57371 size-large" src="https://pub-d00f534024b04d0e8036586fc78a41fa.r2.dev/sites/3/2025/02/Rich-Apps-1024x576.png" alt="Decorative image with app icons" width="1024" height="576" />
-
-No matter what PC you’re using, we have a rich AI developer ecosystem available inside the Microsoft Store on Windows – and the AI Hub is a wonderful destination for you to browse content. Some examples include:
-<ul>
- 	<li>For Copilot+ PC users who are passionate about music creation, <a href="https://apps.microsoft.com/detail/9p9rb7zf49xk?ocid=storeaward24"><strong>djay Pro</strong></a> features "NeuralMix," which leverages the extra processing power of the NPU to isolate vocals or instruments when re-mixing songs. On Copilot+ PCs, NeuralMix can use an AI model that is twice as large and more complex than on other devices, resulting in better sound quality and cleaner music stem separation. djay Pro was selected as a <a href="https://blogs.windows.com/windowsdeveloper/2024/11/01/announcing-the-microsoft-store-awards-2024-winners/">2024 Microsoft Store Awards winner</a> in the category of AI apps!</li>
-</ul>
-<ul>
- 	<li>For users on Copilot+ PCs who require a stand-out video presence, from sales professionals to streamers, <a href="https://apps.microsoft.com/detail/9pgm3qb3pdrd?launch=true&mode=full&hl"><strong>Camo Studio</strong></a> uses the NPU to power real-time visual effects that ensure you look your best. The NPU powers several machine learning workloads (such as real-time background segmentation and relighting) where latency is critical – and with incredible efficiency that ensures minimal impact to battery life.</li>
-</ul>
-<ul>
- 	<li><a href="https://apps.microsoft.com/detail/9mv4lscdrflt?ocid=storeaward24"><strong>Gamma</strong></a><strong> </strong>stands out for its ability to offer users AI-powered presentation creation, a user-friendly interface and versatile formats. Its intuitive design, real-time collaboration features and interactive elements make it a favorite among businesses. And Gamma was also selected as a <a href="https://blogs.windows.com/windowsdeveloper/2024/11/01/announcing-the-microsoft-store-awards-2024-winners/">2024 Microsoft Store Awards winner</a> in the category of Business apps!</li>
-</ul>
-<ul>
- 	<li>And for those who love to converse with assistants, <a href="https://apps.microsoft.com/detail/9nt1r1c2hh7j?hl"><strong>ChatGPT</strong></a> now is available as an app for all Windows devices exclusively through the Microsoft Store. Easily ask questions, get writing assistance and generate ideas – all in a seamless, user-friendly experience.</li>
-</ul>
-Visit AI Hub regularly to see the latest AI-enabled products from our amazing partners.
-<h3>A preview of what’s ahead</h3>
-Today, this experience is available for Copilot+ PCs in United States, Canada, United Kingdom and Australia. In the coming months, we will expand it to additional markets and for the broader Windows population.
-
-To stay current on release plans, please watch the “What’s New” page in Store to see our latest release information. And, <a href="https://blogs.windows.com/windowsdeveloper/2024/12/03/raising-the-bar-updates-to-the-microsoft-store-on-windows/">as we shared in December</a>, we are keen on your feedback – please submit via Feedback Hub (WIN + F) under Microsoft Store.
-
-AI is changing the way we do everything on our PCs – from tackling complex research projects, to finding new recipes, editing photos and everything in between. We believe AI innovation isn’t just about creating new products; it’s about enabling us to reimagine how we solve everyday problems.
-
-Happy browsing!
-
-<em><sup>1 </sup>AI Hub is available in select markets within Microsoft Store on Windows. </em>
-
-<em><sup>2 </sup>Windows features will be added to the AI Hub as they become available to retail users by market. Features in the Windows Insider Program will not be included. </em>]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Running Distilled DeepSeek R1 models locally on Copilot+ PCs, powered by Windows Copilot Runtime</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/01/29/running-distilled-deepseek-r1-models-locally-on-copilot-pcs-powered-by-windows-copilot-runtime/</link>
-		
-		<dc:creator><![CDATA[Vivek Pradeep]]></dc:creator>
-		<pubDate>Wed, 29 Jan 2025 22:11:14 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57331</guid>
-
-					<description><![CDATA[<p><em><strong>Update: Feb. 3, 2025:</strong> Today, we are pleased to announce that the distilled DeepSeek R1 models optimized using ONNX are now available to use on your Snapdragon powered Copilot+ PCs. With further optimizations in place, the model i</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/01/29/running-distilled-deepseek-r1-models-locally-on-copilot-pcs-powered-by-windows-copilot-runtime/">Running Distilled DeepSeek R1 models locally on Copilot+ PCs, powered by Windows Copilot Runtime</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<em><strong>Update: Feb. 3, 2025:</strong> Today, we are pleased to announce that the distilled DeepSeek R1 models optimized using ONNX are now available to use on your Snapdragon powered Copilot+ PCs. With further optimizations in place, the model is capable of a time to first token of less than 70 ms for short prompts (&lt;64 tokens) and a throughput rate of up to ~40 tokens/s. The time to first token scales with the length of the input prompt. The throughput rate varies based on the complexity of the task specified in the prompt; responses exhibit a throughput range of ~25-40 tokens/s. Longer responses are especially likely to enjoy higher throughput rates. <a href="https://learn.microsoft.com/en-us/windows/ai/toolkit/toolkit-getting-started?utm_source=chatgpt.com&amp;tabs=rest">Get started today by downloading the AI Toolkit extension in VS Code</a>.</em>
-
-AI is moving closer to the edge, and Copilot+ PCs are leading the way. With the <a href="https://azure.microsoft.com/en-us/blog/?p=38333">availability of cloud hosted DeepSeek R1 available on Azure AI Foundry</a>, we’re bringing NPU-optimized versions of DeepSeek-R1 directly to Copilot+ PCs, starting with Qualcomm Snapdragon X first, followed by Intel Core Ultra 200V and others. The first release, DeepSeek-R1-Distill-Qwen-1.5B (<a href="https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B">Source</a>), will be available in AIToolkit for VSCode, with the 7B (<a href="https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B">Source</a>) and 14B (<a href="https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B">Source</a>) variants arriving soon. These optimized models let developers build and deploy AI-powered applications that run efficiently on-device, taking full advantage of the powerful NPUs in Copilot+ PCs.
-
-The <a href="https://support.microsoft.com/en-us/windows/all-about-neural-processing-units-npus-e77a5637-7705-4915-96c8-0c6a975f9db4">Neural Processing Unit (NPU)</a> on Copilot+ PCs offers a highly efficient engine for model inferencing, unlocking a paradigm where generative AI can execute not just when invoked, but enable semi-continuously running services. This empowers developers to tap into powerful reasoning engines to build proactive and sustained experiences.
-
-<a href="https://blogs.windows.com/windowsexperience/2024/12/06/phi-silica-small-but-mighty-on-device-slm/">With our work on Phi Silica</a>, we were able to harness highly efficient inferencing – delivering very competitive time to first token and throughput rates, while minimally impacting battery life and consumption of PC resources. Running models on the NPU is about speed and efficiency. For example, as mentioned in previous posts, the Phi Silica token iterator on the NPU exhibits a 56% improvement in power consumption compared to operating on the CPU. Such efficiency enables new experiences that demand such state-of-the art models to be in the main loop of the program without draining your battery or overly heating your device. The optimized DeepSeek models for the NPU take advantage of several of the key learnings and techniques from that effort, including how we separate out the various parts of the model to drive the best tradeoffs between performance and efficiency, low bit rate quantization and mapping transformers to the NPU. Additionally, we take advantage of Windows Copilot Runtime (WCR) to scale across the diverse Windows ecosystem with <a href="https://onnxruntime.ai/">ONNX</a> QDQ format.
-
-<strong>Get ready to play!</strong>
-
-First things first…let’s give it a whirl.
-
-To see DeepSeek in action on your Copilot+ PC, simply download the AI Toolkit VS Code extension. The DeepSeek model optimized in the ONNX QDQ format is available in AI Toolkit’s model catalog, pulled directly from Azure AI Foundry. You can download it locally by clicking the “Download” button. Once downloaded, experimenting with the model is as simple as opening the Playground, loading the “ deepseek_r1_1_5” model, and sending it prompts.
-
-In addition to the ONNX model optimized for Copilot+ PC, you can also try the cloud-hosted source model in Azure Foundry by clicking on the “Try in Playground” button under “ DeepSeek R1”.
-
-AI Toolkit is part of your developer workflow as you experiment with models and get them ready for deployment. With this playground, you can effortlessly test the DeepSeek models available in Azure AI Foundry for local deployment.
-
-https://youtu.be/CFzH0sekxYI
-
-<strong>Silicon Optimizations </strong>
-
-The distilled Qwen 1.5B consists of a tokenizer, embedding layer, a context processing model, token iteration model, a language model head and a de-tokenizer. We use 4-bit block wise quantization for the embeddings and language model head and run these memory-access heavy operations on the CPU. We focus the bulk of our NPU optimization efforts on the compute-heavy transformer block containing the context processing and token iteration, wherein we employ int4 per-channel quantization for the weights alongside int16 activations.
-
-Details of the various precisions involved are in the table below, for additional clarity on the mix.
-<table style="margin-left: auto !important; margin-right: auto !important; display: block;">
-<tbody>
-<tr>
-<td width="207"><strong>Model</strong></td>
-<td width="207"><strong>Precision</strong></td>
-<td width="207"><strong>Host</strong></td>
-</tr>
-<tr>
-<td width="207">Embeddings</td>
-<td width="207">w: int4 a: fp32</td>
-<td width="207">CPU</td>
-</tr>
-<tr>
-<td width="207">Context processing</td>
-<td width="207">w: int4 a: int16</td>
-<td width="207">NPU</td>
-</tr>
-<tr>
-<td width="207">Token iteration</td>
-<td width="207">w: int4 a: int16</td>
-<td width="207">NPU</td>
-</tr>
-<tr>
-<td width="207">Language model head</td>
-<td width="207">w: int4 a: fp32</td>
-<td width="207">CPU</td>
-</tr>
-</tbody>
-</table>
-While the Qwen 1.5B release from DeepSeek does have an int4 variant, it does not directly map to the NPU due to presence of dynamic input shapes and behavior – all of which needed optimizations to make compatible and extract the best efficiency. Additionally, we use the <a href="https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html">ONNX QDQ</a> format to enable scaling across a variety of NPUs we have in the Windows ecosystem. We work out an optimal operator layout between the CPU and NPU for maximum power-efficiency and speed.
-
-To achieve the dual goals of low memory footprint and fast inference, much like Phi Silica, we make two key changes: First, we leverage a sliding window design that unlocks super-fast time to first token and long context support despite not having dynamic tensor support in the hardware stack. Second, we use the 4-bit <a href="https://www.microsoft.com/en-us/research/publication/quarot-outlier-free-4-bit-inference-in-rotated-llms/">QuaRot</a> quantization scheme to truly take advantage of low bit processing. QuaRot employs Hadamard rotations to remove outliers in weights and activations, making the model easier to quantize. QuaRot significantly improves quantization accuracy, compared to existing methods, such as GPTQ, particularly for low granularity settings such as per-channel quantization. The combination of low-bit quantization and hardware optimizations such the sliding window design help deliver the behavior of a larger model within the memory footprint of a compact model. With these optimizations in place, the model is capable of a time to first token of 130 ms and a throughput rate of 16 tokens/s for short prompts (&lt;64 tokens).
-
-We include examples of the original and quantized model responses below to show the minor differences between the two variants, with the latter being both fast and power-efficient:
-
-<img class="alignnone wp-image-57336 size-large" src="https://pub-d00f534024b04d0e8036586fc78a41fa.r2.dev/sites/3/2025/01/originalleft_deepseekr1_1.5-1024x592.png" alt="Sample response from the original model" width="1024" height="592" />
-
-<img class="alignnone wp-image-57338 size-large" src="https://pub-d00f534024b04d0e8036586fc78a41fa.r2.dev/sites/3/2025/01/quantizedright_deepseekr1_1.5-2-1024x587.png" alt="Sample response from the NPU-optimized model" width="1024" height="587" />
-
-<em>Figure 1: Qualitative comparison. Sample responses from the original model (top) vs NPU-optimized model (bottom) for the same prompt, including the model’s reasoning capability. The model follows a similar reasoning pattern, and reaches the same answer, demonstrating that the optimized model retains the reasoning ability of the original model. </em>
-
-With the speed and power characteristics of the NPU-optimized version of the DeepSeek R1 models users will be able to interact with these ground-breaking models entirely locally. We are excited what this capability enables for the future of the PC experience and looking forward towards innovations from our developer community.]]></content:encoded>
 					
 		
 		
