@@ -1,4 +1,594 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Apr 2025 03:05:05 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Next.jsのPages RouterからApp Routerに移行する]]></title><description><![CDATA[Next.jsプロジェクトをアップグレードする Next.jsの従来のPages Routerから新しいApp Routerに移行しましょう。ここの移行により、アプリケーションのルーティング効率と柔…]]></description><link>https://postd.cc/migrate-from-nextjs-pages-to-app-router/</link><guid isPermaLink="false">https://postd.cc/migrate-from-nextjs-pages-to-app-router/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Thu, 24 Apr 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>Next.jsプロジェクトをアップグレードする</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 22 May 2025 03:08:37 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[React Server Componentsを理解する]]></title><description><![CDATA[React Server Componentsを理解する React Server Components（RSC）の登場により、Reactエコシステムにおけるサーバーレンダリングの重要性が高まりまし…]]></description><link>https://postd.cc/understanding-react-server-components/</link><guid isPermaLink="false">https://postd.cc/understanding-react-server-components/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Thu, 22 May 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>React Server Componentsを理解する</h2>
+<p>React Server Components（RSC）の登場により、Reactエコシステムにおけるサーバーレンダリングの重要性が高まりました。RSCを使用することで、デベロッパーは一部のコンポーネントをサーバー側でレンダリングしつつ、抽象化によりクライアントとサーバーの隔たりを感じさせないユーザビリティを実現することができます。Client ComponentsとServer Componentsをコード内に混在させることで、すべてのコードが1カ所で実行されているように見せることができます。</p>
+<p>しかし、抽象化には常にコストが伴います。そのコストとはどのようなものでしょうか。RSCはいつ「使える」のでしょうか。バンドルサイズが小さくなると、帯域幅も狭まるのでしょうか。RSCを「使うべき」ときはいつでしょうか。RSCを適切に使う上でデベロッパーが従うべきルールは何でしょうか。そのルールが存在する理由は何でしょうか。</p>
+<p>これらの問いに答えるため、RSCの仕組みを詳しく見ていきましょう。React本体と、ReactのメタフレームワークというRSCの2つの側面について考察します。特に、RSCに関する正確なメンタルモデルを構築できるよう、ReactとNext.jsの内部構造について説明します。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>この記事は、Reactを使い慣れたデベロッパーを対象としています。読者には、コンポーネントやフックに関する予備知識が前提条件として求められます。</p><p>また、JavaScriptのPromise、async、awaitについても熟知していることを想定しています。これらに関する知識がない方は、<a href="https://youtu.be/fyGSyqEX2dw?si=MkRII6BoKW8Dm-Ml">Promise、async、await</a>の仕組みに関する筆者のYouTube動画をご覧ください。</p><p>Reactのあらゆる側面についてゼロから詳しく知りたい方は、筆者の「<a href="https://understandingreact.com/">Understanding React</a>（Reactを理解する）」コースをぜひチェックしてみてください。このコースでは、Reactのソースコードを掘り下げることで、JSX、Fiber、コンポーネント、フック、フォームなどの仕組みを理解していただくことができます。</p></div></div>
+<p>まずは、RSCの仕組みを理解するために必要な基本を見ていきましょう</p>
+<h2>DOMとクライアントレンダリング</h2>
+<p>Reactでは「レンダリング」という表現を固有の意味で使っています。一般的にはブラウザがページを「レンダリング」するという場合、DOMを画面に描画する処理をいいます。ブラウザは、DOM（要素のツリー構造）とCSSOM（計算済みスタイルのツリー構造）をもとに、各要素の配置を計算し、適切なピクセルを画面に描画します。</p>
+<p>一方、Reactでは「DOMの見た目を計算すること」を「レンダリング」といいます。関数コンポーネントが返す値はReactに対し、DOMの見た目に関する情報を伝えます。</p>
+<p>したがって、React（およびReactに追随する形で登場した他のフレームワーク）の世界では、「クライアントレンダリング」という場合、<strong>ブラウザ上で関数コンポーネントを実行すること</strong>をいいます。</p>
+<p>Reactでいう「レンダリング」は、必ずしもブラウザによる実際のレンダリングを伴いません。なぜなら、DOMの見た目がすでにReactがこうあるべきと考える見た目になっている場合があるからです。</p>
+<p>実際、Reactのコアアーキテクチャ（および他のすべてのJSフレームワーク）における重要な点は、内部コードが更新するDOMの量を制限することにあります。</p>
+<h2>ツリーの差分検出処理</h2>
+<p>Reactのソースコードの中には、<code class="language-text">appendChild</code>などのブラウザDOM APIを呼び出し、クライアント上のDOMを更新するコールがあります。Reactは、ツリーの差分検出処理（reconciliation）や差分計算（diff）によって、ブラウザDOM APIを実行するタイミングを決めます。</p>
+<p><a href="https://tonyalicea.dev/blog/understanding-react-compiler">React Compiler</a>に関する記事に書いたように、ReactはDOMの現在の見た目と、見た目がどうあるべきかをJavaScriptオブジェクトツリーで管理しており、各ノードはFiberと呼ばれます。</p>
+<p>Reactは、JavaScriptオブジェクトツリーの2つの枝でDOMの見た目がどうあるべきか（「WORK-IN-PROGRESS」）を計算し、DOMの現在の見た目（「CURRENT」）と比較します。</p>
+<p>次に、2つのツリーの差分を検出し、currentツリーをworkInProgressツリーに変換するために必要なステップを計算します。そのステップは「diff」と「patch」（パッチ処理）です。</p>
+<p><img src="https://tonyalicea.dev/assets/blogimages/ReactCompiler_Reconciliation.png"></p>
+<p>単純なJavaScriptオブジェクトとの比較計算が終わると、実際のDOMにおいて取るべきステップが明らかになります。DOMの更新はコストがかかり、ブラウザの再レンダリング（要素の配置とピクセルの描画）を伴うため、最低限取るべきステップの数を特定することで、DOMに対して必要な更新を最小限にとどめることができます。</p>
+<p>クライアント上でDOMを更新すれば、UIを更新する際にstateを保持できるメリットがあります。例えば、ユーザーがフォームに情報を入力し、Reactが何らかのイベントをもとにUIを更新しても、入力したテキストはフォーム上に保持されます（ページが再読み込みされた場合は保持されません）。</p>
+<p>したがって、Reactではクライアント上でDOMを更新することを重視しており、最初に偽のDOMに対して処理を行うことで可能な限り効率的に更新しようと努めています。このようなJavaScriptのDOM構造の偽コピーを一般的に「仮想DOM」と呼びます。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p><strong>「仮想DOM」は適切な表現か？</strong></p><p>ReactにおけるDOMと似た構造のJavaScriptオブジェクトの集まりを以前は「仮想DOM」と呼んでいました。しかし、実際はiOSやAndroidのネイティブアプリ（React Native）などへのレンダリングが可能なため、Reactは今ではこの呼称を好んでいません。</p><p>実際、Reactは複数のツリーを扱います。関数コンポーネントが返すReact要素（JSオブジェクト）のツリーや、React要素を変換したもので、stateなどを格納するために使用される Fiber（同じくJSオブジェクト）のツリーなどです。 </p><p>普段はより具体的な名前でこれらのツリーを呼びますが、この記事では、RSCの仕組みを理解するうえで便利なので、昔から日常会話でよく使われている「仮想DOM」という呼称を使いたいと思います。</p></div></div>
+<p>Reactが「レンダリング」と呼ぶのは、仮想DOMの計算処理です。具体的には、関数コンポーネントを実行し、リアルDOMの見た目がどうあるべきかを決めることをいいます。この処理はすべて関数を実行するJavaScriptエンジンの中で、リアルDOMに反映される差分が全く検出されなくなるまで行われます。</p>
+<p><strong>Reactが「レンダリング」という表現を使う理由</strong>を理解すると、RSCを正確に説明するうえで非常に役立ちます。</p>
+<p>RSCを理解するためには、Web開発におけるクライアントレンダリングおよびサーバーレンダリングと、Reactが重点を置く仮想DOMの生成の違いを明確に理解する必要があります。</p>
+<p>Reactでいう「レンダリング」では、実際には必ずしも何かが目に見える形で起こるわけではありません。</p>
+<p><img src="https://tonyalicea.dev/assets/blogimages/tonyalicea_cartoon1_dark.png"></p>
+<p>「レンダリング」という言葉のさまざまな意味については、確認しながら説明を進めたいと思います。一般的な（React以外での）定義を「古典的」と呼び、Web開発の用語として定義してみましょう。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>レンダー【render】
+【動詞】 /réndər/</p><ol>
+<li>（古典的クライアントサイド）DOMとCSSOMをもとにレイアウトを計算し、画面にピクセルを描画すること。</li>
+<li>（Reactクライアントサイド）仮想DOMを構築して更新するために関数コンポーネントを実行すること。 </li>
+</ol></div></div>
+<h2>DOMとサーバーレンダリング</h2>
+<p>RSCについて説明を進めるには、時間を遡る必要があります。長年、インターネットの中心概念の一つとして、サーバーからHTMLを配信するという考え方があります。</p>
+<p>サーバー上にHTMLファイルを（NodeJSやPHPなどのサーバー技術を使って）作成することを、古典的な「サーバーサイドレンダリング」や「サーバーレンダリング」と呼びます。これは、先ほど説明した古典的なクライアントレンダリングの意味とも違います。従来、サーバーレンダリングとはサーバー上で「HTMLの文字列を生成する」ことを意味しました。</p>
+<p>これにはいくつかの利点があります。ブラウザはHTMLを素早くDOMに変換することができます。そのため、HTMLは「ブラウザ上で素早くレンダリング」されます。JavaScriptでDOMを更新すると、もっと時間がかかります。また、サーバーの方がデータベースやファイルストレージに近いため、これらの処理をより効率的に行うことができます。</p>
+<p>デメリットとしては、クライアントは再度HTMLを要求することができますが、stateが失われてしまいます（ページが再読み込みされる）。</p>
+<p>Web開発においては、そのバランスをどう取るかが長年課題となっていました。サーバー側でレンダリングされたHTMLは素早く表示されますが、クライアント側のJavaScriptを通じてDOMを更新すると、ページのstateを維持したまま変更を加えることができます。</p>
+<p>Reactでは両方行えますが、それは何も新しいことではありません。Reactはクライアント側のJavaScriptを使ってDOMを更新しますが、デベロッパーはかなり前からReactのコンポーネントをサーバー側でレンダリング（SSR）することができていました。</p>
+<p>サーバー（NodeJSなどを通じて独自のJavaScriptエンジンを実行）は、コンポーネントを実行し、クライアントに送信するHTML文字列を生成します。ただし、大きな注意点があります。同じコンポーネントのJavaScriptコードもすべてクライアントに送信して実行する必要があったのです。</p>
+<p>それはなぜでしょうか。関数コンポーネントが返す値をもとに仮想DOMを構築できるようにするためです。仮想DOMはリアルDOMを「ハイドレート」するために使用します。これは例えば、ボタンがクリックされたときに、どの関数コンポーネントの中のどのクリックイベントを実行するべきかがわかるということです。覚えておかなくてはならないのは、Reactが機能するためには、クライアント上に両方のツリー（DOMと仮想DOM）が存在する必要があるということです。したがって、ReactにおけるSSRでは、関数を2回実行する必要があります（1回はサーバー上でHTMLを生成するため、もう1回はクライアント上で仮想DOMを作成するため）。</p>
+<p>参考までに、SSR／ハイドレーションプロセスを以下に可視化しています。</p>
+<div class="video"><video loop autoplay muted playsinline aria-labelledby="video-label" src="https://tonyalicea.dev/assets/blogvideos/RSC_SSRHydration.mp4"></video></div>
+<p>ここでReact Server Componentsの登場です。RSCは、サーバー上で実行されるReactコンポーネントとクライアント上で実行されるReactコンポーネントを、サ<strong>ーバーコンポーネントのJavaScriptコードの送信と再実行を行うことなく</strong>混在させることができます。さらに、ブラウザ上でDOMの更新を始める前に、最初にサーバー上でHTMLをレンダリングすることも可能です。</p>
+<p>なぜ可能なのでしょうか。</p>
+<p>まずは用語の定義を更新しましょう。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>レンダー【render】
+【動詞】 /réndər/レンダリング</p><ol>
+<li>（古典的クライアントサイド）DOMとCSSOMをもとにレイアウトを計算し、画面にピクセルを描画すること。</li>
+<li>（Reactクライアントサイド）仮想DOMを構築して更新するために関数コンポーネントを実行すること。 </li>
+<li>（古典的サーバーサイド）DOMを構築するためにクライアントに送信するHTMLを生成すること。</li>
+<li>（ReactサーバーサイドSSR）DOMを構築するためにクライアントに送信するHTMLを生成するために関数コンポーネントを実行すること。</li>
+</ol></div></div>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p><strong>サーバーサイド生成はどうか?</strong></p><p>ここで取り上げていないものの一つがSSG（サーバーサイド生成）です。これは、アプリをビルドする（デプロイ可能にする）際に、HTMLをあらかじめ生成することを意味します。これは、Client ComponentsとServer Componentsの両方に対して行えます。</p><p>SSGの定義は、作成中の辞書収録項目におけるSSRの定義と同じです。この記事では、SSGとSSRの違いを明らかにしてもあまり役に立たないので詳しくは述べませんが、SSGもサポートされています。</p></div></div>
+<p>先ほど、Reactが機能するためには、DOMと仮想DOMの両方のツリー全体がブラウザのメモリ上に存在しなくてはならないとお話ししました。では、React Server Componentsがサーバー上でのみ実行されればよく、クライアントがJavaScriptコードをダウンロードして実行する必要がないのはなぜでしょうか。</p>
+<p>つまり、Reactは「サーバー」上で実行された関数によってレンダリングされた部分について、どのようにして「ブラウザ」上に仮想DOMを構築するのでしょうか。</p>
+<h2>Flight</h2>
+<p>サーバー上で関数コンポーネントを実行し、その結果をもとにクライアント上に仮想DOMを構築できるようにするために、Reactはサーバー上で実行された関数が返したReact要素ツリーを「シリアライズ」する機能を追加しました。</p>
+<p>多くの場合、シリアライズは「コンピューターのメモリ上のオブジェクトを文字列に変換する」こと、デシリアライズは「文字列をコンピューターのメモリ上のオブジェクトに復元する」ことを意味します。</p>
+<p>この場合、関数コンポーネントの結果はシリアライズしてクライアントに送信する必要があります。</p>
+<p>筆者のReactコースに登録した生徒の数を把握するための簡単なアプリを作成するとします。まずはNext.jsで基本的なRSCを作成します。これはサーバー上で実行されます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">understandingreact.com</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p><strong>同型コンポーネント</strong></p><p>サーバーとクライアントの両方で実行可能なコンポーネントを「同型（isomorphic）」と呼びます。上の関数はサーバーに特化したこと（データベースに直接接続する、サーバー上のファイルを読むなど）を何も行わないため、クライアント上で実行することも可能であり、Reactは通常どおり直接その結果をもとに仮想DOMを構築することができます。</p><p>関数が同型である場合、共有することができます。Server ComponentsとClient Componentsのどちらもそれをインポートして使用することができます。</p></div></div>
+<p>この関数を実行するためにクライアントに送信しなくてもいいように、その結果をシリアライズする必要があります。Reactのコードベースの中では、このシリアライズ形式を「Flight」と呼び、送信したデータの総和を「RSC Payload」と呼びます。</p>
+<p>筆者の簡単な関数の結果をシリアライズしたものが以下です。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">"[\"$\",\"main\",null,{\"children\":[\"$\",\"h1\",null,{\"children\":\"understandingreact.com\"},\"$c\"]},\"$c\"]"</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>分析しやすいようにフォーマットしてみましょう（Alvar Lagerlöf氏が作成した<a href="https://github.com/alvarlagerlof/rsc-parser">RSCパーサー</a>を使用）。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"main"</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+    <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+    <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>仮想DOMの構造が見えるでしょうか。<code class="language-text">main</code>要素と<code class="language-text">h1</code>要素、プレーンテキストノードもあります。props、特にReact特有の標準のchildren propsとして渡されているものも確認できます。</p>
+<p>ここでは単純化した例を用いて説明していますが、フォーマットの要素はこれだけではありません。また、メタフレームワークを使用するとさらに多くの要素が追加されます。例えば、「Flight」を表す「f:」など、ツリーに追加するものを表す識別子などです。しかし、ここで必要な理解を得るためには単純化した例で十分です。</p>
+<p>シリアライズのフォーマットはReactが提供していますが、Payloadを作成し、クライアントに送信する作業はメタフレームワーク（この場合はNext.js）が行う必要があります。</p>
+<p>例えば、Next.jsはコードベースに<code class="language-text">generateDynamicRSCPayload</code>という関数があります。</p>
+<p>メタフレームワークは、Payloadが確実に生成され、クライアントに送信されるようにします。Payloadのおかげで、Reactはクライアント上で正確な仮想DOMを構築し、差分検出処理を行うことができます。</p>
+<h2>メタフレームワークとサーバーレンダリング</h2>
+<p>先ほど、RSCからHTMLのレンダリングを行うことは「可能」だと話しました。そのように言ったのは、それが任意だからです。つまり、RSCからHTMLをレンダリングするかどうかはメタフレームワーク次第です。とは言え、そうすることは理にかなっています。</p>
+<p>後で話すように、「体感パフォーマンス」は重要な指標です。すでにサーバー上でコードを実行していて、HTMLをストリーミングにより返せる場合、そうするべきです。なぜなら、ブラウザがそのHTMLを素早くレンダリングし、ユーザーの体感パフォーマンスが向上するからです。</p>
+<p>メタフレームワークが遅いと感じられれば、誰も使いません。したがって、RSCを実装するReactのメタフレームワークは、古典的サーバーレンダリングとReactサーバーレンダリングの両方を行う必要があります。</p>
+<p>古典的なサーバーレンダリング（HTMLを生成）ではページのレンダリング（ブラウザによる描画）が速く、Reactスタイルのサーバーレンダリング（RSC Payload）では後で行われるステートフルな更新のための仮想DOMが得られます。</p>
+<p>したがって、実際にはRSCは「二重データ問題」を引き起こします。サーバーから同じ情報をHTMLとPayloadという2つの異なる形式で同時に送ることになります。これらはDOM（HTML）と仮想DOM（Payload）を即座に構築するために必要な情報です。</p>
+<p>以下の図をご覧ください。</p>
+<div class="video"><video loop autoplay muted playsinline aria-labelledby="video-label" src="https://tonyalicea.dev/assets/blogvideos/RSC_RSC.mp4"></video></div>
+<p>例では、Next.jsがHTMLを返し、ブラウザはそれをもとにDOMを構築します。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span>understandingreact.com<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
+<p>さらにPayloadも返し、Reactはそれをもとに仮想DOMを構築します。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"main"</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+    <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+    <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>HTMLを送ることで、ブラウザがページを素早くレンダリングすることができます。ユーザーの画面には、ページが直ちに表示されます。また、Payloadを送ることで、Reactがページをインタラクティブにするために必要な作業を完了することができます。</p>
+<p>このデータの重複に伴うコストは、サーバーがレスポンスを送る前に使う圧縮アルゴリズム（gzipなど）によって相殺できるという意見もあります。しかし、HTMLとJSONのようなPayloadは形式が異なるため、繰り返しの部分はあいまいになってしまい、帯域幅には二重データによる明らかな影響が生じます。</p>
+<p>抽象化にはコストが伴います。ここでのコストは同じ情報を2回送る必要があることです。</p>
+<p>これらのことを踏まえると、「レンダリング」の定義は全部で5つになります。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>レンダー【render】
+【動詞】 /réndər/レンダリング</p><ol>
+<li>（古典的クライアントサイド）DOMとCSSOMをもとにレイアウトを計算し、画面にピクセルを描画すること。</li>
+<li>（Reactクライアントサイド）仮想DOMを構築して更新するために関数コンポーネントを実行すること。 </li>
+<li>（古典的サーバーサイド）DOMを構築するためにクライアントに送信するHTMLを生成すること。</li>
+<li>（ReactサーバーサイドSSR）DOMを構築するためにクライアントに送信するHTMLを生成するために関数コンポーネントを実行すること。</li>
+<li>（ReactサーバーサイドRSC）仮想DOMを構築し、更新するためにクライアントに送るFlight（Payload）データを生成するために関数コンポーネントを実行すること。</li>
+</ol></div></div>
+<p>Reactの定義に共通する類似点にお気づきでしょうか。Reactでは、レンダリングは常に「関数コンポーネントの実行」を意味し、Client ComponentsとServer Componentsはいずれも仮想DOMの構築と更新に必要なものを提供します。</p>
+<h2>Streams、Suspense、RSC</h2>
+<p>アプリケーションを構築する際にはパフォーマンスが常に懸念点となります。しかし、パフォーマンスには2種類あります。実際のパフォーマンスと体感パフォーマンスです。</p>
+<p>HTTPとブラウザは、両方のパフォーマンスを改善する方法として、長年ストリーミングをサポートしてきました。NodeJSの<a href="https://nodejs.org/en/learn/modules/how-to-use-streams">Stream API</a>や、ブラウザの<a href="https://developer.mozilla.org/en-US/docs/Web/API/Streams_API">Streams API</a>（特に、ブラウザの<a href="https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream">ReadableStream</a>オブジェクト）などです。</p>
+<p>React（およびRSCをサポートしたいメタフレームワーク）は、これらのコアテクノロジーを利用してHTMLとPayload両方のデータをストリーミングします。ストリーミングとは、「チャンク」と呼ばれる少量のデータに分けて送信することを意味します。クライアントは、その少量のデータを受け取ったものから順に処理することができます。
+したがって、ストリーミングの場合は「何を送ったか」ではなく、「一定時間内に何を送ったか」が問題となります。</p>
+<p>ブラウザは、ネットワークを介したHTMLのストリーミングに対応できるよう設計されています。ストリーミングで送られてくるHTMLを受け取りながらページのレンダリング（配置と描画）を行います。</p>
+<p>同様に、Reactは後に解決してRSC PayloadデータになるPromiseを受け入れます。例えば、Next.jsはクライアント上にReadableStreamを設定し、サーバーからのストリームを読み込み、受け取ったものからReactに渡します。サーバーレンダリングに対するReactの全体的なアプローチとしては、必要な場所にコンテンツをストリーミングで送る方式が中心となっています。</p>
+<p>実際、Flight形式自体に未完了の処理を示すマーカーが含まれています。Promiseや遅延読み込みなどです。</p>
+<p>例えば、サーバーコンポーネントをasync関数として設定し、タイマーを待つとします。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// components/Delayed.js</span>
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">delay</span><span class="token punctuation">(</span><span class="token parameter">ms</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token parameter">resolve</span> <span class="token operator">=></span> <span class="token function">setTimeout</span><span class="token punctuation">(</span>resolve<span class="token punctuation">,</span> ms<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">DelayedMessage</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">await</span> <span class="token function">delay</span><span class="token punctuation">(</span><span class="token number">5000</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 2 second delay</span>
+    
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">This message was loaded after a 5 second delay!</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// page.js</span>
+<span class="token keyword">import</span> DelayedMessage <span class="token keyword">from</span> <span class="token string">"./components/DelayedMessage"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">understandingreact.com</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">DelayedMessage</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>async関数はPromiseを返します。その結果、Payloadは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"main"</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+   <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"d"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+    <span class="token punctuation">}</span>
+   <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">DelayedMessage</code>コンポーネントがあるべき場所が、特別な識別子”L”でマーキングされている点に注目してください。これは、後でコンテンツが挿入される場所を示しているのです。</p>
+<p>このコードを実行すると、遅延メッセージだけでなく、ページ全体が読み込まれるのに5秒かかります。</p>
+<p>これは、Reactがクライアント向けに設計された特別な<code class="language-text">Suspense</code>機能を使用してPromiseや遅延読み込みに対処するためです。コンポーネントを更新して<code class="language-text">Suspense</code>を使うようにすると、以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">import</span> DelayedMessage <span class="token keyword">from</span> <span class="token string">"./components/DelayedMessage"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> Suspense <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">understandingreact.com</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Suspense</span></span> <span class="token attr-name">fallback</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">Loading...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">DelayedMessage</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Suspense</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>この状態でページを実行すると、最初にフォールバックが表示され、遅れているメッセージが5秒後に表示されます。しかし、このコンポーネントがまだサーバー上で実行されていることに注目してください。どうすればサーバー上で<code class="language-text">Suspense</code>を使えるのでしょうか。使えません。関数から返されたPayloadをクライアント上で処理すると、境界を含む仮想DOMが構築されます。</p>
+<p>Payloadは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"main"</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+   <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"d"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">""</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Reference"</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"fallback"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"p"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"Loading..."</span>
+       <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"e"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+      <span class="token punctuation">}</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>フォールバック（props）と、Promiseが解決した後で読み込まれるもの（「遅延ノード（Lazy node）」、この場合は<code class="language-text">DelayedMessage</code>）がいずれも含まれていることに注目してください。</p>
+<p>Payloadは、チャンク化してストリーミングするとともに、Promiseが後で解決される仮想DOMの場所を参照します。そうすることで、Reactと、RSCをサポートするメタフレームワークは、最短時間でUIを表示し、実際のパフォーマンスとユーザーの体感パフォーマンスのいずれも改善しようとしています。</p>
+<p>しかし、ストリーミングされたFlightデータはどこに送られるのでしょうか。Reactコードベース内のどこかであるはずです。</p>
+<h2>ReactにPayloadを渡す</h2>
+<p>RSCをサポートするために、ReactはFlight形式（文字列）を受け取り、<code class="language-text">parseModelString</code>などの関数でReact要素に変換する機能をコードベースに追加しました。</p>
+<p>適切なデータを送信し、これらのReact APIを実行するかどうかはRSCをサポートするメタフレームワーク次第です。</p>
+<p>例えば、Next.jsの場合は、アプリにラッピングコンポーネントを追加し、そこにPayloadデータをストリーミングにより送信します。</p>
+<p>これは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ServerRoot</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">AppRouter</span></span>
+      <span class="token attr-name">actionQueue</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>actionQueue<span class="token punctuation">}</span></span>
+      <span class="token attr-name">globalErrorComponentAndStyles</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>initialRSCPayload<span class="token punctuation">.</span><span class="token constant">G</span><span class="token punctuation">}</span></span>
+      <span class="token attr-name">assetPrefix</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>initialRSCPayload<span class="token punctuation">.</span>p<span class="token punctuation">}</span></span>
+  <span class="token punctuation">/></span></span><span class="token plain-text">
+</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">ServerRoot</span></span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Next.jsは、コンポーネントツリーの<code class="language-text">AppRouter</code>の上に、<code class="language-text">ServerRoot</code>というコンポーネントを追加します。そこから<code class="language-text">AppRouter</code>にRSC Payloadデータをストリーミングします。</p>
+<p>そのデータは、最終的にReactのPromiseベースのAPI（Flight形式を受け取るためのAPI）にストリーミングされます。</p>
+<p>このように、ReactはPayloadをもとに仮想DOMを構築するためのAPIを提供し、Next.js（またはRSCをサポートするメタフレームワーク）には、サーバー上でコンポーネントが実行された後、そのデータをReactに渡す独自の仕組みが備わっています。</p>
+<h2>順不同ストリーミング</h2>
+<p>ストリーミングについて話すべき点は他にもあります。異なるコンポーネントの実行が異なるタイミングで完了する場合があります。チャンク化されたPayloadがストリーミングされてきたとき、Reactは仮想DOM（およびDOM）のどこにデータを置くべきかをどのようにして判断しているのでしょうか。</p>
+<p><code class="language-text">DelayedMessage</code>コンポーネントを使用したDOMを再び見てみると、最初は以下のようになっています。</p>
+<div class="gatsby-highlight" data-language="html"><pre style="counter-reset: linenumber NaN" class="language-html line-numbers"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span>understandingreact.com<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+  <span class="token comment">&lt;!--$?--></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>template</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>B:0<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>template</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>Loading...<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+  <span class="token comment">&lt;!--/$--></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Reactは、特殊なIDが設定された<code class="language-text">template</code>のようなプレースホルダーと、<code class="language-text">Suspense</code>が待っているPromiseが解決した時点でのコンテンツの挿入先を記載したHTMLコメントを残します。</p>
+<p>フォールバックはDOMの中にありますが、Promiseが解決すると新しいJavaScriptがページにストリーミングされてきます。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token function-variable function">$RC</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">b<span class="token punctuation">,</span> c<span class="token punctuation">,</span> e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  c <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  c<span class="token punctuation">.</span>parentNode<span class="token punctuation">.</span><span class="token function">removeChild</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">var</span> a <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      b <span class="token operator">=</span> a<span class="token punctuation">.</span>previousSibling<span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>e<span class="token punctuation">)</span>
+          b<span class="token punctuation">.</span>data <span class="token operator">=</span> <span class="token string">"$!"</span><span class="token punctuation">,</span>
+          a<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"data-dgst"</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">else</span> <span class="token punctuation">{</span>
+          e <span class="token operator">=</span> b<span class="token punctuation">.</span>parentNode<span class="token punctuation">;</span>
+          a <span class="token operator">=</span> b<span class="token punctuation">.</span>nextSibling<span class="token punctuation">;</span>
+          <span class="token keyword">var</span> f <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          <span class="token keyword">do</span> <span class="token punctuation">{</span>
+              <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">&amp;&amp;</span> <span class="token number">8</span> <span class="token operator">===</span> a<span class="token punctuation">.</span>nodeType<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                  <span class="token keyword">var</span> d <span class="token operator">=</span> a<span class="token punctuation">.</span>data<span class="token punctuation">;</span>
+                  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token string">"/$"</span> <span class="token operator">===</span> d<span class="token punctuation">)</span>
+                      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">0</span> <span class="token operator">===</span> f<span class="token punctuation">)</span>
+                          <span class="token keyword">break</span><span class="token punctuation">;</span>
+                      <span class="token keyword">else</span>
+                          f<span class="token operator">--</span><span class="token punctuation">;</span>
+                  <span class="token keyword">else</span>
+                      <span class="token string">"$"</span> <span class="token operator">!==</span> d <span class="token operator">&amp;&amp;</span> <span class="token string">"$?"</span> <span class="token operator">!==</span> d <span class="token operator">&amp;&amp;</span> <span class="token string">"$!"</span> <span class="token operator">!==</span> d <span class="token operator">||</span> f<span class="token operator">++</span>
+              <span class="token punctuation">}</span>
+              d <span class="token operator">=</span> a<span class="token punctuation">.</span>nextSibling<span class="token punctuation">;</span>
+              e<span class="token punctuation">.</span><span class="token function">removeChild</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+              a <span class="token operator">=</span> d
+          <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token punctuation">;</span> c<span class="token punctuation">.</span>firstChild<span class="token punctuation">;</span> <span class="token punctuation">)</span>
+              e<span class="token punctuation">.</span><span class="token function">insertBefore</span><span class="token punctuation">(</span>c<span class="token punctuation">.</span>firstChild<span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          b<span class="token punctuation">.</span>data <span class="token operator">=</span> <span class="token string">"$"</span>
+      <span class="token punctuation">}</span>
+      b<span class="token punctuation">.</span>_reactRetry <span class="token operator">&amp;&amp;</span> b<span class="token punctuation">.</span><span class="token function">_reactRetry</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span class="token punctuation">;</span>
+$<span class="token constant">RC</span><span class="token punctuation">(</span><span class="token string">"B:0"</span><span class="token punctuation">,</span> <span class="token string">"S:0"</span><span class="token punctuation">)</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>このコードは、Promiseの解決後に新たに作成されたDOMのコンテンツを、プレースホルダーが残されていた適切な場所に挿入し、プレースホルダーとフォールバックを削除します。</p>
+<p>このDOM操作コードが実行された後、DOMは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsxx"><pre style="counter-reset: linenumber NaN" class="language-jsxx line-numbers"><code class="language-jsxx">&lt;main&gt;
+  &lt;h1&gt;understandingreact.com&lt;/h1&gt;
+  &lt;!--$--&gt;
+  &lt;p&gt;This message was loaded after a 5 second delay!&lt;/p&gt;
+  &lt;!--/$--&gt;
+&lt;/main&gt;</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これを順不同ストリーミングといいます。これは単に、ストリーミングされてきたコンテンツを、先に完了する他のコンポーネントより前の場所であっても、仮想DOM／DOMツリーの所定の場所に挿入することを意味します。</p>
+<p>そうすることで、特定のコンポーネントの実行に時間がかかったとしても、その完了を待たずにUIを更新し、他のコンポーネントの結果を反映することができます。</p>
+<p>しかし、ここまではServer Components についてしか見ていません。デベロッパーが何年も前から書いてきたコンポーネントについてはどうでしょうか。ブラウザ上で実行される関数であるClient Componentsはどうでしょうか。</p>
+<p>それについて語るうえで欠かせないのが、RSCを支える縁の下の力持ちとも言えるバンドラです。</p>
+<h2>バンドラとインターリービング</h2>
+<p>昔から、Reactの基本的な考え方の一つとしてコンポーネントコンポジションが挙げられていました。DOMの構造を決める作業はさまざまな関数に分けて行い、各コンポーネントを親子関係によって組み合わせることができます。</p>
+<p>RSCがこの基本的な考え方から大きく離れないようにするためには、Server ComponentsとClient Componentsをインターリーブ（混在させる）できなくてはいけません。<strong>Client Componentsは、Server Componentsの子になれる必要</strong>があります。これには、props（関数の引数）を渡せることも含みます。</p>
+<p>実際これが何を意味するかというと、コンポーネント階層の中には、サーバー上で実行される関数と、クライアント上で実行される関数があるということです。しかし最終的には、どの関数も自らが生成するDOMコンテンツの構造と中身を計算します。</p>
+<p>これを実現する役割を担うのがメタフレームワークとバンドラです。しかし、抽象化はコストを伴うことを忘れてはいけません。抽象化を利用するために特別なルールを学ばなくてはいけないことがコストであることも少なくありません。この場合、サーバーとクライアントの隔たりをある程度抽象化し、気にならないようにするには、抽象化の制限を破らないようルールに従う必要があるということです。</p>
+<p>RSCのケースでは、考慮すべきインターリービングのシナリオが3つあります。ルールは、コンポーネントが実行される場所に応じて何を「インポート」できるかに関わるもので、指示やインポートを分析してまとめるバンドラとRSCがどのように連携するかに基づいています。</p>
+<h3>Client Components を Server Components にインポート</h3>
+<p>このインポートは可能です。それが可能であるのは理にかなっています。バンドラはインポートステートメントを見て、どのコードをバンドルに含め、どのコードがクライアントによってダウンロードされるかを判断します。</p>
+<p>RSCも仮想DOMの構築に参加します。Client Componentコードがバンドルに含まれブラウザに渡されるため、ツリーに含まれるClient Componentsを参照することができます。</p>
+<p>Reactコースへの登録ページにステートフルな<code class="language-text">Counter</code>を追加してみましょう。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// components/Counter.js</span>
+<span class="token string">'use client'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Counter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>section</span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+                Enroll
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>section</span><span class="token punctuation">></span></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// page.js</span>
+<span class="token keyword">import</span> Counter <span class="token keyword">from</span> <span class="token string">"./components/Counter"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> DelayedMessage <span class="token keyword">from</span> <span class="token string">"./components/DelayedMessage"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> Suspense <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">understandingreact.com</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Counter</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Suspense</span></span> <span class="token attr-name">fallback</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">Loading...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">DelayedMessage</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Suspense</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ファイル上部に<code class="language-text">use client</code>という指示があります。これはReactの機能ではありません。コンポーネントツリーの一部をクライアント上で実行する場合は、マーキングすることがデベロッパーの間では暗黙の了解になっています。</p>
+<p>そのコンポーネントと、それにインポートされるコンポーネントが、Client Componentsとしてバンドルされます。</p>
+<p>バンドラは<code class="language-text">use client</code>の指示を確認し、そのコンポーネント（およびインポートされるコンポーネント）のコードをブラウザがダウンロードするバンドルに含めます。</p>
+<p><code class="language-text">Home</code> RSCおよび<code class="language-text">DelayedMessage</code> RSCはサーバー上で実行されるため、これらのコードはバンドルに含まれません。サーバーから送られるPayloadは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+  <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"main"</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+  <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+   <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"d"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"e"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">""</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Reference"</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"fallback"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"p"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"Loading..."</span>
+       <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"f"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+      <span class="token punctuation">}</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+   <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Client Componentが挿入される場所に「遅延読み込み（Lazy node）」のリファレンスが新たに追加されていることに注目してください。仮想DOMの当該部分は、そのClient Componentが実行されるときに分かります。つまり、Client Componentがサーバー上でレンダリング（フレームワークが対応している場合）されるか、ブラウザ上で実行されるときです。</p>
+<p>もう一つ述べておきたいのが、Server ComponentからClient Componentにpropsを渡す場合、そのpropsは<a href="https://react.dev/reference/rsc/use-server#serializable-parameters-and-return-values">Reactによってシリアライズする必要</a>があるということです。</p>
+<p>すでに見てきたように、propsはネットワークを介して送信されるPayloadに含まれます。つまり、データは全て文字列として渡し、クライアントのメモリ上でオブジェクトに復元する必要があるということです。</p>
+<h3>Client ComponentsへのServer Componentsのインポート</h3>
+<p>このインポートは認められません。サーバー上で実行されるコンポーネントを、ブラウザ上で実行されるコンポーネントにインポートすることはできません。</p>
+<p>なぜかと言うと、バンドラがクライアントに送信するのはPayloadのみであり、RSC関数は送信するべきではないからです。したがって、インポートするコードはありません。バンドラはクライアントがダウンロードできるようにコードを含めることはないため、使用できるRSCコードはありません。</p>
+<p>サーバーとクライアントの両方で実行可能な共有コンポーネントをインポートすることは可能です。しかし、Client Componentに共有コンポーネントをインポートする場合、そのコードはクライアントがダウンロードできるようバンドルされます。Server Componentに共有コンポーネントをインポートする場合はバンドルされません。</p>
+<p>「間違ってServer Componentをインポートした場合、バンドラはそれが間違いだと分かるのか」と疑問に思うかもしれません。</p>
+<p>これは妥当な疑問です。これはセキュリティ上の問題でもあります。ダウンロードされて他人の目に触れることを想定していないコードがServer Componentに含まれる場合、間違ってClient Componentにインポートし、バンドルされてしまうことがあるかもしれません。サーバー固有の機能（データベースへの接続など）が含まれる場合、ブラウザ上で実行することはできませんが、そのまま本番環境にリリースされてしまうと、データベースのアドレスなどの機密情報が漏洩する可能性があります。</p>
+<p>Next.jsは対策として、<a href="https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns#keeping-server-only-code-out-of-the-client-environment">コンポーネントに「サーバーのみ（server-only）」とマーキングできるようにしています</a>。しかし、これは何かを忘れないように指に紐を結びつけておくようなものです。紐を結ぶのを忘れてしまうこともありえます。</p>
+<p>他のメタフレームワークは、サーバーのコードがバンドルされ、クライアントに送信されないようにするより確実な方法を検討しています。</p>
+<p>しかし、一度サーバーとクライアントの境界を抽象化してしまうと、その境界が存在すること自体忘れてしまう一定のリスクを受け入れることになります。</p>
+<h3>Server Componentsを子としてClient Componentsに渡す</h3>
+<p><strong>これは可能です</strong>。これは興味深い、特殊なケースです。Server Componentsを<code class="language-text">children</code> propsとしてClient Componentに渡すことはできます。これはインポートとは異なります。</p>
+<p><code class="language-text">Counter</code>関数にchildrenを渡した場合、以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token comment">// components/Counter.js</span>
+<span class="token string">'use client'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> useState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Counter</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> children <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>section</span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">{</span>count<span class="token punctuation">}</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+                Enroll
+            </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token punctuation">{</span> children <span class="token punctuation">}</span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>section</span><span class="token punctuation">></span></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// page.js</span>
+<span class="token keyword">import</span> Counter <span class="token keyword">from</span> <span class="token string">"./components/Counter"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> DelayedMessage <span class="token keyword">from</span> <span class="token string">"./components/DelayedMessage"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> Suspense <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">Home</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">understandingreact.com</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Counter</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">Server Text</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Counter</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Suspense</span></span> <span class="token attr-name">fallback</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span><span class="token plain-text">Loading...</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">DelayedMessage</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">Suspense</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p><code class="language-text">Counter</code>関数はクライアント上で実行され、このコンポーネントに渡された子<code class="language-text">（&lt;p>Server Text&lt;/p>）</code>はサーバー上で処理されますが、問題なく機能します。</p>
+<p>なぜ機能するのかと言うと、実行するServer Componentコードではなく、仮想DOMツリーの一部（コードを実行した結果）を渡しているからです。</p>
+<p>Payloadは以下のようになります。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token punctuation">{</span>
+   <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"h1"</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"understandingreact.com"</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"d"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"p"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"Server Text"</span>
+       <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+     <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"e"</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">""</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Reference"</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+     <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token string-property property">"fallback"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"p"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"key"</span><span class="token operator">:</span> <span class="token keyword">null</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"props"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token string">"Loading..."</span>
+       <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token string-property property">"children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+       <span class="token string-property property">"$$type"</span><span class="token operator">:</span> <span class="token string">"reference"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"id"</span><span class="token operator">:</span> <span class="token string">"f"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"identifier"</span><span class="token operator">:</span> <span class="token string">"L"</span><span class="token punctuation">,</span>
+       <span class="token string-property property">"type"</span><span class="token operator">:</span> <span class="token string">"Lazy node"</span>
+      <span class="token punctuation">}</span>
+     <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+   <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span>
+ <span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>Payloadの"Server Text"の部分に注目してください。すでにpropsとしてClient Componentに渡されています。Client Componentで直接PayloadにJSXを書いたのと変わりません。</p>
+<h2>バンドラ：縁の下の力持ち</h2>
+<p>これらは全てある重要な点を示しています。<strong>React Server Componentsは、多くの点においてバンドラ機能だということです</strong>。</p>
+<p>バンドラはコードを分析し、Client　Componentsがバンドルに含まれていることを確認し、Client ComponentsへのリファレンスがPayloadに適切に含まれるようにします。</p>
+<p>バンドラはReactに欠かせない存在です。Reactのコードベースを見ると、以下のようなフォルダがあります。</p>
+<div class="gatsby-highlight" data-language="text"><pre style="counter-reset: linenumber NaN" class="language-text line-numbers"><code class="language-text">/react-server-dom-parcel
+/react-server-dom-turbopack
+/react-server-dom-webpack
+//...and more</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これらのフォルダの中にはFlight関連のコードが含まれており、バンドルされたコードが適切に実行されるようにします。</p>
+<p>バンドラがRSCにおいて脇役的な存在であるということは、他の方法も可能だということです。メタフレームワークは、Next.jsが使用する<code class="language-text">use client</code>のアプローチを受け入れる必要はありません。例えば、<a href="https://tanstack.com/start/">TanStack Start</a>は単に「JSXを返す」（Flight形式）関数としてRSCを実装しています。</p>
+<p>Reactは、FlightデータのストリーミングというAPIを提供しています。メタフレームワークはバージョンアップを行い、そのAPIを工夫して使うことができます。</p>
+<h2>フックとRSC</h2>
+<p>サーバー上で実行することにはメリットもありますが、制約もあります。
+Reactは、各要素の構造を仮想DOMに格納するだけではなく、stateを格納します。コンポーネントに以下のように書くとします。</p>
+<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> <span class="token punctuation">[</span>counter<span class="token punctuation">,</span> setCounter<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>そうすると、仮想DOMにおけるコンポーネントの場所に紐づけられた連結リスト上のノードにデータが置かれます。実際には、そのstateはクライアントのブラウザのメモリ上にあるJavaScriptオブジェクトの中にあります。</p>
+<p>したがって、React Server Componentsは、その性質上これらのフックを利用できません。フックを利用できる環境で実行されていないのです。</p>
+<p>つまり、RSCは「非インタラクティブ」だということです。Reactにおけるインタラクティビティとは、一般的にはクライアント側のReactによる再レンダリングを、stateの更新によってトリガーすることを意味します。</p>
+<p>そのため、アプリのインタラクティブ機能が増えるにつれ、Server　ComponentsをClient ComponentとServer Componentのコンポジションに組み替えるようになります。</p>
+<p><code class="language-text">useReducer</code>や<code class="language-text">useState</code>などが必要な場合は、Client Componentが必要になります。</p>
+<p>コンポーネントがどこで実行されるのかを念頭に置いておくと、フックを適切に使用する（または使用しない）ことができます。</p>
+<h2>ハイドレートするか否か</h2>
+<p>よく誤解される点について少しお話ししたいと思います。RSCはハイドレートするのか、という点についてです。</p>
+<p>答えは否です。ハイドレーションとは、イベントをハンドラにフックできるよう仮想DOMを構築するために、実際の関数をクライアント上で再実行することです。</p>
+<p>Reactでは、ボタンをクリックすると、そのイベントはDOMツリーの最上部にあるReactのルートまで送られ、どのコンポーネントがクリックを処理するかをReactが判断します（答えは、ボタンの作成に関わったコンポーネントです）。</p>
+<p>したがって、Reactがイベントに適切に対応できるよう、仮想DOMと、クリックを処理するコードがなくてはいけません。
+RSCは非インタラクティブです。少なくともReactの通常のアプローチでは、stateの設定も、クリックの処理も行いません。実行するためにコードをクライアントに送ることもないので、当然ながらハイドレートしません。</p>
+<p>しかし、仮想DOMの構築には関わっています。ツリーの差分検出処理にも関わっています。ハイドレートしないからと言って、ハイドレーション時にツリー上に存在しないわけではありません。存在します。</p>
+<h2>再フェッチと差分検出</h2>
+<p>実際のアプリでは、ページの初回ローディングだけでなく、サーバーコンポーネントの再フェッチについても考える必要があるでしょう。</p>
+<p>つまり、サーバーにコンポーネント（場合によっては新しいpropsを含む）を再実行するよう指示し、仮想DOMを更新するために新しいPayloadデータを送ってもらうということです。</p>
+<p>例えば、RSCが生成したデータリストにページ番号を付けていく場合、ルートが<code class="language-text">/page/1</code>か<code class="language-text">/page/2</code>であるかによって、異なるデータセットを取得することが望まれます。</p>
+<p>これはRSCの利点であり、おそらくメタフレームワークのルーターに組み込まれています。UIはサーバー上で計算されますが、メタフレームワークはページ全体を再度読み込む必要がありません。</p>
+<p>RSCはその性質上、仮想DOMの定義をクライアントにストリーミングすることができ、Reactは通常どおりクライアント側で差分検出処理を行うことができます。つまり、ページを再度読み込む必要がなく、ページ上の他のstateも失われません。</p>
+<p>この点において、RSCはサーバーレンダリングとクライアントレンダリングの両方の長所を提供できます。サーバー上で実行しながら、クライアント上で実行された場合と同じように更新することができます
+。
+RSCの仕組みについて説明しましたので、より直感的にご理解いただけるのではないかと思います。Reactはすでに仮想DOMの差分計算によってDOMを更新していますので、仮想DOMのデータをサーバーから取得できれば、Reactは通常の動作を行うことが可能です。</p>
+<h2>バンドルサイズに関する誤解</h2>
+<p>10年以上前から、使用するツールの仕組みを深く理解することの重要性を説いてきました。<a href="https://tonyalicea.dev/courses">筆者のコース</a>では、一貫してこのテーマについて扱ってきました。</p>
+<p>多くの生徒がこのアプローチの重要性を理解してくれていますが、「理論が多すぎる。実践から学べばいい」と不満を漏らす生徒もたまにいます。</p>
+<p>しかし、使用するツールやライブラリ、フレームワークの仕組みを理解することの主な価値の一つが、正確な情報に基づき、アーキテクチャに関する効果的な判断ができることです。</p>
+<p>例えば、Next.jsの世界ではRSCのメリットについて以前から誤解がありました。<code class="language-text">__next_f()</code>関数について、Next.jsコードのリポジトリでは<a href="https://github.com/vercel/next.js/discussions/42170">素晴らしい議論</a>が繰り広げられています。</p>
+<p>RSCを使い始めたデベロッパーは、ページ下部の<code class="language-text">script</code>タグでこの関数に重複データが渡されていることに気づきました。なぜそこにこの関数があるのか疑問に感じ、無効にできないか尋ねるデベロッパーもいました。</p>
+<p>この重複データは何でしょうか。そう、Payloadです。ストリーミングされてきた関数コールは、仮想DOMを作成するため、最終的にそのPayloadデータをReactに渡します。仕組みを理解していなければ、これはかなりショッキングなことでしょう。</p>
+<p>問題は帯域幅の使用量が増えることであり、多くのデベロッパーがその点について不満を述べていました。ネットワークを介して送るデータ量が増えているのです。</p>
+<p>なぜデベロッパー達は驚いたのでしょうか。当初、VercelはNext.jsのドキュメンテーションサイトでRSCについて次のように説明していました。</p>
+<p><img src="https://tonyalicea.dev/assets/blogimages/vercel_orig.jpeg"></p>
+<p><em>バンドルサイズ：Server Componentsでは、以前ならクライアントJavaScriptのバンドルサイズに影響するような大きな依存関係をサーバー上に残すことができます。クライアントはServer ComponentsのJavaScriptをダウンロードして解析し、実行する必要が一切ないため、これはインターネットの通信速度が遅い、あるいはデバイスの処理能力が低いユーザーにとって有益です。</em></p>
+<p>「クライアントはServer ComponentsのJavaScriptをダウンロードして解析し、実行する必要が一切ない」という文言が誤解を招いたようです。これは実際には正しくありません。VercelはServer Componentsの実際のJavaScriptコードについて言っていたのですが、「一切」という言葉を使ってしまいました。</p>
+<p>筆者はこれに関連し、VercelとSNS上で<a href="https://x.com/joshcstory/status/1766547542194409664">興味深い会話</a>をしました。この会話が、後日文言が変更されるきっかけになったのかもしれません（文言を変更したVercelに感謝）。</p>
+<p><img src="https://tonyalicea.dev/assets/blogimages/vercel_updated.jpeg"></p>
+<p><em>パフォーマンス：Server Componentsは、パフォーマンスをベースラインから最適化する手段を提供します。例えば、Client Componentだけで構成されるアプリから始めた場合、UIの非インタラクティブ要素をServer Componentsに移動することで、クライアント側が必要なJavaScriptの量を減らすことができます。ブラウザがダウンロードして解析し、実行するクライアント側JavaScriptの量が減るため、これはインターネットの通信速度が遅い、あるいはデバイスの処理能力が低いユーザーにとって有益です。</em></p>
+<p>新しい説明には、Server Componentsが「クライアント側が必要なJavaScriptの量を減らすことができる」と書いてあります。それは事実です。しかし、Payloadはある意味JavaScript、少なくとも、JavaScriptの関数に渡されるデータなので、JavaScriptの量を増やすこともあります。</p>
+<p>デベロッパーたちが誤解していた重要な点は、<strong>バンドルサイズと帯域幅の使用量は同じではないということです</strong>。</p>
+<p>Server Componentのコードはバンドルに含まれていないので、バンドルサイズは小さくなります。しかし、Payloadのデータは倍増しますので、データが大きいと（この記事のような長編のブログ記事など）節約できるバイト数以上のデータを送信することになります。</p>
+<h2>RSCはいつ使うべきか</h2>
+<p>では、RSCはいつ使うべきなのでしょうか。大抵の場合そうであるように、「状況次第」というのが正しい答えです。RSCの仕組みに関する正確なメンタルモデルが構築できていれば、適切なアーキテクチャを選択できるはずです。</p>
+<p>筆者の場合、このような長編のブログ記事にはRSCを使用しません。帯域幅の使用量が多くなり、理にかなわないからです。コンテンツの多いサイトやアプリには、<a href="https://astro.build/">Astro</a>などを使用します。</p>
+<p>一方、データベースへのアクセスが多く、ロジックが複雑な場合、Server Componentを使ってサーバーに処理させるかもしれません。大容量のJavaScriptライブラリを使用して比較的少量のコンテンツを作成する必要がある場合も同様です。バンドルとPayloadのトレードオフが価値に見合うようなら、RSCは理にかなっていると思います。</p>
+<p>高度にインタラクティブなアプリを開発していて、頻繁にバージョンアップを行って機能を追加しているような場合も、Client Componentsを中心に運用し、クライアントとサーバー両方を使用するようなリファクタリングは極力控えると思います。</p>
+<p>明確な使い方を推奨するには不確定要素があまりにも多すぎます。この記事を通じて試みたように、読者が正確な情報をもとに判断できるよう、理解を深める手助けをするのが筆者にできる精一杯のことです。</p>
+<h2>今後の展望</h2>
+<p>React Server Componentsの未来はどのようなものになるでしょうか。それは必ずしも明らかではありません。ReactはAPIを作り、メタフレームワークがそれを利用しています。</p>
+<p>筆者の考えでは、TanStack Startが採用した、完全なServer Componentsではなく、仮想DOMを返す関数を用いるアプローチが普及すると思います。しかし、用途によってはNext.jsのアプローチも有効だと思います。</p>
+<p>セキュリティとパフォーマンスも徐々に改善して欲しいと思います。例えば、仮想DOMのある枝が全てServer Componentsの場合、差分検出処理やハイドレーションを最適化することでその枝をスキップするようにできると思います。</p>
+<h2>もっと詳しく学びたい方へ</h2>
+<p>この記事がReact Server Componentsの理解を深める一助になれば幸いです。Reactの全てについて、このようにゼロから詳しく学びたい方は、筆者の完全版「<a href="https://understandingreact.com/">Understanding React</a>（Reactを理解する）」コースにぜひご登録ください。</p>
+<p>27個のモジュールと、16.5時間の動画コンテンツを通じてReactのソースコードを詳しく学び、デベロッパーにとって最も有益なツールである正確なメンタルモデルを構築することができます。</p>
+<p>それではまた！</p>]]></content:encoded></item><item><title><![CDATA[Next.jsのPages RouterからApp Routerに移行する]]></title><description><![CDATA[Next.jsプロジェクトをアップグレードする Next.jsの従来のPages Routerから新しいApp Routerに移行しましょう。ここの移行により、アプリケーションのルーティング効率と柔…]]></description><link>https://postd.cc/migrate-from-nextjs-pages-to-app-router/</link><guid isPermaLink="false">https://postd.cc/migrate-from-nextjs-pages-to-app-router/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[Next.js]]></category><pubDate>Thu, 24 Apr 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<h2>Next.jsプロジェクトをアップグレードする</h2>
 <p>Next.jsの従来のPages Routerから新しいApp Routerに移行しましょう。ここの移行により、アプリケーションのルーティング効率と柔軟性が向上します。App Routerは、ファイルシステムベースのルーティング機能が改善されたほか、React Server Componentsが導入されたことなどにより、開発体験を向上させます。</p>
 <h3>依存関係をチェックする</h3>
 <p>package.jsonファイルのバージョンが最新であることが重要です。依存関係をすべてチェックし、新しいApp Routerと互換性があることを確認しましょう。必要であればアップグレードしてください。この準備を行うことで、移行時に互換性の問題が発生するのを避けることができます。</p>
@@ -1865,251 +2455,4 @@ Using combinators in :has()</a>（Manuel Matuzović）</li>
 <span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
 <h2>未来は明るい</h2>
 <p>これらはほんの一部ですが、本番環境で使えるようになるのが待ち遠しいです。（※訳註　2024年8月現在は対応済）
-<a href="https://css-tricks.com/almanac/selectors/h/has/#aa-use-cases">CSS-Tricks Almanacでも多くの実例が紹介されています</a>。皆さんは:has()を使ってどんなことがしたいですか？　あなたが実際に直面したシチュエーションで、:has()が完璧な解決策になりそうなものはこれまでにありましたか？</p>]]></content:encoded></item><item><title><![CDATA[useDeferredValueを使用してUIを素早く最適化する]]></title><description><![CDATA[登場以来、Reactはアプリケーションのパフォーマンスを最適化するためのツールを多数供してきました。中には極めて有益でありながら、あまり知られていないものもあります。はその一つです。このツールは、特…]]></description><link>https://postd.cc/use-deferred-value/</link><guid isPermaLink="false">https://postd.cc/use-deferred-value/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><pubDate>Mon, 22 Jul 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>登場以来、Reactはアプリケーションのパフォーマンスを最適化するためのツールを多数供してきました。中には極めて有益でありながら、あまり知られていないものもあります。<code class="language-text">useDeferredValue</code>はその一つです。このツールは、特定の状況においてユーザーエクスペリエンスを大きく左右することができます。⚡</p>
-<p>筆者は最近このフックを使用し、このブログの厄介なパフォーマンス問題を解決したのですが、そのあまりの効果に衝撃を受けました。低性能デバイスでは反則級の改善が見られ、まるで黒魔術のようでした。</p>
-<p><code class="language-text">useDeferredValue</code>には若干気後れさせるような評判があり、実際かなり洗練されたツールではあるのですが、正しいメンタルモデルで向き合えば恐るるに足りません。このチュートリアルでは、その仕組みと、アプリケーションのパフォーマンスを劇的に改善させる使い方を詳しく説明します。</p>
-<h2>問題</h2>
-<p>数年前、筆者は本物のような影を生成する<a href="https://www.joshwcomeau.com/shadow-palette/">Shadow Palette Generator</a>というツールをリリースしました。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-initial.mp4"></video></p>
-<p>スライダーなどのUIコントロールを動かしてみることで、自分だけの影をデザインすることができます。CSSコードを自分のアプリケーションにコピペすることも可能です。</p>
-<p><strong>問題は次の点です</strong>。このUI上のコントロールは、「即座に」結果が反映されるよう設計されています。例えば、ユーザーが「Oomph」スライダーを動かすと、その効果がすぐに見られます。つまり、スライダーを動かす間、UIが「1秒間に数十回再レンダリングされる」ということです。</p>
-<p>Reactは高速ですし、このUIの大部分は容易にアップデート可能です。問題は、<strong><em>シンタックスハイライトされた下部のコードスニペット</em></strong>です。</p>
-<p><img src="https://www.joshwcomeau.com/_next/image/?url=%2Fimages%2Fuse-deferred-value%2Fcss-snippet.png&#x26;w=640&#x26;q=75"></p>
-<p>シンタックスハイライトの処理は驚くほど複雑です。まず、rawコードを「トークン化」する必要があります。この工程では、コードをいくつかに分けてラベルを付けます。各トークンには異なる色を付けられるため、それぞれ<code class="language-text">&lt;span></code>タグでラップする必要があります。</p>
-<p>このスニペットの中の1行に対して必要なマークアップの量は以下の通りです。</p>
-<p><img src="https://www.joshwcomeau.com/images/use-deferred-value/single-line-of-code.png"></p>
-<p>最適化していない状態だと、Reactはこれだけのマークアップを
-<strong><em>1秒間に何十回も</em></strong>再計算する必要があります。ほとんどのデバイスでは、ブラウザの処理が追いつかず、画面がカクカクします。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-janky.mp4"></video></p>
-<p><code class="language-text">change</code>イベントは1秒間に最大60回発生しますが、UIが1秒間に処理できる更新の数はわずかです。UIの質が低く、反応が悪いと感じるのはそのためです。</p>
-<p><strong>これは興味深い問題です</strong>。このUIで最も重要な部分は、影の外観を示した左側の図です。この部分は、ユーザーが設定変更の影響を把握できるよう、変更が行われたら直ちに更新することが望まれます。また、コントロール自体も反応良くスムーズに動かないといけません。</p>
-<p>一方、コードスニペットは1秒間に何十回も更新する必要はありません。ユーザーにとって重要なのは、自分のアプリケーションにコピーする最終的なコードだけです。変更を加えるたびに再計算を行うと、ユーザーエクスペリエンス全体が損なわれてしまいます。
-言い換えると、このUIには優先度の高い領域（High Priority）と低い領域（Low Priority）があるということです。</p>
-<p><img src="https://www.joshwcomeau.com/images/use-deferred-value/high-vs-low-priority.png"></p>
-<p>優先度の高い領域はリアルタイムに、できるだけ迅速に更新し、優先度の低い領域は後回しにします。</p>
-<h2>不完全なソリューション</h2>
-<p>この問題を解決するために、私は当初「スロットリング」という手法を用いました。具体的に言うと、このコンポーネントに対して200ミリ秒ごとにしか再レンダリングできないように制限をかけたのです。
-その結果がこちらです。</p>
-<p><video controls src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-initial.mp4" title="ttps://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-janky.mp4"></video></p>
-<p>UIの他の部分に比べてコードスニペットの更新頻度が低いことに気づいたでしょうか。UIの他の部分は必要に応じて何度でも再レンダリングできますが、この部分は200ミリ秒に1回、つまり1秒間に5回しか更新されません。</p>
-<p><em>この方法でも問題は改善します</em>が、完全なソリューションと言うには程遠い結果です。</p>
-<p>まだ少し遅く、低品質に感じます。UIの一部を意図的に遅くしていることはユーザーには分からないので。</p>
-<p>もっと重要な点は、超高性能な最新のコンピューターや低価格の古いAndroidスマホなど、人によって使用するデバイスはさまざまだということです。ユーザーのデバイスが十分高速なら、スロットリングは不要であり、意味もなく処理速度を下げているだけです。一方、デバイスが本当に遅ければ、200ミリ秒でさえ十分ではない可能性があり、そうするとUIの重要な部分がスムーズに表示されません。</p>
-<p>こうした問題の解決に有効なのが、useDeferredValueです。</p>
-<h2>useDeferredValueの紹介</h2>
-<p><code class="language-text">useDeferredValue</code>は、UIを優先度の高い領域と低い領域に切り分けられるReactフックです。何か重要なことが起きると、Reactが処理を中断できるようにします。</p>
-<p><strong>仕組みを理解するために、簡単な例から見ていきましょう</strong>。次のコードをご覧ください。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ImportantStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>count<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SlowStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>count<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-        Increment
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>ここでのstateは<code class="language-text">count</code>です。これは、ボタンをクリックするごとに増えていく数字です。<code class="language-text">ImportantStuff</code>はUIの中で優先度の高い部分を表します。つまり、<code class="language-text">count</code>が増えるたびに直ちに更新したい部分です。<code class="language-text">SlowStuff</code>は、UIの中で重要性が低い部分を表します。</p>
-<p>ユーザーがボタンをクリックして<code class="language-text">count</code>が増えるたびに、ReactはUIを更新する前にこれらの子コンポーネントを両方とも再レンダリングする必要があります。</p>
-<p><strong>詳しく分析してみましょう</strong>。下のボタンをクリックして、実際にレンダリングが行われる様子をご覧ください。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="/static.mov"></video>
-（訳注：<a href="https://www.joshwcomeau.com/react/use-deferred-value/">イメージはキャプチャーです。インタラクティブサンプルは翻訳元サイトで確認できます</a>）</p>
-<p>このデモのUIは、録画されたインタラクションの動画です。<strong>タイムラインのスライダーを動かすと、その時点のUIの状態を確認することができます</strong>。ボタンをクリックするとレンダリングが始まりますが、レンダリングが完了するまでUIが更新されない点に注目してください。</p>
-<p><code class="language-text">ImportantStuff</code>と<code class="language-text">SlowStuff</code>の両方のレンダリングが、Reactが行う必要のある処理の全体です。<strong>次のスナップショットをクリックまたはタップして、中をのぞいてみてください</strong>。</p>
-<p><a href="https://www.joshwcomeau.com/react/use-deferred-value/"><img src="/static.png"></a>
-（訳注：<a href="https://www.joshwcomeau.com/react/use-deferred-value/">イメージはキャプチャーです。インタラクティブサンプルは翻訳元サイトで確認できます</a>）</p>
-<p>この仮想的な例では、<code class="language-text">ImportantStuff</code>は極めて高速でレンダリングされ、ほとんどの時間は<code class="language-text">SlowStuff</code>のレンダリングに費やされます。</p>
-<p>ユーザーがボタンをクリックする間隔が短すぎると、Reactが処理を完了する前に次の更新が行われるため、レンダリングが積み重なってしまいます。そうすると、UIが低品質に感じられます。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="/static.mov"></video>
-（訳注：<a href="https://www.joshwcomeau.com/react/use-deferred-value/">イメージはキャプチャーです。インタラクティブサンプルは翻訳元サイトで確認できます</a>）</p>
-<p>最初のレンダリング（<code class="language-text">count: 1</code>）が完了する前にユーザーが再度ボタンをクリックし、<code class="language-text">count</code>が<code class="language-text">2</code>になります。Reactは最初のレンダリングを放棄し、正しい<code class="language-text">count</code>値で新しいレンダリングを開始します。UIは、レンダリングが正常に完了して初めて更新されます。</p>
-<p>これらを踏まえた上で、<code class="language-text">useDeferredValue</code>を使ってどのように問題を解決できるのか見てみましょう。</p>
-<p>以下がコードです。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> deferredCount <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ImportantStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>count<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SlowStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>deferredCount<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-        Increment
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>最初のレンダリングでは、<code class="language-text">count</code>と<code class="language-text">deferredCount</code>の値はどちらも(<code class="language-text">0</code>)です。しかし、ユーザーが「Increment」ボタンをクリックすると興味深い現象が起こります。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="/static.mov"></video>
-（訳注：<a href="https://www.joshwcomeau.com/react/use-deferred-value/">イメージはキャプチャーです。インタラクティブサンプルは翻訳元サイトで確認できます</a>）</p>
-<p>今度は、レンダリングごとに<code class="language-text">count</code>の値と、<SlowStuff>に渡される遅延させた値（deferred value）が表示されます。ラベルを表示するスペースがない場合、<code class="language-text">count</code>と<code class="language-text">deferredCount</code>の値のみ、線で区切られて表示されます。</p>
-<div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><strong>試してみよう</strong> <br>
-何が起きているのかは後ほど詳しく説明します。まずは自分で少し触ってみてください。Reactがどのような処理を行っていて、それがなぜ有益なのか分かりますか？</p><p><strong>タイムラインは友達です</strong>。黄色いスライダーをクリックするか押さえてドラッグすることで、動画を前後に進めることができます。もしくは、タイムラインを選択し、左右の矢印キーで1フレームずつ動かすこともできます。</p></div></div>
-<p>では詳しく見てみましょう。<code class="language-text">count</code> stateが変わると、<code class="language-text">App</code>コンポーネントは直ちに再レンダリングを行います。<code class="language-text">count</code>は<code class="language-text">1</code>になりますが、興味深いことに、<code class="language-text">deferredCount</code>は変わっておらず、<code class="language-text">0</code>のままです。</p>
-<p>これはつまり、<code class="language-text">SlowStuff</code>に渡されたpropsが前回のレンダリング時と全く同じだということです。<code class="language-text">React.memo()</code>によってメモ化されている場合、Reactは何を生成するかすでに分かっているため、わざわざ再レンダリングすることなく、最初のレンダリング時のデータを再利用します。</p>
-<p>そのレンダリングが完了すると、すぐに2回目の再レンダリングが始まりますが、今度は<code class="language-text">deferredCount</code>が更新されており、<code class="language-text">count</code>の値と同じ1になっています。これは、今回は<code class="language-text">SlowStuff</code>の再レンダリングが行われることを意味します。ここまでの処理が完了すると、UIが完全に更新されます。</p>
-<p><strong>そこまでする必要はあるのでしょうか？</strong>ここまで読んで、不必要に複雑だと感じている読者もいるかもしれません。結果は前と同じなのに、処理が増えているのではないかと。</p>
-<p><strong>この仕組みが非常に優れている理由を説明しましょう</strong>。再度stateが変わり、Reactの処理が中断された場合、重要な情報はすでに更新されています。Reactは、重要性の低い2回目のレンダリングを放棄し、より重要な部分のレンダリングを直ちに開始することができます。</p>
-<p>言葉で説明するのは難しいですが、次の録画を見ていただくと違いが分かるのではないでしょうか。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="/static.mov"></video>
-（訳注：<a href="https://www.joshwcomeau.com/react/use-deferred-value/">イメージはキャプチャーです。インタラクティブサンプルは翻訳元サイトで確認できます</a>）</p>
-<p>前に見た動画と同じように、ユーザーがクリックする間隔が短すぎて、Reactは全ての情報を更新することができていません。しかし、再レンダリングごとに優先度の高い部分と低い部分が分かれているため、Reactはクリック間に重要な部分を更新することができているのです。追加でクリックが行われると、Reactは進行中のレンダリングを放棄しますが、優先度が低い情報のため問題ありません。</p>
-<p>これはなかなか難しい問題です。少し難しすぎると感じているようでしたら、次のセクションで基本的な仕組みを説明しているので、こちらを読んでいただくといいでしょう。</p>
-<h2>落とし穴：メモ化が必要</h2>
-<p>一つ重要な点を述べます。<code class="language-text">useDeferredValue</code>は、優先度の低い、レンダリングの遅いコンポーネントが<code class="language-text">React.memo()</code>でラップされている場合のみ機能します。</p>
-<div class="gatsby-highlight" data-language="js"><pre style="counter-reset: linenumber NaN" class="language-js line-numbers"><code class="language-js"><span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
-<span class="token keyword">function</span> <span class="token function">SlowComponent</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> count <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token comment">// Component stuff here</span>
-<span class="token punctuation">}</span>
-<span class="token keyword">export</span> <span class="token keyword">default</span> React<span class="token punctuation">.</span><span class="token function">memo</span><span class="token punctuation">(</span>SlowComponent<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">React.memo()</code>はReactに対し、propsまたはstateが変わった場合のみこのコンポーネントを再レンダリングするよう指示します。<code class="language-text">React.memo()</code>がなければ、countのpropsが変わったかどうかにかかわらず、<code class="language-text">SlowComponent</code>は親コンポーネントが再レンダリングされるたびに再レンダリングされます。</p>
-<p><strong>これは本当に重要なことなので、きちんと理解する必要があります。もう少し深掘りしてみましょう</strong>。繰り返しになりますが、以下がコードです。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> deferredCount <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ImportantStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>count<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SlowStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>deferredCount<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-        Increment
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>ユーザーが初めてボタンをクリックすると、<code class="language-text">count</code> stateが<code class="language-text">0</code>から<code class="language-text">1</code>に増えます。Appコンポーネントは再レンダリングしますが、<code class="language-text">useDeferredValue</code>フックは前回の値を再利用します。<code class="language-text">deferredCount</code>は<code class="language-text">1</code>ではなく<code class="language-text">0</code>に設定されます。</p>
-<p>デフォルトでは、Reactはpropsが変わったかどうかにかかわらず、全ての子コンポーネントを再レンダリングします。<code class="language-text">React.memo()</code>が設定されていなければ、<code class="language-text">ImportantStuff</code>も<code class="language-text">SlowStuff</code>も再レンダリングされるため、<code class="language-text">useDeferredValue</code>を使用するメリットが得られません。</p>
-<p><code class="language-text">SlowStuff</code>を<code class="language-text">React.memo()</code>でラップすると、Reactは現在のpropsを前回のものと比較し、再レンダリングが必要かどうかを判断します。<code class="language-text">deferredCount</code>が<code class="language-text">0</code>のままなので、Reactは「新しい情報はないようだ。UIのこの部分を再計算する必要はない」と判断します。</p>
-<p><strong>これは筆者にとって目からうろこでした</strong>。<code class="language-text">useDeferredValue</code>は、UIの中で優先度が低い部分のレンダリングを（退屈な宿題を先延ばしにするように）後回しにすることを可能にします。最終的にはレンダリングが行われ、UIは全て更新されますが、一旦保留にするということです。stateが変わるたびに、Reactはレンダリングを中断し、より重要な情報のレンダリングに注力するのです。</p>
-<div class="admonition admonition-info alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>info</h5></div><div class="admonition-content"><p><strong>Reactのレンダリングについて考える上でのメンタルモデル</strong> <br>
-Reactのレンダリングの仕組みについて、かなり熟知している前提で話していることは分かっています。頭がクラクラしている読者には、筆者による次のブログ記事が大いに役立つと思います。</p><ul>
-<li>“<a href="https://www.joshwcomeau.com/react/why-react-re-renders/">Why React Re-Renders</a>”（「Reactはなぜ再レンダリングするのか」）</li>
-</ul></div></div>
-<p>実に多くのReact開発者がReactのレンダリングの仕組みを誤解しているので、この記事を読んで誤解を解き、<code class="language-text">useDeferredValue</code>を理解する上で必要な知識を得ていただければと思います。</p>
-<h2>落とし穴：複数のstate変数を扱う</h2>
-<p>ここまでは、countのような単一のプリミティブ値を扱う場合における<code class="language-text">useDeferredValue</code>の仕組みについて見てきましたが、現実の世界では物事がそこまで単純なことはほとんどありません。</p>
-<p>筆者が開発した「Shadow Palette Generator」では、関連するstateがいくつかあります。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">ShadowPaletteGenerator</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>oomph<span class="token punctuation">,</span> setOomph<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>crispy<span class="token punctuation">,</span> setCrispy<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>backgroundColor<span class="token punctuation">,</span> setBackgroundColor<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token string">'#F00'</span><span class="token punctuation">)</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>tint<span class="token punctuation">,</span> setTint<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>resolution<span class="token punctuation">,</span> setResolution<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0.75</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>lightPosition<span class="token punctuation">,</span> setLightPosition<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
-    <span class="token literal-property property">x</span><span class="token operator">:</span> <span class="token operator">-</span><span class="token number">0.2</span><span class="token punctuation">,</span>
-    <span class="token literal-property property">y</span><span class="token operator">:</span> <span class="token operator">-</span><span class="token number">0.5</span><span class="token punctuation">,</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> cssCode <span class="token operator">=</span> <span class="token function">generateShadows</span><span class="token punctuation">(</span>oomph<span class="token punctuation">,</span> crispy<span class="token punctuation">,</span> backgroundColor<span class="token punctuation">,</span> tint<span class="token punctuation">,</span> resolution<span class="token punctuation">,</span> lightPosition<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token punctuation">{</span><span class="token comment">/* Other stuff omitted for brevity */</span><span class="token punctuation">}</span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">CodeSnippet</span></span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>css<span class="token punctuation">"</span></span> <span class="token attr-name">code</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>cssCode<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>最初は、それぞれのstateについて遅延させた値を作成しなくてはならないと考えていました。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> deferredOomph <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>oomph<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredCrispy <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>crispy<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredBg <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>backgroundColor<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredTint <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>tint<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredResolution <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>resolution<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredLight <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>lightPosition<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>そうすることもできますが、もっと簡単な方法があります。レンダリング時に生成されるCSSコードである計算値を遅延させるのです。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> cssCode <span class="token operator">=</span> <span class="token function">generateShadows</span><span class="token punctuation">(</span>oomph<span class="token punctuation">,</span> crispy<span class="token punctuation">,</span> backgroundColor<span class="token punctuation">,</span> tint<span class="token punctuation">,</span> resolution<span class="token punctuation">,</span> lightPosition<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredCssCode <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>cssCode<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">return</span> <span class="token punctuation">(</span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token punctuation">{</span><span class="token comment">/* Other stuff omitted for brevity */</span><span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">CodeSnippet</span></span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>css<span class="token punctuation">"</span></span> <span class="token attr-name">code</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>deferredCssCode<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>このフックは<code class="language-text">useDeferredState</code>ではなく、<code class="language-text">useDeferredValue</code>というものです。useDeferredValue() に渡す引数がstate変数でなくてはならないというルールはないのです！</p>
-<p>基本的な仕組みを理解するのが非常に重要である理由はここにあります。重要なのは、優先度の高い部分のレンダリングを行っている際に、優先度の低いコンポーネント（この場合は<code class="language-text">CodeSnippet</code>）のpropsに新しい値が渡されないようにすることです。</p>
-<h2>ローデ​​ィングアイコンの表示</h2>
-<p>再計算が進行中であり、UIの一部の情報が古いことをユーザーに知らせたい場合があるかもしれません。</p>
-<p>例えば、次のような表示を使用することもできます。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/deferred-loading.mp4"></video></p>
-<p><code class="language-text">&lt;SlowStuff></code>の更新が反映されるまでの間、その部分の画面を半透明にし、スピナーを表示します。そうすることで、ユーザーはUIの再計算が進行中であると分かります。</p>
-<p><strong>では、どうすればUIの一部がまだ更新されていないと分かるのでしょうか？</strong>実は、それを判別するためのツールがすでにあるのです。</p>
-<p>以下がコードです。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> deferredCount <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> isBusyRecalculating <span class="token operator">=</span> count <span class="token operator">!==</span> deferredCount<span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">ImportantStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>count<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SlowWrapper</span></span>
-        <span class="token attr-name">style</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">{</span> <span class="token literal-property property">opacity</span><span class="token operator">:</span> isBusyRecalculating <span class="token operator">?</span> <span class="token number">0.5</span> <span class="token operator">:</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">}</span></span>
-      <span class="token punctuation">></span></span><span class="token plain-text">
-        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">SlowStuff</span></span> <span class="token attr-name">count</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>deferredCount<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token plain-text">
-        </span><span class="token punctuation">{</span>isBusyRecalculating <span class="token operator">&amp;&amp;</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">Spinner</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">}</span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span><span class="token class-name">SlowWrapper</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">onClick</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setCount</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-        Increment
-      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-  <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>UIの情報が古いかどうかは、<code class="language-text">count</code>と<code class="language-text">deferredCount</code>を比較することで分かります。
-筆者が最初にこれを見たときは、あまりに単純すぎて疑わしいと思いました。しかし、よく考えてみると理にかなっていたのです。</p>
-<ul>
-<li>優先度の高い最初のレンダリングで、<code class="language-text">deferredCount</code>は前回の値を再利用します。<code class="language-text">count</code>は<code class="language-text">1</code>に更新されますが、<code class="language-text">deferredCount</code>は<code class="language-text">0</code>のままです。両者の値は異なります。</li>
-<li>次に行われる優先度の低いレンダリングでは、<code class="language-text">deferredCount</code>が最新の値である<code class="language-text">1</code>に更新されます。<code class="language-text">count</code>と<code class="language-text">deferredCount</code>の両方が同じ値になります。</li>
-</ul>
-<p>最初のレンダリング時に<code class="language-text">&lt;SlowStuff></code>のレンダリングを後回しにすることを可能にするのと同じ仕組みにより、UIがまだ完全に同期されていないことを見分けられるのです。実に秀逸ではないでしょうか。</p>
-<p>実際にこれを行いたいかどうかは別問題です。筆者のShadow Palette Generatorで試してみました。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-loading.mp4"></video></p>
-<p>個人的には、この場合は改善しているとは言えないと思います。ユーザーには影の図に注目してもらいたいのに、コードスニペットの方に目が行ってしまいます。
-しかし、場合によってはUIの一部の情報が古いことをユーザーに知らせる方法として役立つかもしれません。</p>
-<h2>最初のレンダリングを高速化する</h2>
-<p>数週間前にReact 19がベータ版に移行しました。間もなく公開されるこのメジャーアップデートでは、さまざまな変更が行われており、<code class="language-text">useDeferredValue</code>も大幅にパワーアップされる予定です。
-React 19以前では、<code class="language-text">useDeferredValue</code>は与えられた値で初期化されていました。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">[</span>count<span class="token punctuation">,</span> setCount<span class="token punctuation">]</span> <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useState</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">const</span> deferredCount <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token comment">// On the initial render:</span>
-  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>deferredCount<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 0</span>
-  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>count <span class="token operator">===</span> deferredCount<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// true</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>Reactには使用可能な前回値がないため、ここで説明したような二重レンダリングは行いません。したがって、実質的に<code class="language-text">useDeferredValue</code>は最初のレンダリングに対しては効果がないのです。
-しかし、React 19からは初期値を指定できるようになります。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> deferredCount <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>count<span class="token punctuation">,</span> initialValue<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p><strong>なぜそうする必要があるのでしょうか？</strong>このパターンでは、最初のレンダリングを高速化できる可能性があります。</p>
-<p>例えば、Shadow Palette Generatorを使用して次のようなことができます。</p>
-<div class="gatsby-highlight" data-language="jsx"><pre style="counter-reset: linenumber NaN" class="language-jsx line-numbers"><code class="language-jsx"><span class="token keyword">const</span> cssCode <span class="token operator">=</span> <span class="token function">generateShadows</span><span class="token punctuation">(</span>oomph<span class="token punctuation">,</span> crispy<span class="token punctuation">,</span> backgroundColor<span class="token punctuation">,</span> tint<span class="token punctuation">,</span> resolution<span class="token punctuation">,</span> lightPosition<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> deferredCssCode <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">useDeferredValue</span><span class="token punctuation">(</span>
-  cssCode<span class="token punctuation">,</span>
-  <span class="token keyword">null</span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">return</span> <span class="token punctuation">(</span>
-  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-    </span><span class="token punctuation">{</span><span class="token comment">/* Other stuff omitted for brevity */</span><span class="token punctuation">}</span><span class="token plain-text">
-    </span><span class="token punctuation">{</span>deferredCssCode <span class="token operator">!==</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>
-      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span><span class="token class-name">CodeSnippet</span></span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>css<span class="token punctuation">"</span></span> <span class="token attr-name">code</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>deferredCssCode<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span>
-    <span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
-  </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span></span><span class="token punctuation">></span></span>
-<span class="token punctuation">)</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>優先度の高い高速レンダリングでは、<code class="language-text">deferredCssCode</code>は<code class="language-text">null</code>となるため、<code class="language-text">&lt;CodeSnippet></code>はレンダリングすらされません。しかし、高速レンダリングが終わると、すぐにこのコンポーネントの再レンダリングが自動的に行われ、枠にコードが表示されます。</p>
-<p>重要度の低いUI要素を待つ必要がないため、アプリケーション全体としてはレスポンスが向上するはずです。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p><strong>Reactのドキュメント</strong> <br>
-このチュートリアルでは、useDeferredValueの主なユースケースの一つについて説明しましたが、Suspenseに対応したデータ取得ライブラリを使用する場合など、他にも役立つ場面があるでしょう。詳しくは<a href="https://react.dev/reference/react/useDeferredValue">Reactの公式ドキュメント</a>をご覧ください。</p></div></div>
-<h2>劇的な変化</h2>
-<p>それでは、<code class="language-text">useDeferredValue</code>フックを使用した場合の結果を見てみましょう。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-smooth.mp4"></video></p>
-<p>最高です！何もかも非常に滑らかです。💯</p>
-<p>でもちょっと待ってください。筆者がテストに使用しているのは高性能なMacBook Proです。より性能の低いデバイスではどうでしょうか？</p>
-<p>数年前、近所のPCショップで一番安い新品のWindowsノートパソコンを買いたいと言ったところ、インテルCeleronプロセッサーを搭載した110米ドルのAcer製ノートパソコンを引っ張り出してきてくれました。このマシンを使用し、<code class="language-text">useDeferredValue</code>を実装した状態で動かすとこうなります。</p>
-<p><video autoplay="" loop="" muted="" playsinline="" src="https://www.joshwcomeau.com/videos/use-deferred-value/shadow-palette-celeron.mp4"></video></p>
-<p>さっきほど滑らかではありませんが、スタートメニューを開くのさえ時間がかかるマシンにしては悪くありません。コントロールの操作を終えるまでコードスニペットが更新されない点に注目してください。ここでは<code class="language-text">useDeferredValue</code>が大いに役立っています。</p>
-<hr>
-<p>Reactの多くの点について言えることですが、適切なメンタルモデルで臨まなければ<code class="language-text">useDeferredValue</code>は非常に複雑に感じられます。Reactは非常に洗練されたツールへと進化を遂げてきましたが、効果的に使いこなすためには、その仕組みを直感的に理解できるようになる必要があります。</p>
-<p>筆者は2年近くかけてReactについて学べる究極のリソースを作り上げました。その名も<a href="https://www.joyofreact.com/">The Joy of React</a>です。仕事で10年近くReactを使ってきた経験から得た知識を全て網羅しています。</p>
-<p>もしこのブログ記事が役に立ったと感じていただけたなら、筆者のコースから得られるものは多いと思います。このコースは、多くの気づきが得られ、Reactの仕組みに関する強力なメンタルモデルを形成でき、Reactを使用して豊かでダイナミックなWebアプリケーションを構築する方法を学べる内容となっています。</p>
-<p><a href="https://www.joyofreact.com/"><img src="https://www.joshwcomeau.com/_next/image/?url=%2Fimages%2Fjoy-of-react.png&#x26;w=1920&#x26;q=75" alt="(https://www.joyofreact.com/)"></a></p>
-<p>コースに関する詳細は以下をご覧ください。</p>
-<ul>
-<li><a href="https://joyofreact.com/">The Joy of React</a></li>
-</ul>
-<p>最後まで読んでいただきありがとうございました！ 💖</p>]]></content:encoded></item></channel></rss>
+<a href="https://css-tricks.com/almanac/selectors/h/has/#aa-use-cases">CSS-Tricks Almanacでも多くの実例が紹介されています</a>。皆さんは:has()を使ってどんなことがしたいですか？　あなたが実際に直面したシチュエーションで、:has()が完璧な解決策になりそうなものはこれまでにありましたか？</p>]]></content:encoded></item></channel></rss>
