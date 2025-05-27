@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 14 May 2025 08:31:37 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 27 May 2025 20:04:30 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,47 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Address Sanitizer Updates for Visual Studio 2022 17.14</title>
+		<link>https://devblogs.microsoft.com/cppblog/address-sanitizer-updates-for-visual-studio-2022-17-14/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/address-sanitizer-updates-for-visual-studio-2022-17-14/#respond</comments>
+		
+		<dc:creator><![CDATA[David Justo]]></dc:creator>
+		<pubDate>Tue, 27 May 2025 20:04:30 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35494</guid>
+
+					<description><![CDATA[<p>Introduction It has been an exciting few months for the Address Sanitizer (ASan) since our last update. In addition to our continuous focus on quality and correctness, our internal “dogfooding” (i.e. internal adoption) effort has reached several important milestones. In this update, I want to go over some of the quality improvements since Visual Studio [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-updates-for-visual-studio-2022-17-14/">Address Sanitizer Updates for Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2>Introduction</h2>
+<p>It has been an exciting few months for the <a href="https://learn.microsoft.com/cpp/sanitizers/asan?view=msvc-170">Address Sanitizer</a> (ASan) since our last update. In addition to our continuous focus on quality and correctness, our internal “dogfooding” (i.e. internal adoption) effort has reached several important milestones.</p>
+<p>In this update, I want to go over some of the quality improvements since <a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-updates-in-visual-studio-2022-version-17-13/">Visual Studio 2022 version 17.13</a><a href="https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-updates-in-visual-studio-2022-version-17-13/">,</a> and to give a peek into how ASan is now protecting our C++ toolset against memory safety errors during development.</p>
+<h2>Some improvements in Visual Studio 2022 version 17.14</h2>
+<ul>
+<li>We increased the number of ASan flags that can be set through <code>__asan_default_options</code>, the alternative to the environment variable <code>ASAN_OPTIONS</code>. This was an adoption blocker for apps that, for security reasons, can’t access the environment during execution.</li>
+<li>For <a href="https://developer.microsoft.com/games/articles/2021/07/address-sanitizer-now-available-for-xbox-developers/">Xbox developers</a>, we now have automated testing ensuring that ASan’s dependencies are compatible with the Xbox OS. This is important since we now integrate changes from upstream LLVM on a weekly basis, meaning that we need to actively guard against Xbox-incompatible changes.</li>
+<li>We fixed a <a href="https://developercommunity.visualstudio.com/t/Access-violation-call-stack-not-fully-di/10827640">regression</a> that corrupted the callstack displayed during error reporting in x64.</li>
+<li>Improved stability by removing the lazy loading of <code>DbgHelp</code> symbolization helpers, minimizing loader lock contention.</li>
+<li><a href="https://github.com/microsoft/STL/pull/5241">In the STL</a>, we now allow ASan container annotations to be disabled on a per-allocator basis. This allows users to control container poisoning, which is useful when custom allocators (e.g. arenas) are in use.</li>
+</ul>
+<p>This release also contains several other improvements, many of which were contributed by the ASan open-source community in the <a href="https://github.com/llvm/llvm-project">LLVM repo</a>. By contributing to LLVM upstream, you are also contributing to MSVC’s ASan. We thank the entire LLVM ASan community for their efforts, and plan to continue contributing our improvements upstream as well.</p>
+<h2>Protecting the C++ toolchain</h2>
+<p>To protect the toolchain against memory safety errors, all PRs made against the MSVC toolset and libraries now need to pass ASan instrumentation tests. These are tests where the compiler itself is instrumented with ASan to catch memory safety violations while executing our compiler test suite.</p>
+<p>To be clear, this is different from compiling test programs with ASan, i.e. having the compiler run <code>/fsanitize=address</code> on some <code>.cpp</code> file. Instead, the compiler itself is built with <code>/fsanitize=address</code> before executing its test matrix so that ASan may monitor allocations during compilation.</p>
+<p>Through this process, we have learned a lot about how to adopt ASan in a large and historied codebase like MSVC and it’s helped us drive several improvements in both the toolset as well as in ASan itself, so we’re excited about the quality improvement cycle that dogfooding ASan within MSVC unlocks for us.</p>
+<h2>Let’s harden our C++ code together!</h2>
+<p>The ASan team is proud to help you secure your C++ applications, and we would love to hear from you. If you’re not using it already, download Visual Studio and give the Address Sanitizer a try. We can be reached out through the comments below and through our official support channels: <a href="https://developercommunity.visualstudio.com/cpp">Developer Community</a> or through Visual Studio by clicking <a href="https://learn.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022">Help &gt; Send Feedback &gt; Report A Problem / Provide a suggestion in the product.</a></p>
+<p>Until next time!</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/address-sanitizer-updates-for-visual-studio-2022-17-14/">Address Sanitizer Updates for Visual Studio 2022 17.14</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/address-sanitizer-updates-for-visual-studio-2022-17-14/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New for C++ Developers in Visual Studio 2022 17.14</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/#comments</comments>
@@ -1604,286 +1645,6 @@ code generated with convoluted pointer casting</a></li>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-full-schedule/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>What’s New in vcpkg (March 2025)</title>
-		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/#comments</comments>
-		
-		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
-		<pubDate>Tue, 08 Apr 2025 18:05:06 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Vcpkg]]></category>
-		<category><![CDATA[vcpkg]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35369</guid>
-
-					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2025.03.19 registry release, 2025-03-13 tool release, as well as changes to vcpkg documentation throughout March. This release includes two new commands for our continuous integration system PR reviews, minor bugfixes, a new documentation article on authenticating to NuGet feeds, and a [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/">What’s New in vcpkg (March 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2025.03.19">2025.03.19</a> registry release, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-03-13">2025-03-13</a> tool release, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout March. This release includes two new commands for our continuous integration system PR reviews, minor bugfixes, a new documentation article on authenticating to NuGet feeds, and a few other minor documentation fixes.</p>
-<p>Some stats for this period:</p>
-<ul>
-<li>There are now <strong>2,564 total ports </strong>available in the vcpkg curated registry. A <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
-<li><strong>40 new ports</strong> were added to the curated registry.</li>
-<li><strong>408 ports were updated</strong>. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 15 main <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/triplets">triplets</a>.</li>
-<li><strong>82 </strong>community contributors made commits.</li>
-<li>The main vcpkg repo has over <strong>6,800 forks</strong> and <strong>24,400 stars</strong> on GitHub.</li>
-</ul>
-<h2>vcpkg changelog (2025.03.19 release)</h2>
-<p>The following notable changes were made in March:</p>
-<ul>
-<li>Added two new commands: <code>x-test-features</code> and <code>format-feature-baseline</code> (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/802">Microsoft/vcpkg-tool#802</a>, thanks @autoantwort!).
-<ul>
-<li><code>x-test-features</code> is an experimental command that runs a series of tests on port features to verify that they work as expected. This will be used as part of our routine continuous integration runs. The commands accept a list of port names or <code>--all</code> to specify which ports are affected. Features which are unsupported or marked as cascade for the target triplet are skipped. The following tests are performed:
-<ul>
-<li>The core feature gets installed with default features disabled (or <code>--no-core</code>).</li>
-<li>Every feature gets installed with default features disabled (or <code>--no-separated</code>).</li>
-<li>All features combined get installed (or <code>--no-combined</code>).</li>
-</ul>
-</li>
-<li><code>vcpkg format-feature-baseline scripts/ci.feature.baseline.txt</code> formats the feature baseline to enforce that all entries in a “block” are sorted alphabetically.</li>
-</ul>
-</li>
-<li>Improve resiliency of concurrent use of the <em>downloads</em> directory (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1600">Microsoft/vcpkg-tool#1600</a>).</li>
-<li>Fixed a bug that impacted debugging with LLDB on MacOS / Apple Silicon (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1602">Microsoft/vcpkg-tool#1602</a>, thanks @ekilmer!).</li>
-<li>Other minor bug fixes.</li>
-</ul>
-<h2>Documentation changes</h2>
-<ul>
-<li>Added new article: <a href="https://learn.microsoft.com/vcpkg/consume/third-party-authentication.nuget">Authenticate to NuGet package feeds</a>. Explains how to use vcpkg features in cases where you need to authenticate to NuGet package feeds, such as for binary caching or asset caching (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/461">Microsoft/vcpkg-docs#461</a>).</li>
-<li>Reworked <a href="https://learn.microsoft.com/vcpkg/concepts/asset-caching">Asset caching concepts</a> article and added an example configuration (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/459">Microsoft/vcpkg-docs#459</a>).</li>
-<li>Fixed a bug in an example and minor wording improvements to <a href="https://learn.microsoft.com/vcpkg/consume/asset-caching">asset caching tutorial</a> and <a href="https://learn.microsoft.com/vcpkg/examples/asset-caching-source-nuget">asset caching with NuGet tutorial</a> (PR: <a href="https://github.com/microsoft/vcpkg-docs/pull/460">Microsoft/vcpkg-docs#460</a>).</li>
-<li>Other minor documentation improvements (thanks @autoantwort!).</li>
-</ul>
-<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
-<p><img decoding="async" class="wp-image-35371" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/word-image-35369-1.png" width="718" height="211" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/word-image-35369-1.png 1099w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/word-image-35369-1-300x88.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/word-image-35369-1-1024x301.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/word-image-35369-1-768x226.png 768w" sizes="(max-width: 718px) 100vw, 718px" /></p>
-<h2>Total ports available for tested triplets</h2>
-<table>
-<tbody>
-<tr>
-<td><strong>Triplet</strong></td>
-<td><strong>Ports available</strong></td>
-</tr>
-<tr>
-<td>x86-windows</td>
-<td>2346</td>
-</tr>
-<tr>
-<td>x64-windows</td>
-<td>2463</td>
-</tr>
-<tr>
-<td>x64-windows-release</td>
-<td>2463</td>
-</tr>
-<tr>
-<td>x64-windows-static</td>
-<td>2329</td>
-</tr>
-<tr>
-<td>x64-windows-static-md</td>
-<td>2381</td>
-</tr>
-<tr>
-<td>x64-uwp</td>
-<td>1375</td>
-</tr>
-<tr>
-<td>arm64-windows</td>
-<td>2057</td>
-</tr>
-<tr>
-<td>arm64-windows-static-md</td>
-<td>2036</td>
-</tr>
-<tr>
-<td>arm64-uwp</td>
-<td>1339</td>
-</tr>
-<tr>
-<td>x64-osx</td>
-<td>2322</td>
-</tr>
-<tr>
-<td>arm64-osx</td>
-<td>2246</td>
-</tr>
-<tr>
-<td>x64-linux</td>
-<td>2445</td>
-</tr>
-<tr>
-<td>arm-neon-android</td>
-<td>1730</td>
-</tr>
-<tr>
-<td>x64-android</td>
-<td>1806</td>
-</tr>
-<tr>
-<td>arm64-android</td>
-<td>1774</td>
-</tr>
-</tbody>
-</table>
-<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
-<h2>Thank you to our contributors</h2>
-<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release (listed alphabetically by GitHub username):</p>
-<table>
-<tbody>
-<tr>
-<td>aelnosu</td>
-<td>ekilmer</td>
-<td>NikolayShegunov-Virtonomy</td>
-</tr>
-<tr>
-<td>AenBleidd</td>
-<td>eXpl0it3r</td>
-<td>njakob</td>
-</tr>
-<tr>
-<td>Agorath</td>
-<td>gershnik</td>
-<td>nlogozzo</td>
-</tr>
-<tr>
-<td>aixxe</td>
-<td>Gnefeij</td>
-<td>noahknegt</td>
-</tr>
-<tr>
-<td>ajtribick</td>
-<td>gittiver</td>
-<td>oleg-derevenetz</td>
-</tr>
-<tr>
-<td>alagoutte</td>
-<td>gwaldron</td>
-<td>paperchalice</td>
-</tr>
-<tr>
-<td>albertony</td>
-<td>HappySeaFox</td>
-<td>R3dByt3</td>
-</tr>
-<tr>
-<td>alfredh</td>
-<td>jeremy-rifkin</td>
-<td>redboltz</td>
-</tr>
-<tr>
-<td>amoeba</td>
-<td>jeremyko</td>
-<td>rmisev</td>
-</tr>
-<tr>
-<td>an-tao</td>
-<td>jmcnamara</td>
-<td>rremilian</td>
-</tr>
-<tr>
-<td>ankurvdev</td>
-<td>johnwason</td>
-<td>RT2Code</td>
-</tr>
-<tr>
-<td>AntonK47</td>
-<td>jpr42</td>
-<td>rursprung</td>
-</tr>
-<tr>
-<td>autoantwort</td>
-<td>kadirlua</td>
-<td>SunBlack</td>
-</tr>
-<tr>
-<td>benjamin-hodgson</td>
-<td>kblaschke</td>
-<td>swt2c</td>
-</tr>
-<tr>
-<td>bw-hro</td>
-<td>Krzmbrzl</td>
-<td>talregev</td>
-</tr>
-<tr>
-<td>bwrsandman</td>
-<td>liuzicheng1987</td>
-<td>tarcila</td>
-</tr>
-<tr>
-<td>c8ef</td>
-<td>llm96</td>
-<td>toge</td>
-</tr>
-<tr>
-<td>cenit</td>
-<td>m-kuhn</td>
-<td>tomconder</td>
-</tr>
-<tr>
-<td>chausner</td>
-<td>maharmstone</td>
-<td>Tradias</td>
-</tr>
-<tr>
-<td>chrismile</td>
-<td>martinweismann</td>
-<td>vijaiaeroastro</td>
-</tr>
-<tr>
-<td>constcuriosity</td>
-<td>mathgeekcoder</td>
-<td>vpetrigo</td>
-</tr>
-<tr>
-<td>cuiy0006</td>
-<td>metsma</td>
-<td>walbourn</td>
-</tr>
-<tr>
-<td>danielaparker</td>
-<td>miyanyan</td>
-<td>waywardmonkeys</td>
-</tr>
-<tr>
-<td>daschuer</td>
-<td>mtmk</td>
-<td>wolfgitpr</td>
-</tr>
-<tr>
-<td>Darkx32</td>
-<td>mvieth</td>
-<td>wpp2014</td>
-</tr>
-<tr>
-<td>dg0yt</td>
-<td>myd7349</td>
-<td>ytnuf</td>
-</tr>
-<tr>
-<td>dpasukhi</td>
-<td>Naville</td>
-<td></td>
-</tr>
-<tr>
-<td>eao197</td>
-<td>Neumann-A</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2>Learn more</h2>
-<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases">main release notes</a> on GitHub. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
-<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/">What’s New in vcpkg (March 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-march-2025/feed/</wfw:commentRss>
-			<slash:comments>1</slash:comments>
 		
 		
 			</item>
