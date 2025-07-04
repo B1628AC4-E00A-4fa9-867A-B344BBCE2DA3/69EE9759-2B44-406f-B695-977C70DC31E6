@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Thu, 26 Jun 2025 15:29:41 +0000</lastBuildDate>
+	<lastBuildDate>Fri, 04 Jul 2025 19:04:27 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,341 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New in vcpkg (June 2025)</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2025/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2025/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Fri, 04 Jul 2025 19:02:05 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35583</guid>
+
+					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2025.06.13 registry release, 2025-04-16, 2025-05-19, and 2025-06-02 tool releases, as well as changes to vcpkg documentation throughout May and June. This release includes bug fixes, several documentation changes, and the removal of the x-gha binary caching provider for GitHub (alternatives are [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2025/">What’s New in vcpkg (June 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2025.06.13">2025.06.13</a> registry release, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-04-16">2025-04-16</a>, <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-05-19">2025-05-19</a>, and <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-06-02">2025-06-02</a> tool releases, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout May and June. This release includes bug fixes, several documentation changes, and the removal of the <code>x-gha</code> binary caching provider for GitHub (alternatives are described below).</p>
+<p>Some stats for this period:</p>
+<ul>
+<li>There are now <strong>2,621 total ports </strong>available in the vcpkg curated registry. A <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
+<li><strong>35 new ports</strong> were added to the curated registry.</li>
+<li><strong>517 ports were updated</strong>. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 15 main <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/triplets">triplets</a>.</li>
+<li><strong>132 </strong>community contributors made commits.</li>
+<li>The main vcpkg repo has over <strong>6,900 forks</strong> and <strong>25,100 stars</strong> on GitHub.</li>
+</ul>
+<h2>vcpkg changelog (2025.06.13 release)</h2>
+<p>The following notable changes were made in this release:</p>
+<ul>
+<li>Due to <a href="https://github.com/actions/cache/discussions/1510">recent changes in GitHub Actions Cache’s API</a>, the <code>x-gha</code> binary caching provider has been rendered obsolete. As a result, we had to remove it from vcpkg (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1662">Microsoft/vcpkg-tool#1662</a>). Instead, you can use one of the following methods to cache binaries in GitHub; we welcome any feedback from our users about how this experience could be improved in the future:
+<ul>
+<li>Use <a href="https://learn.microsoft.com/vcpkg/consume/binary-caching-github-packages">GitHub Packages with NuGet</a>, which uses vcpkg’s caching mechanism and preserves caching granularity per port. This is the method the vcpkg team recommends.</li>
+<li>Use <a href="https://github.com/actions/cache">actions/cache</a> in your workflow to cache the installed directory. The downside of this method is that the whole installed tree gets cached as a single artifact, so single port updates invalidate all packages.</li>
+</ul>
+</li>
+<li>Fixed a bug causing permissions while using <code>upkg</code> to not be preserved (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1625">Microsoft/vcpkg-tool#1625</a>).</li>
+<li>Improved diagnostics and bug fixes for vcpkg x-test-features command (PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/1649">Microsoft/vcpkg-tool#1649</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/1650">Microsoft/vcpkg-tool#1650</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/1663">Microsoft/vcpkg-tool#1663</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/1676">Microsoft/vcpkg-tool#1676</a>, thanks @autoantwort!).</li>
+<li>Fixed an issue causing slow binary cache insertions in some Docker containers (PRs: <a href="https://github.com/microsoft/vcpkg-tool/pull/1659">Microsoft/vcpkg-tool#1659</a>, <a href="https://github.com/microsoft/vcpkg-tool/pull/1669">Microsoft/vcpkg-tool#1669</a>, thanks @Thomas1664, @dg0yt!).</li>
+<li>Other minor bug fixes and internal feature improvements (thanks @autoantwort, @dg0yt, @huangqinjin, @DewJunkie!).</li>
+</ul>
+<h2>Documentation changes</h2>
+<ul>
+<li>The vcpkg docs have moved to the MicrosoftDocs organization, under the URL <a href="https://github.com/MicrosoftDocs/vcpkg-docs">https://github.com/MicrosoftDocs/vcpkg-docs</a>. The existing repo has fully migrated with no loss in functionality. Links to the old repo should redirect to the new one automatically. The experience on the Learn website remains the same.</li>
+<li>Added documentation for the new commands <a href="https://learn.microsoft.com/vcpkg/commands/format-feature-baseline">format-feature-baseline</a> and <a href="https://learn.microsoft.com/vcpkg/commands/test-features">x-test-features</a> (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/455">MicrosoftDocs/vcpkg-docs#455</a>).</li>
+<li>Added documentation for vcpkg license-report command (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/491">MicrosoftDocs/vcpkg-docs#491</a>).</li>
+<li>Updated <a href="https://learn.microsoft.com/vcpkg/consume/binary-caching-github-packages?pivots=windows-runner">Tutorial: Set up a vcpkg binary cache using GitHub Packages in a GitHub Actions workflow</a> to clarify that mono is no longer pre-installed by default for GitHub Actions Ubuntu runners (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/495">MicrosoftDocs/vcpkg-docs#495</a>).</li>
+<li>Updated <a href="https://learn.microsoft.com/vcpkg/users/buildsystems/msbuild-integration">vcpkg in MSBuild projects</a> article to add instructions about how to pass MSBuild properties to vcpkg builds (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/481">MicrosoftDocs/vcpkg-docs#481</a>).</li>
+<li>Removed documentation references to GitHub Actions Cache and <code>x-gha</code> provider, de-indexed the associated tutorial, and added a removal notice on the reference page.</li>
+<li>Other minor documentation improvements (thanks @Alan Pope, @Ivan Sorokin, @shijunz, @Tiago Freitas, @Yan Romao!).</li>
+</ul>
+<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
+<h2>Total ports available for tested triplets</h2>
+<table>
+<tbody>
+<tr>
+<td><strong>Triplet</strong></td>
+<td><strong>Ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>2406</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>2524</td>
+</tr>
+<tr>
+<td>x64-windows-release</td>
+<td>2524</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>2398</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>2450</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1410</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>2122</td>
+</tr>
+<tr>
+<td>arm64-windows-static-md</td>
+<td>2102</td>
+</tr>
+<tr>
+<td>arm64-uwp</td>
+<td>1377</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>2394</td>
+</tr>
+<tr>
+<td>arm64-osx</td>
+<td>2321</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>2510</td>
+</tr>
+<tr>
+<td>arm-neon-android</td>
+<td>1939</td>
+</tr>
+<tr>
+<td>x64-android</td>
+<td>1996</td>
+</tr>
+<tr>
+<td>arm64-android</td>
+<td>1961</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<h2>Thank you to our contributors</h2>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs</a> repos in this release (listed by commit author or GitHub username):</p>
+<table>
+<tbody>
+<tr>
+<td>Adrien Bourdeaux</td>
+<td>Eugene Gershnik</td>
+<td>Long Nguyen</td>
+<td>Ryan Zoeller</td>
+</tr>
+<tr>
+<td>Alan Pope</td>
+<td>Faaux</td>
+<td>Lukas Berbuer</td>
+<td>Saad</td>
+</tr>
+<tr>
+<td>Alexandre Bique</td>
+<td>Fabien Pean</td>
+<td>m7913d</td>
+<td>Sander Cox</td>
+</tr>
+<tr>
+<td>Alexis La Goutte</td>
+<td>flightless-coder</td>
+<td>Martin Valgur</td>
+<td>Scott Hart</td>
+</tr>
+<tr>
+<td>Alexis Placet</td>
+<td>galabovaa</td>
+<td>Matt H</td>
+<td>Sebastian Goth</td>
+</tr>
+<tr>
+<td>Alfred E. Heggestad</td>
+<td>gastineau</td>
+<td>Matthew Oliver</td>
+<td>shijunz</td>
+</tr>
+<tr>
+<td>Amin Ya</td>
+<td>Harald</td>
+<td>Maxime Gervais</td>
+<td>SunBlack</td>
+</tr>
+<tr>
+<td>Andrew Kaster</td>
+<td>Henrique Teles</td>
+<td>Mengna-Li</td>
+<td>Szabolcs Horvát</td>
+</tr>
+<tr>
+<td>Andrey</td>
+<td>huangqinjin</td>
+<td>Michał Petryka</td>
+<td>Takahiro Ueda</td>
+</tr>
+<tr>
+<td>Anthony Umfer</td>
+<td>hy zhang</td>
+<td>Michael R. P. Ragazzon</td>
+<td>talregev</td>
+</tr>
+<tr>
+<td>autoantwort</td>
+<td>Hyunjin Song</td>
+<td>miyanyan</td>
+<td>Tamás PEREGI</td>
+</tr>
+<tr>
+<td>Benno Waldhauer</td>
+<td>i-curve</td>
+<td>Moritz Beutel</td>
+<td>Theodore Tsirpanis</td>
+</tr>
+<tr>
+<td>blavallee</td>
+<td>Ildar Khayrutdinov</td>
+<td>mschollerer</td>
+<td>Thomas1664</td>
+</tr>
+<tr>
+<td>Buck Yeh</td>
+<td>ilya-fedin</td>
+<td>myd7349</td>
+<td>Tiago Freitas</td>
+</tr>
+<tr>
+<td>Carsten Rudolph</td>
+<td>Ivan Sorokin</td>
+<td>Mys Vac</td>
+<td>Tim Flynn</td>
+</tr>
+<tr>
+<td>Charlie</td>
+<td>Jack Boos Yu</td>
+<td>Nenad Banfic</td>
+<td>Timofei Zhakov</td>
+</tr>
+<tr>
+<td>Chase Knowlden</td>
+<td>Jacob Wujciak-Jens</td>
+<td>Nick D&#8217;Ademo</td>
+<td>Timur Chernykh</td>
+</tr>
+<tr>
+<td>chausner</td>
+<td>JacobBarthelmeh</td>
+<td>Nick Logozzo</td>
+<td>toge</td>
+</tr>
+<tr>
+<td>Chuck Walbourn</td>
+<td>Jaka</td>
+<td>nunupeke</td>
+<td>Tom G. Huang</td>
+</tr>
+<tr>
+<td>Clement Peron</td>
+<td>Jean-Sebastien Paquet</td>
+<td>Oleg Derevenetz</td>
+<td>Tom Tan</td>
+</tr>
+<tr>
+<td>CQ_Undefine</td>
+<td>Jeremy Rifkin</td>
+<td>Osyotr</td>
+<td>Tomasz Kalisiak</td>
+</tr>
+<tr>
+<td>Damian Dyńdo</td>
+<td>JoergAtGithub</td>
+<td>Pasukhin Dmitry</td>
+<td>tomy2105</td>
+</tr>
+<tr>
+<td>Daniel Bertalan</td>
+<td>Johannes Meßmer</td>
+<td>Pavel Kisliak</td>
+<td>Vitalii Koshura</td>
+</tr>
+<tr>
+<td>David Machaj</td>
+<td>Jonathan Sweemer</td>
+<td>Peter Adam Korodi</td>
+<td>Vladimir Petrigo</td>
+</tr>
+<tr>
+<td>Denis Barkar</td>
+<td>jreichel-nvidia</td>
+<td>Peter Steneteg</td>
+<td>Vladimir Shaleev</td>
+</tr>
+<tr>
+<td>DevFdv</td>
+<td>Kadir</td>
+<td>Rémy Tassoux</td>
+<td>Wentsing Nee</td>
+</tr>
+<tr>
+<td>DewJunkie</td>
+<td>Kai Blaschke</td>
+<td>Rafael Kitover</td>
+<td>whyzix</td>
+</tr>
+<tr>
+<td>Dr. Patrick Urbanke</td>
+<td>Kai Pastor</td>
+<td>Reupen Shah</td>
+<td>wolfgitpr</td>
+</tr>
+<tr>
+<td>eao197</td>
+<td>karnigen</td>
+<td>Reza Alizadeh Majd</td>
+<td>xavier2k6</td>
+</tr>
+<tr>
+<td>Egor Tyuvaev</td>
+<td>Kevin Ring</td>
+<td>Riccardo Ressi</td>
+<td>xvitaly</td>
+</tr>
+<tr>
+<td>Employee_NO427</td>
+<td>l.feng</td>
+<td>Ridwan Abdul Hafidh</td>
+<td>Yan Romao</td>
+</tr>
+<tr>
+<td>Eric Kilmer</td>
+<td>Lars Fröhlich</td>
+<td>Rimas Misevičius</td>
+<td>Yury Bura</td>
+</tr>
+<tr>
+<td>Ethan J. Musser</td>
+<td>llm96</td>
+<td>rinechran</td>
+<td>Zhichao Wang</td>
+</tr>
+</tbody>
+</table>
+<h2>Learn more</h2>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases">main release notes</a> on GitHub. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/microsoft/vcpkg-docs">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2025/">What’s New in vcpkg (June 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-june-2025/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>How Electronic Arts standardized C++ builds across Windows and Linux with Visual Studio Build Tools</title>
 		<link>https://devblogs.microsoft.com/cppblog/how-electronic-arts-standardized-c-builds-across-windows-and-linux-with-visual-studio-build-tools/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/how-electronic-arts-standardized-c-builds-across-windows-and-linux-with-visual-studio-build-tools/#respond</comments>
@@ -1597,40 +1932,6 @@ code generated with convoluted pointer casting</a></li>
 <p>We also have a host of pre-conference content available <a href="https://www.youtube.com/playlist?list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU">on YouTube</a>.</p>
 <p>We look forward to seeing you there!</p>
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-is-tomorrow/">Pure Virtual C++ 2025 is Tomorrow</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>Pure Virtual C++ 2025: Pre-Conference Videos</title>
-		<link>https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-pre-conference-videos/</link>
-		
-		<dc:creator><![CDATA[Sy Brand]]></dc:creator>
-		<pubDate>Wed, 23 Apr 2025 18:46:32 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[Pure Virtual C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35406</guid>
-
-					<description><![CDATA[<p>Pure Virtual C++ is our free, one-day, virtual conference for the whole C++ community. It is running on 30th April. The first half of our pre-conference videos is now available on YouTube. The videos are: MSVC C++23 Conformance Simplifying your Cross-Platform Development with Visual Studio C++ Dynamic Debugging How Debuggers Work A Year in Review: [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-pre-conference-videos/">Pure Virtual C++ 2025: Pre-Conference Videos</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><img decoding="async" class="aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2024/03/pvclogo.png" /></p>
-<p>Pure Virtual C++ is our free, one-day, virtual conference for the whole C++ community. It is running on 30th April.</p>
-<p><div class="d-flex justify-content-left"><a class="cta_button_link btn-primary mb-24" href="https://developer.microsoft.com/en-us/reactor/events/25184/" target="_blank">Register for Free</a></div></p>
-<p>The first half of our pre-conference videos is <a href="https://www.youtube.com/playlist?list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU">now available on YouTube</a>. The videos are:</p>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=MfYZQu9zG80&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=5">MSVC C++23 Conformance</a></li>
-<li><a href="https://www.youtube.com/watch?v=1Wvg0ds8-zg&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=2">Simplifying your Cross-Platform Development with Visual Studio</a></li>
-<li><a href="https://www.youtube.com/watch?v=Q1--TUl8Nug&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=8">C++ Dynamic Debugging</a></li>
-<li><a href="https://www.youtube.com/watch?v=kUg60uwzFlE&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=7">How Debuggers Work</a></li>
-<li><a href="https://www.youtube.com/watch?v=3DLeLb4Z4U0&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=3">A Year in Review: Microsoft&#8217;s Latest CMake Improvements in Visual Studio and VS Code</a></li>
-<li><a href="https://www.youtube.com/watch?v=LZUTZThYkTQ&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=4">CMake Debugger for Projects Targeting Remote Linux Systems</a></li>
-<li><a href="https://www.youtube.com/watch?v=NN7mTQlVxQc&amp;list=PLReL099Y5nRfLGBGRHml5WE81yk2OxdVU&amp;index=6">AI-generated doc comments in Visual Studio</a></li>
-</ul>
-<p>We look forward to seeing you at Pure Virtual C++!</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/pure-virtual-cpp-2025-pre-conference-videos/">Pure Virtual C++ 2025: Pre-Conference Videos</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
 		
