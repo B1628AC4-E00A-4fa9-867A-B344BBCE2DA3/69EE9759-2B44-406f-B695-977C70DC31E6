@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Mon, 07 Jul 2025 16:51:00 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 15 Jul 2025 18:21:53 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,160 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Updates to Warning Suppressions in Microsoft C++ Code Analysis</title>
+		<link>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/#respond</comments>
+		
+		<dc:creator><![CDATA[Carson Radtke]]></dc:creator>
+		<pubDate>Tue, 15 Jul 2025 18:00:13 +0000</pubDate>
+				<category><![CDATA[Announcement]]></category>
+		<category><![CDATA[C++]]></category>
+		<category><![CDATA[code analysis]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35604</guid>
+
+					<description><![CDATA[<p>Improvements to \#pragma warning and gsl::suppress in Microsoft C++ Code Analysis.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/">Updates to Warning Suppressions in Microsoft C++ Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Microsoft C++ Code Analysis is a powerful static analysis tool integrated into Visual
+Studio that helps you identify and fix potential issues in your C++ code.
+Large projects require effective management of analysis warnings to maintain code
+quality and you sometimes need to suppress warnings, but must do so in a clear and
+auditable way.</p>
+<p>To that end, we are excited to announce significant updates to the warning suppression
+mechanisms in Microsoft C++ Code Analysis. These enhancements provide better tracking,
+justification, and overall management of warning suppressions, leading to a more
+maintainable and robust codebase.</p>
+<h2>What&#8217;s New in the SARIF Output?</h2>
+<p>We enhanced the
+<a href="https://sarif.info/">Static Analysis Results Interchange Format (SARIF)</a>
+output to include detailed information about warning suppressions, most notably the
+justification provided by you. This allows teams to easily review <em>why</em> a specific
+warning was silenced.</p>
+<p>To generate a SARIF file, use the <code>/analyze:log:format:sarif</code> compiler option. To ensure
+that details about suppressed warnings (including their justifications) are included in
+this SARIF log, you must also use the <code>/analyze:log:includesuppressed</code> option.</p>
+<h2>What&#8217;s New in <code>gsl::suppress</code>?</h2>
+<p>We have updated our support for <code>gsl::suppress</code> to align with the latest C++ Core
+Guidelines syntax. Warnings can now be suppressed by using the <code>gsl::suppress</code> attribute
+in the following way:</p>
+<pre><code class="language-cpp">[[gsl::suppress( "&lt;warning_id&gt;", justification: "&lt;justification&gt;" )]]</code></pre>
+<p>Where <code>&lt;warning_id&gt;</code> is the ID of the warning you want to suppress, and the optional
+<code>&lt;justification&gt;</code> is a string that provides a justification for the suppression.</p>
+<p><em>For now, <code>[[gsl::suppress]]</code> is only available for C++ codebases. For C codebases, you
+must use the <code>#pragma warning(suppress)</code> syntax.</em></p>
+<p>Example:</p>
+<pre><code class="language-cpp">// CoreCheckExample.cpp
+// Add CppCoreCheck package and enable code analysis in build for warnings.
+
+int main()
+{
+    int arr[10];           // warning C26494
+    int* p = arr;          // warning C26485
+
+    [[gsl::suppress("bounds.1", justification : "This attribute suppresses Bounds rules #1")]]
+    {
+        int* q = p + 1;    // warning C26481 (suppressed)
+        p = q++;           // warning C26481 (suppressed)
+    }
+
+    return 0;
+}</code></pre>
+<h2>What&#8217;s New in <code>#pragma warning</code>?</h2>
+<p>We have extended <code>#pragma warning</code> to support the <code>justification</code> field. Here is how
+you can use it starting in Visual Studio 2022 version 17.14:</p>
+<pre><code class="language-cpp">#pragma warning(suppress : &lt;warning_id&gt;, justification : "&lt;justification&gt;")</code></pre>
+<p>Where <code>&lt;warning_id&gt;</code> is the ID of the warning you want to suppress, and the optional
+<code>&lt;justification&gt;</code> is a string that provides a justification for the suppression.</p>
+<h2>Choosing Between <code>#pragma warning</code> and <code>gsl::suppress</code></h2>
+<p>Both <code>#pragma warning(suppress)</code> and <code>[[gsl::suppress]]</code> offer fine-grained control over
+warning suppression.</p>
+<ul>
+<li><code>#pragma warning(suppress)</code> is a general MSVC mechanism that can be used for any
+compiler warning. It&#8217;s particularly useful when you need to suppress a warning in a
+specific code block without altering the code&#8217;s structure significantly.</li>
+<li><code>[[gsl::suppress]]</code> will only suppress warnings emitted by Microsoft C++ Code
+Analysis. It is intended for use with the C++ Core Guidelines checks and can be applied
+to a scope or a specific declaration.</li>
+</ul>
+<p>Whenever possible, we recommend using <code>[[gsl::suppress]]</code> for suppressing Microsoft C++
+Code Analysis warnings.</p>
+<h2>Why These Updates Matter</h2>
+<p>These enhancements to warning suppression offer several key benefits:</p>
+<ul>
+<li><strong>Improved Auditability and Review:</strong> With justifications recorded directly in the
+code and optionally in SARIF logs, code reviews become more effective. Team members can
+quickly understand the rationale behind a suppression without needing to consult
+external documentation or the original author.</li>
+<li><strong>Enhanced Code Maintainability:</strong> Clear justifications prevent accidental
+re-introduction of issues when code is refactored or suppressions are reviewed. They
+provide a history of why certain warnings were deemed acceptable at a particular point.</li>
+<li><strong>Better Management of Technical Debt:</strong> Suppressed warnings can be a form of
+technical debt. Justifications help in tracking and prioritizing which suppressions
+should be revisited and potentially fixed.</li>
+<li><strong>Consistency Across Suppression Mechanisms:</strong> By adding justification support to both
+<code>#pragma warning</code> and <code>gsl::suppress</code>, we provide a consistent experience for you. This
+allows old code to use <code>#pragma warning</code> while new code can use <code>[[gsl::suppress]]</code>, all
+while maintaining the ability to provide justifications.</li>
+</ul>
+<h3>Impact on Existing Workflows</h3>
+<p>These new features are additive. Existing suppression mechanisms (without
+justifications) will continue to work as before. However, we encourage you to
+start using the <code>justification</code> attribute for new suppressions and to gradually update
+existing ones where clarity is beneficial. There is no automatic migration, but the
+process of adding justifications is straightforward.</p>
+<h3>Availability</h3>
+<p>These enhancements are available in the MSVC compiler toolset shipping with Visual
+Studio 2022 version 17.14 and newer, and will be part of future Visual Studio releases.
+Ensure your Visual Studio is updated to leverage these improvements.</p>
+<h2>Try It Out</h2>
+<pre><code class="language-c++">// example.cpp
+// Compile with: cl /analyze:only /analyze:plugin EspxEngine.dll /analyze:log:format:sarif /analyze:log:includesuppressed example.cpp
+
+int main()
+{
+    int arr[10];           // warning C26494
+    int* p = arr;          // warning C26485
+
+    [[gsl::suppress("bounds.1", justification : "This attribute suppresses Bounds rules #1")]]
+    {
+        int* q = p + 1;    // warning C26481 (suppressed)
+        p = q++;           // warning C26481 (suppressed)
+    }
+
+    return 0;
+}</code></pre>
+<p>You can run the above code with the following options:
+<code>/analyze /analyze:log:format:sarif /analyze:log:includesuppressed</code> to generate a SARIF
+file that includes the suppression details.
+(Note: <code>EspxEngine.dll</code> is the plugin that enables C++ Core Guidelines checks, which are
+the target of <code>gsl::suppress</code>.)</p>
+<pre><code class="language-powershell">&gt; cl /analyze:only /analyze:plugin EspxEngine.dll /analyze:log:format:sarif /analyze:log:includesuppressed .\example.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35305.95 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+example.cpp
+D:\tmp\example.cpp(7) : warning C26485: Expression 'arr': No array to pointer decay (bounds.3).
+D:\tmp\example.cpp(6) : warning C26494: Variable 'arr' is uninitialized. Always initialize an object (type.5).</code></pre>
+<p>You will also find a file named <code>example.nativecodeanalysis.sarif</code>, you can open it with
+VSCode (don&#8217;t forget to install the latest version of the
+<a href="https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer">SARIF Viewer extension</a>).
+After filtering to include suppressed warnings, you will see the warning details which
+include the suppression information. Here is an example of what you will see:
+<img fetchpriority="high" decoding="async" class="" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled.png" alt="Screenshot of VSCode with the SARIF Viewer extension" width="1374" height="747" /></p>
+<h2>Feedback</h2>
+<p>We would love to hear your thoughts on the new changes to warning suppressions! Please
+share your feedback and suggestions in the comments below. If you run into any issues,
+please let us know by filing a feedback ticket on
+<a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/">Updates to Warning Suppressions in Microsoft C++ Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Smarter, workspace-aware code completions for C++ in VS Code</title>
 		<link>https://devblogs.microsoft.com/cppblog/smarter-workspace-aware-code-completions-for-c-in-vs-code/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/smarter-workspace-aware-code-completions-for-c-in-vs-code/#respond</comments>
@@ -419,7 +573,7 @@
 ]]></description>
 										<content:encoded><![CDATA[<p>At Electronic Arts (EA), the Frostbite Enginering Workflows team has thousands of developers who work on powerful game engines behind popular games.  EA has relied on Visual Studio for years due to several features such as IntelliSense, Build Insights, and the overall debugging experience and eagerly use newer integrations such as GitHub Copilot.  They also use Visual Studio capabilities for their cross-platform development needs.</p>
 <p>We&#8217;re proud to partner with EA to shape cross-platform development capabilities in Visual Studio. Read more in the full story about how we worked with EA to enable them to customize their build experience and ensure consistent builds for thousands of developers at: <strong><a href="http://aka.ms/ea-vs-game-dev">aka.ms/ea-vs-game-dev</a></strong></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg"><img fetchpriority="high" decoding="async" class="alignnone size-full wp-image-35569" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg" alt="A picture of a college football game in a video game " width="1454" height="818" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg 1454w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-768x432.jpg 768w" sizes="(max-width: 1454px) 100vw, 1454px" /></a></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg"><img decoding="async" class="alignnone size-full wp-image-35569" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg" alt="A picture of a college football game in a video game " width="1454" height="818" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB.jpg 1454w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-300x169.jpg 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-1024x576.jpg 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/06/MSFT-Blog_CFB-768x432.jpg 768w" sizes="(max-width: 1454px) 100vw, 1454px" /></a></p>
 <p style="text-align: center;"><span style="font-size: 8pt;"><em>A snapshot from EA Sports College Football 25, a video game produced by Electronic Arts</em></span></p>
 <h2>Send us feedback!</h2>
 <p><a href="https://visualstudio.microsoft.com/vs/">Download Visual Studio</a> and give <a href="https://learn.microsoft.com/en-us/cpp/linux/download-install-and-setup-the-linux-development-workload?view=msvc-170">our cross-platform tooling</a> a try! If you have any feedback for us on how to improve our cross-platform tooling for you, please<a href="https://developercommunity.visualstudio.com/cpp?space=8&amp;entry=suggestion"> file a suggestion ticket on Developer Community</a>. The comments below are open and we are also available via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>.</p>
@@ -1875,69 +2029,6 @@ code generated with convoluted pointer casting</a></li>
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/theres-a-linux-file-explorer-built-into-visual-studio/feed/</wfw:commentRss>
 			<slash:comments>1</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>VS Code C++ Extension 1.25 Release:  Explain C++ symbols using Copilot &#038; Customize recursive include paths</title>
-		<link>https://devblogs.microsoft.com/cppblog/vs-code-c-extension-1-25-release-explain-c-symbols-using-copilot-customize-recursive-include-paths/</link>
-		
-		<dc:creator><![CDATA[Alexandra Kemper, Sinem Akinci]]></dc:creator>
-		<pubDate>Wed, 30 Apr 2025 23:31:17 +0000</pubDate>
-				<category><![CDATA[C++]]></category>
-		<category><![CDATA[Copilot]]></category>
-		<category><![CDATA[performance]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35419</guid>
-
-					<description><![CDATA[<p>The 1.25 release of the C++ extension in Visual Studio Code introduces a new way to understand your code faster with GitHub Copilot-powered symbol summaries, as well as new customization options for recursive #include path processing. With these enhancements, you gain AI-powered insights into unfamiliar or undocumented code and can optimize IntelliSense performance based on [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/vs-code-c-extension-1-25-release-explain-c-symbols-using-copilot-customize-recursive-include-paths/">VS Code C++ Extension 1.25 Release:  Explain C++ symbols using Copilot &#038; Customize recursive include paths</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p><span class="TextRun SCXW196852319 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW196852319 BCX8">The</span> <a href="https://github.com/microsoft/vscode-cpptools/releases/tag/v1.25.3"><span class="NormalTextRun SCXW196852319 BCX8">1.25 release</span></a><span class="NormalTextRun CommentStart SCXW196852319 BCX8"> of the </span><span class="NormalTextRun CommentStart SCXW196852319 BCX8">C++ </span><span class="NormalTextRun SCXW196852319 BCX8">e</span><span class="NormalTextRun SCXW196852319 BCX8">xtension</span><span class="NormalTextRun SCXW196852319 BCX8"> i</span><span class="NormalTextRun SCXW196852319 BCX8">n Visual Studio Code introduces </span><span class="NormalTextRun SCXW196852319 BCX8">a new way to understand your code faster with </span><span class="NormalTextRun SCXW196852319 BCX8">GitHub </span><span class="NormalTextRun SCXW196852319 BCX8">Copilot-powered symbol summaries, as well as new customization options for</span><span class="NormalTextRun SCXW196852319 BCX8"> recursive</span> <span class="NormalTextRun SCXW196852319 BCX8">#</span><span class="NormalTextRun CommentStart SCXW196852319 BCX8">include</span><span class="NormalTextRun SCXW196852319 BCX8"> path processing. With these enhancements</span><span class="NormalTextRun CommentStart SCXW196852319 BCX8">,</span><span class="NormalTextRun SCXW196852319 BCX8"> you</span><span class="NormalTextRun SCXW196852319 BCX8"> gain AI-powered i</span><span class="NormalTextRun SCXW196852319 BCX8">nsights into unfamiliar or undocumented code</span><span class="NormalTextRun SCXW196852319 BCX8"> and</span><span class="NormalTextRun CommentStart SCXW196852319 BCX8"> can optimiz</span><span class="NormalTextRun SCXW196852319 BCX8">e</span><span class="NormalTextRun SCXW196852319 BCX8"> IntelliSense performance based</span><span class="NormalTextRun SCXW196852319 BCX8"> on your preferences.</span></span><span class="EOP Selected SCXW196852319 BCX8" data-ccp-props="{}"> </span></p>
-<p><span class="TextRun SCXW202210812 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW202210812 BCX8"> Experience these new features for yourself by updating to version 1.</span><span class="NormalTextRun SCXW202210812 BCX8">2</span><span class="NormalTextRun SCXW202210812 BCX8">5</span><span class="NormalTextRun SCXW202210812 BCX8">. </span></span><span class="EOP Selected SCXW202210812 BCX8" data-ccp-props="{}"> </span></p>
-<h2><span class="TextRun SCXW40875777 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW40875777 BCX8" data-ccp-parastyle="heading 2">Copilot Hover</span></span></h2>
-<p><span data-contrast="auto">Want to understand your unfamiliar codebases like undocumented library code quicker without having to navigate around files and read several lines of code? Looking for easy-to-digest information in the middle of your coding task to help get you started?</span><span data-ccp-props="{}"> </span></p>
-<p><span data-contrast="auto">GitHub Copilot now leverages C++ language services to provide summaries of symbols that you would like to learn more about or are lacking documentation. This requires an active GitHub Copilot subscription, now </span><a href="https://code.visualstudio.com/blogs/2024/12/18/free-github-copilot"><span data-contrast="none">available to try for free</span></a><span data-contrast="auto">.</span><span data-ccp-props="{}"> </span></p>
-<p><span data-contrast="auto">When you hover over any symbol, you’ll now have an option to Generate Copilot summary.</span><span data-ccp-props="{}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/generate_copilot_summary.png"><img decoding="async" class="aligncenter wp-image-35421 size-medium" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/generate_copilot_summary-300x118.png" alt="Image of a cursor on the variable ctx_server which then shows a popup that have the word generate copilot summary. " width="300" height="118" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/generate_copilot_summary-300x118.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/generate_copilot_summary.png 604w" sizes="(max-width: 300px) 100vw, 300px" /></a></p>
-<p><span class="TextRun SCXW51722933 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW51722933 BCX8">Copilot will </span><span class="NormalTextRun SCXW51722933 BCX8">leverage</span> <span class="NormalTextRun CommentStart SCXW51722933 BCX8">context</span> <span class="NormalTextRun SCXW51722933 BCX8">provided by</span><span class="NormalTextRun SCXW51722933 BCX8"> C++ language services to </span><span class="NormalTextRun SCXW51722933 BCX8">generate </span><span class="NormalTextRun SCXW51722933 BCX8">more information on a given symbo</span><span class="NormalTextRun SCXW51722933 BCX8">l</span><span class="NormalTextRun SCXW51722933 BCX8"> for you</span> <span class="NormalTextRun CommentStart SCXW51722933 BCX8">no matter where you are</span><span class="NormalTextRun SCXW51722933 BCX8"> in your codebase</span><span class="NormalTextRun SCXW51722933 BCX8">, using its </span><span class="NormalTextRun CommentStart SCXW51722933 BCX8">declaration or definition </span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW51722933 BCX8">information</span><span class="NormalTextRun ContextualSpellingAndGrammarErrorV2Themed SCXW51722933 BCX8">.</span> <span class="NormalTextRun SCXW51722933 BCX8">For example, s</span><span class="NormalTextRun CommentStart SCXW51722933 BCX8">ee how it helps understand t</span><span class="NormalTextRun SCXW51722933 BCX8">he </span><span class="NormalTextRun SCXW51722933 BCX8">c</span><span class="NormalTextRun SpellingErrorV2Themed SCXW51722933 BCX8">tx_server</span> <span class="NormalTextRun SCXW51722933 BCX8">struct </span><span class="NormalTextRun SCXW51722933 BCX8">from </span></span><a class="Hyperlink SCXW51722933 BCX8" href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noreferrer noopener"><span class="TextRun Underlined SCXW51722933 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="none"><span class="NormalTextRun SCXW51722933 BCX8" data-ccp-charstyle="Hyperlink">llama.cpp</span></span></a><span class="TextRun SCXW51722933 BCX8" lang="EN-US" xml:lang="EN-US" data-contrast="auto"><span class="NormalTextRun SCXW51722933 BCX8">, an LLM inference written in C/C++.</span></span><span class="EOP Selected SCXW51722933 BCX8" data-ccp-props="{}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/NewCopilotSummary1-ezgif.com-video-to-gif-converter-1.gif"><img decoding="async" class="aligncenter size-full wp-image-35423" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/NewCopilotSummary1-ezgif.com-video-to-gif-converter-1.gif" alt="Gif showing that you can hover over a variable, click on the popup that then appears. This when shows you a summary of the code that you have written." width="800" height="450" /></a></p>
-<p><span data-contrast="auto">Please let us know any feedback on the user experience by commenting on </span><a href="https://github.com/microsoft/vscode-cpptools/issues/13466"><span data-contrast="none">our open issue</span></a><span data-contrast="auto"> tracking this.</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true}"> </span></p>
-<h2 aria-level="2"><span data-contrast="none">Customize Recursive #include Processing </span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><span data-contrast="auto">Have you ever worked on a project that wasn’t configured and had issues with recursive #includes? With this release, we have introduced three new settings to give you more control over how recursive include paths are processed. This lets you tune IntelliSense for better correctness and performance in your project. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><span data-contrast="auto">The ideal way to configure the C++ Extension is with a configuration provider (such as CMake Tools) or a compile_commands.json file, which will provide the configuration for IntelliSense. Otherwise, the C++ extension, by default, adds a &#8216;recursive&#8217; include path to your configuration which searches all subdirectories of your workspace as if they were #include paths. Recursion is indicated by appending <code>/**</code> to your include path in your c_cpp_properties.json file:</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/cpppropertiesjsonscreenshotofrecursiveincludepath.png"><img decoding="async" class="aligncenter size-full wp-image-35424" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/cpppropertiesjsonscreenshotofrecursiveincludepath.png" alt="Screenshot of the c_cpp_properties.json file showing the includepath being set to ${workspace}/** to indicate recursion in the current workspace" width="558" height="321" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/cpppropertiesjsonscreenshotofrecursiveincludepath.png 558w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/cpppropertiesjsonscreenshotofrecursiveincludepath-300x173.png 300w" sizes="(max-width: 558px) 100vw, 558px" /></a></p>
-<p><span data-contrast="auto">While using recursive includes saves you from having to list every include path individually, the process of resolving recursive includes can be resource and time intensive, especially for large projects.  </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><span data-contrast="auto">To better tailor this process to your project’s structure and your performance needs, you can now optimize with three new configuration options in c_cpp_properties.json:</span></p>
-<h4>1. recursiveIncludes.reduce</h4>
-<p><span data-contrast="auto">By default, the C++ extension avoids passing unneeded include paths to the IntelliSense process. When the extension opens and parses a source file, it recursively follows each #include to track every directory that contains a header. Only these relevant directories are used in the final configuration passed to the IntelliSense process. However, the process of identifying directories to reduce can add additional overhead.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><span data-contrast="auto">With the new &#8220;recursiveIncludes.reduce&#8221; setting, you can choose to skip this reduction step. By setting reduce to &#8220;never&#8221;, all recursive include paths will be passed to the IntelliSense process. In some situations, depending on the sub-directory layout, header file structure, and other project characteristics, this can lead to performance improvements.</span><span data-ccp-props="{&quot;335559739&quot;:0}"> </span></p>
-<p><span data-contrast="auto">For example, when setting reduce to “never” for the </span><a href="https://pytorch.org/"><span data-contrast="none">PyTorch source code</span></a><span data-contrast="auto">, there was an average 3.1x speedup in the time to generate the initial semantic colorization for a file on first open. For this project, it is faster to pass all include paths to the IntelliSense process rather than spend time reducing include paths to relevant directories. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559738&quot;:240,&quot;335559739&quot;:0,&quot;335559740&quot;:276}"> </span><span data-contrast="auto">This speedup was 1.5x on MacOS, 2x on Linux, and 5.8x on Windows. Testing was done using version 1.99 of VS Code, comparing the C++ extension version 1.23 to 1.25.</span><span data-ccp-props="{}"> </span></p>
-<p><span data-contrast="none"> </span><span data-ccp-props="{&quot;335551550&quot;:2,&quot;335551620&quot;:2}"> <a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/timetocolorization.png"><img decoding="async" class="aligncenter size-full wp-image-35426" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/timetocolorization.png" alt="graph that shows the time to colorization in milliseconds between using reduce= always and reduce=never. for windows it went from 88.13 to 14.99 when switching to never. for mac it went from 32.6 to 21.89 switching from always to never. for linux it went from 74.42 to 37.4 switching from always to never. " width="664" height="571" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/timetocolorization.png 664w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/timetocolorization-300x258.png 300w" sizes="(max-width: 664px) 100vw, 664px" /></a></span></p>
-<p><span data-contrast="none">Note that performance gains may vary depending on the machine and project used. To learn more, please reference the<a href="https://code.visualstudio.com/docs/cpp/customize-cpp-settings#_recursive-includes-properties"> recursive include path documentation.</a></span></p>
-<h4><span data-contrast="none">2. recursiveIncludes.priority</span></h4>
-<p><span data-contrast="auto">Have you ever opened a large project for the first time, opened a file that uses  #include “string.h” and IntelliSense finds the wrong string.h? It turns out one of your project’s sub directories contains a header file named “string.h” that conflicts with the system header for “string.h”. With the new priority setting, you can now determine which of these two to choose.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><span data-contrast="auto">Always prioritize your own header file? Choose “beforeSystemIncludes”.  This process mimics a compiler’s resolution order, which ensures IntelliSense results match the compiler’s results and allows for more predictability. For example, if you create a &#8220;string.h&#8221; locally, you probably want IntelliSense to pick up that file in the same way a compiler would.</span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<p><span data-contrast="auto">Always prioritize the system header? Choose “afterSystemIncludes”. For example, if your code contains the sysroots for multiple IoT devices, you want to pick up system includes from your compiler and not from the first sysroot found in your workspace. </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<h4><span data-contrast="none">3. recursiveIncludes.order</span></h4>
-<p><span data-contrast="auto">Customize further by specifying the search order so relevant header files are found first. If your workspace has multiple files of the same name, and the incorrect file is chosen, try switching to &#8220;breadthFirst&#8221; instead of the default &#8220;depthFirst&#8221; so headers closer to the root of the recursive include path have higher priority.  </span><span data-ccp-props="{&quot;201341983&quot;:0,&quot;335559740&quot;:276}"> </span></p>
-<h2 aria-level="2"><span data-contrast="none">Try it out</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><span data-contrast="auto">To experiment with these new settings and experience the performance improvements yourself, open your workspace in VS Code, then:</span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true}"> </span></p>
-<ol>
-<li><span data-contrast="auto">Open the Command Palette (Ctrl+Shift+P on Windows or Cmd+Shift+P on Mac) and open the editor for c_cpp_properties.json by running: `</span><span data-contrast="auto">C/C++: Edit Configurations (JSON)`</span></li>
-<li><span data-contrast="auto">Confirm you’re using a recursive path ending in /** under &#8220;includePath&#8221;:</span><span data-ccp-props="{&quot;335559738&quot;:240,&quot;335559739&quot;:240}"> </span></li>
-</ol>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/includepath.png"><img decoding="async" class="aligncenter size-full wp-image-35427" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/includepath.png" alt="same picture as the first one, just showing include path has the ?** at the end" width="390" height="90" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/includepath.png 390w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/includepath-300x69.png 300w" sizes="(max-width: 390px) 100vw, 390px" /></a></p>
-<p><span data-contrast="auto">      3. Add or modify the fields in the <code>recursiveIncludes</code> section:</span></p>
-<p><span data-contrast="auto"><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/recursiveincelues.png"><img decoding="async" class="aligncenter size-full wp-image-35432" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/recursiveincelues.png" alt="screenshot of cpp properties.json that includes an example of every setting just discussed. reduce set to never, priority set to after system includes, and order set to breadthfirst" width="468" height="147" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/recursiveincelues.png 468w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/04/recursiveincelues-300x94.png 300w" sizes="(max-width: 468px) 100vw, 468px" /></a></span><span data-ccp-props="{&quot;335559738&quot;:240,&quot;335559739&quot;:240}"> </span></p>
-<p><span data-contrast="auto">Save your changes and reopen a file in your project to see them take effect. You can toggle these settings to determine which configuration provides the best performance for your project. </span><span data-ccp-props="{&quot;335559739&quot;:0}"> </span></p>
-<h2 aria-level="2"><span data-contrast="none">What do you think? </span><span data-ccp-props="{&quot;134245418&quot;:true,&quot;134245529&quot;:true,&quot;335559738&quot;:160,&quot;335559739&quot;:80}"> </span></h2>
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools"><span data-contrast="none">Download the C/C++ extension for Visual Studio Code </span></a><span data-contrast="none"> today, give it a try, and let us know what you think. </span><span data-ccp-props="{&quot;335559739&quot;:240}"> </span></p>
-<p><span data-contrast="none">If you have any questions around this release, feel free to start a discussion in </span><a href="https://github.com/microsoft/vscode-cpptools/discussions"><span data-contrast="none">our GitHub repository.</span></a><span data-contrast="none"> Otherwise, if you run into any issues, please report them in the </span><a href="https://github.com/Microsoft/vscode-cpptools/issues"><span data-contrast="none">issues section</span></a><span data-contrast="none">. We can be reached via the comments below, per email at  </span><a href="mailto:visualcpp@microsoft.com"><span data-contrast="none">visualcpp@microsoft.com,</span></a><span data-contrast="none"> or through our team on X/Twitter at  </span><a href="https://twitter.com/visualc"><span data-contrast="none">@</span></a><a href="https://twitter.com/visualc"><span data-contrast="none">VisualC.</span></a><span data-ccp-props="{&quot;335559739&quot;:240}"> </span></p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/vs-code-c-extension-1-25-release-explain-c-symbols-using-copilot-customize-recursive-include-paths/">VS Code C++ Extension 1.25 Release:  Explain C++ symbols using Copilot &#038; Customize recursive include paths</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
