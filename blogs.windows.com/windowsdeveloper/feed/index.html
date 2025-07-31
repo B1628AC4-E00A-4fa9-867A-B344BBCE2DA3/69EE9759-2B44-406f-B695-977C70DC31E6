@@ -12,7 +12,7 @@
 	<atom:link href="https://blogs.windows.com/windowsdeveloper/feed/" rel="self" type="application/rss+xml" />
 	<link>https://blogs.windows.com/windowsdeveloper/</link>
 	<description></description>
-	<lastBuildDate>Thu, 31 Jul 2025 13:10:52 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 31 Jul 2025 16:00:10 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,162 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Phi Silica task specialization using LoRA in Microsoft Learning Zone: A technical deep dive</title>
+		<link>https://blogs.windows.com/windowsdeveloper/2025/07/31/phi-silica-task-specialization-using-lora-in-microsoft-learning-zone-a-technical-deep-dive/</link>
+		
+		<dc:creator><![CDATA[Shay Ben-Elazar]]></dc:creator>
+		<pubDate>Thu, 31 Jul 2025 16:00:10 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57522</guid>
+
+					<description><![CDATA[<p>At Build 2025, <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/advancing-windows-for-ai-development-new-platform-capabilities-and-tools-introduced-at-build-2025/">we announced</a> support for LoRA (low-rank-adaptation) finetuning </p>
+<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/07/31/phi-silica-task-specialization-using-lora-in-microsoft-learning-zone-a-technical-deep-dive/">Phi Silica task specialization using LoRA in Microsoft Learning Zone: A technical deep dive</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[At Build 2025, <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/advancing-windows-for-ai-development-new-platform-capabilities-and-tools-introduced-at-build-2025/">we announced</a> support for LoRA (low-rank-adaptation) finetuning for <a href="https://blogs.windows.com/windowsexperience/2024/12/06/phi-silica-small-but-mighty-on-device-slm/">Phi Silica</a> – our inbox Small Language Model (SLM) that runs locally on Copilot+ PCs. LoRA makes fine-tuning more efficient by updating only a small subset of parameters of the model with custom data. This allows improved performance on desired tasks without affecting model's overall abilities.
+
+This post shares the behind-the-scenes work and design considerations that enabled us to customize generation for a real-world use case: generating high-quality, pedagogically valuable Kahoot! quizzes. Our efforts led to a <b>75% reduction in rejection rates</b> and show a <b>4.6X uplift in subjective quality scores</b><sup>1</sup>.
+
+https://www.youtube.com/watch?v=M5h2Sn0odnM
+<h2><b>Microsoft Learning Zone: Generating Kahoot! games on-device</b></h2>
+Earlier this year, we introduced <a href="https://www.microsoft.com/en-us/education/blog/2025/06/empowering-educators-with-ai-innovation-and-insights/">Microsoft Learning Zone</a> (under the code name “Project Spark”), Microsoft’s first learning companion app designed specifically for Copilot+ PCs. It empowers educators to effortlessly create interactive and personalized lessons using on-device AI – at no cost.
+
+As part of this initiative, we partnered with Kahoot!, the beloved learning platform, to enable the creation of engaging classroom games powered entirely by Phi Silica.
+
+Microsoft Learning Zone supports a wide range of generation tasks with varying pedagogical requirements – from dynamic introductions and multiple-choice formats to customizable refinement flows. Naturally, training and distributing a custom fine-tuned model for each generation task would be inefficient and impractical. Instead, we leveraged LoRA adapters to specialize a single, base Phi Silica model to diverse task needs with minimal overhead.
+<h2><b>Defining quality: verifiable vs. subjective</b></h2>
+Kahoot! quizzes consist of multiple-choice questions, and evaluating their quality is subjective – combining structural requirements with human judgement. We defined two axes of quality:
+<h3>Verifiable quality</h3>
+This includes clearly defined output format constraints – like maximum character lengths for questions and answers – aligned with Kahoot!’s UX across devices. These are enforced as hardcoded <b>guardrails</b> in Microsoft Learning Zone’s real-time generation pipeline. Generated Kahoot! multiple-choice questions are streamed to the user for review only if they successfully pass through these guardrails. Reducing the rejection rate due to guardrail violations directly improves user-perceived latency, as discarded generations increase the delay until a user can review a newly generated question.
+<h3>Subjective quality</h3>
+Subjective quality addresses attributes like engagement, clarity and educational relevance which are not easy to measure quantitatively but are important for user perception and user satisfaction. In collaboration with the Kahoot! team, we defined a rubric and guidelines for human annotators and then used those insights to scale human evaluation via a novel agentic framework – more on that below.
+<h2><b>Dataset curation and distillation</b></h2>
+To enable effective LoRA finetuning, we curated a high-quality dataset grounded in real-world Microsoft Learning Zone use, as described below. The challenge was to provide Phi Silica with educationally rich, diverse content it could learn from to adapt the behavior of the model while only finetuning ~1% of the parameters with LoRA adapters.
+
+Instead of relying solely on base model outputs, we adopted a <b>distillation approach</b>, using a leading LLM as a teacher. We applied it to generate synthetic Kahoot!-style Q&A tuples from curated learning materials. This approach allowed us to bootstrap a training dataset with higher initial quality and coverage.
+
+The Microsoft Learning Zone pipeline starts by ingesting curated learning materials and extracting key facts and segments. Each segment is processed independently to ensure reasoning focus and tractability due to model context length constraints. For each extracted segment-key fact pair, we prompted GPT-4o to generate a single Kahoot!-style question centered on the fact. We passed each generated question through Microsoft Learning Zone’s guardrails that validate hard constraints such as character length limits on questions and answers – aligned with Kahoot!’s UI guidelines.
+
+In total, we generated approximately 13,000 synthetic examples, which were then split into 10,000 training and 3,000 testing subsets, accordingly. Curating datasets for AI systems is one of the most overlooked but important pieces of the puzzle to making AI systems work effectively for the scenario at hand.
+<h2><b>LoRA finetuning with AI toolkit</b></h2>
+By using the recently released <a href="https://learn.microsoft.com/en-us/windows/ai/apis/phi-silica-lora?tabs=csharp0">Phi Silica LoRA finetuning feature in AI toolkit</a>, we were able to train LoRA adapters against the (quantized) Phi Silica model. The adapters produced run locally to customize the output of Phi Silica and match the requirements of our Kahoot! feature.
+<h3>System prompt considerations</h3>
+A system prompt grounds the model with context, instructions or other information relevant to a specific use case. It can define the following in a model’s response:
+<ul>
+ 	<li>What persona should be used</li>
+ 	<li>What the model should and shouldn’t answer</li>
+ 	<li>Format of model’s response</li>
+</ul>
+Though it may seem intuitive to provide more information in a system prompt, it costs resources and performance by using tokens in context length and adding latency to a model’s response. The original system prompt needed to get the desired output format from our Phi Silica model was lengthy – it required specifying the format of the JSON table <i>and</i> providing detailed descriptions of the types of questions and answers we wanted.
+
+After customization of our Phi Silica model, we were able to use a shorter system prompt since those details (format, persona, etc.) had been encoded in the LoRA adapter during training. This proved useful since the output required was very different from the base model’s default output.
+
+For example, we used a short prompt that pushed the base model’s output in the direction we wanted while restricting it to a couple of sentences. The prompt we used for training was:
+
+<i>“You will be given a fact and some additional context. Respond with a relevant question, one correct answer and some incorrect answers.”</i>
+
+With this prompt, the base model gave answers in plain English with questions and answers that were based on the fact and context provided. However, the style of the questions and answers did not match what we wanted, and we needed the output to have a specific JSON format.
+
+When performing inference with the LoRA adapter, we often got responses that had good questions and answers, but sometimes the JSON format was still not exactly what we provided in the training set. The solution was to reinforce that format in the system prompt we used for inference:
+
+<i>You will be given a fact and some additional context. Respond with a relevant question, one correct answer and some incorrect answers. Reply with a strict JSON string for class <code class="EnlighterJSRAW" data-enlighter-language="json">{question: string, answers: [{answer: string, correct: bool}], gettyImage: string}</code></i><i>, wrapped in <code class="EnlighterJSRAW" data-enlighter-language="generic">```json</code> </i><i>tags.</i>
+
+The combination of the LoRA adapter and this new system prompt gave us the desired output.
+<h3>Hyperparameter selection</h3>
+In addition to changes to the system prompt, changes to the hyperparameters used during LoRA adapter training may improve output quality.
+
+The default AI toolkit hyperparameters offer a solid starting point but adjusting them can optimize results for specific scenarios. We evaluated various settings on a smaller dataset for faster experiments. Training remained stable near default values, while extreme settings led to failed convergence – evidenced by stagnant loss and poor output – indicating the importance of staying close to defaults.
+
+To identify which adapters perform best, it is important to include some evaluations during experiments. At this stage of parameter exploration, we used a simplified agent-as-a-judge assessment, as described in the following section.
+
+For our Kahoot! use case, we did not find any parameter combination that worked better than our defaults. However, experimenting gave us confidence in our defaults.
+
+Once confident in our system prompt and hyperparameters, we froze them and proceeded with longer training runs. Transitioning from <i>exploration</i> to <i>exploitation</i> in LoRA adapter training, we used the full dataset and increased early stopping patience, allowing extended training if evaluation numbers showed improvement.
+<h2><b>Evaluating model quality</b></h2>
+<h3><b>Verifiable quality: guardrail pass rate</b></h3>
+The customized system with Phi Silica + LoRA adapter showed a <b>75% reduction in rejection rate</b>, measured as statistically significant via guardrails<sup>2</sup>. This directly improved user experience by reducing failed generations and perceived latency.
+<h3><b>Subjective quality: agent-as-a-judge evaluation</b></h3>
+Human evaluation costs time and resources. To scale subjective assessment, we built a multi-<b>agentic evaluation framework</b> using <a href="https://microsoft.github.io/autogen/0.2/"><b>Autogen</b></a>. Unlike traditional LLM-as-a-judge approaches, this framework simulates a <b>review team</b> of AI agents engaging in deliberative conversation to deliver nuanced, balanced and multi-perspective assessments. To do this we instructed the ‘review team’ with a set of quality measures we want to evaluate for each question. We leverage this framework to accelerate preliminary offline quality assessment. After these initial evaluations, we gradually validate results against multiple layers of human reviewers as part of Microsoft’s responsible product release practices.
+
+We share our <a href="https://github.com/microsoft/AgentAsJudge"><b>base code</b></a> for further research.
+<h3>Agent roles</h3>
+The evaluation framework consisted of several personas engaged in a discussion, here we detail the agents involved and their tasked roles:
+<ul>
+ 	<li>The <b>Reviewer</b> agent was tasked with evaluating each quality attribute using a chain-of-thought (CoT) approach, asking it to provide an initial justification and then a score for each quality criterion.</li>
+ 	<li>The <b>Critic</b> agent received the same context as the Reviewer agent along with the Reviewer’s evaluation. It was instructed to challenge the Reviewer’s reasoning - either proposing alternative scores or reinforcing agreement with reasoned justification.</li>
+</ul>
+This dialogue continues iteratively until a convergence point is reached, at which stage the <b>Meta-Reviewer</b> is invoked.
+<ul>
+ 	<li>The <b>Meta-Reviewer</b> reviews the full conversation between the Reviewer and Critic, weighs their arguments along with the base context, and issues a final verdict. This final score, whether it aligns with or diverges from the previous agents, is treated as the final output of the evaluation framework.</li>
+</ul>
+<h3>Quality metrics</h3>
+<span data-contrast="auto">The review team created a set of metrics they wish to evaluate in the generated questions; here are these metrics exactly as they appear in the system prompt of each of the agent components.</span>
+<ol>
+ 	<li><b>Educational Value</b>: whether the question teaches or tests a nontrivial concept that is highlighted in the given context.</li>
+ 	<li><b>Clarity and Phrasing</b>: whether the wording is clear, precise, grammatically correct and understandable without confusion (e.g.,no double negatives).</li>
+ 	<li><b>Correct Answers Quality</b>: whether the correct answers fully answer the question.</li>
+ 	<li><b>Distractors Quality</b>: whether the distractors (incorrect answers) are reasonable and originate from a similar context, ensuring that someone unfamiliar with the material could be misled. The distractors must be wrong answers to the question.</li>
+ 	<li><b>Focus</b>: whether the question targets a single, clear idea without mixing unrelated concepts.</li>
+ 	<li><b>Conciseness</b>: whether the question is concise and to the point avoiding unnecessary complexity or verbosity (especially since it is presented in a Kahoot! activity).</li>
+</ol>
+<h3>Agent-as-a-judge evaluation results</h3>
+Using a scoring framework we crafted with the Kahoot! team, our agents rated each question across key quality metrics, from 1 to 10. Our results show that LoRA outperforms the Phi Silica-base model across all quality attributes, as seen in the graph below.
+
+<i><img class="alignnone wp-image-57535 size-large" src="https://blogs.windows.com/wp-content/uploads/sites/3/2025/07/all_metrics_performance_with_ci1920-1024x717.png" alt="Graph showing average quality scores for Phi Silica vs. Phi Silica + LoRA across six evaluation aspects, with 95% confidence intervals." width="1024" height="717" />Figure 1: Average quality scores for Phi Silica vs. Phi Silica + LoRA across six evaluation aspects, with 95% confidence intervals</i>
+
+The results show that the Phi Silica + LoRA model consistently outperforms the baseline Phi Silica model (without customization) across all six quality aspects of question generation, including clarity, correctness and educational value. Notably, the most significant improvements are seen in the quality of correct answers and quality of distractors (incorrect answers), while Phi Silica + LoRA achieves both higher average scores and narrower confidence intervals. The 95% confidence intervals indicate the statistical reliability of these findings - where non-overlapping intervals between models suggest that LoRA's improvements are not due to chance. Overall, the results highlight a meaningful and statistically robust gain in quality enabled by LoRA fine-tuning.
+
+Overall, we found that our agent-as-a-judge favored the samples generated by the Phi Silica + LoRA model in 22.5% of the cases, compared to 14.5% for those generated by the base model.
+
+<i><img class="alignnone wp-image-57536" src="https://blogs.windows.com/wp-content/uploads/sites/3/2025/07/ab_experiment_agent_as_a_judge1920-1024x683.png" alt="Graph showing Base vs Base + LoRA A/B test overall “win rate” according to our agent-as-a-judge evaluation system, where the base model is Phi Silica." width="500" height="333" />Figure 2: Base vs Base + LoRA A/B test overall “win rate” according to our agent-as-a-judge evaluation system, where the base model is Phi Silica</i>
+<h2><b>Comparison with human judgement</b></h2>
+To assess the effectiveness of using Phi Silica with a LoRA adapter compared to Phi Silica alone, we conducted an A/B test via a human evaluation study. The study included 2,350 paired samples generated by both models, with one human preference collected for each pair.
+
+Annotators were shown pairs of multiple-choice questions generated by the two models from the same input context. For each pair, annotators selected the better question based on the same criteria defined in our agent-as-a-judge evaluation framework. Each annotator received the original context along with both generated questions and their answer choices and was asked to choose the preferred question in a blind AB test. The results show a trend of favoring the Phi Silica + LoRA model with a powerful effect size measured as 4.6X uplift, which can be seen in Figure 3.
+
+<i><img class="alignnone wp-image-57537" src="https://blogs.windows.com/wp-content/uploads/sites/3/2025/07/human_ab_test_recreated_1000dpi1920-1024x683.png" alt="Graph showing human preference in a blind AB test on question generated by Phi Silica and Phi Silica + LoRA." width="500" height="333" />Figure 3: Human preference in a blind AB test on question generated by Phi Silica and Phi Silica + LoRA</i>
+
+Our framework produces a set of scores across selected quality metrics. To aggregate these into a single score per question, we averaged the metric scores. We then compared the aggregated scores of each question pair to determine a model preference. Finally, we compared these preferences to those of human annotators to assess alignment. The results show that the framework achieves 79.5% accuracy and an F1 score of 77.3 in predicting human preference. We note that human preferences may differ in how they weight various quality metrics. While our evaluation relied on a simple average across all metrics, individuals are likely to prioritize certain aspects of quality over others, leading to potential misalignment.
+
+We share the model’s confusion matrix in Figure 4 below.
+
+<i><img class="alignnone wp-image-57538" src="https://blogs.windows.com/wp-content/uploads/sites/3/2025/07/confusion_matrix_binary_balanced1920-1024x768.png" alt="Normalized binary confusion matrix on a balanced dataset, comparing Phi Silica before and after adding the LoRA adapter." width="550" height="413" />Figure 4: Normalized binary confusion matrix on a balanced dataset, comparing Phi Silica before and after adding the LoRA adapter</i>
+<h2><b>Summary</b></h2>
+The work done by the Microsoft Education team is a real-life example of how LoRA adapters are a cost-effective, lightweight option for customization of Phi Silica for task specific scenarios like generating Kahoot! quizzes.
+
+Instead of training the larger Phi Silica base model, training was done on the smaller LoRA adapter using a curated dataset grounded in Microsoft Learning Zone’s guardrails (ex. aligning to Kahoot!’s UI guidelines). Customization via trained LoRA adapters shortened prompt requirements that improved efficiency while maintaining desired output structures. The default AI toolkit hyper parameters were validated, leading to extended training with fixed parameters.
+
+Output quality was assessed by agents and verified through human testing for added reliability. Between the two tests, the Kahoot! quizzes generated by the Phi Silica + LoRA model were more favored by both the agents <i>and</i> humans.
+
+<i><img class="alignnone wp-image-57539 size-full" src="https://blogs.windows.com/wp-content/uploads/sites/3/2025/07/Picture1.png" alt="LoRA distillation and evaluation flow overview." width="668" height="108" />Figure 5: LoRA distillation and evaluation flow overview</i>
+
+Ultimately, these efforts led to a <b>75% reduction in rejection rates</b> and a <b>4.6X uplift in subjective quality scores</b> or AI generated Kahoot! quizzes.
+
+Kahoot! game generation through Microsoft Learning Zone will launch to public preview for Educators to experiment with later this summer. This work demonstrates how small models, when carefully adapted, can deliver robust, personalized AI experiences – even within constrained environments like on-device learning tools.
+
+Read more about leveraging LoRA with Phi Silica on Copilot+ PC devices at our <a href="https://blogs.windows.com/windowsdeveloper/2025/05/19/advancing-windows-for-ai-development-new-platform-capabilities-and-tools-introduced-at-build-2025/">2025 Build announcement page</a>.
+
+<strong>Acknowledgements:</strong>
+
+<em>Mousa Arraf - Applied Science Intern</em>
+
+<em>Ella Ben-Tov - Principal Product Manager</em>
+
+<em>Pashmina Cameron - Principal Applied Science Manager</em>
+
+<em>Henry Jackson-Flux - Senior Applied Scientist</em>
+
+<em>Merav Mofaz - Senior Applied Scientists</em>
+
+<strong>Endnotes:</strong>
+
+<sup>1</sup> Metrics jointly defined with Kahoot, data generated by Microsoft as further defined below, analysis done on May 13, 2025.
+
+<sup>2</sup> Measurements performed on data generated by Microsoft, analysis done on May 13, 2025.]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
 		<title>Leveling up your Microsoft Store on Windows experience</title>
 		<link>https://blogs.windows.com/windowsdeveloper/2025/06/05/leveling-up-your-microsoft-store-on-windows-experience/</link>
 		
@@ -1026,44 +1182,6 @@ Please check the prerequisites section for details.
 </ul>
 <h2>Conclusion</h2>
 Developers can now start using stable Arm native PyTorch builds for Windows to create applications that leverage AI and utilize the full potential of ARM architecture. Give the native binaries a try today! <a href="https://pytorch.org/">Download here</a>.]]></content:encoded>
-					
-		
-		
-			</item>
-		<item>
-		<title>GitHub Actions now supports Windows on Arm runners for all public repos</title>
-		<link>https://blogs.windows.com/windowsdeveloper/2025/04/14/github-actions-now-supports-windows-on-arm-runners-for-all-public-repos/</link>
-		
-		<dc:creator><![CDATA[Marcus Perryman]]></dc:creator>
-		<pubDate>Mon, 14 Apr 2025 19:31:11 +0000</pubDate>
-				<category><![CDATA[Uncategorized]]></category>
-		<guid isPermaLink="false">https://blogs.windows.com/windowsdeveloper/?p=57413</guid>
-
-					<description><![CDATA[<p>We are continuously investing in improving the Windows on Arm developer experience by providing and improving the tools needed by developers targeting Arm powered Copilot+ PCs.</p>
-<p>Today we are thrilled to announce Windows on Arm runner availability has</p>
-<p>The post <a href="https://blogs.windows.com/windowsdeveloper/2025/04/14/github-actions-now-supports-windows-on-arm-runners-for-all-public-repos/">GitHub Actions now supports Windows on Arm runners for all public repos</a> appeared first on <a href="https://blogs.windows.com/windowsdeveloper">Windows Developer Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[We are continuously investing in improving the Windows on Arm developer experience by providing and improving the tools needed by developers targeting Arm powered Copilot+ PCs.
-
-Today we are thrilled to announce Windows on Arm runner availability has been extended to all public repos, including GitHub Free tier accounts.
-
-This enhancement simplifies continuous integration workflows and enables developers to better support Arm-based Windows applications. With this update all accounts, including open-source projects using free tier accounts, can incorporate Windows on Arm targets into their CI pipelines for public projects, achieving a similar level of build and regression testing as is available for Intel targets. This improvement simplifies the process for maintainers to add Windows Arm targets to CI jobs to ensure compatibility and reliability across a wider range of architectures.
-<h3>Key Benefits</h3>
-<ol>
- 	<li>Expanded Architecture Support: With the continued growth of Windows on Arm devices – especially the Qualcomm powered Copilot+ PCs - developers can easily extend support to this platform without requiring additional infrastructure.</li>
- 	<li>Improved Continuous Integration workflows: Adding Arm runners to your pipeline allows for consistent testing and building across both Arm and Intel architectures to pick up regressions as early as possible.</li>
- 	<li>Directly benefits open-source projects: The availability of Arm runners for all public repos, including free tier accounts, reinforces GitHub’s commitment to supporting innovation in the open-source community. To learn more about eligibility for GitHub free tier, visit the <a href="https://github.com/pricing">GitHub Pricing page</a>.</li>
-</ol>
-The new Windows 11 Arm image for GitHub runners ships with tooling and software for a variety of different development environments. <a href="https://github.com/actions/partner-runner-images/blob/main/images/arm-windows-11-image.md">Find a full list of included dependencies</a>.
-<h3>Getting Started</h3>
-Adding Windows on Arm targets to your CI pipeline via GitHub Actions is easy. Windows on Arm runners can be added to your public repos by adding the “windows-11-arm” runner target in your yml workflow. Below is an example GitHub Actions workflow for a C# project using Visual Studio tools:
-<img class="alignnone wp-image-57419 size-full" src="https://pub-d00f534024b04d0e8036586fc78a41fa.r2.dev/sites/3/2025/04/Code.png" alt="Example GitHub Actions workflow for a C# project using Visual Studio tools" width="523" height="439" />
-<h3>Moving Forward</h3>
-The inclusion of Windows on Arm runners in GitHub Actions marks a valuable step forward for open-source projects and developers aiming to support diverse architectures. By integrating Arm targets into your workflows, you can ensure your applications deliver reliable performance across platforms.
-
-Try it out today and broaden your project's reach and compatibility.
-
-<a href="https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners?supported-runners-and-hardware-resources=">Find out more about adding GitHub-hosted runners to your repository</a>.]]></content:encoded>
 					
 		
 		
