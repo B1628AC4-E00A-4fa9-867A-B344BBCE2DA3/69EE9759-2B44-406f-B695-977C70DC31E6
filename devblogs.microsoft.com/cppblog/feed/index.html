@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Tue, 05 Aug 2025 20:34:38 +0000</lastBuildDate>
+	<lastBuildDate>Tue, 19 Aug 2025 01:28:29 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,65 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Dependabot support for vcpkg</title>
+		<link>https://devblogs.microsoft.com/cppblog/dependabot-support-for-vcpkg/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/dependabot-support-for-vcpkg/#respond</comments>
+		
+		<dc:creator><![CDATA[Jamie Magee]]></dc:creator>
+		<pubDate>Mon, 18 Aug 2025 18:30:16 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[dependabot]]></category>
+		<category><![CDATA[GitHub]]></category>
+		<category><![CDATA[vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35651</guid>
+
+					<description><![CDATA[<p>We are excited to announce that GitHub’s Dependabot now brings automated dependency updates to C++ projects using vcpkg. This support is available for projects using vcpkg manifest files, empowering teams to keep their library dependencies current and secure with minimal effort. With Dependabot, your repo can receive automatic pull requests to upgrade your libraries to [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/dependabot-support-for-vcpkg/">Dependabot support for vcpkg</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We are excited to announce that GitHub’s Dependabot now brings <a href="https://github.blog/changelog/2025-08-12-dependabot-version-updates-now-support-vcpkg/">automated dependency updates to C++ projects using vcpkg</a>. This support is available for projects using <a href="https://learn.microsoft.com/vcpkg/concepts/manifest-mode">vcpkg manifest files</a>, empowering teams to keep their library dependencies current and secure with minimal effort. With Dependabot, your repo can receive automatic pull requests to upgrade your libraries to the latest available versions.</p>
+<h2>What does this mean for your projects?</h2>
+<p>For C++ developers managing dependencies through vcpkg, this integration eliminates a critical gap in the DevSecOps pipeline. Dependabot will automatically scan your <code>vcpkg.json</code> manifests, monitor for updates, and create pull requests when new versions become available. This matches the automation capabilities enjoyed by other language ecosystems like JavaScript and Python.</p>
+<p>Unlike most package managers, vcpkg uses a &#8220;baseline&#8221; system that&#8217;s particularly well-suited to C++&#8217;s complexity. Instead of updating individual packages piecemeal, Dependabot advances your entire baseline to a newer snapshot where all libraries have been tested together.</p>
+<p>Think of it this way: rather than updating curl and leaving OpenSSL at an older version, which might cause compatibility issues, the baseline update moves you to a curated set where curl, OpenSSL, and all your other dependencies are known to work together. This approach prevents the ABI (Application Binary Interface) incompatibilities and version conflicts that plague C++ projects when libraries compiled with different settings try to interact.</p>
+<p>A single change updates all unpinned dependencies to versions that vcpkg maintainers have verified work together. You can still pin specific libraries using <code>version&gt;=</code> constraints or overrides when needed. See <a href="https://learn.microsoft.com/vcpkg/users/versioning.concepts">vcpkg’s versioning documentation</a> for more details.</p>
+<h2>Configuration and implementation</h2>
+<p>Setting up Dependabot for vcpkg follows the same pattern as other supported ecosystems. Add the following configuration to your <code>.github/dependabot.yml</code> file:</p>
+<pre><code class="language-yml">version: 2
+updates:
+- package-ecosystem: "vcpkg"
+  directory: "/" # The location of your vcpkg.json
+  schedule:
+    interval: "weekly"
+</code></pre>
+<p>The configuration supports all standard <a href="https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference">Dependabot options</a>, including custom schedules, cooldown periods, and custom commit messages.</p>
+<h2>See it in action</h2>
+<p>For a practical demonstration, check out this <a href="https://github.com/JamieMagee/dependabot-vcpkg">example repository</a> that showcases Dependabot updating vcpkg dependencies. The repository includes a <code>vcpkg.json</code> manifest with a <code>builtin-baseline</code> field that Dependabot automatically updates to the latest vcpkg port repository commit. You can examine <a href="https://github.com/JamieMagee/dependabot-vcpkg/pulls">the pull requests</a> to see what Dependabot does when updates are available.</p>
+<picture><source srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/08/Screenshot-2025-08-18-152839-1024x664.png" media="(prefers-color-scheme: dark)" /><source srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/08/Screenshot-2025-08-18-090807-1024x671.png" media="(prefers-color-scheme: light)" /><img fetchpriority="high" decoding="async" class="aligncenter size-large" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/08/Screenshot-2025-08-18-090807-1024x671.png" alt="A pull request created by Dependabot, updating vcpkg.json to the latest baseline from the vcpkg port repository" width="1024" height="671" /> </picture>
+<h2>Maintenance benefits</h2>
+<p>The integration brings modern dependency management practices to C++ development, ensuring libraries stay current with minimal manual effort. Regular dependency updates prevent the accumulation of technical debt that occurs when libraries fall behind multiple major versions. With Dependabot handling the routine work of checking for updates, developers can focus on feature development while maintaining a healthy dependency tree.</p>
+<h2>Try out the experience</h2>
+<p>Automated dependency management reduces maintenance overhead and helps prevent security issues from outdated packages. By implementing Dependabot for vcpkg, you can maintain current dependencies without dedicating significant manual effort to the task.</p>
+<p>Take the first step today: add the Dependabot configuration file to your repository and let automated dependency management transform how your team handles C++ package updates.</p>
+<h2>Learn more</h2>
+<ul>
+<li><a href="https://github.blog/changelog/2025-08-12-dependabot-version-updates-now-support-vcpkg/">Dependabot version updates now support vcpkg – GitHub Changelog</a></li>
+<li><a href="https://github.com/dependabot/dependabot-core/issues">Report issues or get help with Dependabot for vcpkg</a></li>
+<li><a href="https://github.com/JamieMagee/dependabot-vcpkg">Example repository with a vcpkg Dependabot PR</a></li>
+<li><a href="https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference">Dependabot options reference</a></li>
+<li><a href="https://learn.microsoft.com/vcpkg/concepts/manifest-mode">vcpkg manifest mode</a></li>
+<li><a href="https://learn.microsoft.com/vcpkg/users/versioning.concepts">vcpkg versioning concepts</a></li>
+<li><a href="https://learn.microsoft.com/vcpkg/concepts/dependabot">Dependabot support for vcpkg</a></li>
+</ul>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/dependabot-support-for-vcpkg/">Dependabot support for vcpkg</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/dependabot-support-for-vcpkg/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>What’s New in vcpkg (July 2025)</title>
 		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-july-2025/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-july-2025/#respond</comments>
@@ -329,7 +388,7 @@
 <h3>Example: Converting C code to C++</h3>
 <p>At Microsoft Build, we showed how NES can dynamically update C++ code, including an example of updating code syntax that was using C functions to use the C++ Standard Template Library (STL).</p>
 <p>For example, when updating code that reads from stdin from C-style code that uses raw character arrays to C++ code that uses the <code>std::string</code> type, NES predicts and suggests updates across all applicable areas near the cursor. NES replaces calls to <code>fgets</code> with calls to <code>std::getline</code> and replaces <code>atoi</code> with the C++ <code>std::stoi</code>, which has better error handling.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/nes-finalv2-ezgif.com-video-to-gif-converter-1.gif"><img fetchpriority="high" decoding="async" class="alignnone size-full wp-image-35627" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/nes-finalv2-ezgif.com-video-to-gif-converter-1.gif" alt="NES dynamically updating fgets to getline across a C++ file" width="800" height="600" /></a></p>
+<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/nes-finalv2-ezgif.com-video-to-gif-converter-1.gif"><img decoding="async" class="alignnone size-full wp-image-35627" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/nes-finalv2-ezgif.com-video-to-gif-converter-1.gif" alt="NES dynamically updating fgets to getline across a C++ file" width="800" height="600" /></a></p>
 <p>You can then review and make any relevant updates – for example, in this case, any other areas that call on strings.</p>
 <p>Next Edit Suggestions is now available in both <a href="https://learn.microsoft.com/en-us/visualstudio/ide/copilot-next-edit-suggestions?view=vs-2022">Visual Studio</a> and <a href="https://code.visualstudio.com/docs/copilot/ai-powered-suggestions#_next-edit-suggestions">VS Code</a>.  As you try out NES, we&#8217;d love to hear your feedback. Share your feedback on <a href="https://developercommunity.visualstudio.com/VisualStudio/suggest">Developer Community</a> for Visual Studio or on <a href="https://github.com/microsoft/vscode-copilot-release">GitHub</a> for VS Code to help shape what’s next and how we can improve. If NES streamlines your workflow or saves you time, let us know &#8211; drop a comment or email us at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com</a>. We’re excited to see how you’re using NES for C++!</p>
 <h3>Agent Mode and other new Copilot features</h3>
@@ -1113,218 +1172,6 @@ int count_x(std::vector&lt;int&gt; const&amp; xs) {
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-for-cpp-developers-in-visual-studio-2022-17-14/feed/</wfw:commentRss>
 			<slash:comments>2</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Introducing the /forceInterlockedFunctions switch for ARM64</title>
-		<link>https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/</link>
-		
-		<dc:creator><![CDATA[Emily Bao]]></dc:creator>
-		<pubDate>Tue, 13 May 2025 10:00:25 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[Backend]]></category>
-		<category><![CDATA[C++]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35259</guid>
-
-					<description><![CDATA[<p>In Visual Studio 2022 17.14, we are introducing the /forceInterlockedFunctions[-] switch, which generates and links with out-of-line atomics that select Armv8.1+ Large System Extension (LSE) atomic instructions based on CPU support. This switch is on by default for Armv8.0 and off for Armv8.1+. Outlining is necessary in Armv8.0 because this version&#8217;s interlocked intrinsics use exclusive [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/">Introducing the /forceInterlockedFunctions switch for ARM64</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>In Visual Studio 2022 17.14, we are introducing the <code>/forceInterlockedFunctions[-]</code> switch, which generates and links with out-of-line atomics that select Armv8.1+ Large System Extension (LSE) atomic instructions based on CPU support.</p>
-<p>This switch is on by default for Armv8.0 and off for Armv8.1+. Outlining is necessary in Armv8.0 because this version&#8217;s interlocked intrinsics use exclusive instructions—<code>LoadExcl</code>/<code>StoreExcl</code>—that do not guarantee forward progress. This can cause performance issues due to intermittent livelocks. <a href="https://developer.arm.com/documentation/ddi0487/ka">See Arm Architecture Reference Manual for A-profile architecture</a>, section &#8220;B2.17.5 Load-Exclusive and Store-Exclusive instruction usage restrictions&#8221; for examples of when the <code>LoadExcl</code>/<code>StoreExcl</code> loop may not make forward progress.</p>
-<p>Below is an example of code that was previously generated when using the <code>_InterlockedAdd64</code> intrinsic. You can see the <code>ldaxr</code> and <code>stlxr</code> instructions being used.</p>
-<table style="width: 74.6316%;">
-<tbody>
-<tr>
-<td style="width: 49.3177%;">Main.cpp</td>
-<td style="width: 115.99%;">Main.asm snippet</td>
-</tr>
-<tr>
-<td style="width: 49.3177%;">
-<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;intrin.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;Windows.h&gt;
-
-void main() {
-    volatile __int64 Addend = 5;
-    __int64 Value = 1; _InterlockedAdd64(&amp;Addend, Value);
-}</code></pre>
-</td>
-<td style="width: 115.99%;">
-<pre class="prettyprint language-default"><code class="language-default">; _InterlockedAdd64(&amp;Addend, Value);
-ldr x10,[sp]
-add x9,sp,#8
-|$LN3@main|
-ldaxr x8,[x9]
-add x8,x8,x10
-stlxr wip0,x8,[x9]
-cbnz wip0,|$LN3@main|
-dmb ish</code></pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p>With the <code>/forceInterlockedFunctions</code> option you can see that the <code>ldaxr</code> and <code>stlxr</code> are gone and have been replaced with a <code>bl _InterlockedAdd64</code> instruction</p>
-<table>
-<tbody>
-<tr>
-<td>Main.cpp</td>
-<td>Main.asm snippet</td>
-</tr>
-<tr>
-<td>
-<pre class="prettyprint language-cpp"><code class="language-cpp">#include &lt;intrin.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;Windows.h&gt;
-
-void main() {
-    volatile __int64 Addend = 5;
-    __int64 Value = 1; _InterlockedAdd64(&amp;Addend, Value);
-}</code></pre>
-</td>
-<td>
-<pre class="prettyprint language-default"><code class="language-default">; InterlockedAdd64(&amp;Addend, Value);
-ldr x1,[sp,#0x10]
-add x0,sp,#0x18
-bl _InterlockedAdd64
-nop</code></pre>
-</td>
-</tr>
-</tbody>
-</table>
-<p>The <code>/forceInterlockedFunctions</code> option only applies to Arm64 and will be ignored if not applicable. Additionally, enabling the LSE feature will override the default outlining behavior in Armv8.0.</p>
-<p>Note that the option is on by default for all Arm64EC versions. We would not recommend turning the option off for ARM64EC, as outlining helps address the memory model differences between Arm64 and x64.</p>
-<p>&nbsp;</p>
-<p>This flag impacts the following interlocked intrinsics:</p>
-<p>Key:</p>
-<ul>
-<li>Full: supports plain, <code>_acq</code>, <code>_rel</code>, and <code>_nf</code> forms.</li>
-<li>None: Not supported</li>
-</ul>
-<table>
-<tbody>
-<tr>
-<td><strong>Operation</strong></td>
-<td><strong>8</strong></td>
-<td><strong>16</strong></td>
-<td><strong>32</strong></td>
-<td><strong>64</strong></td>
-<td><strong>128</strong></td>
-<td><strong>Pointer</strong></td>
-</tr>
-<tr>
-<td><code>Add</code></td>
-<td>None</td>
-<td>None</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>And</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>CompareExchange</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-</tr>
-<tr>
-<td><code>Decrement</code></td>
-<td>None</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>Exchange</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>Full</td>
-</tr>
-<tr>
-<td><code>ExchangeAdd</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>Increment</code></td>
-<td>None</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>Or</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>Xor</code></td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>bittestandset</code></td>
-<td>None</td>
-<td>None</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-<tr>
-<td><code>bittestandreset</code></td>
-<td>None</td>
-<td>None</td>
-<td>Full</td>
-<td>Full</td>
-<td>None</td>
-<td>None</td>
-</tr>
-</tbody>
-</table>
-<h4><strong>See also</strong></h4>
-<p><a href="https://learn.microsoft.com/cpp/build/reference/force-interlocked-functions?view=msvc-170">/forceInterlockedFunctions | Microsoft Learn</a></p>
-<p><a href="https://learn.microsoft.com/cpp/intrinsics/arm64-intrinsics?view=msvc-170">ARM64 intrinsics | Microsoft Learn</a></p>
-<p><a href="https://learn.microsoft.com/cpp/build/reference/feature-arm64?view=msvc-170">/feature (ARM64) | Microsoft Learn</a></p>
-<p><a href="https://learn.arm.com/learning-paths/servers-and-cloud-computing/lse/intro/">Introduction to Large System Extensions | Arm Learning Paths</a></p>
-<h4><strong>Feedback</strong></h4>
-<p>That’s all about this new compiler option and default setting that you can find starting in Visual Studio 2022 version 17.14. Please give it a try and let us know how it goes! We always welcome feedback, questions, or concerns from the community, as it helps make Visual Studio better.</p>
-<p>Please share your thoughts, comments and questions with us through <a href="https://developercommunity.visualstudio.com/home">Developer Community</a>. You can also reach us on X <a href="https://x.com/visualc">@VisualC</a>, or via email at visualcpp@microsoft.com.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/introducing-the-forceinterlockedfunctions-switch-for-arm64/">Introducing the /forceInterlockedFunctions switch for ARM64</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
