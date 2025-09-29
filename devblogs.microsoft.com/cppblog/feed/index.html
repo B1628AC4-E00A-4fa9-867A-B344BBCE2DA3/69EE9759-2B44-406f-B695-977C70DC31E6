@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Fri, 12 Sep 2025 05:01:28 +0000</lastBuildDate>
+	<lastBuildDate>Wed, 24 Sep 2025 03:57:56 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,195 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>Fixing Overload Resolution For Parameter Arrays in C++/CLI</title>
+		<link>https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/#respond</comments>
+		
+		<dc:creator><![CDATA[Tanveer Gani]]></dc:creator>
+		<pubDate>Mon, 29 Sep 2025 14:00:08 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[C++/CLI]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35772</guid>
+
+					<description><![CDATA[<p>Fix a problem in C++/CLI parameter array overload resolution which affects newer .NET versions.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/">Fixing Overload Resolution For Parameter Arrays in C++/CLI</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<h2>Introduction</h2>
+<p><span style="font-size: 16px;">In the below discussion, </span><code style="font-size: 16px;">.NET Framework</code><span style="font-size: 16px;"> refers to the older version </span>of the Microsoft Common Language Runtime, also known as &#8220;Desktop Framework&#8221; (versions 4.0 through 4.8.x) while <code>.NET</code>  refers to versions <code>.NET Core 3.1</code>, <code>.NET 5</code> and later.</p>
+<p>The overload resolution behavior specified by the C++/CLI ECMA-372
+Standard for overloads involving parameter arrays results in surprising
+behavior in some instances. This problem has manifested with recent
+versions of .NET, which added parameter array overloads to some
+commonly used classes, resulting in overload resolution which is
+surprising, even counterintuitive, and results in broken customer code
+when it is ported from .NET Framework to .NET. This article
+explains the problem and the solution adopted by the MSVC
+compiler to solve it.</p>
+<h2>Recap of Parameter Array Overload Resolution Rules</h2>
+<p>ECMA-372 section 14.6 details the rules governing overload resolution
+where parameter arrays are involved. The method to resolve overloads is
+that for a given parameter-array overload such as</p>
+<pre><code class="language-c++">    void f(T1 arg1, T2 arg2, &lt;...&gt;, Tm argm, ...array&lt;T&gt;^ arr);</code></pre>
+<p>and a corresponding call</p>
+<pre><code class="language-c++">    f(var1, var2, &lt;...&gt;, varm, val1, val2, &lt;...&gt;, valn);</code></pre>
+<p>a new function overload is synthesized, where the parameter array <code>arr</code>
+is replaced with parameters corresponding to the types of the formal
+arguments <code>val1, val2 ... valn</code>. Then, overload resolution is performed
+as usual with the additional requirement that such synthesized overloads
+have lower cost than a C-style variadic function (i.e., those using
+<code>...</code> as the last argument) but higher cost than non-synthesized
+overloads. This requirement is in fact the cause of surprising behavior
+described below.</p>
+<h2>Customer Reports Previously Working Code is Broken</h2>
+<p>In .NET Framework, the <code>String</code> class has these methods (type names
+are from namespace <code>System</code>):</p>
+<pre><code class="language-c++">      Split(...array&lt;Char&gt;^);               // 1 (parameter array overload)   
+      // other Split overloads not of interest</code></pre>
+<p>Given a function call such as:</p>
+<pre><code class="language-c++">      str-&gt;Split(L'a', L'b');               // 2</code></pre>
+<p>the <code>Split</code> overload (2) with the parameter array argument is the only
+one that matches. When this same code is compiled against .NET, a
+customer found that a different overload is instead chosen. The reason
+is subtle, surprising and a combination of questionable overload
+resolution rules in ECMA-372 and changes to the <code>String</code> class in .NET.</p>
+<p>The difference between .NET Framework&#8217;s version of <code>String</code> and .NET&#8217;s version is that .NET added an additional overload, leading
+to this set of overloads:</p>
+<pre><code class="language-c++">      Split(Char, Int32, StringSplitOptions = StringSplitOptions::None); // 3
+      Split(...array&lt;Char&gt;^);                                            // 4          </code></pre>
+<p>Now faced with the same function call (2) above, we see that both
+overloads are viable because C++ has an implicit <code>Char</code> (aka <code>wchar_t</code>) to
+<code>Int32</code> (aka <code>int</code>) conversion, and the third parameter of (3) has a default
+argument. Due to the rule in ECMA-372/14.6, the parameter array overload
+(4) is deemed to have a higher cost and overload (3) is chosen, <em>even
+though the arguments match the parameters exactly for overload (4)</em>.
+This is clearly not what the user wanted.</p>
+<h2>Microsoft C++ Solution</h2>
+<p>After discussion in the team, we noticed that there is a telling comment
+in ECMA-372/14.6 regarding preferring non-synthesized to synthesized
+overloads:</p>
+<blockquote><p>&#8220;[<em>Note</em>: This is similar to the tiebreaker rules for template
+functions and non-template functions in the C++ Standard (§13.3.3).
+<em>end note</em>]&#8221;</p></blockquote>
+<p>While the tie-breaking rule in ISO C++ does indeed exist, <em>it comes into
+play only after overload resolution is done and the choice is between
+two overloads, one a generated function and one a non-template
+function</em>. It looked like the ECMA-372 rule for choosing non-synthesized
+over synthesized was poorly formulated as it assigned the latter a
+higher cost regardless of the costs of the conversion sequences of the
+arguments.</p>
+<p>In ISO C++, an analogous example would be:</p>
+<pre><code class="language-c++">    template&lt;typename T&gt;
+    void Split(T, T);               // 5
+    void Split(wchar_t, int);       // 6</code></pre>
+<p>The function call <code>Split(L’a’, L’b’)</code> will resolve to overload (5) since
+the arguments match exactly while one of the arguments of (6) requires a
+standard integral conversion. Hence, there is no need to use the
+tie-breaking rule at all. Were both formal arguments of (6) of type <code>wchar_t</code>, the
+tie-breaking rule would indeed come into play and choose (6) instead of
+giving an ambiguity error.</p>
+<p>It became clear that ECMA-372/14.6 should have said if there is an
+ambiguity between two remaining overloads, one a synthesized parameter
+array overload, and one a non-synthesized overload, overload resolution
+would choose the non-synthesized one. We decided to implement this
+updated interpretation but there was a problem: what to do about the
+code currently compiling and working correctly with the older rules?</p>
+<p>The risk of breaking older code was too great if we went unconditionally
+with the new rules, so we added two mechanisms to control this behavior
+at the compilation unit level, and whenever needed, at the function-call
+level.</p>
+<p>First, we introduced new driver switches:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/clr:ECMAParamArray</code></td>
+<td>Turn on ECMA-372 conformant parameter array behavior</td>
+</tr>
+<tr>
+<td><code>/clr:ECMAParamArray-</code></td>
+<td>Use updated semantics for parameter arrays</td>
+</tr>
+</tbody>
+</table>
+<p>In addition, the below existing driver switches were changed to imply these
+corresponding modes:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/clr</code></td>
+<td>implies <code>/clr:ECMAParamArray</code></td>
+</tr>
+<tr>
+<td><code>/clr:netcore</code></td>
+<td>implies <code>/clr:ECMAParamArray-</code></td>
+</tr>
+</tbody>
+</table>
+<p>In plain language, for compilations targeting .NET Framework, we
+maintain the old behavior, while for compilations targeting .NET, the
+new behavior is the default.</p>
+<p>To allow fine-grained control over the parameter array overload
+resolution mode at the function-call level, we provide a new pragma,
+<code>ecma_paramarray</code>, which can be used thus:</p>
+<pre><code class="language-c++">    #pragma ecma_paramarray(push, on)
+        // Normally calls Split(Char, int32, StringSplitOptions = None) and
+        // not Split(...array&lt;Char&gt;^) under /clr:netcore but this is
+        // reverted back to the old behavior under the pragma.
+        auto r = s-&gt;Split(L'a', L'b'); 
+    #pragma ecma_paramarray(pop)</code></pre>
+<p>This pragma overrides any ambient mode for handling parameter array
+overload resolution, whether it comes from a prior pragma use or from
+the translation unit&#8217;s ambient mode.</p>
+<p>To warn about changed behavior in overload resolution, a new warning
+<code>C5306</code> has been implemented. Consider compiling the below under <code>/clr:netcore</code>:</p>
+<pre><code class="language-c++">int main()
+{
+    System::String^ s = "Now is the time+for all good men|to come to the aid of the party";
+    auto strings = s-&gt;Split(L'|', L'+');  // Split(params char[]), not Split(char, int, System.StringSplitOptions = 0)
+}</code></pre>
+<p>This produces the diagnostic:</p>
+<pre><code class="language-txt">    auto strings = s-&gt;Split(L'|', L'+');  // Split(params char[]), not Split(char, int, System.StringSplitOptions = 0)
+                      ^
+w.cpp(4,23): warning C5306: parameter array behavior change: overload 'System::String::Split' resolved to 'array&lt;System::String ^&gt; ^System::String::Split(...array&lt;wchar_t&gt; ^)'; previously, it would have resolved to 'array&lt;System::String ^&gt; ^System::String::Split(wchar_t,int,System::StringSplitOptions)'. Use /clr:ECMAParamArray to revert to old behavior</code></pre>
+<p>In addition, missing the <code>L</code> prefix for arguments can also produce
+surprising results in overload resolution with the new parameter array
+overload rules. A new warning <code>C5307</code> was implemented to warn about
+this:</p>
+<pre><code class="language-c++">int main()
+{
+    System::String^ s = "abc def\tghi";
+    // Resolves to Split(System.Char, System.Int32, System.StringSplitOptions = 0) but should warn with C5307
+    auto arrs = s-&gt;Split(' ', '\t');  // Should be Split(L' ', L'\t').
+}</code></pre>
+<p>produces</p>
+<pre><code class="language-txt">    auto arrs = s-&gt;Split(' ', '\t');  // Should be Split(L' ', L'\t').
+                   ^
+w.cpp(4,20): warning C5307: 'array&lt;System::String ^&gt; ^System::String::Split(wchar_t,int,System::StringSplitOptions)':
+argument (2) converted from 'char' to 'int'. Missing 'L' encoding-prefix for character literal?</code></pre>
+<h2>Conclusion</h2>
+<p>We would be happy to hear back from you if you have encountered
+problems in this area and how you solved them, and if the new way of
+handling parameter array overloads has helped you or hindered you.</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/">Fixing Overload Resolution For Parameter Arrays in C++/CLI</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Microsoft C++ Team at CppCon 2025</title>
 		<link>https://devblogs.microsoft.com/cppblog/microsoft-at-cppcon-2025/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/microsoft-at-cppcon-2025/#respond</comments>
@@ -1460,160 +1649,6 @@ updates:
 <p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-21-release-multi-root-improvements-cmake-presets-v10-and-more/">Visual Studio Code CMake Tools Extension 1.21 Release: Multi-root improvements, CMake Presets v10, and more…</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
 ]]></content:encoded>
 					
-		
-		
-			</item>
-		<item>
-		<title>Updates to Warning Suppressions in Microsoft C++ Code Analysis</title>
-		<link>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/</link>
-					<comments>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/#comments</comments>
-		
-		<dc:creator><![CDATA[Carson Radtke]]></dc:creator>
-		<pubDate>Tue, 15 Jul 2025 18:00:13 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[code analysis]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35604</guid>
-
-					<description><![CDATA[<p>Improvements to \#pragma warning and gsl::suppress in Microsoft C++ Code Analysis.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/">Updates to Warning Suppressions in Microsoft C++ Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>Microsoft C++ Code Analysis is a powerful static analysis tool integrated into Visual
-Studio that helps you identify and fix potential issues in your C++ code.
-Large projects require effective management of analysis warnings to maintain code
-quality and you sometimes need to suppress warnings, but must do so in a clear and
-auditable way.</p>
-<p>To that end, we are excited to announce significant updates to the warning suppression
-mechanisms in Microsoft C++ Code Analysis. These enhancements provide better tracking,
-justification, and overall management of warning suppressions, leading to a more
-maintainable and robust codebase.</p>
-<h2>What&#8217;s New in the SARIF Output?</h2>
-<p>We enhanced the
-<a href="https://sarif.info/">Static Analysis Results Interchange Format (SARIF)</a>
-output to include detailed information about warning suppressions, most notably the
-justification provided by you. This allows teams to easily review <em>why</em> a specific
-warning was silenced.</p>
-<p>To generate a SARIF file, use the <code>/analyze:log:format:sarif</code> compiler option. To ensure
-that details about suppressed warnings (including their justifications) are included in
-this SARIF log, you must also use the <code>/analyze:log:includesuppressed</code> option.</p>
-<h2>What&#8217;s New in <code>gsl::suppress</code>?</h2>
-<p>We have updated our support for <code>gsl::suppress</code> to align with the latest C++ Core
-Guidelines syntax. Warnings can now be suppressed by using the <code>gsl::suppress</code> attribute
-in the following way:</p>
-<pre><code class="language-cpp">[[gsl::suppress( "&lt;warning_id&gt;", justification: "&lt;justification&gt;" )]]</code></pre>
-<p>Where <code>&lt;warning_id&gt;</code> is the ID of the warning you want to suppress, and the optional
-<code>&lt;justification&gt;</code> is a string that provides a justification for the suppression.</p>
-<p><em>For now, <code>[[gsl::suppress]]</code> is only available for C++ codebases. For C codebases, you
-must use the <code>#pragma warning(suppress)</code> syntax.</em></p>
-<p>Example:</p>
-<pre><code class="language-cpp">// CoreCheckExample.cpp
-// Add CppCoreCheck package and enable code analysis in build for warnings.
-
-int main()
-{
-    int arr[10];           // warning C26494
-    int* p = arr;          // warning C26485
-
-    [[gsl::suppress("bounds.1", justification : "This attribute suppresses Bounds rules #1")]]
-    {
-        int* q = p + 1;    // warning C26481 (suppressed)
-        p = q++;           // warning C26481 (suppressed)
-    }
-
-    return 0;
-}</code></pre>
-<h2>What&#8217;s New in <code>#pragma warning</code>?</h2>
-<p>We have extended <code>#pragma warning</code> to support the <code>justification</code> field. Here is how
-you can use it starting in Visual Studio 2022 version 17.14:</p>
-<pre><code class="language-cpp">#pragma warning(suppress : &lt;warning_id&gt;, justification : "&lt;justification&gt;")</code></pre>
-<p>Where <code>&lt;warning_id&gt;</code> is the ID of the warning you want to suppress, and the optional
-<code>&lt;justification&gt;</code> is a string that provides a justification for the suppression.</p>
-<h2>Choosing Between <code>#pragma warning</code> and <code>gsl::suppress</code></h2>
-<p>Both <code>#pragma warning(suppress)</code> and <code>[[gsl::suppress]]</code> offer fine-grained control over
-warning suppression.</p>
-<ul>
-<li><code>#pragma warning(suppress)</code> is a general MSVC mechanism that can be used for any
-compiler warning. It&#8217;s particularly useful when you need to suppress a warning in a
-specific code block without altering the code&#8217;s structure significantly.</li>
-<li><code>[[gsl::suppress]]</code> will only suppress warnings emitted by Microsoft C++ Code
-Analysis. It is intended for use with the C++ Core Guidelines checks and can be applied
-to a scope or a specific declaration.</li>
-</ul>
-<p>Whenever possible, we recommend using <code>[[gsl::suppress]]</code> for suppressing Microsoft C++
-Code Analysis warnings.</p>
-<h2>Why These Updates Matter</h2>
-<p>These enhancements to warning suppression offer several key benefits:</p>
-<ul>
-<li><strong>Improved Auditability and Review:</strong> With justifications recorded directly in the
-code and optionally in SARIF logs, code reviews become more effective. Team members can
-quickly understand the rationale behind a suppression without needing to consult
-external documentation or the original author.</li>
-<li><strong>Enhanced Code Maintainability:</strong> Clear justifications prevent accidental
-re-introduction of issues when code is refactored or suppressions are reviewed. They
-provide a history of why certain warnings were deemed acceptable at a particular point.</li>
-<li><strong>Better Management of Technical Debt:</strong> Suppressed warnings can be a form of
-technical debt. Justifications help in tracking and prioritizing which suppressions
-should be revisited and potentially fixed.</li>
-<li><strong>Consistency Across Suppression Mechanisms:</strong> By adding justification support to both
-<code>#pragma warning</code> and <code>gsl::suppress</code>, we provide a consistent experience for you. This
-allows old code to use <code>#pragma warning</code> while new code can use <code>[[gsl::suppress]]</code>, all
-while maintaining the ability to provide justifications.</li>
-</ul>
-<h3>Impact on Existing Workflows</h3>
-<p>These new features are additive. Existing suppression mechanisms (without
-justifications) will continue to work as before. However, we encourage you to
-start using the <code>justification</code> attribute for new suppressions and to gradually update
-existing ones where clarity is beneficial. There is no automatic migration, but the
-process of adding justifications is straightforward.</p>
-<h3>Availability</h3>
-<p>These enhancements are available in the MSVC compiler toolset shipping with Visual
-Studio 2022 version 17.14 and newer, and will be part of future Visual Studio releases.
-Ensure your Visual Studio is updated to leverage these improvements.</p>
-<h2>Try It Out</h2>
-<pre><code class="language-c++">// example.cpp
-// Compile with: cl /analyze:only /analyze:plugin EspxEngine.dll /analyze:log:format:sarif /analyze:log:includesuppressed example.cpp
-
-int main()
-{
-    int arr[10];           // warning C26494
-    int* p = arr;          // warning C26485
-
-    [[gsl::suppress("bounds.1", justification : "This attribute suppresses Bounds rules #1")]]
-    {
-        int* q = p + 1;    // warning C26481 (suppressed)
-        p = q++;           // warning C26481 (suppressed)
-    }
-
-    return 0;
-}</code></pre>
-<p>You can run the above code with the following options:
-<code>/analyze /analyze:log:format:sarif /analyze:log:includesuppressed</code> to generate a SARIF
-file that includes the suppression details.
-(Note: <code>EspxEngine.dll</code> is the plugin that enables C++ Core Guidelines checks, which are
-the target of <code>gsl::suppress</code>.)</p>
-<pre><code class="language-powershell">&gt; cl /analyze:only /analyze:plugin EspxEngine.dll /analyze:log:format:sarif /analyze:log:includesuppressed .\example.cpp
-Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35305.95 for x64
-Copyright (C) Microsoft Corporation.  All rights reserved.
-
-example.cpp
-D:\tmp\example.cpp(7) : warning C26485: Expression 'arr': No array to pointer decay (bounds.3).
-D:\tmp\example.cpp(6) : warning C26494: Variable 'arr' is uninitialized. Always initialize an object (type.5).</code></pre>
-<p>You will also find a file named <code>example.nativecodeanalysis.sarif</code>, you can open it with
-VSCode (don&#8217;t forget to install the latest version of the
-<a href="https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer">SARIF Viewer extension</a>).
-After filtering to include suppressed warnings, you will see the warning details which
-include the suppression information. Here is an example of what you will see:</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2.png"><img decoding="async" class="alignnone size-full wp-image-35609" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2.png" alt="extension screenshot png image" width="2500" height="1359" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2.png 2500w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2-300x163.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2-1024x557.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2-768x417.png 768w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2-1536x835.png 1536w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/extension_screenshot-scaled_v2-2048x1113.png 2048w" sizes="(max-width: 2500px) 100vw, 2500px" /></a></p>
-<h2>Feedback</h2>
-<p>We would love to hear your thoughts on the new changes to warning suppressions! Please
-share your feedback and suggestions in the comments below. If you run into any issues,
-please let us know by filing a feedback ticket on
-<a href="https://developercommunity.visualstudio.com/cpp">Visual Studio Developer Community</a>.</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/">Updates to Warning Suppressions in Microsoft C++ Code Analysis</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
-					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/updates-to-warning-suppressions-in-microsoft-c-code-analysis/feed/</wfw:commentRss>
-			<slash:comments>2</slash:comments>
 		
 		
 			</item>
