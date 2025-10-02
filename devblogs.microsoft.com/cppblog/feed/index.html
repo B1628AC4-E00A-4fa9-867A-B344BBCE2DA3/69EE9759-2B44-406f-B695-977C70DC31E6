@@ -12,7 +12,7 @@
 	<atom:link href="https://devblogs.microsoft.com/cppblog/feed/" rel="self" type="application/rss+xml" />
 	<link>https://devblogs.microsoft.com/cppblog/</link>
 	<description>The latest in C++, Visual Studio, VS Code, and vcpkg from the MSFT C++ team</description>
-	<lastBuildDate>Wed, 24 Sep 2025 03:57:56 +0000</lastBuildDate>
+	<lastBuildDate>Thu, 02 Oct 2025 05:29:34 +0000</lastBuildDate>
 	<language>en-US</language>
 	<sy:updatePeriod>
 	hourly	</sy:updatePeriod>
@@ -28,6 +28,233 @@
 	<height>32</height>
 </image> 
 	<item>
+		<title>What’s New in vcpkg (September 2025)</title>
+		<link>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2025/</link>
+					<comments>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2025/#respond</comments>
+		
+		<dc:creator><![CDATA[Augustin Popa]]></dc:creator>
+		<pubDate>Thu, 02 Oct 2025 05:29:34 +0000</pubDate>
+				<category><![CDATA[C++]]></category>
+		<category><![CDATA[Vcpkg]]></category>
+		<category><![CDATA[vcpkg]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35781</guid>
+
+					<description><![CDATA[<p>This blog post summarizes changes to the vcpkg package manager as part of the 2025.09.17 registry release, the 2025-08-29 and 2025-09-03 tool releases, as well as changes to vcpkg documentation throughout September. This month’s updates includes new binary caching sources x-azcopy and x-azcopy-sas, support for tvOS and watchOS target platforms, and minor improvements and bug [&#8230;]</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2025/">What’s New in vcpkg (September 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This blog post summarizes changes to the <a href="https://vcpkg.io/">vcpkg package manager</a> as part of the <a href="https://github.com/microsoft/vcpkg/releases/tag/2025.09.17">2025.09.17</a> registry release, the <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-08-29">2025-08-29</a> and <a href="https://github.com/microsoft/vcpkg-tool/releases/tag/2025-09-03">2025-09-03</a> tool releases, as well as changes to <a href="https://learn.microsoft.com/vcpkg/">vcpkg documentation</a> throughout September. This month’s updates includes new binary caching sources <code>x-azcopy</code> and <code>x-azcopy-sas</code>, support for tvOS and watchOS target platforms, and minor improvements and bug fixes.</p>
+<p>Some stats for this period:</p>
+<ul>
+<li>There are now <strong>2,673 total ports </strong>available in the vcpkg curated registry. A <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/ports">port is a versioned recipe</a> for building a package from source, such as a C or C++ library.</li>
+<li><strong>11 new ports</strong> were added to the curated registry.</li>
+<li><strong>188 ports were updated</strong>. As always, we validate each change to a port by building all other ports that depend on or are depended by the library that is being updated for our 15 main <a href="https://learn.microsoft.com/en-us/vcpkg/concepts/triplets">triplets</a>.</li>
+<li><strong>59 </strong>community contributors made commits.</li>
+<li>The main vcpkg repo has over <strong>7,100 forks</strong> and <strong>25,600 stars</strong> on GitHub.</li>
+</ul>
+<h2>vcpkg changelog (2025.09.17 release)</h2>
+<ul>
+<li>Added support for tvOS and watchOS target platforms (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1747">Microsoft/vcpkg-tool#1747</a>, thanks @wkornewald!).</li>
+<li>Added two new binary caching sources that interact with Azure Storage blob containers using the <em>azcopy</em> executable:
+<ul>
+<li><code>x-azcopy-sas,&lt;url&gt;,&lt;sas&gt;[,&lt;rw&gt;]</code>: Intended as a drop-in replacement for azblob, it uses SAS tokens for authentication.</li>
+<li><code>x-azcopy,&lt;url&gt;[,&lt;rw&gt;]</code>: Intended for non-SAS authentication methods like Microsoft Entra ID; requires preloading credentials and/or the <code>AZCOPY_AUTO_LOGIN_TYPE</code>.</li>
+<li>Internally, we use the <code>azcopy copy --from-to BlobLocal {destination} --include-path {files}</code> argument to download multiple files in a single azcopy job. This improves performance and brings it more in line with azblob, that uses a single curl invocation to download a batch of files. Upload happens one file at a time in the background.</li>
+<li>(PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1738">Microsoft/vcpkg-tool#1738</a>)</li>
+</ul>
+</li>
+<li>Added a new option <code>--dereference-symlinks</code> to <code>vcpkg export</code>. This copies symlinks as regular files and directories in the exported results, which can be useful to continuous integration systems needing to restore vcpkg’s install tree (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1705">Microsoft/vcpkg-tool#1705</a>).</li>
+<li>Added new vcpkg.json property: <code>configuration</code>. This is an alias for the <code>vcpkg-configuration</code> property, allowing you to embed vcpkg configuration properties that would otherwise have been specified in a separate vcpkg-configuration.json file (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1766">Microsoft/vcpkg-tool#1766</a>).</li>
+<li>Added installed package files to SPDX SBOM files generated by vcpkg and removed repetition of relationships that is no longer present in v3 of the SPDX spec (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1744">Microsoft/vcpkg-tool#1744</a>, thanks @ekilmer!).</li>
+<li>vcpkg no longer restores the original “last updated” times for restored files during binary caching operations on Windows to resolve issues where a build tool is expecting headers and binaries to have similar last updated times but thinks the restored binaries are too old. This was already previously fixed on Linux systems (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1750">Microsoft/vcpkg-tool#1750</a>, thanks @autoantwort!).</li>
+<li>Fixed an issue where vcpkg was failing to detect conflicting installed files when the installed content has capital letters (PR: <a href="https://github.com/microsoft/vcpkg-tool/pull/1768">Microsoft/vcpkg-tool#1768</a>).</li>
+<li>Other minor improvements and bug fixes.</li>
+</ul>
+<h2>Documentation changes</h2>
+<ul>
+<li>Added <a href="https://learn.microsoft.com/vcpkg/reference/vcpkg-json#configuration">documentation</a> for <code>configuration</code> field in <em>vcpkg.json</em> files. (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/527">Microsoft/vcpkg-docs#527</a>).</li>
+<li>Added <a href="https://learn.microsoft.com/vcpkg/commands/export#--dereference-symlinks">documentation</a> for <code>--dereference-symlinks</code> option for vcpkg export (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/524">Microsoft/vcpkg-docs#524</a>).</li>
+<li>Added <a href="https://learn.microsoft.com/vcpkg/reference/binarycaching#configuration-syntax">documentation</a> for <code>x-azcopy</code> and <code>x-azcopy-sas</code> binary caching sources (PR: <a href="https://github.com/MicrosoftDocs/vcpkg-docs/pull/511">Microsoft/vcpkg-docs#511</a>).</li>
+</ul>
+<p>If you have any suggestions for our documentation, please <a href="https://github.com/microsoft/vcpkg-docs/issues">submit an issue in our GitHub repo</a> or see the box at the bottom of a particular article.</p>
+<h2>Total ports available for tested triplets</h2>
+<table>
+<tbody>
+<tr>
+<td><strong>triplet</strong></td>
+<td><strong>ports available</strong></td>
+</tr>
+<tr>
+<td>x86-windows</td>
+<td>2463</td>
+</tr>
+<tr>
+<td>x64-windows</td>
+<td>2586</td>
+</tr>
+<tr>
+<td>x64-windows-release</td>
+<td>2587</td>
+</tr>
+<tr>
+<td>x64-windows-static</td>
+<td>2457</td>
+</tr>
+<tr>
+<td>x64-windows-static-md</td>
+<td>2514</td>
+</tr>
+<tr>
+<td>x64-uwp</td>
+<td>1458</td>
+</tr>
+<tr>
+<td>arm64-windows</td>
+<td>2189</td>
+</tr>
+<tr>
+<td>arm64-windows-static-md</td>
+<td>2171</td>
+</tr>
+<tr>
+<td>arm64-uwp</td>
+<td>1422</td>
+</tr>
+<tr>
+<td>x64-osx</td>
+<td>2416</td>
+</tr>
+<tr>
+<td>arm64-osx</td>
+<td>2385</td>
+</tr>
+<tr>
+<td>x64-linux</td>
+<td>2577</td>
+</tr>
+<tr>
+<td>arm-neon-android</td>
+<td>2011</td>
+</tr>
+<tr>
+<td>x64-android</td>
+<td>2071</td>
+</tr>
+<tr>
+<td>arm64-android</td>
+<td>2035</td>
+</tr>
+</tbody>
+</table>
+<p>While vcpkg supports a much larger variety of target platforms and architectures (as <a href="https://github.com/microsoft/vcpkg/tree/master/triplets/community">community triplets</a>), the list above is validated exhaustively to ensure updated ports don’t break other ports in the catalog.</p>
+<h2>Thank you to our contributors</h2>
+<p>vcpkg couldn’t be where it is today without contributions from our open-source community. Thank you for your continued support! The following people contributed to the <a href="https://github.com/microsoft/vcpkg">vcpkg</a>, <a href="https://github.com/microsoft/vcpkg-tool">vcpkg-tool</a>, or <a href="https://github.com/MicrosoftDocs/vcpkg-docs/">vcpkg-docs</a> repos in this release (listed by commit author or GitHub username):</p>
+<table>
+<tbody>
+<tr>
+<td>Adam Glustein</td>
+<td>Connector Switch</td>
+<td>maredman</td>
+<td>talregev</td>
+</tr>
+<tr>
+<td>Adam Johnson</td>
+<td>CQ_Undefine</td>
+<td>Markus Vieth</td>
+<td>tartanpaint</td>
+</tr>
+<tr>
+<td>Adeel Kazmi</td>
+<td>Dr. Patrick Urbanke</td>
+<td>miyanyan</td>
+<td>Thomas1664</td>
+</tr>
+<tr>
+<td>Adrien Bourdeaux</td>
+<td>Dzmitry Baryshau</td>
+<td>Nick D&#8217;Ademo</td>
+<td>Tiago Freitas</td>
+</tr>
+<tr>
+<td>Albert Lee</td>
+<td>Egor Tyuvaev</td>
+<td>Nick Logozzo</td>
+<td>toge</td>
+</tr>
+<tr>
+<td>albertony</td>
+<td>Emre</td>
+<td>Oleg Derevenetz</td>
+<td>Tom Conder</td>
+</tr>
+<tr>
+<td>Alexander Smyslov</td>
+<td>Eric Kilmer</td>
+<td>PARK DongHa</td>
+<td>Victor Romero</td>
+</tr>
+<tr>
+<td>Alexis La Goutte</td>
+<td>Erica</td>
+<td>pastdue</td>
+<td>Vitalii Koshura</td>
+</tr>
+<tr>
+<td>Alexis Placet</td>
+<td>Ethan J. Musser</td>
+<td>Peter Hull</td>
+<td>Vladimir Petrigo</td>
+</tr>
+<tr>
+<td>Alstruit</td>
+<td>evelance</td>
+<td>Rémy Tassoux</td>
+<td>Vpatakottu</td>
+</tr>
+<tr>
+<td>autoantwort</td>
+<td>Francisco Facioni</td>
+<td>Robin WILS</td>
+<td>Waldemar Kornewald</td>
+</tr>
+<tr>
+<td>Bas M.</td>
+<td>Jaap Aarts</td>
+<td>RPeschke</td>
+<td>Weihang Ding</td>
+</tr>
+<tr>
+<td>Byoungchan Lee</td>
+<td>Jonathan Sweemer</td>
+<td>Saikari</td>
+<td>Zackery</td>
+</tr>
+<tr>
+<td>Cadons</td>
+<td>Kai Pastor</td>
+<td>SunBlack</td>
+<td>曹梦轩</td>
+</tr>
+<tr>
+<td>Chuck Walbourn</td>
+<td>Kyle Benesch</td>
+<td>Takatoshi Kondo</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>Learn more</h2>
+<p>You can find the <a href="https://github.com/microsoft/vcpkg/releases">main release notes</a> on GitHub. Recent updates to the vcpkg tool can be viewed on the <a href="https://github.com/microsoft/vcpkg-tool/releases">vcpkg-tool Releases page</a>. To contribute to vcpkg documentation, visit the <a href="https://github.com/MicrosoftDocs/vcpkg-docs/">vcpkg-docs repo</a>. If you’re new to vcpkg or curious about how a package manager can make your life easier as a C/C++ developer, check out the <a href="https://vcpkg.io">vcpkg website – vcpkg.io</a>.</p>
+<p>If you would like to contribute to vcpkg and its library catalog, or want to give us feedback on anything, check out our <a href="https://github.com/microsoft/vcpkg">GitHub repo</a>. Please report bugs or request updates to ports in our <a href="https://github.com/microsoft/vcpkg/issues">issue tracker</a> or join more general discussion in our <a href="https://github.com/microsoft/vcpkg/discussions">discussion forum</a>.</p>
+<p>&nbsp;</p>
+<p>The post <a href="https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2025/">What’s New in vcpkg (September 2025)</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/whats-new-in-vcpkg-september-2025/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
 		<title>Fixing Overload Resolution For Parameter Arrays in C++/CLI</title>
 		<link>https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/</link>
 					<comments>https://devblogs.microsoft.com/cppblog/fixing-overload-resolution-for-parameter-arrays-in-c-cli/#respond</comments>
@@ -1602,53 +1829,6 @@ updates:
 					
 					<wfw:commentRss>https://devblogs.microsoft.com/cppblog/dynamically-update-c-syntax-using-next-edit-suggestions/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>
-		
-		
-			</item>
-		<item>
-		<title>Visual Studio Code CMake Tools Extension 1.21 Release: Multi-root improvements, CMake Presets v10, and more…</title>
-		<link>https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-21-release-multi-root-improvements-cmake-presets-v10-and-more/</link>
-		
-		<dc:creator><![CDATA[Sinem Akinci]]></dc:creator>
-		<pubDate>Mon, 21 Jul 2025 12:10:34 +0000</pubDate>
-				<category><![CDATA[Announcement]]></category>
-		<category><![CDATA[C++]]></category>
-		<category><![CDATA[CMake]]></category>
-		<category><![CDATA[Visual Studio Code]]></category>
-		<guid isPermaLink="false">https://devblogs.microsoft.com/cppblog/?p=35611</guid>
-
-					<description><![CDATA[<p>We’re excited to announce the latest 1.21 release of the CMake Tools extension for Visual Studio Code. This update brings a host of new updates, including addressing one of our top-voted issues for multi-root improvements and adding CMake presets version 10 support. To view the full list of updates with this release, please look at [&#8230;]</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-21-release-multi-root-improvements-cmake-presets-v10-and-more/">Visual Studio Code CMake Tools Extension 1.21 Release: Multi-root improvements, CMake Presets v10, and more…</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></description>
-										<content:encoded><![CDATA[<p>We’re excited to announce <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools">the latest 1.21 release of the CMake Tools extension</a> for Visual Studio Code. This update brings a host of new updates, including addressing one of our top-voted issues for <strong>multi-root improvements</strong> and adding <strong>CMake presets version 10 support</strong>. To view the full list of updates with this release, please look at our <a href="https://github.com/microsoft/vscode-cmake-tools/blob/main/CHANGELOG.md">CHANGELOG</a>.</p>
-<p>This release features the following ten contributions from our open-source community. Thank you for your continued support!</p>
-<ul>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4273">Allow specifying a launch configuration which can be used when debugging tests via CTest</a> by <a href="https://github.com/Nerixyz">@nerixyz</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4422">Adding a new command cmake.cacheVariable</a> by <a href="https://github.com/malsyned">@malsyned</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/3953">Grouping default build targets based on CMake FOLDER property</a> by <a href="https://github.com/itzandroidtab">@itzandroidtab</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4340">Add name de-mangling for C++ symbols in the Test Explorer view</a> by <a href="https://github.com/rjaegers">@rjaegers</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4325">Fixes to case preservation for include paths on MacOS</a> by <a href="https://github.com/tringenbach">@tringenbach</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4458">Reduce heap usage with new optimized splits for large compile commands</a> by <a href="https://github.com/borjamunozf">@borjamunozf</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/pull/4321">Remove dependency for backtrace in presence of DEF_SOURCE_LINE</a> by <a href="https://github.com/rjaegers">@rjaegers</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/issues/2864">Fix gnuld error parsing false positive on make errors, false negatives due to trailing \r, and false parsing of new “multiple definitions” error</a> by <a href="https://github.com/0xemgy">@0xemgy</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/issues/4304">Fix bug where unrelated symlinks are read as variant files</a> by <a href="https://github.com/vitorramos">@vitorramos</a></li>
-<li><a href="https://github.com/microsoft/vscode-cmake-tools/issues/2855">Fix ENOENT error at vs code startup on some circumstances</a> by <a href="https://github.com/JDESTM">@STMicroelectronics</a></li>
-</ul>
-<h3>Multi-root improvements</h3>
-<p>We addressed one of our <a href="https://github.com/microsoft/vscode-cmake-tools/issues/1069">top-voted customer feedback issues</a> to improve multi-root integration and allow users more customizability to enable/disable certain folders in mixed-language circumstances.</p>
-<p>Now, we have added support for a new <code>cmake.exclude</code> setting that allows users to select specific folders to ignore in multi-root scenarios.</p>
-<p><a href="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude.png"><img decoding="async" class="size-full wp-image-35612 aligncenter" src="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude.png" alt="The CMake exclude setting ignoring test and third party libraries for Pioneer" width="1072" height="269" srcset="https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude.png 1072w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude-300x75.png 300w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude-1024x257.png 1024w, https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2025/07/cmake-exclude-768x193.png 768w" sizes="(max-width: 1072px) 100vw, 1072px" /></a></p>
-<p>For example, when developing with 3<sup>rd</sup> party packages, you can specify for the extension to ignore these at build via this new setting, improving the overall user experience for your needs.</p>
-<h3>CMake presets version 10 support</h3>
-<p>We have also added support for the latest version 10 of CMake Presets, which adds two new features to enhance clarity and visualization in your build configurations: $<strong>comment</strong> and <strong>graphviz</strong> support.</p>
-<p>CMake presets v10 introduces a new <code>$comment</code> field that allows developers to add inline documentation within their preset’s definitions, making it easier to understand and distinguish between different configurations. To learn more about using formatting using $comment, you can visit <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#format">Kitware’s documentation</a>.</p>
-<p>Additionally, CMake presets now supports graphviz, which allows you to visualize the dependencies between targets and external libraries in your project. By specifying a <code>graphviz</code> field in your CMake presets, you can enable Graphviz DOT files that can be rendered via Graphviz.</p>
-<h3>What do you think?</h3>
-<p>Download <a href="https://code.visualstudio.com/Download">Visual Studio Code</a> and <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools">the CMake Tools extension</a> and let us know what you think. We would love to see what you contribute to our<a href="https://github.com/microsoft/vscode-cmake-tools"> repo</a>. Please create an <a href="https://github.com/microsoft/vscode-cmake-tools/issues/">issue</a> if there’s anything you’d like to see and upvote/downvote any existing issues. Comment below or reach us via email at <a href="mailto:visualcpp@microsoft.com">visualcpp@microsoft.com,</a> via X at <a href="https://twitter.com/visualc">@VisualC</a>., or via Bluesky at <a href="https://bsky.app/profile/msftcpp.bsky.social">@msftcpp.bsky.social</a>.</p>
-<p>&nbsp;</p>
-<p>The post <a href="https://devblogs.microsoft.com/cppblog/visual-studio-code-cmake-tools-extension-1-21-release-multi-root-improvements-cmake-presets-v10-and-more/">Visual Studio Code CMake Tools Extension 1.21 Release: Multi-root improvements, CMake Presets v10, and more…</a> appeared first on <a href="https://devblogs.microsoft.com/cppblog">C++ Team Blog</a>.</p>
-]]></content:encoded>
-					
 		
 		
 			</item>
