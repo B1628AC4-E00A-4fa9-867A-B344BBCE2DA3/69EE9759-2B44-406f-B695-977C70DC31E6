@@ -1,4 +1,395 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 25 Sep 2025 02:05:26 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[Next.jsのFetch Wrapper：ベストプラクティスを徹底解説]]></title><description><![CDATA[想像してみてください。あなたは夢のNext.jsアプリケーションを構築し、ネイティブの関数を使って楽しくAPIコールを行っています。全てが順調に見えましたが、アプリケーションを本番環境にデプロイした…]]></description><link>https://postd.cc/fetch-wrapper-for-nextjs-a-deep-dive-into-best-practices-53dh/</link><guid isPermaLink="false">https://postd.cc/fetch-wrapper-for-nextjs-a-deep-dive-into-best-practices-53dh/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><category><![CDATA[Next.js]]></category><pubDate>Thu, 25 Sep 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>想像してみてください。あなたは夢のNext.jsアプリケーションを構築し、ネイティブの<code class="language-text">fetch</code>関数を使って楽しくAPIコールを行っています。全てが順調に見えましたが、アプリケーションを本番環境にデプロイした途端、事態は一変します。反復的なエラー処理のコードに溺れ、コンポーネントのあちこちに散らばった認証トークンと格闘し、なぜ一部のリクエストがサーバーでは成功するのにクライアントでは失敗するのか、そのデバッグに髪をかきむしる日々……。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア]]></title><description><![CDATA[POSTD は、ニジボックスが運営する、エンジニアに向けたキュレーションメディアです。ニジボックスはWebサービスの企画、制作、開発、運用を一貫して担うリクルートの100%子会社です。 リクルートグループのオンラインサービスをはじめ、様々な業種・業界・業態のサービス開発を行っております。]]></description><link>https://postd.cc</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 30 Oct 2025 03:09:58 GMT</lastBuildDate><language>ja</language><atom:link href="https://postd.cc/feed/" rel="self" type="application/rss+xml"/><image><title>POSTD | ニジボックスが運営するエンジニアに向けたキュレーションメディア</title><link>https://postd.cc</link></image><item><title><![CDATA[既存のプロジェクトにCSSカスケードレイヤーを統合する]]></title><description><![CDATA[クイックサマリー:この記事の目的は、CSSカスケードレイヤーを既存のレガシーなコードベースに統合するプロセスを、ありのままに全てお伝えすることです。具体的には、何も壊さないように既存のCSSをリファ…]]></description><link>https://postd.cc/integrating-css-cascade-layers-existing-project/</link><guid isPermaLink="false">https://postd.cc/integrating-css-cascade-layers-existing-project/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[CSS]]></category><pubDate>Thu, 30 Oct 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>:この記事の目的は、CSSカスケードレイヤーを既存のレガシーなコードベースに統合するプロセスを、ありのままに全てお伝えすることです。具体的には、何も壊さないように既存のCSSをリファクタリングしてカスケードレイヤーを使えるようにする方法について解説します。</p>
+<hr>
+<p>Stephenie Eckles氏の記事「<a href="https://www.smashingmagazine.com/2022/01/introduction-css-cascade-layers/">Getting Started With CSS Cascade Layers</a>」を読めば、いつでも素晴らしい概要を学べます。しかし、この記事では、カスケードレイヤーを実際のコードに統合する体験、その長所、短所、そしてスパゲッティコードとの格闘まで、全てお話ししたいと思います。</p>
+<p>よくある解説記事のようにサンプルプロジェクトを用意することもできます。しかし現実の世界はそんな風にはいきません。なぜか動いているけれど、誰もその理由を知らないようなスタイルが書かれたコードを引き継ぐ、といった感じで、実際に手を汚してみたいのです。</p>
+<p>カスケードレイヤーを使っていないプロジェクトを見つけるのは簡単でした。難しいのは、詳細度や構成に問題を抱えるほど散らかっていて、なおかつカスケードレイヤー統合のさまざまな側面を説明できるくらい幅広いプロジェクトを見つけることでした。</p>
+<p>皆さま、Drishtant Ghosh氏が作成した、こちらの<a href="https://github.com/Drix10/discord-bot-web">DiscordボットのWebサイト</a>をご紹介します。<a href="https://github.com/Drix10">Drishtant氏</a>がご自身の作品を事例として使うことを許可してくださったことに、深く感謝します。このプロジェクトは、ナビゲーションバー、ヒーローセクション、いくつかのボタン、モバイルメニューを備えた、典型的なランディングページです。</p>
+<p><img src="https://files.smashing.media/articles/integrating-css-cascade-layers-existing-project/1-discord-bot-landing-page.png">
+<em></em>（<a href="https://files.smashing.media/articles/integrating-css-cascade-layers-existing-project/1-discord-bot-landing-page.png">拡大プレビュー</a>）</p></p>
+<p>外見は完璧に見えるのがお分かりでしょう。しかし、その裏側にあるCSSスタイルを見てみると、事態は面白くなってきます。</p>
+<h2>プロジェクトを理解する</h2>
+<p>あちこちで<code class="language-text">@layer</code>を使い始める前に、まずは私たちが扱う対象をしっかりと理解しましょう。GitHubリポジトリを<a href="https://codepen.io/vayospot/pen/bNdoYdP">クローン</a>し、今回はCSSカスケードレイヤーを扱うことに主眼を置いているため、<code class="language-text">index.html</code>、<code class="language-text">index.css</code>、<code class="language-text">index.js</code>の3つのファイルで構成されるメインページにのみ焦点を当てます。</p>
+<p><strong>注</strong>： このチュートリアルが冗長になりすぎるのを避けるため、プロジェクトの他のページは含めていません。しかし、実験として他のページをリファクタリングしてみるのも良いでしょう。</p>
+<p><code class="language-text">index.css</code>ファイルは450行以上のコードがあり、ざっと目を通しただけでも、いくつかの懸念点が見て取れます。</p>
+<ul>
+<li>同じHTML要素を指す同じセレクタで、多くのコードが重複している。</li>
+<li><code class="language-text">#id</code>セレクタがかなり多い。これについてはCSSで使うべきではないと主張する人もいるでしょう（私もその一人です）。</li>
+<li><code class="language-text">#botLogo</code>が2回定義されており、その間は70行以上も離れている。</li>
+<li><code class="language-text">!important</code>キーワードがコード全体で安易に使われている。</li>
+</ul>
+<p>それでも、サイトは機能しています。ここには「技術的に」間違っていることは何もありません。これこそが、CSSが巨大で美しいモンスターであるもう一つの理由です。エラーが表に出てこないのです！</p>
+<h2>レイヤー構造を計画する</h2>
+<p>さて、「全てのスタイルを<code class="language-text">@layer legacy</code>のような単一のレイヤーにまとめてしまえば、それで終わりじゃないか？」と考える人もいるかもしれません。</p>
+<p>それでもいいですが…私はそうすべきではないと思います。</p>
+<p>考えてみてください。もし<code class="language-text">legacy</code>レイヤーの後にさらにレイヤーが追加された場合、それらの新しいレイヤーは<code class="language-text">legacy</code>レイヤーに含まれるスタイルを上書きするはずです。なぜなら、レイヤーの詳細度は優先順位によって整理されており、後から宣言されたレイヤーほど高い優先順位を持つからです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token comment">/* newの方が詳細度が高い */</span>
+<span class="token atrule"><span class="token rule">@layer</span> legacy<span class="token punctuation">,</span> new<span class="token punctuation">;</span></span>
+
+<span class="token comment">/* legacyの方が詳細度が高い */</span>
+<span class="token atrule"><span class="token rule">@layer</span> new<span class="token punctuation">,</span> legacy<span class="token punctuation">;</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>とはいえ、このサイトの既存スタイルでは<code class="language-text">!important</code>キーワードが多用されていることを忘れてはなりません。そうなると、カスケードレイヤーの順序は逆転します。ですから、レイヤーが次のように定義されていても、</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> legacy<span class="token punctuation">,</span> new<span class="token punctuation">;</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p><code class="language-text">!important</code>が宣言されたスタイルがあると、状況は一変します。この場合、優先順位は次のようになります。</p>
+<ol>
+<li><code class="language-text">legacy</code>レイヤー内の<code class="language-text">!important</code>スタイル（最も強力）</li>
+<li><code class="language-text">new</code>レイヤー内の<code class="language-text">!important</code>スタイル</li>
+<li><code class="language-text">new</code>レイヤー内の通常スタイル</li>
+<li><code class="language-text">legacy</code>レイヤー内の通常スタイル（最も弱い）</li>
+</ol>
+<p>この点だけは、はっきりさせておきたかったのです。では、続けましょう。</p>
+<p>カスケードレイヤーは、各レイヤーが明確な責務を持ち、後のレイヤーが常に勝つという明確な順序を作ることで詳細度を管理します。</p>
+<p>そこで私は、5つの異なるレイヤーに分割することにしました。</p>
+<ul>
+<li><strong>reset</strong>: <code class="language-text">box-sizing</code>やmargin、paddingといったブラウザのデフォルトスタイルのリセット。</li>
+<li><strong>base</strong>: <code class="language-text">body</code>、<code class="language-text">h1</code>、<code class="language-text">p</code>、<code class="language-text">a</code>などのHTML要素のデフォルトスタイル。デフォルトのタイポグラフィや色も含む。</li>
+<li><strong>layout</strong>: 要素の配置を制御するための、主要なページ構造に関するもの。</li>
+<li><strong>components</strong>: ボタン、カード、メニューなど、再利用可能なUIセグメント。</li>
+<li><strong>utilities</strong>: 一つのことだけをうまくこなす、単一目的のヘルパー修飾子。</li>
+</ul>
+<p>これはあくまで私がスタイルを分割し、整理するのが好きな方法です。例えば、Zell Liew氏は、レイヤーとして定義できる<a href="https://css-tricks.com/composition-in-css/">4つの異なる分類を持っています</a>。</p>
+<p>さらに、物事を<strong>サブレイヤー</strong>に分割するという考え方もあります。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* sub-layers */</span>
+  <span class="token atrule"><span class="token rule">@layer</span> buttons<span class="token punctuation">,</span> cards<span class="token punctuation">,</span> menus<span class="token punctuation">;</span></span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">/* or this: */</span>
+<span class="token atrule"><span class="token rule">@layer</span> components.buttons<span class="token punctuation">,</span> components.cards<span class="token punctuation">,</span> components.menus<span class="token punctuation">;</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これも便利かもしれませんが、物事を過度に抽象化したくはありません。この戦略は、明確に定義されたデザインシステムを対象とするプロジェクトには、より適しているかもしれません。</p>
+<p>私たちが活用できるもう一つのことは、<strong>レイヤー化されていないスタイル</strong>と、カスケードレイヤーに含まれないスタイルが最も高い優先順位を持つという事実です。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> legacy</span> <span class="token punctuation">{</span> <span class="token selector">a</span> <span class="token punctuation">{</span> <span class="token property">color</span><span class="token punctuation">:</span> red <span class="token important">!important</span><span class="token punctuation">;</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span>
+<span class="token atrule"><span class="token rule">@layer</span> reset</span> <span class="token punctuation">{</span> <span class="token selector">a</span> <span class="token punctuation">{</span> <span class="token property">color</span><span class="token punctuation">:</span> orange <span class="token important">!important</span><span class="token punctuation">;</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span>
+<span class="token atrule"><span class="token rule">@layer</span> base</span> <span class="token punctuation">{</span> <span class="token selector">a</span> <span class="token punctuation">{</span> <span class="token property">color</span><span class="token punctuation">:</span> yellow <span class="token important">!important</span><span class="token punctuation">;</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span>
+
+<span class="token comment">/* unlayered */</span>
+<span class="token selector">a</span> <span class="token punctuation">{</span> <span class="token property">color</span><span class="token punctuation">:</span> green <span class="token important">!important</span><span class="token punctuation">;</span> <span class="token punctuation">}</span> <span class="token comment">/* highest priority */</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>しかし、私は全てのスタイルを明確なレイヤーで整理しておくという考え方が好きです。少なくともこの文脈においては、物事を<strong>モジュール化</strong>し、<strong>保守しやすく</strong>保つことができます。</p>
+<p>それでは、このプロジェクトにカスケードレイヤーを追加していきましょう。</p>
+<h2>カスケードレイヤーを統合する</h2>
+<p>まず、ファイルの先頭でレイヤーの順序を定義する必要があります。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> reset<span class="token punctuation">,</span> base<span class="token punctuation">,</span> layout<span class="token punctuation">,</span> components<span class="token punctuation">,</span> utilities<span class="token punctuation">;</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>これにより、どのレイヤーがどのレイヤーよりも優先されるかが簡単に分かります（左から右に行くにつれて優先度が高くなります）。これで、セレクタの詳細度ではなく、レイヤーの責務という観点で考えられるようになります。ここからは、スタイルシートを上から下へと進めていきます。</p>
+<p>最初に気づいたのは、<a href="https://fonts.google.com/specimen/Poppins?query=poppins">Poppinsフォント</a>がHTMLとCSSの両方のファイルでインポートされていたことです。フォントを素早く読み込むためには、一般的にHTMLでのインポートが推奨されるため、CSSのインポートを削除し、<code class="language-text">index.html</code>の方を残しました。</p>
+<p>次はユニバーサルセレクタ（<code class="language-text">*</code>）のスタイルです。これには<code class="language-text">@layer reset</code>に最適な、<a href="https://css-tricks.com/box-sizing/">古典的なリセットスタイル</a>が含まれています。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> reset</span> <span class="token punctuation">{</span>
+  <span class="token selector">*</span> <span class="token punctuation">{</span>
+    <span class="token property">margin</span><span class="token punctuation">:</span> 0<span class="token punctuation">;</span>
+    <span class="token property">padding</span><span class="token punctuation">:</span> 0<span class="token punctuation">;</span>
+    <span class="token property">box-sizing</span><span class="token punctuation">:</span> border-box<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>それが片付いたら、次はbodyセレクタです。これには背景やフォントといったプロジェクトの核となるスタイルが含まれているので、<code class="language-text">@layer base</code>に入れます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> base</span> <span class="token punctuation">{</span>
+  <span class="token selector">body</span> <span class="token punctuation">{</span>
+    <span class="token property">background-image</span><span class="token punctuation">:</span> <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"bg.svg"</span><span class="token punctuation">)</span></span><span class="token punctuation">;</span> <span class="token comment">/* 分かりやすいようにbg.svgにリネーム */</span>
+    <span class="token property">font-family</span><span class="token punctuation">:</span> <span class="token string">"Poppins"</span><span class="token punctuation">,</span> sans-serif<span class="token punctuation">;</span>
+    <span class="token comment">/* ... other styles */</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ここでの私の方針は、「<code class="language-text">base</code>レイヤーのスタイルは基本的にドキュメント全体に影響を与えるもの」とすることです。今のところ、ページの表示崩れなどは起きていません。</p>
+<h2>IDをクラスに置き換える</h2>
+<p><code class="language-text">body</code>要素セレクタの次にあるのは、IDセレクタ<code class="language-text">#loader</code>として定義されているページローダーです。</p>
+<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>私は、可能な限りIDセレクタよりもクラスセレクタを使うべきだと考えています。デフォルトで詳細度を低く保つことができ、詳細度の競合を防ぎ、<a href="https://css-tricks.com/the-difference-between-id-and-class/">コードをはるかに保守しやすくする</a>からです。</p></div></div>
+<p>そこで、<code class="language-text">index.html</code>ファイルを開き、<code class="language-text">id="loader"</code>を持つ要素を<code class="language-text">class="loader"</code>にリファクタリングしました。その過程で、<code class="language-text">id="page"</code>を持つ別の要素を見つけたので、それも同時に変更しました。</p>
+<p><code class="language-text">index.html</code>ファイルにいる間に、いくつかの<code class="language-text">div</code>要素で閉じタグが欠けていることに気づきました。ブラウザがそれに対して寛容なのは驚きです。ともかく、それらをクリーンアップし、<code class="language-text">&lt;script></code>タグを.<code class="language-text">heading</code>要素の外に移動させて、<code class="language-text">body</code>の直接の子要素にしました。スクリプトの読み込みをこれ以上困難にするのはやめましょう。</p>
+<p>IDをクラスに移行して詳細度の条件をそろえたので、これらを<code class="language-text">components</code>レイヤーに入れることができます。ローダーはまさに再利用可能なコンポーネントですからね。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token selector">.loader</span> <span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span> 100%<span class="token punctuation">;</span>
+    <span class="token property">height</span><span class="token punctuation">:</span> 100vh<span class="token punctuation">;</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.loader .loading</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.loader .loading span</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.loader .loading span:before</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>アニメーション</h2>
+<p>次はキーフレームです。これは少し厄介でしたが、最終的にアニメーションを独自の新しい5番目のレイヤーに分離し、それを含むようにレイヤーの順序を更新することにしました。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> reset<span class="token punctuation">,</span> base<span class="token punctuation">,</span> layout<span class="token punctuation">,</span> components<span class="token punctuation">,</span> utilities<span class="token punctuation">,</span> animations<span class="token punctuation">;</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
+<p>しかし、なぜ<code class="language-text">animations</code>を最後のレイヤーに置くのでしょうか？それは、アニメーションは一般的に最後に実行されるものであり、スタイルの競合の影響を受けるべきではないからです。</p>
+<p>プロジェクトのスタイルから<code class="language-text">@keyframes</code>を検索し、それらを新しいレイヤーに放り込みました。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> animations</span> <span class="token punctuation">{</span>
+  <span class="token atrule"><span class="token rule">@keyframes</span> loading</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@keyframes</span> loading2</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@keyframes</span> pageShow</span> <span class="token punctuation">{</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これにより、静的なスタイルと動的なスタイルが明確に区別され、再利用性が確保できます。</p>
+<h2>レイアウト</h2>
+<p><code class="language-text">#page</code>セレクタも<code class="language-text">#id</code>と同じ問題を抱えていましたが、先ほどHTMLで修正したので、これを<code class="language-text">.page</code>に変更し、<code class="language-text">layout</code>レイヤーに入れることができます。その主な目的はコンテンツの初期の表示状態を制御することだからです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> layout</span> <span class="token punctuation">{</span>
+  <span class="token selector">.page</span> <span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>カスタムスクロールバー</h2>
+<p>これらはどこに置くべきでしょうか？スクロールバーはサイト全体で持続するグローバルな要素です。これはグレーゾーンかもしれませんが、グローバルでデフォルトの機能であるため、<code class="language-text">@layer base</code>に完璧に収まると言えるでしょう。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> base</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* ... */</span>
+  <span class="token selector">::-webkit-scrollbar</span> <span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span> 8px<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">::-webkit-scrollbar-track</span> <span class="token punctuation">{</span>
+    <span class="token property">background</span><span class="token punctuation">:</span> #0e0e0f<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">::-webkit-scrollbar-thumb</span> <span class="token punctuation">{</span>
+    <span class="token property">background</span><span class="token punctuation">:</span> #5865f2<span class="token punctuation">;</span>
+    <span class="token property">border-radius</span><span class="token punctuation">:</span> 100px<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">::-webkit-scrollbar-thumb:hover</span> <span class="token punctuation">{</span>
+    <span class="token property">background</span><span class="token punctuation">:</span> #202225<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>また、見つけ次第<code class="language-text">!important</code>キーワードも削除していきました。</p>
+<h2>ナビゲーション</h2>
+<p><code class="language-text">nav</code>要素は非常に分かりやすいです。ナビゲーションバーの位置と寸法を定義する主要な構造コンテナだからです。これは間違いなく<code class="language-text">layout</code>レイヤーに入れるべきです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> layout</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* ... */</span>
+  <span class="token selector">nav</span> <span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> flex<span class="token punctuation">;</span>
+    <span class="token property">height</span><span class="token punctuation">:</span> 55px<span class="token punctuation">;</span>
+    <span class="token property">width</span><span class="token punctuation">:</span> 100%<span class="token punctuation">;</span>
+    <span class="token property">padding</span><span class="token punctuation">:</span> 0 50px<span class="token punctuation">;</span> <span class="token comment">/* 一貫した左右のpadding */</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>ロゴ</h2>
+<p>ロゴに関連するスタイルブロックが3つあります。<code class="language-text">nav .logo</code>、<code class="language-text">.logo img</code>、<code class="language-text">#botLogo</code>です。これらの名前は冗長であり、継承によるコンポーネントの再利用性の恩恵を受けることができます。</p>
+<p>私は次のようにアプローチしています。</p>
+<ol>
+<li><code class="language-text">nav .logo</code>は、ロゴが他の場所でも再利用できることを考えると、詳細度が高すぎます。<code class="language-text">nav</code>を削除して、セレクタを単に<code class="language-text">.logo</code>にしました。そこには<code class="language-text">!important</code>キーワードもあったので、削除しました。</li>
+<li>以前は柔軟性の低い絶対配置で設定されていた<code class="language-text">.logo img</code>を配置しやすくするため、<code class="language-text">.logo</code>をFlexboxコンテナに更新しました。</li>
+<li><code class="language-text">#botLogo</code> IDは2回宣言されていたので、2つのルールセットを1つに統合し、<code class="language-text">.botLogo</code>クラスにすることで詳細度を下げました。そしてもちろん、HTMLを更新してIDをクラスに置き換えました。</li>
+<li><code class="language-text">.logo img</code>セレクタは<code class="language-text">.botLogo</code>となり、ロゴの全ての要素をスタイリングするためのベースクラスになります。</li>
+</ol>
+<p>そして、残ったのは次のコードです。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token comment">/* initially .logo img */</span>
+<span class="token selector">.botLogo</span> <span class="token punctuation">{</span>
+  <span class="token property">border-radius</span><span class="token punctuation">:</span> 50%<span class="token punctuation">;</span>
+  <span class="token property">height</span><span class="token punctuation">:</span> 40px<span class="token punctuation">;</span>
+  <span class="token property">border</span><span class="token punctuation">:</span> 2px solid #5865f2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">/* initially #botLogo */</span>
+<span class="token selector">.botLogo</span> <span class="token punctuation">{</span>
+  <span class="token property">border-radius</span><span class="token punctuation">:</span> 50%<span class="token punctuation">;</span>
+  <span class="token property">width</span><span class="token punctuation">:</span> 180px<span class="token punctuation">;</span>
+  <span class="token comment">/* ... */</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>違いは、一方がナビゲーションで、もう一方がヒーローセクションの見出しで使われている点です。2つ目の<code class="language-text">.botLogo</code>は、<code class="language-text">.heading</code> <code class="language-text">.botLogo</code>セレクタで少し詳細度を上げることで変換できます。ついでに、重複しているスタイルも整理しておきましょう。</p>
+<p>ロゴを再利用可能なコンポーネントにうまく変えることができたので、コード全体を<code class="language-text">components</code>レイヤーに配置しましょう。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* ... */</span>
+  <span class="token selector">.logo</span> <span class="token punctuation">{</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 30px<span class="token punctuation">;</span>
+    <span class="token property">font-weight</span><span class="token punctuation">:</span> bold<span class="token punctuation">;</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> flex<span class="token punctuation">;</span>
+    <span class="token property">align-items</span><span class="token punctuation">:</span> center<span class="token punctuation">;</span>
+    <span class="token property">gap</span><span class="token punctuation">:</span> 10px<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.botLogo</span> <span class="token punctuation">{</span>
+    <span class="token property">aspect-ratio</span><span class="token punctuation">:</span> 1<span class="token punctuation">;</span> <span class="token comment">/* widthに合わせて正方形の寸法を維持 */</span>
+    <span class="token property">border-radius</span><span class="token punctuation">:</span> 50%<span class="token punctuation">;</span>
+    <span class="token property">width</span><span class="token punctuation">:</span> 40px<span class="token punctuation">;</span>
+    <span class="token property">border</span><span class="token punctuation">:</span> 2px solid #5865f2<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.heading .botLogo</span> <span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span> 180px<span class="token punctuation">;</span>
+    <span class="token property">height</span><span class="token punctuation">:</span> 180px<span class="token punctuation">;</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #5865f2<span class="token punctuation">;</span>
+    <span class="token property">box-shadow</span><span class="token punctuation">:</span> 0px 0px 8px 2px <span class="token function">rgba</span><span class="token punctuation">(</span>88<span class="token punctuation">,</span> 101<span class="token punctuation">,</span> 242<span class="token punctuation">,</span> 0.5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これは少し手間がかかりました！しかしこれで、ロゴは新しいレイヤーアーキテクチャに完璧にフィットするコンポーネントとして、適切に設定されました。</p>
+<h2>ナビゲーションリスト</h2>
+<p>これは典型的なナビゲーションのパターンです。非順序リスト（<code class="language-text">&lt;ul></code>）を、全てのリスト項目を同じ行に水平に（折り返しを許可して）表示する柔軟なコンテナに変えます。これは再利用可能なナビゲーションの一種であり、<code class="language-text">components</code>レイヤーに属します。しかし、追加する前に少しリファクタリングが必要です。</p>
+<p>既に<code class="language-text">.mainMenu</code>クラスがあるので、これを活用しましょう。<code class="language-text">nav ul</code>セレクタを全てそのクラスに置き換えます。繰り返しますが、これにより詳細度を低く保ちつつ、その要素が何をするのかがより明確になります。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* ... */</span>
+  <span class="token selector">.mainMenu</span> <span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> flex<span class="token punctuation">;</span>
+    <span class="token property">flex-wrap</span><span class="token punctuation">:</span> wrap<span class="token punctuation">;</span>
+    <span class="token property">list-style</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.mainMenu li</span> <span class="token punctuation">{</span>
+    <span class="token property">margin</span><span class="token punctuation">:</span> 0 4px<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.mainMenu li a</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+    <span class="token property">text-decoration</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 16px<span class="token punctuation">;</span>
+    <span class="token comment">/* ... */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.mainMenu li a:where(.active, .hover)</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span> #1d1e21<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.mainMenu li a.active:hover</span> <span class="token punctuation">{</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #5865f2<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>コードには、小さい画面でナビゲーションが折りたたまれたときに、「開く」状態と「閉じる」状態を切り替えるために使われるボタンも2つあります。これは<code class="language-text">.mainMenu</code>コンポーネントに特有のものなので、全てを<code class="language-text">components</code>レイヤーにまとめておきます。その過程で、セレクタを結合・簡略化して、よりクリーンで読みやすいスタイルにすることができます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token comment">/* ... */</span>
+  <span class="token selector">nav:is(.openMenu, .closeMenu)</span> <span class="token punctuation">{</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 25px<span class="token punctuation">;</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">cursor</span><span class="token punctuation">:</span> pointer<span class="token punctuation">;</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>また、CSS内の他のいくつかのセレクタがHTMLのどこにも使われていないことに気づきました。そこで、コードをきれいな状態に保つために、それらのスタイルを削除しました。<a href="https://css-tricks.com/how-do-you-remove-unused-css-from-a-site/">これを行うための自動化された方法</a>もあります。</p>
+<h2>メディアクエリ</h2>
+<p>メディアクエリは専用のレイヤー（<code class="language-text">@layer responsive</code>）を持つべきでしょうか、それとも対象要素と同じレイヤーにあるべきでしょうか？このプロジェクトのスタイルをリファクタリングしている間、私はこの問題に本当に苦労しました。いくつか調査とテストを行った結果、私の判断は後者、つまり<strong>メディアクエリは影響を与える要素と同じレイヤーにあるべきだ</strong>、というものです。</p>
+<p>私の理由は、それらを一緒に保つことで、</p>
+<ul>
+<li>レスポンシブスタイルと、そのベースとなる要素のスタイルを一緒に維持できる。</li>
+<li>上書きが予測可能になる。</li>
+<li>現代のWeb開発で一般的なコンポーネントベースのアーキテクチャとうまく調和する。</li>
+</ul>
+<p>しかし、これは<strong>レスポンシブロジック</strong>がレイヤー間に散らばることも意味します。ですが、要素がスタイリングされるレイヤーと、そのレスポンシブな振る舞いが管理されるレイヤーとの間にギャップがあるよりはマシです。私にとって、それは避けたいアプローチです。なぜなら、あるレイヤーでスタイルを更新し、それに対応するレスポンシブスタイルをresponsiveレイヤーで更新し忘れがちだからです。</p>
+<p>もう一つの大きなポイントは、同じレイヤー内のメディアクエリは、その要素と<strong>同じ優先順位</strong>を持つということです。これは、CSSカスケードをシンプルで予測可能に保ち、スタイルの競合をなくすという私の全体的な目標と一致しています。</p>
+<p>さらに、<a href="https://css-tricks.com/tag/nesting/">CSSネスティング構文</a>は、メディアクエリと要素の関係を非常に明確にします。<code class="language-text">components</code>レイヤーにメディアクエリをネストした場合の見た目の省略例を次に示します。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token selector">.mainMenu</span> <span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> flex<span class="token punctuation">;</span>
+    <span class="token property">flex-wrap</span><span class="token punctuation">:</span> wrap<span class="token punctuation">;</span>
+    <span class="token property">list-style</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@media</span> <span class="token punctuation">(</span><span class="token property">max-width</span><span class="token punctuation">:</span> 900px<span class="token punctuation">)</span></span> <span class="token punctuation">{</span>
+    <span class="token selector">.mainMenu</span> <span class="token punctuation">{</span>
+      <span class="token property">width</span><span class="token punctuation">:</span> 100%<span class="token punctuation">;</span>
+      <span class="token property">text-align</span><span class="token punctuation">:</span> center<span class="token punctuation">;</span>
+      <span class="token property">height</span><span class="token punctuation">:</span> 100vh<span class="token punctuation">;</span>
+      <span class="token property">display</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>これにより、コンポーネントの子要素のスタイル（例：<code class="language-text">nav .openMenu</code>と<code class="language-text">nav .closeMenu</code>）もネストできます。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token selector">nav</span> <span class="token punctuation">{</span>
+    <span class="token selector">&amp;.openMenu</span> <span class="token punctuation">{</span>
+      <span class="token property">display</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+      
+      <span class="token atrule"><span class="token rule">@media</span> <span class="token punctuation">(</span><span class="token property">max-width</span><span class="token punctuation">:</span> 900px<span class="token punctuation">)</span></span> <span class="token punctuation">{</span>
+        <span class="token selector">&amp;.openMenu</span> <span class="token punctuation">{</span>
+          <span class="token property">display</span><span class="token punctuation">:</span> block<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>タイポグラフィとボタン</h2>
+<p><code class="language-text">.title</code>と<code class="language-text">.subtitle</code>はタイポグラフィのコンポーネントと見なせるので、それらと関連するレスポンシブスタイルは、ご想像の通り、<code class="language-text">components</code>レイヤーに入ります。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token selector">.title</span> <span class="token punctuation">{</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 40px<span class="token punctuation">;</span>
+    <span class="token property">font-weight</span><span class="token punctuation">:</span> 700<span class="token punctuation">;</span>
+    <span class="token comment">/* etc. */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.subtitle</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> <span class="token function">rgba</span><span class="token punctuation">(</span>255<span class="token punctuation">,</span> 255<span class="token punctuation">,</span> 255<span class="token punctuation">,</span> 0.75<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 15px<span class="token punctuation">;</span>
+    <span class="token comment">/* etc.. */</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@media</span> <span class="token punctuation">(</span><span class="token property">max-width</span><span class="token punctuation">:</span> 420px<span class="token punctuation">)</span></span> <span class="token punctuation">{</span>
+    <span class="token selector">.title</span> <span class="token punctuation">{</span>
+      <span class="token property">font-size</span><span class="token punctuation">:</span> 30px<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token selector">.subtitle</span> <span class="token punctuation">{</span>
+      <span class="token property">font-size</span><span class="token punctuation">:</span> 12px<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>ボタンについてはどうでしょう？多くのWebサイトと同様に、このサイトにもそのコンポーネントのための<code class="language-text">.btn</code>クラスがあるので、それらもそこに入れてしまいましょう。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> components</span> <span class="token punctuation">{</span>
+  <span class="token selector">.btn</span> <span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #1d1e21<span class="token punctuation">;</span>
+    <span class="token property">font-size</span><span class="token punctuation">:</span> 18px<span class="token punctuation">;</span>
+    <span class="token comment">/* etc. */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.btn-primary</span> <span class="token punctuation">{</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #5865f2<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.btn-secondary</span> <span class="token punctuation">{</span>
+    <span class="token property">transition</span><span class="token punctuation">:</span> all 0.3s ease-in-out<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.btn-primary:hover</span> <span class="token punctuation">{</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #5865f2<span class="token punctuation">;</span>
+    <span class="token property">box-shadow</span><span class="token punctuation">:</span> 0px 0px 8px 2px <span class="token function">rgba</span><span class="token punctuation">(</span>88<span class="token punctuation">,</span> 101<span class="token punctuation">,</span> 242<span class="token punctuation">,</span> 0.5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">/* etc. */</span>
+  <span class="token punctuation">}</span>
+  <span class="token selector">.btn-secondary:hover</span> <span class="token punctuation">{</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> #1d1e21<span class="token punctuation">;</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> <span class="token function">rgba</span><span class="token punctuation">(</span>88<span class="token punctuation">,</span> 101<span class="token punctuation">,</span> 242<span class="token punctuation">,</span> 0.7<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@media</span> <span class="token punctuation">(</span><span class="token property">max-width</span><span class="token punctuation">:</span> 420px<span class="token punctuation">)</span></span> <span class="token punctuation">{</span>
+    <span class="token selector">.btn</span> <span class="token punctuation">{</span>
+      <span class="token property">font-size</span><span class="token punctuation">:</span> 14px<span class="token punctuation">;</span>
+      <span class="token property">margin</span><span class="token punctuation">:</span> 2px<span class="token punctuation">;</span>
+      <span class="token property">padding</span><span class="token punctuation">:</span> 8px 13px<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token atrule"><span class="token rule">@media</span> <span class="token punctuation">(</span><span class="token property">max-width</span><span class="token punctuation">:</span> 335px<span class="token punctuation">)</span></span> <span class="token punctuation">{</span>
+    <span class="token selector">.btn</span> <span class="token punctuation">{</span>
+      <span class="token property">display</span><span class="token punctuation">:</span> flex<span class="token punctuation">;</span>
+      <span class="token property">flex-direction</span><span class="token punctuation">:</span> column<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<h2>最後のレイヤー</h2>
+<p>まだ<code class="language-text">utilities</code>レイヤーには触れていませんでしたね！私はこのレイヤーを、特定の目的のために設計されたヘルパークラス用に確保しています。例えばコンテンツを非表示にしたり、このケースでは、ぴったりな<code class="language-text">.noselect</code>クラスがあります。これには、要素の選択を無効にするという単一の再利用可能な目的があります。</p>
+<p>というわけで、これが私たちの<code class="language-text">utilities</code>レイヤーにおける唯一のスタイルルールになります。</p>
+<div class="gatsby-highlight" data-language="css"><pre style="counter-reset: linenumber NaN" class="language-css line-numbers"><code class="language-css"><span class="token atrule"><span class="token rule">@layer</span> utilities</span> <span class="token punctuation">{</span>
+  <span class="token selector">.noselect</span> <span class="token punctuation">{</span>
+    <span class="token property">-webkit-touch-callout</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">-webkit-user-select</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">-khtml-user-select</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">-webkit-user-drag</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">-moz-user-select</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">-ms-user-select</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+    <span class="token property">user-select</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
+<p>以上です！私たちは実在するプロジェクトのCSSを、CSSカスケードレイヤーを使うように完全にリファクタリングしました。<a href="https://codepen.io/vayospot/pen/bNdoYdP">作業開始時点</a>のコードと<a href="https://codepen.io/vayospot/pen/XJbeVdB">最終的なコード</a>を比較することができます。</p>
+<h2>全てが簡単だったわけではない</h2>
+<p>カスケードレイヤーでの作業が困難だったというわけではありませんが、その過程でいくつかの厄介な点があり、一度立ち止まって自分が何をしているのかを慎重に考えさせられました。</p>
+<p>作業中にいくつかのメモを取りました。</p>
+<ul>
+<li>
+<p>既存のプロジェクトでどこから手をつけるべきかを判断するのは難しい。 しかし、最初にレイヤーを定義し、その優先順位レベルを設定することで、既存のCSSに完全には慣れていなくても、特定のスタイルをどのように、どこに移動させるかを決定するためのフレームワークができました。これにより、自分を疑ったり、余分で不要なレイヤーを定義したりする状況を避けることができました。</p>
+</li>
+<li>
+<p>ブラウザサポートは依然として問題！ 私がこれを書いている時点で、カスケードレイヤーは94%のサポート率を誇りますが、あなたのサイトがレイヤー化されたスタイルをサポートできないレガシーブラウザに対応する必要があるかもしれません。</p>
+</li>
+<li>
+<p>メディアクエリがプロセスの中でどこに当てはまるのかが明確ではなかった。 メディアクエリは、それらが最も効果的に機能する場所を見つけるという難題を私に突きつけました。セレクタと同じレイヤーにネストするのか、それとも完全に別のレイヤーにするのか？ご存じの通り、私は前者を選びました。</p>
+</li>
+<li>
+<p><code class="language-text">!important</code>キーワードの扱いは、まるで綱渡りのようです。これはレイヤーの優先順位システム全体を反転させてしまうのですが、このプロジェクトでは至る所で使われていました。これらを一つずつ取り除いていくと、既存のCSSアーキテクチャが崩れていきます。そのため、コードをリファクタリングしつつ既存の挙動を壊さないように修正し、スタイルが最終的にどう適用される（カスケードする）のかを正確に把握する、というバランス感覚が求められます。</p>
+</li>
+</ul>
+<p><strong>全体として、CSSカスケードレイヤーのためにコードベースをリファクタリングすることは、一見すると少し気が遠くなる作業です。しかし重要なのは、物事を複雑にしているのはレイヤーそのものではなく、既存のコードベースであると認識することです</strong>。</p>
+<p>新しいアプローチがエレガントであっても、誰かの既存のアプローチを新しいものに完全に刷新するのは難しいものです。</p>
+<h2>カスケードレイヤーが役立った点（と、そうでもなかった点）</h2>
+<p>レイヤーを確立したことで、コードは間違いなく改善されました。未使用のスタイルや競合するスタイルを削除できたので、<strong>パフォーマンスベンチマーク</strong>にもいくつか改善が見られるはずですが、真の価値は、<strong>より保守しやすくなったスタイル一式</strong>にあります。必要なものを見つけ、特定のスタイルルールが何をしているのかを把握し、今後新しいスタイルをどこに挿入すればよいかが、より簡単になりました。</p>
+<p>同時に、カスケードレイヤーが銀の弾丸のような解決策だとは言いません。忘れてはならないのは、CSSはそれがクエリするHTML構造と本質的に結びついているということです。もし扱っているHTMLが構造化されておらず、<code class="language-text">div</code>の乱用に苦しんでいるのであれば、その混乱を解きほぐす努力はより大きくなり、同時にマークアップの書き換えも伴うと見て間違いないでしょう。</p>
+<p><strong>カスケードレイヤーのためのCSSリファクタリングは、メンテナンス性の向上だけでも、間違いなくその価値があります</strong>。</p>
+<p>ゼロから始めて、作業を進めながらレイヤーを定義していく方が「簡単」かもしれません。なぜなら、整理すべき継承されたオーバーヘッドや技術的負債が少ないからです。しかし、既存のコードベースから始めなければならない場合は、まずスタイルの複雑さを解きほぐし、どの程度のリファクタリングが必要かを正確に判断する必要があるかもしれません。</p>]]></content:encoded></item><item><title><![CDATA[Next.jsのFetch Wrapper：ベストプラクティスを徹底解説]]></title><description><![CDATA[想像してみてください。あなたは夢のNext.jsアプリケーションを構築し、ネイティブの関数を使って楽しくAPIコールを行っています。全てが順調に見えましたが、アプリケーションを本番環境にデプロイした…]]></description><link>https://postd.cc/fetch-wrapper-for-nextjs-a-deep-dive-into-best-practices-53dh/</link><guid isPermaLink="false">https://postd.cc/fetch-wrapper-for-nextjs-a-deep-dive-into-best-practices-53dh/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[React]]></category><category><![CDATA[Next.js]]></category><pubDate>Thu, 25 Sep 2025 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p>想像してみてください。あなたは夢のNext.jsアプリケーションを構築し、ネイティブの<code class="language-text">fetch</code>関数を使って楽しくAPIコールを行っています。全てが順調に見えましたが、アプリケーションを本番環境にデプロイした途端、事態は一変します。反復的なエラー処理のコードに溺れ、コンポーネントのあちこちに散らばった認証トークンと格闘し、なぜ一部のリクエストがサーバーでは成功するのにクライアントでは失敗するのか、そのデバッグに髪をかきむしる日々……。</p>
 <p>聞き覚えがありませんか？あなただけではありません。Next.jsは<code class="language-text">fetch</code>を強力なキャッシュ機能や再検証機能で拡張していますが、中心的な課題は残っています。本番環境に対応した堅牢なAPIレイヤーを構築するには、素の<code class="language-text">fetch</code>コールだけでは不十分なのです。</p>
 <p>本記事では、あなたのAPIレイヤーを頭痛の種から、扱うのが楽しくなるものへと変える、本番環境対応のfetchラッパーを作成します。その構築方法だけでなく、なぜそれぞれの決定が重要なのか、そしてそれがNext.js特有の実行モデルにどう適合するのかを掘り下げていきましょう。</p>
 <h2>素のfetchが抱える問題点（Next.jsでも）</h2>
@@ -2757,209 +3148,4 @@ xhttp<span class="token punctuation">.</span><span class="token function">send</
 <p>SOPの仕組みは、最初からクロスオリジンリクエストを防ぐようになっています。したがって、脆弱なCORSポリシーを定義することで自らのウェブサイトを危険な状態に晒すことのないようにしましょう。</p>
 <p>アプリケーションの機密性の高さによっては、CORSの設定ミスにより壊滅的な被害を受ける可能性があります。数年前、ある取引プラットフォームの侵入テストを行った際、ウェブサイトのCORSポリシーが非常に甘いことに気づきました。リスクを示すため、サイトの訪問者に特定の株を強制的に買わせる悪意のあるウェブサイトを作成しました。攻撃者はこれを使って顧客に特定の株を強制的に買わせることで、株価を吊り上げることができます。この問題をうまく悪用すれば、億万長者になれます。</p>
 <p>犯罪は割りに合わないと言う人たちは、きっとCORSを理解していないのでしょう。</p>
-<p>タグ付けされた記事：<a href="https://www.devsecurely.com/blog/tag/checklist">checklist</a>, <a href="https://www.devsecurely.com/blog/tag/cors">CORS</a>, <a href="https://www.devsecurely.com/blog/tag/web-application-security">web application security</a></p>]]></content:encoded></item><item><title><![CDATA[進化した正規表現：JavaScriptの正規表現の歴史と未来]]></title><description><![CDATA[クイックサマリー：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steve…]]></description><link>https://postd.cc/history-future-regular-expressions-javascript/</link><guid isPermaLink="false">https://postd.cc/history-future-regular-expressions-javascript/</guid><category><![CDATA[開発手法・プロジェクト管理]]></category><category><![CDATA[JavaScript]]></category><category><![CDATA[正規表現]]></category><pubDate>Thu, 12 Dec 2024 00:00:01 GMT</pubDate><content:encoded><![CDATA[<p><strong>クイックサマリー</strong>：以前は、JavaScriptの正規表現は他の言語の正規表現に比べてパフォーマンスが劣っていたものの、近年改良が重ねられ、他の言語に見劣りしなくなっています。この記事では、Steven Levithan氏がJavaScriptの正規表現の歴史と現状を評価し、より読みやすく、保守性とレジリエンスに優れた正規表現の書き方をアドバイスします。</p>
-<hr>
-<p>モダンJavaScriptの正規表現は、皆さんがよく知っている従来の正規表現と比べると随分進化しました。正規表現は<strong>テキストを検索して置き換えるツールとして非常に優れている</strong>一方で、書くのも理解するのも難しいという根強い評判があります（しかし今から説明するように、この認識は時代遅れかもしれません）。</p>
-<p>正規表現に関するこの認識は、JavaScriptに特に当てはまります。PCREやPerl、.NET、Java、Ruby、C++、Pythonといったよりモダンな言語の正規表現に比べてパフォーマンスが劣るJavaScriptの正規表現は、長年人気が低迷していました。しかしそれはもはや過去の話です。</p>
-<p>この記事では、JavaScriptの正規表現が経てきた改良の歴史を説明し（ネタバレ：ES2018とES2024が大きな転機となりました）、モダンな正規表現の機能を実例とともに紹介します。さらに、JavaScriptの正規表現を他のモダンな言語の正規表現に匹敵する、あるいは勝るものにした軽量な<a href="https://github.com/slevithan/regex">JavaScriptライブラリ</a>について紹介し、最後にJavaScriptの今後のバージョンで正規表現を改良し続けるために現在検討されている提案をいくつかお見せします（中には現在お使いのブラウザにすでに実装されているものもあります）。</p>
-<h2>JavaScriptにおける正規表現の歴史 <a href="#JavaScriptにおける正規表現の歴史略の目的">#</a><a name="JavaScriptにおける正規表現の歴史"></a></h2>
-<p>1999年に標準化されたECMAScript 3は、Perl由来の正規表現をJavaScriptに導入しました。大幅な改良が加わり、正規表現はかなり便利になりましたが（他のほとんどのPerl由来の正規表現とも互換性を得ました）、それでもいくつか大きな漏れがありました。JavaScriptの次に標準化されたバージョンであるES5が登場するまで10年かかりましたが、その間に他のプログラミング言語と正規表現の実装にいくつか便利な機能が新たに追加され、それらの正規表現はより強力で読みやすくなりました。</p>
-<p>しかしそれは当時の話です。</p>
-<div class="admonition admonition-none alert alert--info"><div class="admonition-heading"><h5><span class="admonition-icon"><svg></svg></span>none</h5></div><div class="admonition-content"><p>JavaScriptの新しいバージョンが出ると、ほぼ毎回正規表現に何らかの改良が行われていたことをご存知でしたか？</p></div></div>
-<p>では実際に見てみましょう。</p>
-<p>以下の機能の中には理解しにくいものもあるかもしれませんが、ご心配なく。主要な機能のいくつかは後で詳しく説明します。</p>
-<ul>
-<li>ES5（2009）では、正規表現のリテラル文字が評価されるたびに新しいオブジェクトが作成されるようにすることで、直感的でない振る舞いが修正され、正規表現のリテラル文字が文字クラス内でスラッシュをエスケープせずに使用できるようになりました（<code class="language-text">/[/]/</code>）。</li>
-<li>ES6/ES2015では2つの正規表現フラグが新たに追加されました。パーサーで正規表現を使いやすくした<code class="language-text">y</code>（<code class="language-text">sticky</code>）と、厳格なエラーとともにUnicode関連のいくつかの重要な改良を追加した<code class="language-text">u</code>（<code class="language-text">unicode</code>）です。また、<code class="language-text">RegExp.prototype.flags</code>ゲッター、<code class="language-text">RegExp</code>のサブクラス化対応、フラグを変更しながら正規表現をコピーする機能も追加されました。</li>
-<li>ES2018で、JavaScriptの正規表現はかなり改良されました。<code class="language-text">s</code>（<code class="language-text">dotAll</code>）フラグ、後読み、名前付きキャプチャ、Unicodeプロパティ（ES6の<code class="language-text">u</code>フラグを必要とする<code class="language-text">\p{...}</code>と<code class="language-text">\P{...}</code>により指定）が追加されました。後で説明するように、これらはすべて極めて便利な機能です。</li>
-<li>ES2020では、文字列メソッドの<code class="language-text">matchAll</code>が追加されました。これについても後ほど説明します。</li>
-<li>ES2022では、マッチしたサブ文字列が開始と終了のインデックスを取得できるようにする<code class="language-text">d</code>（<code class="language-text">hasIndices</code>）フラグが追加されました。</li>
-<li>最後に、ES2024ではES6で実装された<code class="language-text">u</code>フラグのアップグレードとして<code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグが追加されました。<code class="language-text">v</code>フラグは、複数文字による一連の「文字列プロパティ」を<code class="language-text">\p{...}</code>に追加し、<code class="language-text">\p{...}</code>と<code class="language-text">\q{...}</code>を使用して文字クラス内に複数文字のエレメントを追加するほか、ネストした文字クラス、差集合<code class="language-text">[A--B]</code>、積集合<code class="language-text">[A&amp;&amp;B]</code>を追加し、文字クラス内に異なるエスケープ規則を追加します。また、否定集合<code class="language-text">[^...]</code>内におけるUnicodeプロパティの大文字と小文字を区別しないマッチングも修正されました。</li>
-</ul>
-<p>これらの機能は、現時点で安全にコードに組み込むことが可能です。これらの中で最新の機能である<code class="language-text">v</code>フラグは、Node.js 20および<a href="https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets">2023年世代</a>のブラウザでサポートされています。その他の機能は2021年以前のブラウザでサポートされています。</p>
-<p>ES2019からES2023までの各エディションでは、<code class="language-text">\p{...}</code>と<code class="language-text">\P{...}</code>により指定可能なUnicodeプロパティも新たに追加されています。さらに、ES2021では文字列メソッド<code class="language-text">replaceAll</code>も追加されました。ただし、正規表現を渡された際の挙動でES3の<code class="language-text">replace</code>と唯一異なる点は、<code class="language-text">g</code>フラグを使用していない場合に例外をスローすることです。</p>
-<h2>余談：正規表現の良し悪しは何で決まる？ <a href="#余談：正規表現の良し悪しは何で決まる？">#</a><a name="余談：正規表現の良し悪しは何で決まる？"></a></h2>
-<p>これらの変更が実装された今、JavaScriptの正規表現は他の正規表現と比べてどうなのでしょうか。考え方は色々ありますが、主な要素を以下に挙げます。</p>
-<ul>
-<li>
-<p><strong>パフォーマンス</strong><br>
-これは重要な要素ではありますが、成熟した正規表現の実装は概ねかなり速いので、最も重要ではないかもしれません。JavaScriptは正規表現のパフォーマンスは強力ですが（少なくとも、Node.js、Chromiumベースのブラウザ、<a href="https://hacks.mozilla.org/2020/06/a-new-regexp-engine-in-spidermonkey/">さらにはFirefox</a>で採用されているV8のIrregexpエンジンや、Safariで使われているJavaScriptCoreでは優れています）、バックトラッキングを制御する構文を一切持たないバックトラッキングエンジンを使用している点が大きな制約であり、ReDoSの脆弱性が広がる要因になっています。</p>
-</li>
-<li>
-<p><strong>一般的または重要なユースケースを扱う先進機能への対応</strong><br>
-JavaScriptはES2018とES2024で先進機能への対応が大きく進みました。後読み（無限の長さに対応）やUnicodeプロパティ（複数文字による「文字列プロパティ」、差集合、積集合、スクリプト拡張機能に対応）など一部の機能において、JavaScriptは今やクラス最高レベルです。これらの機能は、他の多くの正規表現でサポートされていないか、堅牢性が劣ります。</p>
-</li>
-<li>
-<p><strong>読みやすく保守性に優れたパターンを書ける</strong><br>
-ネイティブのJavaScriptは、この点で長年主要な言語の中で最低の評価を受けてきました。その理由は、ちょっとした空白やコメントを入力できるようにする<code class="language-text">x</code>（拡張）フラグが欠けているからです。正規表現のサブルーチンとサブルーチン定義グループ（PCREとPerlの機能）は、文法的に正しい正規表現を書き、合成により複雑なパターンを構築することを可能にする強力な機能ですが、これらもありません。</p>
-</li>
-</ul>
-<p>つまり、良い面も悪い面もあるということです。</p>
-<blockquote class=pull-quote><p><a class=pull-quote__link aria-label="Share on Twitter" href="https://twitter.com/share?text=%0aJavaScript%20regexes%20have%20become%20exceptionally%20powerful,%20but%20they%e2%80%99re%20still%20missing%20key%20features%20that%20could%20make%20regexes%20safer,%20more%20readable,%20and%20more%20maintainable%20%28all%20of%20which%20hold%20some%20people%20back%20from%20using%20this%20power%29.%0a&url=https://smashingmagazine.com%2f2024%2f08%2fhistory-future-regular-expressions-javascript%2f">JavaScriptの正規表現は極めて強力になりましたが、正規表現をより安全で、読みやすく、保守しやすくできる重要な機能がまだ欠けています（これは、その力を利用するのをためらう理由にもなっています）</a></p></blockquote>
-<p>（訳注：原文同様 XへのPOSTリンクとなっています）</p>
-<p>幸い、これらの穴はすべてJavaScriptライブラリによって埋めることができます。それについては後ほど説明します。</p>
-<h2>JavaScriptのモダンな正規表現機能を使用する <a href="#JavaScriptのモダンな正規表現機能を使用する">#</a><a name="JavaScriptのモダンな正規表現機能を使用する"></a></h2>
-<p>皆さんがあまり知らないかもしれない、もっと便利なモダン正規表現機能をいくつかご紹介します。先に言っておきますが、<strong>これはやや上級者向けのガイドです</strong>。正規表現を使い始めてまだ日が浅い方は、手始めに以下の素晴らしいチュートリアルをご覧いただくといいかもしれません。</p>
-<ul>
-<li><a href="https://regexlearn.com/">RegexLearn</a>と<a href="https://regexone.com/">RegexOne</a>はインタラクティブなチュートリアルで、練習問題もあります。</li>
-<li>JavaScript.infoの<a href="https://javascript.info/regular-expressions">正規表現の章</a>は、JavaScriptに特化した詳細なガイドです。</li>
-<li><a href="https://www.youtube.com/watch?v=M7vDtxaD7ZU">Demystifying Regular Expressions</a>（動画）は、Lea Verou氏がHolyJS 2017で行った、初心者向けの素晴らしい講演です。</li>
-<li><a href="https://www.youtube.com/watch?v=rhzKDrUiJVk">Learn Regular Expressions In 20 Minutes</a>は、実際に正規表現テスターを動かしながら構文を説明する動画です。</li>
-</ul>
-<h2>名前付きキャプチャ <a href="#名前付きキャプチャ">#</a><a name="名前付きキャプチャ"></a></h2>
-<p>正規表現が一致するかどうかを確認するだけでなく、一致する文字列からサブ文字列を抽出し、コード上で何らかの操作を行いたい場合も多いでしょう。名前付きキャプチャグループを使うことで、正規表現とコードが<strong>より読みやすく</strong>なり、<strong>自己文書化</strong>するような方法でそれを行うことができます。</p>
-<p>以下の例では、2つの日付を持つレコードをマッチングさせ、値を取得します。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> record <span class="token operator">=</span> <span class="token string">'Admitted: 2024-01-01\nReleased: 2024-01-03'</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">^Admitted: (?&lt;admitted>\d{4}-\d{2}-\d{2})\nReleased: (?&lt;released>\d{4}-\d{2}-\d{2})$</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> match <span class="token operator">=</span> record<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">;</span>
-console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>groups<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">/* → {
-  admitted: '2024-01-01',
-  released: '2024-01-03'
-} */</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>この正規表現を理解できなくても大丈夫です。これをもっと読みやすくする方法を後で説明します。ここで重要なのは、名前付きキャプチャグループが<code class="language-text">(?&lt;name>...)</code>構文を使用し、マッチした文字列の<code class="language-text">groups</code>オブジェクト上にその結果が格納されるということです。</p>
-<p>また、名前付き後方参照を使用して、名前付きキャプチャグループが<code class="language-text">\k&lt;name></code>によりマッチングした文字列を再度マッチングすることもでき、検索や置換の中でそれらの値を以下のように使用することができます。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Change 'FirstName LastName' to 'LastName, FirstName'</span>
-<span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'Shaquille Oatmeal'</span><span class="token punctuation">;</span>
-name<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;first>\w+) (?&lt;last>\w+)</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">,</span> <span class="token string">'$&lt;last>, $&lt;first>'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">// → 'Oatmeal, Shaquille'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span></span></pre></div>
-<p>置換コールバック関数内で名前付き後方参照を使用したい上級者は、最後の引数として<code class="language-text">groups</code>オブジェクトを指定します。以下に例を挙げます。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token parameter">str</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;degrees>-?\d+(\.\d+)?)F\b</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> str<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token operator">...</span>args</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
-    <span class="token keyword">const</span> groups <span class="token operator">=</span> args<span class="token punctuation">.</span><span class="token function">at</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">return</span> Math<span class="token punctuation">.</span><span class="token function">round</span><span class="token punctuation">(</span><span class="token punctuation">(</span>groups<span class="token punctuation">.</span>degrees <span class="token operator">-</span> <span class="token number">32</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">5</span><span class="token operator">/</span><span class="token number">9</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'C'</span><span class="token punctuation">;</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-<span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token string">'98.6F'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">// → '37C'</span>
-<span class="token function">fahrenheitToCelsius</span><span class="token punctuation">(</span><span class="token string">'May 9 high is 40F and low is 21F'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">// → 'May 9 high is 4C and low is -6C'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>後読み <a href="#後読み">#</a><a name="後読み"></a></h2>
-<p>後読み（ES2018で導入）は、JavaScriptの正規表現で以前からサポートされていた先読みを補完する機能です。先読みと後読みはアサーション（文字列の始まりを示す<code class="language-text">^</code>や、単語の境界を示す<code class="language-text">\b</code>と似ています）であり、マッチの過程で文字を一切消費しません。後読みは、サブパターンが現在のマッチ位置の直前に見つかるかどうかで成否が決まります。</p>
-<p>例えば、以下の正規表現は後読み<code class="language-text">(?&lt;=...)</code>を使用して、「fat」の後に続く「cat」という単語（「cat」という単語のみ）をマッチングします。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;=fat )cat</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
-<span class="token string">'cat, fat cat, brat cat'</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token string">'pigeon'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">// → 'cat, fat pigeon, brat cat'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>また、否定後読み<code class="language-text">(?&lt;!...)</code>を使用してアサーションを反転させることもできます。そうすることで、正規表現は前に「fat」が付かないすべての「cat」をマッチングするようになります。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;!fat )cat</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
-<span class="token string">'cat, fat cat, brat cat'</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>re<span class="token punctuation">,</span> <span class="token string">'pigeon'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">// → 'pigeon, fat cat, brat pigeon'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span></span></pre></div>
-<p>後読みの実装はJavaScriptのものが最も優れています（匹敵するのは.NETだけです）。他の正規表現は後読みの中に可変長パターンを認めるかどうか、いつ認めるかについて一貫性のない複雑な規則を設けていますが、JavaScriptはあらゆるサブパターンについて後読みを認めています。</p>
-<h2><code class="language-text">matchAll</code>メソッド <a href="#matchAllメソッド">#</a><a name="matchAllメソッド"></a></h2>
-<p>ES2020ではJavaScriptの<code class="language-text">String.prototype.matchAll</code>が追加され、詳細なマッチ情報が必要な場合に正規表現マッチをループで実行しやすくなりました。以前は他の方法も利用できましたが、<code class="language-text">matchAll</code>の方が容易な場合が多く、長さゼロのマッチを返す可能性がある正規表現の結果に対してループ実行する際に無限ループに陥らないようにするなど、落とし穴も回避します。</p>
-<p><code class="language-text">matchAll</code>はイテレータ（配列ではなく）を返すため、<code class="language-text">for...of</code>ループにおいて使いやすいという利点があります。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> re <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;char1>\w)(?&lt;char2>\w)</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">;</span>
-<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> match <span class="token keyword">of</span> str<span class="token punctuation">.</span><span class="token function">matchAll</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">const</span> <span class="token punctuation">{</span>char1<span class="token punctuation">,</span> char2<span class="token punctuation">}</span> <span class="token operator">=</span> match<span class="token punctuation">.</span>groups<span class="token punctuation">;</span>
-  <span class="token comment">// Print each complete match and matched subpatterns</span>
-  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Matched "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>match<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">" with "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>char1<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">" and "</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>char2<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">"</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><strong>注</strong>：正規表現で<code class="language-text">matchAll</code>を使用する場合、<code class="language-text">g</code>フラグ（<code class="language-text">global</code>）が必須となります。また、他のイテレータと同様に<code class="language-text">Array.from</code>または配列スプレッドを使用してすべての結果を配列として受け取ることも可能です。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> matches <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">...</span>str<span class="token punctuation">.</span><span class="token function">matchAll</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">.</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<h2>Unicodeプロパティ <a href="#Unicodeプロパティ">#</a><a name="Unicodeプロパティ"></a></h2>
-<p>Unicodeプロパティ（ES2018で追加）は、<code class="language-text">\p{...}</code>構文とその否定形である`P{...}`を使用することで多言語テキストを強力に制御することを可能にします。マッチングできるプロパティは数百に及び、多岐にわたるUnicodeのカテゴリ、スクリプト、スクリプト拡張機能、バイナリプロパティを網羅します。</p>
-<p>注：詳細については<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape">MDNのドキュメント</a>をご覧ください。</p>
-<p>Unicodeプロパティでは<code class="language-text">u</code>（<code class="language-text">unicode</code>）または<code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグの使用が必須です。</p>
-<h2><code class="language-text">v</code>フラグ <a href="#vフラグ">#</a><a name="vフラグ"></a></h2>
-<p><code class="language-text">v</code>（<code class="language-text">unicodeSets</code>）フラグは、<code class="language-text">u</code>フラグのアップグレードとしてES2024で追加されました。これらのフラグを同時に使用することはできません。デフォルトのUnicode非対応モードでひそかにバグが紛れ込まないよう、ベストプラクティスとしていずれかのフラグを常に使用することが推奨されます。どちらを使用するかの判断は極めて単純です。<code class="language-text">v</code>フラグの環境（Node.js 20および2023年世代のブラウザ）のみのサポートで問題なければ<code class="language-text">v</code>フラグを使用し、それ以外の場合は<code class="language-text">u</code>フラグを使用します。</p>
-<p><code class="language-text">v</code>フラグが実装されたことで、いくつかの新しい正規表現機能が追加されました。中でも特筆すべきなのが差集合と積集合です。これにより、<code class="language-text">A--B</code>（文字クラス内）を使用してAの文字列はマッチングし、Bの文字列はマッチングしないとか、<code class="language-text">A&amp;&amp;B</code>を使用してAとB両方の文字列をマッチングすることが可能になります。以下の例をご覧ください。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Matches all Greek symbols except the letter 'π'</span>
-<span class="token operator">/</span><span class="token punctuation">[</span>\p<span class="token punctuation">{</span>Script_Extensions<span class="token operator">=</span>Greek<span class="token punctuation">}</span><span class="token operator">--</span>π<span class="token punctuation">]</span><span class="token operator">/</span>v
-
-<span class="token comment">// Matches only Greek letters</span>
-<span class="token operator">/</span><span class="token punctuation">[</span>\p<span class="token punctuation">{</span>Script_Extensions<span class="token operator">=</span>Greek<span class="token punctuation">}</span><span class="token operator">&amp;&amp;</span>\p<span class="token punctuation">{</span>Letter<span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token operator">/</span>v</code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p><code class="language-text">v</code>フラグに関する詳細や、vフラグの他の新機能については、Google Chromeチームによるこちらの<a href="https://v8.dev/features/regexp-v-flag">説明</a>をご覧ください。</p>
-<h2>絵文字のマッチングについて <a href="#絵文字のマッチングについて">#</a><a name="絵文字のマッチングについて"></a></h2>
-<p>絵文字とは🤩🔥😎👌などのことですが、絵文字がテキスト上で符号化される方法は複雑です。正規表現で絵文字をマッチングしたい場合、<strong>1つの絵文字が1つのUnicodeコードポイントで構成されることもあれば、多くのUnicodeコードポイントで構成されることもある</strong>ことを認識しておくことが重要です。絵文字の正規表現を独自に展開する多くの人（ライブラリもです！）がこの点を見落とし（あるいは適切に実装しておらず）、バグを発生させてしまっています。</p>
-<p>「👩🏻‍🏫」（女性教師：明るい肌の色）の絵文字に関する以下の詳細は、絵文字がいかに複雑になり得るかを示しています。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token comment">// Code unit length</span>
-<span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
-<span class="token comment">// → 7</span>
-<span class="token comment">// Each astral code point (above \uFFFF) is divided into high and low surrogates</span>
-
-<span class="token comment">// Code point length</span>
-<span class="token punctuation">[</span><span class="token operator">...</span><span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
-<span class="token comment">// → 4</span>
-<span class="token comment">// These four code points are: \u{1F469} \u{1F3FB} \u{200D} \u{1F3EB}</span>
-<span class="token comment">// \u{1F469} combined with \u{1F3FB} is '👩🏻'</span>
-<span class="token comment">// \u{200D} is a Zero-Width Joiner</span>
-<span class="token comment">// \u{1F3EB} is '🏫'</span>
-
-<span class="token comment">// Grapheme cluster length (user-perceived characters)</span>
-<span class="token punctuation">[</span><span class="token operator">...</span><span class="token keyword">new</span> <span class="token class-name">Intl<span class="token punctuation">.</span>Segmenter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">segment</span><span class="token punctuation">(</span><span class="token string">'👩🏻‍🏫'</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
-<span class="token comment">// → 1</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>幸い、JavaScriptは<code class="language-text">\p{RGI_Emoji}</code>により任意の完全な絵文字を個別にマッチングできる簡単な方法を追加しました。これは一度に複数のコードポイントをマッチングできる高度な「文字列プロパティ」のため、ES2024の<code class="language-text">v</code>フラグが必要になります。</p>
-<p><code class="language-text">v</code>フラグに対応していない環境で絵文字のマッチングを行いたい場合は、<a href="https://github.com/mathiasbynens/emoji-regex">emoji-regex</a>と<a href="https://github.com/slevithan/emoji-regex-xs">emoji-regex-xs</a>の2つの素晴らしいライブラリをチェックしてみてください。</p>
-<h2>より読みやすく、保守性とレジリエンスに優れた正規表現を書く <a href="#より読みやすく、保守性とレジリエンスに優れた正規表現を書く">#</a><a name="より読みやすく、保守性とレジリエンスに優れた正規表現を書く"></a></h2>
-<p>正規表現機能は長年にわたり改良を重ねてきましたが、ネイティブのJavaScriptの正規表現は、複雑なものになると読むにしろ保守するにしろ、まだ難しい場合があります。</p>
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Regular Expressions are SO EASY!!!! <a href="https://t.co/q4GSpbJRbZ">pic.twitter.com/q4GSpbJRbZ</a></p>&mdash; Garabato Kid (@garabatokid) <a href="https://twitter.com/garabatokid/status/1147063121678389253?ref_src=twsrc%5Etfw">July 5, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-<p>ES2018で追加された名前付きキャプチャは、正規表現の自己文書化を推し進めた素晴らしい機能であり、ES6の<code class="language-text">String.raw</code>タグにより、<code class="language-text">RegExp</code>コンストラクタを使用する際にバックスラッシュをすべてエスケープ処理する必要がなくなりました。可読性に関する主な改良はそれくらいです。</p>
-<p>しかし、<code class="language-text">regex</code>という名前の軽量で高性能な<a href="https://github.com/slevithan/regex">JavaScriptライブラリ</a>（筆者作）があり、これを使用することで正規表現が劇的に読みやすくなります。このライブラリは、欠けている主な機能をPCRE（Perl-Compatible Regular Expressions）から追加し、ネイティブのJavaScriptの正規表現を出力することで可読性の向上を実現しています。Babelのプラグインとして使用することもできるため、ビルド時に<code class="language-text">regex</code>の呼び出しがトランスパイルされます。したがって、デベロッパーエクスペリエンスが改善され、ユーザーにランタイムコストがかかることもありません。</p>
-<p><a href="https://github.com/PCRE2Project/pcre2">PCRE</a>は、PHPが正規表現のサポートに使用している人気のCライブラリで、他の無数のプログラミング言語やツールで使用されています。</p>
-<p><code class="language-text">regex</code>という名前のタグ付きテンプレートリレラルを提供するregexライブラリが、どのようにしてわかりやすく保守しやすい複雑な正規表現を書く手助けをするのか、簡単に説明します。以下で説明する新しい構文は、すべてPCREで同様に機能します。</p>
-<h2>ちょっとした空白とコメント <a href="#ちょっとした空白とコメント">#</a><a name="ちょっとした空白とコメント"></a></h2>
-<p><code class="language-text">regex</code>は、デフォルトで空白や行コメント（<code class="language-text">#</code>で始まる）を自由に正規表現に追加できるようにすることで、可読性を改善しています。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>regex<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'regex'</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> date <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
-  # Match a date in YYYY-MM-DD format
-  (?&lt;year>  \d{4}) - # Year part
-  (?&lt;month> \d{2}) - # Month part
-  (?&lt;day>   \d{2})   # Day part
-</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>これは、PCREの<code class="language-text">xx</code>フラグを使用するのと同じです。</p>
-<h2>サブルーチンとサブルーチン定義グループ <a href="#サブルーチンとサブルーチン定義グループ">#</a><a name="サブルーチンとサブルーチン定義グループ"></a></h2>
-<p>サブルーチンは<code class="language-text">\g&lt;name></code>（nameは名前付きグループを指します）のように書き、参照されたグループを独立したサブパターンとして扱い、現在の位置でマッチしようとします。これにより、サブパターンの合成と再利用が可能になり、可読性と保守性が改善されます。</p>
-<p>例えば、以下の正規表現は「192.168.12.123」のようなIPv4のアドレスとマッチします。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>regex<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'regex'</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> ipv4 <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\b
-  (?&lt;byte> 25[0-5] | 2[0-4]\d | 1\d\d | [1-9]?\d)
-  # Match the remaining 3 dot-separated bytes
-  (\. \g&lt;byte>){3}
-\b</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<p>さらに、サブルーチン定義グループを通じて参照のみで使用するサブパターンを定義することができます。こちらは先ほど見た名前付きキャプチャの項目の正規表現の改善例です。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token keyword">const</span> record <span class="token operator">=</span> <span class="token string">'Admitted: 2024-01-01\nReleased: 2024-01-03'</span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> re <span class="token operator">=</span> regex<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
-  ^ Admitted:\ (?&lt;admitted> \g&lt;date>) \n
-    Released:\ (?&lt;released> \g&lt;date>) $
-
-  (?(DEFINE)
-    (?&lt;date>  \g&lt;year>-\g&lt;month>-\g&lt;day>)
-    (?&lt;year>  \d{4})
-    (?&lt;month> \d{2})
-    (?&lt;day>   \d{2})
-  )
-</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
-<span class="token keyword">const</span> match <span class="token operator">=</span> record<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>re<span class="token punctuation">)</span><span class="token punctuation">;</span>
-console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>groups<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">/* → {
-  admitted: '2024-01-01',
-  released: '2024-01-03'
-} */</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></pre></div>
-<h2>モダンな正規表現のベースライン <a href="#モダンな正規表現のベースライン">#</a><a name="モダンな正規表現のベースライン"></a></h2>
-<p><code class="language-text">regex</code>にはデフォルトで<code class="language-text">v</code>フラグが含まれているため、有効化し忘れることがありません。また、ネイティブの<code class="language-text">v</code>フラグをサポートしていない環境では、自動的に<code class="language-text">u</code>フラグに切り替わりつつも、<code class="language-text">v</code>フラグのエスケープ規則を適用し、正規表現の前方互換性と後方互換性を確保します。</p>
-<p>また、エミュレートされた<code class="language-text">x</code>（ちょっとした空白とコメント）および<code class="language-text">n</code>（「名前付きキャプチャのみ」モード）フラグをデフォルトで暗黙的に有効化するため、毎回これらの上位モードを選択する必要がありません。さらに、タグ付きテンプレートリテラルであるため、<code class="language-text">RegExp</code>コンストラクタの場合のようにバックスラッシュ<code class="language-text">\\\\</code>をエスケープ処理する必要がありません。</p>
-<h2>アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる <a href="#アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる">#</a><a name="アトミックグループと絶対最大量指定子で破壊的なバックトラックを回避できる"></a></h2>
-<p>アトミックグループと絶対最大量指定子も、<code class="language-text">regex</code>ライブラリで追加された強力な機能です。これらは主にパフォーマンスと破壊的なバックトラック（ReDoSとも呼ばれ、特定の正規表現が特定の、あまり一致しない文字列を検索する際に膨大な時間がかかる深刻な問題）に対するレジリエンスに関する機能ですが、より単純なパターンを書けるようにすることで可読性も改善します。</p>
-<p><strong>注</strong>：詳しくは<code class="language-text">regex</code>の<a href="https://github.com/slevithan/regex#atomic-groups">ドキュメント</a>をご覧ください。</p>
-<h2>今後実装されそうなJavaScript正規表現の改良 <a href="#今後実装されそうなJavaScript正規表現の改良">#</a><a name="今後実装されそうなJavaScript正規表現の改良"></a></h2>
-<p>JavaScriptの正規表現を改良するための様々な提案が現在検討されています。JavaScriptの将来バージョンに組み込まれる見込みの高い3つの提案について以下にご紹介します。</p>
-<h2>重複する名前付きキャプチャグループ <a href="#重複する名前付きキャプチャグループ">#</a><a name="重複する名前付きキャプチャグループ"></a></h2>
-<p>これはステージ3（最終化間近）の<a href="https://github.com/tc39/proposal-duplicate-named-capturing-groups">改良案</a>です。さらに良いことに、直近の情報によるとこの改良はすべての主要ブラウザで機能します。</p>
-<p>名前付きキャプチャが最初に導入された際、すべての<code class="language-text">(?&lt;name>...)</code>キャプチャで一意の名前を使用することが求められました。しかし、正規表現には複数の代替パスがある場合もあり、それぞれのパスで同じグループ名を使用した方がコードを単純化できます。</p>
-<p>以下の例をご覧ください。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">(?&lt;year>\d{4})-\d\d|\d\d-(?&lt;year>\d{4})</span><span class="token regex-delimiter">/</span></span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span></span></pre></div>
-<p>この改良案は、まさにこの例の構文を可能にするもので、このような構文で「重複するキャプチャグループ名」エラーが発生するのを防ぎます。ただし、各代替パスの中では引き続き一意の名前を使用する必要があります。</p>
-<h2>パターン修飾子（別名：フラググループ） <a href="#パターン修飾子（別名：フラググループ）">#</a><a name="パターン修飾子（別名：フラググループ）"></a></h2>
-<p>こちらもステージ3の<a href="https://github.com/tc39/proposal-regexp-modifiers">改良案</a>です。Chrome/Edge 125およびOpera 111ではすでにサポートされており、<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1899813">近々</a>Firefoxでもサポートされる予定です。Safariについては<a href="https://bugs.webkit.org/show_bug.cgi?id=275672">今のところ</a>不明です。</p>
-<p>パターン修飾子は<code class="language-text">(?ims:...)</code>、<code class="language-text">(?-ims:...)</code>、<code class="language-text">(?im-s:...)</code>のいずれかを使用し、正規表現の特定の部分のみについて<code class="language-text">i</code>、<code class="language-text">m</code>、<code class="language-text">s</code>フラグのオンとオフを切り替えます。</p>
-<p>以下の例をご覧ください。</p>
-<div class="gatsby-highlight" data-language="javascript"><pre style="counter-reset: linenumber NaN" class="language-javascript line-numbers"><code class="language-javascript"><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">hello-(?i:world)</span><span class="token regex-delimiter">/</span></span>
-<span class="token comment">// Matches 'hello-WORLD' but not 'HELLO-WORLD'</span></code><span aria-hidden="true" class="line-numbers-rows" style="white-space: normal; width: auto; left: 0;"><span></span><span></span></span></pre></div>
-<h2><code class="language-text">RegExp.escape</code>による正規表現の特殊文字のエスケープ処理 <a href="#RegExp.escapeによる正規表現の特殊文字のエスケープ処理">#</a><a name="RegExp.escapeによる正規表現の特殊文字のエスケープ処理"></a></h2>
-<p>この<a href="https://github.com/tc39/proposal-regex-escaping">改良案</a>は、長い時間を経てようやく最近ステージ3に到達しました。まだどの主要ブラウザも対応していません。謳い文句どおり<code class="language-text">RegExp.escape(str)</code>関数を提供することで、正規表現の特殊文字がすべてエスケープ処理された状態で文字列を返し、リテラル文字列としてマッチングすることを可能にします。</p>
-<p>この機能がすぐに必要な場合、<a href="https://github.com/sindresorhus/escape-string-regexp">escape-string-regexp</a>が最も広く使われているパッケージです（毎月5億回以上ダウンロードされています）。このnpmパッケージは、最低限のエスケープ処理を行う超軽量の専用ユーティリティです。ほとんどのケースではこれで十分ですが、エスケープ処理を行った文字列が正規表現内のどの位置でも安全に使用できることを確認する必要がある場合、<code class="language-text">escape-string-regexp</code>はこの記事ですでに紹介した<code class="language-text">regex</code>ライブラリを推奨しています。<code class="language-text">regex</code>ライブラリは、埋め込み文字列のエスケープ処理を補間により、<a href="https://github.com/slevithan/regex#interpolating-escaped-strings">コンテクストを意識した方法</a>で行います。</p>
-<h2>まとめ <a href="#まとめ">#</a><a name="まとめ"></a></h2>
-<p>この記事では、JavaScriptの正規表現の過去、現在、そして未来についてお話しました。</p>
-<p>正規表現についてさらに詳しく学びたい方は、<a href="https://github.com/slevithan/awesome-regex">Awesome Regex</a>に優れた正規表現テスター、チュートリアル、ライブラリ、その他のリソースが紹介されているのでぜひご覧ください。正規表現のクロスワードパズルに挑戦してみたい方は、<a href="https://regexle.com/">regexle</a>をお試しください。</p>
-<p>皆さんの実りある構文解析と正規表現の可読性向上の一助になれば幸いです。</p>]]></content:encoded></item></channel></rss>
+<p>タグ付けされた記事：<a href="https://www.devsecurely.com/blog/tag/checklist">checklist</a>, <a href="https://www.devsecurely.com/blog/tag/cors">CORS</a>, <a href="https://www.devsecurely.com/blog/tag/web-application-security">web application security</a></p>]]></content:encoded></item></channel></rss>
